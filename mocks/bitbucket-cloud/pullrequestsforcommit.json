@@ -1,0 +1,20 @@
+{
+  "type": "paginated_pullrequests",
+  "values": [
+    {
+      "type": "pullrequest",
+      "id": 4,
+      "title": "feat(CMSP-17): bump version",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/spring-petclinic/pullrequests/4"
+        },
+        "html": {
+          "href": "https://bitbucket.org/athena-1234/spring-petclinic/pull-requests/4"
+        }
+      }
+    }
+  ],
+  "page": 1,
+  "pagelen": 50
+}

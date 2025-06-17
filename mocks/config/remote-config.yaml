@@ -1,0 +1,109 @@
+---
+version: "2.0"
+codeAnalysis:
+  sonar:
+    servers:
+      - id: mock-sonar
+        url: http://mocks:8080
+        apiKey: ""
+    tagKeyTypes:
+      - backend
+      - frontend
+      - mobile
+      - workload
+
+codeManagement:
+  azure:
+    servers:
+      - id: mock-azure
+        url: http://mocks:8080
+        apiKey: ""
+        branches:
+          - main
+  bitbucketCloud:
+    servers:
+      - id: mock-bitbucket
+        url: http://mocks:8080
+        apiKey: ""
+        branches:
+          - main
+  bitbucketServer:
+    servers:
+      - id: mock-bitbucket-server
+        url: http://mocks:8080
+        apiKey: ""
+        branches:
+          - main
+  github:
+    servers:
+      - id: mock-github
+        url: http://mocks:8080
+        apiKey: ""
+        branches:
+          - main
+  gitlab:
+    servers: []
+
+pipelines:
+  azure:
+    servers:
+      - id: mock-azure
+        url: http://mocks:8080
+        apiKey: ""
+        branches:
+          - main
+  github:
+    servers:
+      - id: mock-github
+        url: "http://localhost:8080"
+        apiKey: ""
+        branches:
+          - main
+
+ticketManagement:
+  azure:
+    servers:
+      - id: mock-azure
+        url: http://mocks:8080
+        apiKey: ""
+        authMethod: BEARER_TOKEN
+        defaults:
+          ticketTypes:
+            - Bug
+          ticketPriorities:
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
+
+  jira:
+    servers:
+      - id: mock-jira
+        url: http://mocks:8080
+        email: user@example.com
+        apiKey: ""
+        authMethod: BASIC_AUTH
+        defaults:
+          ticketTypes:
+            - Bug
+            - DevBug
+            - StaticBug
+            - OpsBug
+          ticketPriorities:
+            - Lowest
+            - Low
+            - Medium
+            - High
+            - Highest
+
+  servicenow:
+    servers:
+      - id: mock-servicenow
+        url: http://mocks:8080
+        apiKey: ""
+        authMethod: CUSTOM
+        defaults:
+          ticketPriorities: ["1", "2", "3"]
+          tableName: "incident"
+          projectName: "ATHENA"

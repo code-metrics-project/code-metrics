@@ -1,0 +1,9 @@
+//Custom Styles here
+$body-font-family: "Open Sans", sans-serif;
+
+.v-application {
+  [class*="text-"] {
+    font-family: $body-font-family, sans-serif !important;
+  }
+  font-family: $body-font-family, sans-serif !important;
+}

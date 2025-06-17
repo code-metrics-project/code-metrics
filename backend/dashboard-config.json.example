@@ -1,0 +1,109 @@
+[
+  {
+    "id": "dash1",
+    "name": "All",
+    "data": [
+      {
+        "id": "card1",
+        "dataSource": {
+          "name": "newBugs",
+          "args": {
+            "issueFilter": { "priority": "Low", "prodOnly": false },
+            "startDate": "2021-07-01",
+            "workloads": ["all"]
+          }
+        },
+        "dataView": {
+          "name": "Trend",
+          "props": {}
+        },
+        "presentationOptions": {
+          "title": "All bugs",
+          "width": 12
+        }
+      },
+      {
+        "id": "card2",
+        "dataSource": {
+          "name": "newBugs",
+          "args": {
+            "issueFilter": { "priority": "Low", "prodOnly": false },
+            "startDate": "2021-07-01",
+            "workloads": ["all"]
+          }
+        },
+        "dataView": {
+          "name": "Chart",
+          "props": {}
+        },
+        "presentationOptions": {
+          "title": "All bugs",
+          "width": 6
+        }
+      },
+      {
+        "id": "card3",
+        "dataSource": {
+          "name": "newBugs",
+          "args": {
+            "issueFilter": { "priority": "Low", "prodOnly": false },
+            "startDate": "2021-07-01",
+            "workloads": ["all"]
+          }
+        },
+        "dataView": {
+          "name": "BoxPlot",
+          "props": {}
+        },
+        "presentationOptions": {
+          "title": "All bugs, per day",
+          "width": 6
+        }
+      }
+    ]
+  },
+  {
+    "id": "dash2",
+    "name": "Prod",
+    "data": [
+      {
+        "id": "card3",
+        "dataSource": {
+          "name": "newBugs",
+          "args": {
+            "issueFilter": { "priority": "Low", "prodOnly": true },
+            "startDate": "2021-07-01",
+            "workloads": ["all"]
+          }
+        },
+        "dataView": {
+          "name": "Trend",
+          "props": {}
+        },
+        "presentationOptions": {
+          "title": "Production bugs",
+          "width": 6
+        }
+      },
+      {
+        "id": "card4",
+        "dataSource": {
+          "name": "newBugs",
+          "args": {
+            "issueFilter": { "priority": "Low", "prodOnly": true },
+            "startDate": "2021-07-01",
+            "workloads": ["all"]
+          }
+        },
+        "dataView": {
+          "name": "Chart",
+          "props": {}
+        },
+        "presentationOptions": {
+          "title": "Production bugs",
+          "width": 6
+        }
+      }
+    ]
+  }
+]

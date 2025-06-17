@@ -1,0 +1,50 @@
+{
+  "size": 1,
+  "limit": 25,
+  "isLastPage": true,
+  "values": [
+    {
+      "slug": "spring-petclinic",
+      "id": 1,
+      "name": "spring-petclinic",
+      "hierarchyId": "5cafb6c2a6e48887ebe2",
+      "scmId": "git",
+      "state": "AVAILABLE",
+      "statusMessage": "Available",
+      "forkable": true,
+      "project": {
+        "key": "ALL",
+        "id": 1,
+        "name": "all",
+        "public": false,
+        "type": "NORMAL",
+        "links": {
+          "self": [
+            {
+              "href": "http://localhost:7990/projects/ALL"
+            }
+          ]
+        }
+      },
+      "public": false,
+      "links": {
+        "clone": [
+          {
+            "href": "ssh://git@localhost:7999/all/spring-petclinic.git",
+            "name": "ssh"
+          },
+          {
+            "href": "http://localhost:7990/scm/all/spring-petclinic.git",
+            "name": "http"
+          }
+        ],
+        "self": [
+          {
+            "href": "http://localhost:7990/projects/ALL/repos/spring-petclinic/browse"
+          }
+        ]
+      }
+    }
+  ],
+  "start": 0
+}

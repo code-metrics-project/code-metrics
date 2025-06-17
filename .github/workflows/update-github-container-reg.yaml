@@ -1,0 +1,73 @@
+name: Transfer DockerHub to GHCR
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"  # Runs every 6hrs (0,6,12,18)
+  workflow_dispatch:
+
+jobs:
+  transfer-images:
+    runs-on: ubuntu-latest
+    permissions:
+      # Read is required for checkout, write to push to GHCR
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+        # This is needed as GHCR needs the registry to be lowercase
+      - name: downcase REPO Owner
+        run: |
+          REPO="${{ github.repository_owner }}"
+          REPO="${REPO,,}"
+          echo "REPO=${REPO}" >> ${GITHUB_ENV}
+          echo "${REPO}"
+
+      - name: Find Dockerfiles and extract FROM lines
+        run: |
+          # Search for all Dockerfiles in the 'docker' directory
+          find ./docker -name 'Dockerfile.*' | while read -r dockerfile; do
+            grep "^FROM" "$dockerfile" | awk '{print $2}' >> imagelist
+          done
+          sort -u imagelist -o imagelist
+          sed -i 's/${IMGREPO}//g' imagelist
+          echo "***** IMAGES FOUND *****"
+          cat imagelist
+          echo "***** IMAGES FOUND *****"
+
+      - name: Pull and Push Images
+        run: |
+          for image in $(cat imagelist | sort | uniq); do
+            # Extract image name and tag from the image (if no tag, default to 'latest')
+            repo="$image"
+            tag="latest"
+            if [[ "$image" == *":"* ]]; then
+              repo=$(echo "$image" | cut -d':' -f1)
+              tag=$(echo "$image" | cut -d':' -f2)
+            fi
+            new_tag="ghcr.io/${REPO}/${repo}:$tag"
+
+            echo "******** Pulling from Dockerhub *********"
+            docker pull "$image"
+        
+            # Tag the image to match the original path in GHCR
+            docker tag "$image" "$new_tag"
+        
+            # Push the image to GHCR
+            docker push "$new_tag"
+          done

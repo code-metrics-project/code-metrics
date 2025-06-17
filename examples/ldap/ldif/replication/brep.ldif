@@ -1,0 +1,22 @@
+dn: olcDatabase={2}mdb,cn=config
+changetype: modify
+add: olcSyncrepl
+olcSyncrepl:
+    rid=101
+    provider=ldap://openldap:1389
+    binddn=cn=admin,dc=example,dc=org
+    bindmethod=simple
+    credentials=admin
+    searchbase=dc=example,dc=org
+    type=refreshAndPersist
+    interval=00:00:00:10
+    network-timeout=0
+    retry="60 +"
+    timeout=1
+    starttls=critical
+    tls_reqcert=never
+
+dn: olcDatabase={2}mdb,cn=config
+changetype: modify
+add: olcMirrorMode
+olcMirrorMode: TRUE

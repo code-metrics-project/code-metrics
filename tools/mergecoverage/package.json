@@ -1,0 +1,30 @@
+{
+  "name": "code-metrics-merge-coverage",
+  "version": "1.0.0",
+  "description": "A tool for merging LCOV coverage reports and generating HTML reports",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/DeloitteDigitalUK/code-metrics.git"
+  },
+  "author": "DeloitteDigitalUK",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DeloitteDigitalUK/code-metrics/issues"
+  },
+  "homepage": "https://github.com/DeloitteDigitalUK/code-metrics#readme",
+  "type": "module",
+  "main": "merge-coverage-json.js",
+  "scripts": {
+    "merge-coverage-json": "node merge-coverage-json.js"
+  },
+  "dependencies": {
+    "istanbul-api": "^3.0.0",
+    "istanbul-lib-coverage": "^3.2.2",
+    "istanbul-lib-report": "^3.0.1",
+    "istanbul-reports": "^3.1.7",
+    "nyc": "^17.1.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.1"
+  }
+}

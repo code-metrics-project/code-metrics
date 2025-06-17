@@ -1,0 +1,484 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string" },
+    "codeAnalysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sonar": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "componentKeyPrefix": { "type": "string" },
+                  "authMethod": { "type": "string" }
+                },
+                "required": ["id"]
+              }
+            },
+            "tagKeyTypes": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "required": ["servers"]
+        }
+      }
+    },
+    "codeManagement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "azure": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "branches": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                },
+                "required": ["id"]
+              }
+            }
+          },
+          "required": ["servers"]
+        },
+        "bitbucketCloud": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "branches": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "username": { "type": "string" },
+                  "authMethod": { "type": "string" }
+                },
+                "required": ["id"]
+              }
+            }
+          },
+          "required": ["servers"]
+        },
+        "bitbucketServer": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "branches": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "username": { "type": "string" },
+                  "authMethod": { "type": "string" }
+                },
+                "required": ["id"]
+              }
+            }
+          },
+          "required": ["servers"]
+        },
+        "github": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "branches": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                },
+                "required": ["id"]
+              }
+            }
+          },
+          "required": ["servers"]
+        },
+        "gitlab": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "branches": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                },
+                "required": ["id"]
+              }
+            }
+          },
+          "required": ["servers"]
+        }
+      }
+    },
+    "pipelines": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "azure": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "branches": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                },
+                "required": ["id"]
+              }
+            }
+          },
+          "required": ["servers"]
+        },
+        "codepipeline": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "branches": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                },
+                "required": ["id"]
+              }
+            }
+          },
+          "required": ["servers"]
+        },
+        "dynatrace": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "branches": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "metricSelector": { "type": "string" },
+                  "entitySelector": { "type": "string" },
+                  "successfulOutcomeValue": { "type": "string" },
+                  "dimensionNames": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "runId": { "type": "string" },
+                      "startDate": { "type": "string" },
+                      "endDate": { "type": "string" },
+                      "outcome": { "type": "string" },
+                      "branch": { "type": "string" },
+                      "repository": { "type": "string" },
+                      "jobName": { "type": "string" }
+                    },
+                    "required": ["runId", "startDate", "endDate", "outcome", "branch", "repository", "jobName"]
+                  },
+                  "prefixProjectName": { "type": "boolean" }
+                },
+                "required": ["id", "metricSelector", "successfulOutcomeValue", "dimensionNames"]
+              }
+            }
+          },
+          "required": ["servers"]
+        },
+        "github": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "branches": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                },
+                "required": ["id"]
+              }
+            }
+          },
+          "required": ["servers"]
+        },
+        "jenkins": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "branches": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                },
+                "required": ["id"]
+              }
+            }
+          },
+          "required": ["servers"]
+        },
+        "none": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "branches": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                },
+                "required": ["id"]
+              }
+            }
+          },
+          "required": ["servers"]
+        }
+      }
+    },
+    "ticketManagement": {
+      "type": "object",
+      "properties": {
+        "azure": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "authMethod": { "type": "string" },
+                  "email": { "type": "string" },
+                  "filter": { "type": "string" },
+                  "defaults": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {}
+                  }
+                },
+                "required": ["id", "authMethod"]
+              }
+            }
+          },
+          "required": ["servers"]
+        },
+        "jira": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "authMethod": { "type": "string" },
+                  "email": { "type": "string" },
+                  "filter": { "type": "string" },
+                  "defaults": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {}
+                  }
+                },
+                "required": ["id", "authMethod"]
+              }
+            }
+          },
+          "required": ["servers"]
+        },
+        "servicenow": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "authMethod": { "type": "string" },
+                  "email": { "type": "string" },
+                  "filter": { "type": "string" },
+                  "defaults": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {}
+                  }
+                },
+                "required": ["id", "authMethod"]
+              }
+            }
+          },
+          "required": ["servers"]
+        }
+      }
+    }
+  },
+  "required": ["version", "codeAnalysis", "codeManagement", "pipelines", "ticketManagement"]
+}

@@ -1,0 +1,164 @@
+---
+version: "2.0"
+
+workloads:
+  - id: athena
+    tags:
+      department: sales
+    codeManagement:
+      type: azure
+      serverId: mock-azure
+      projectName: athena
+      repoGroups:
+        backend:
+          components:
+            - repo: /spring-.*/
+        frontend:
+          sonarTags:
+            - fe
+        platform:
+          components:
+            - repo: /.*_platform/
+            - repo: /.*_infrastructure/
+        monorepos:
+          components:
+            - name: web-a
+              repo: athena_ui_subject_portal
+              paths: ["/web-a"]
+            - name: web-b
+              repo: athena_ui_subject_portal
+              paths: ["/web-b"]
+    codeAnalysis:
+      type: sonar
+      serverId: mock-sonar
+      mappings:
+        - key: petclinic
+          vcsRepoName: spring-petclinic
+    pipelines:
+      type: azure
+      serverId: mock-azure
+      projectName: athena
+      jobGroups:
+        backend:
+          jobNames:
+            - /spring-.*/
+        frontend:
+          jobNames:
+            - fe
+        platform:
+          jobNames:
+            - /.*_platform/
+            - /.*_infrastructure/
+      stages:
+        - stageId: azure-deployment-pipeline
+    projectManagement:
+      type: azure
+      serverId: mock-azure
+      projectName: ADOMockProject
+      team: ADOMock
+    incidents:
+      type: azure
+      serverId: mock-azure
+      projectName: ADOMockProject
+      team: ADOMock
+
+  - id: gaia
+    tags:
+      department: sales
+    codeManagement:
+      type: github
+      serverId: mock-github
+      projectName: gaia
+      repoGroups:
+        backend:
+          components:
+            - repo: /octocat.*/
+        frontend:
+          sonarTags:
+            - fe
+        platform:
+          components:
+            - repo: /.*_platform/
+            - repo: /.*_infrastructure/
+    codeAnalysis:
+      type: sonar
+      serverId: mock-sonar
+    pipelines:
+      type: github
+      serverId: mock-github
+      projectName: gaia
+      jobGroups:
+        backend:
+          jobNames:
+            - /.*/
+        frontend:
+          jobNames:
+            - fe
+        platform:
+          jobNames:
+            - /.*_platform/
+            - /.*_infrastructure/
+      stages:
+        - stageId: github-deployment-pipeline
+    projectManagement:
+      type: jira
+      serverId: mock-jira
+      teamFilterJql: '"Team name[Dropdown]" in ("Gaia")'
+      projectName: DEV
+    incidents:
+      type: jira
+      serverId: mock-jira
+      teamFilterJql: '"Team name[Dropdown]" in ("Gaia")'
+      projectName: INCIDENT
+
+  - id: icarus
+    tags:
+      department: finance
+    codeManagement:
+      type: azure
+      serverId: mock-azure
+      projectName: icarus
+      repoGroups:
+        backend:
+          components:
+            - repo: /spring-.*/
+        frontend:
+          sonarTags:
+            - fe
+        platform:
+          components:
+            - repo: /.*_platform/
+            - repo: /.*_infrastructure/
+    codeAnalysis:
+      type: sonar
+      serverId: mock-sonar
+      mappings:
+        - key: petclinic
+          vcsRepoName: spring-petclinic
+    pipelines:
+      type: azure
+      serverId: mock-azure
+      projectName: athena
+      jobGroups:
+        backend:
+          jobNames:
+            - /spring-.*/
+        frontend:
+          jobNames:
+            - fe
+        platform:
+          jobNames:
+            - /.*_platform/
+            - /.*_infrastructure/
+      stages:
+        - stageId: azure-deployment-pipeline
+    projectManagement:
+      type: jira
+      serverId: mock-jira
+      teamFilterJql: '"Team name[Dropdown]" in ("Icarus")'
+      projectName: DEV
+      prodFilterJql: '"Project Environment[Dropdown]" = PROD'
+    incidents:
+      type: servicenow
+      serverId: mock-servicenow
+      tableName: incident

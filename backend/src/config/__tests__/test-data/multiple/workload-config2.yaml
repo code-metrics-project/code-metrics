@@ -1,0 +1,25 @@
+---
+workloads:
+  - id: icarus
+    codeManagement:
+      type: azure
+      serverId: example-azure
+      projectName: icarus
+      repoGroups:
+        backend:
+          components:
+            - repo: "/spring-.*/"
+        frontend:
+          sonarTags:
+            - fe
+        platform:
+          components:
+            - repo: "/.*_platform/"
+            - repo: "/.*_infrastructure/"
+    codeAnalysis:
+      type: sonar
+      serverId: example-sonar
+    projectManagement:
+      type: jira
+      serverId: example-jira
+      teamFilterJql: '"Team name[Dropdown]" in ("Icarus")'

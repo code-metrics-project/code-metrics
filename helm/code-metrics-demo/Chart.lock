@@ -1,0 +1,12 @@
+dependencies:
+- name: jenkins
+  repository: ""
+  version: '*.*.*'
+- name: mock-api
+  repository: ""
+  version: '*.*.*'
+- name: openldap-stack-ha
+  repository: https://jp-gouin.github.io/helm-openldap/
+  version: 4.2.1
+digest: sha256:8feeffc517aec4b6f09b9685a9b6c204cdb3a895e4ffa6935120e21eefa0adec
+generated: "2024-01-29T13:18:23.793641Z"

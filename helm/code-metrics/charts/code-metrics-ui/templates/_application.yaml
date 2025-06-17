@@ -1,0 +1,30 @@
+{{- define "code-metrics-ui.application" -}}
+- name: {{ .Chart.Name }}
+  securityContext:
+    {{- toYaml .Values.securityContext | nindent 12 }}
+  image: "{{ .Values.application.image.repository }}:{{ .Values.application.image.tag | default .Chart.AppVersion }}"
+  imagePullPolicy: {{ .Values.application.image.pullPolicy }}
+  env:
+  {{- range $key := .Values.application.envVars.templates }}
+  - name: {{ $key }}
+    value: {{ include $key $ }}
+  {{- end }}
+  {{- range $key, $val := .Values.application.envVars.keyValues }}
+  - name: {{ $key }}
+    value: {{ $val | quote }}
+  {{- end }}
+  {{- range $k, $v :=  .Values.application.envVars.secrets }}
+  - name: {{ $k }}
+    valueFrom:
+      secretKeyRef:
+        key: {{ $v.key }}
+        name: {{ $v.name }}
+  {{- end }}
+  ports:
+    - name: http
+      containerPort: {{ .Values.service.port }}
+      protocol: TCP
+
+  resources:
+    {{- toYaml .Values.resources | nindent 12 }}
+{{- end -}}

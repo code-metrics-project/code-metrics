@@ -1,0 +1,16 @@
+{
+  "size": 1,
+  "limit": 100,
+  "isLastPage": true,
+  "values": [
+    {
+      "id": "refs/heads/main",
+      "displayId": "main",
+      "type": "BRANCH",
+      "latestCommit": null,
+      "latestChangeset": null,
+      "isDefault": true
+    }
+  ],
+  "start": 0
+}

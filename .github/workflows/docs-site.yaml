@@ -1,0 +1,60 @@
+name: Update external docs site
+
+on:
+  workflow_dispatch: # Allows manual triggering
+    inputs:
+      push_changes:
+        description: "Push changes to external docs repo"
+        required: true
+        default: "false"
+  workflow_call: # Allows calling from another workflow
+    inputs:
+      push_changes:
+        description: "Push changes to external docs repo"
+        required: true
+        default: "false"
+        type: string
+
+jobs:
+  push-to-docs-repo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code-metrics repo
+        uses: actions/checkout@v4
+        with:
+          path: code-metrics
+
+      - name: Checkout code-metrics-docs repo
+        uses: actions/checkout@v4
+        with:
+          repository: code-metrics-project/docs
+          ssh-key: ${{ secrets.DOCS_REPO_SSH_KEY }}
+          ref: main
+          path: code-metrics-docs
+
+      - name: Update site content
+        working-directory: code-metrics/scripts
+        run: ./update-external-docs-site.sh -y
+
+      - name: Check for changes
+        id: check-changes
+        working-directory: code-metrics-docs
+        run: |
+          if [[ -z $(git status -uno --porcelain) ]]; then
+            echo "There are no documentation changes."
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "There are pending documentation changes."
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        if: ${{ steps.check-changes.outputs.has_changes == 'true' && github.event.inputs.push_changes == 'true' }}
+        working-directory: code-metrics-docs
+        run: |
+          git config --global user.name 'Code Metrics docs bot'
+          git config --global user.email 'code-metrics-project@users.noreply.github.com'
+          git add -A
+          git commit -m "docs: updates documentation site."
+          git push

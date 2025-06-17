@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "code-metrics-mlapi.fullname" . }}
+  labels:
+    {{- include "code-metrics-mlapi.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "code-metrics-mlapi.selectorLabels" . | nindent 4 }}

@@ -1,0 +1,61 @@
+{
+  "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+  "actions": [
+    {
+      "_class": "hudson.model.CauseAction",
+      "causes": [
+        {
+          "_class": "hudson.model.Cause$UserIdCause",
+          "shortDescription": "Started by user admin",
+          "userId": "admin",
+          "userName": "admin"
+        }
+      ]
+    },
+    {
+      "_class": "org.jenkinsci.plugins.workflow.libs.LibrariesAction"
+    },
+    {},
+    {},
+    {},
+    {
+      "_class": "org.jenkinsci.plugins.displayurlapi.actions.RunDisplayAction"
+    },
+    {
+      "_class": "org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction"
+    },
+    {},
+    {
+      "_class": "org.jenkinsci.plugins.workflow.job.views.FlowGraphAction"
+    },
+    {},
+    {},
+    {}
+  ],
+  "artifacts": [],
+  "building": false,
+  "description": null,
+  "displayName": "#2",
+  "duration": 2742,
+  "estimatedDuration": 1216,
+  "executor": null,
+  "fullDisplayName": "Athena_infrastructure_components #2",
+  "id": "2",
+  "keepLog": false,
+  "number": 2,
+  "queueId": 2,
+  "result": "SUCCESS",
+  "timestamp": 1697638782792,
+  "url": "http://localhost:32769/job/Athena_infrastructure_components/2/",
+  "changeSets": [],
+  "culprits": [],
+  "inProgress": false,
+  "nextBuild": {
+    "number": 3,
+    "url": "http://localhost:32769/job/Athena_infrastructure_components/3/"
+  },
+  "previousBuild": {
+    "number": 1,
+    "url": "http://localhost:32769/job/Athena_infrastructure_components/1/"
+  }
+}

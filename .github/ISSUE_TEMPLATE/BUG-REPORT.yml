@@ -1,0 +1,69 @@
+name: "🐞 Bug Report"
+description: "Report an issue to help the project improve."
+title: "[Bug] "
+labels: [
+  "bug"
+]
+body:
+  - type: dropdown
+    id: Component
+    attributes:
+      label: Component Implicated
+      description: What component does the issue affect?
+      options:
+        - backend
+        - frontend
+        - deployment
+        - build
+        - documentation
+      default: 0
+    validations:
+      required: true
+  - type: input
+    id: Version
+    attributes:
+      label: "Version"
+      description: What version are you using?
+      placeholder: "<Version>"
+    validations:
+      required: true
+  - type: textarea
+    id: doing
+    attributes:
+      label: "What were you trying to do?"
+      description: Detail what was intended, What the expected result was and what the actual result was.
+      placeholder: "I looking at.. / I was configuring...."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: "Steps to Reproduce"
+      description: Provide a step by step of
+      placeholder: Describe who to reproduce the issue
+    validations:
+      required: false
+  - type: textarea
+    id: workload
+    attributes:
+      label: "workload-config.yaml"
+      description: Provide a copy of your workload-config.yaml
+      placeholder: "workload-config.yaml"
+    validations:
+      required: false
+  - type: textarea
+    id: remote
+    attributes:
+      label: "remote-config.yaml"
+      description: Provide a copy of your remote-config.yaml
+      placeholder: "remote-config.yaml"
+    validations:
+      required: false
+  - type: textarea
+    id: env
+    attributes:
+      label: ".env"
+      description: Provide a copy of your .env file / env vars
+      placeholder: Env vars used.
+    validations:
+      required: false

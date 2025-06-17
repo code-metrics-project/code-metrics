@@ -1,0 +1,329 @@
+name: CD
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+      push:
+        required: true
+        type: string
+      machinelearningComponents:
+        required: true
+        type: string
+      helmComponents:
+        required: true
+        type: string
+      uiComponents:
+        required: true
+        type: string
+      backendComponents:
+        required: true
+        type: string
+      threatmodelComponents:
+        required: true
+        type: string
+      examplesComponents:
+        required: true
+        type: string
+      githubComponents:
+        required: true
+        type: string
+      desktopComponents:
+        required: true
+        type: string
+    secrets:
+      DOCKER_HUB_USERNAME:
+        required: false
+      DOCKER_HUB_ACCESS_TOKEN:
+        required: false
+jobs:
+  docker-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ inputs.backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-config-inline: |
+            [worker.oci]
+              max-parallelism = 1
+      - name: Log in to DockerHub
+        if: ${{ startsWith(github.ref, 'refs/tags/') && github.actor != 'dependabot[bot]' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: downcase REPO Owner
+        run: |
+          REPO="${{ github.repository_owner }}"
+          REPO="${REPO,,}"
+          echo "REPO=${REPO}" >> ${GITHUB_ENV}
+          echo "${REPO}"
+      - name: Build and push API
+        id: docker_build_api
+        uses: docker/build-push-action@v5
+        with:
+          file: ${{ github.workspace }}/docker/Dockerfile.backend
+          context: "./backend"
+          platforms: linux/amd64,linux/arm64
+          push: ${{ inputs.push }}
+          tags: |
+            deloittedigitaluk/code-metrics-api:${{ inputs.tag }}
+            deloittedigitaluk/code-metrics-api:latest
+            ghcr.io/deloittedigitaluk/code-metrics-api:${{ inputs.tag }}
+            ghcr.io/deloittedigitaluk/code-metrics-api:latest
+          build-args: |
+            RELEASE_TASK=release
+            IMGREPO=ghcr.io/${{ env.REPO }}/
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+
+  docker-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ inputs.uiComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-config-inline: |
+            [worker.oci]
+              max-parallelism = 1
+      - name: Log in to DockerHub
+        if: ${{ startsWith(github.ref, 'refs/tags/') && github.actor != 'dependabot[bot]' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: downcase REPO Owner
+        run: |
+          REPO="${{ github.repository_owner }}"
+          REPO="${REPO,,}"
+          echo "REPO=${REPO}" >> ${GITHUB_ENV}
+          echo "${REPO}"
+      - name: Build and push UI
+        id: docker_build_ui
+        uses: docker/build-push-action@v5
+        with:
+          file: ${{ github.workspace }}/docker/Dockerfile.ui
+          context: "./ui"
+          platforms: linux/amd64,linux/arm64
+          push: ${{ inputs.push }}
+          tags: |
+            deloittedigitaluk/code-metrics-ui:${{ inputs.tag }}
+            deloittedigitaluk/code-metrics-ui:latest
+            ghcr.io/deloittedigitaluk/code-metrics-ui:${{ inputs.tag }}
+            ghcr.io/deloittedigitaluk/code-metrics-ui:latest
+          build-args: |
+            IMGREPO=ghcr.io/${{ env.REPO }}/
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+
+  docker-mocks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ inputs.backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-config-inline: |
+            [worker.oci]
+              max-parallelism = 1
+      - name: Log in to DockerHub
+        if: ${{ startsWith(github.ref, 'refs/tags/') && github.actor != 'dependabot[bot]' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: downcase REPO Owner
+        run: |
+          REPO="${{ github.repository_owner }}"
+          REPO="${REPO,,}"
+          echo "REPO=${REPO}" >> ${GITHUB_ENV}
+          echo "${REPO}"
+      - name: Build and push Mocks
+        id: docker_build_mocks
+        uses: docker/build-push-action@v5
+        with:
+          file: ${{ github.workspace }}/docker/Dockerfile.mocks
+          context: "./mocks"
+          platforms: linux/amd64,linux/arm64
+          push: ${{ inputs.push }}
+          tags: |
+            deloittedigitaluk/code-metrics-mocks:${{ inputs.tag }}
+            deloittedigitaluk/code-metrics-mocks:latest
+            ghcr.io/deloittedigitaluk/code-metrics-mocks:${{ inputs.tag }}
+            ghcr.io/deloittedigitaluk/code-metrics-mocks:latest
+          build-args: |
+            IMGREPO=ghcr.io/${{ env.REPO }}/
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+
+  docker-jenkins:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ inputs.examplesComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-config-inline: |
+            [worker.oci]
+              max-parallelism = 1
+      - name: Log in to DockerHub
+        if: ${{ startsWith(github.ref, 'refs/tags/') && github.actor != 'dependabot[bot]' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: downcase REPO Owner
+        run: |
+          REPO="${{ github.repository_owner }}"
+          REPO="${REPO,,}"
+          echo "REPO=${REPO}" >> ${GITHUB_ENV}
+          echo "${REPO}"
+      - name: Build and push Jenkins
+        id: docker_build_mocks
+        uses: docker/build-push-action@v5
+        with:
+          file: ${{ github.workspace }}/docker/Dockerfile.jenkins
+          context: "./examples/jenkins"
+          platforms: linux/amd64,linux/arm64
+          push: ${{ inputs.push }}
+          tags: |
+            deloittedigitaluk/demo-jenkins:${{ inputs.tag }}
+            deloittedigitaluk/demo-jenkins:latest
+            ghcr.io/deloittedigitaluk/demo-jenkins:${{ inputs.tag }}
+            ghcr.io/deloittedigitaluk/demo-jenkins:latest
+          build-args: |
+            IMGREPO=ghcr.io/${{ env.REPO }}/
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+
+  publish-release:
+    needs: [ docker-api, docker-ui, docker-mocks, docker-jenkins ]
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Update CHANGELOG
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ github.ref_name }}
+          writeToFile: false
+          includeRefIssues: false
+      - name: Fetch backend release artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend
+          path: backend/dist
+      - name: Fetch UI release artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ui
+          path: ui/dist
+      - name: Fetch chart release artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: helm
+          path: helm/dist
+      - name: Fetch threat model release artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: threatmodel
+          path: threatmodel/dist
+      - name: Zip release assets
+        run: |
+          mkdir -p dist
+          pushd backend/dist
+          zip -r ../../dist/backend.zip .
+          popd
+          pushd ui/dist
+          zip -r ../../dist/ui.zip .
+          popd
+          pushd helm/dist
+          mv *.tgz ../../dist/
+          popd
+          pushd threatmodel/dist
+          zip -r ../../dist/threatmodel.zip .
+          popd
+          pushd backend/config
+          zip -r ../../dist/config.zip \
+            *.schema.json \
+            validate-config.js \
+            validate-config.sh \
+            package.json \
+            package-lock.json \
+            README.md
+          popd
+          pushd dist
+          ls -l
+      - name: Create release
+        uses: actions/github-script@v7
+        env:
+          CHANGES: "${{ steps.changelog.outputs.changes }}"
+        with:
+          script: |
+            const changes = process.env.CHANGES;
+            const script = require('./.github/release.js')
+            await script({github, context}, changes);
+
+  on-failure:
+    runs-on: ubuntu-latest
+    needs: [docker-api, docker-ui, docker-mocks, docker-jenkins, publish-release]
+    if: ${{ always() && startsWith(github.ref, 'refs/tags/') && failure() && !cancelled() }}
+    steps:
+      - name: Slack Failure Notification
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL }}
+          slack-message: "Release Build Failure (CD): ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}

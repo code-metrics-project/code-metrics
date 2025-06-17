@@ -1,0 +1,16 @@
+export default {
+  changes: "Changes",
+  explore: "Explore",
+  home: "Home",
+  logout: "Logout",
+  metrics: "Metrics",
+  pipelines: "Pipelines",
+  program: "Programme",
+  programMetrics: "Programme Metrics",
+  programChanges: "Programme Changes",
+  programPipelines: "Programme Pipelines",
+  programSecurity: "Programme Security",
+  newQuery: "Query",
+  security: "Security",
+  workload: "Workloads",
+};

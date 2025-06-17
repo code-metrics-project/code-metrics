@@ -1,0 +1,27 @@
+plugin: rest
+
+resources:
+  - method: get
+    path: /repositories/{workload}
+    response:
+      file: repos.json
+
+  - method: get
+    path: /repositories/{workload}/{repo}/pullrequests
+    response:
+      file: pullrequests.json
+
+  - method: get
+    path: /repositories/{workload}/{repo}/pullrequests/{pullrequestid}
+    response:
+      file: pullrequest.json
+
+  - method: get
+    path: /repositories/{workload}/{repo}/pullrequests/{pullrequestid}/diffstat
+    response:
+      file: diffstat.json
+
+  - method: get
+    path: /repositories/{workload}/{repo}/commit/{commitid}/pullrequests
+    response:
+      file: pullrequestsforcommit.json

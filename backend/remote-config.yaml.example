@@ -1,0 +1,113 @@
+---
+codeAnalysis:
+  sonar:
+    servers:
+    - id: example-sonar
+      url: https://sonar.example.com
+      apiKey: changeme
+    - id: mock-sonar
+      url: http://localhost:8080
+      apiKey: ''
+    tagKeyTypes:
+    - backend
+    - frontend
+    - mobile
+    - workload
+
+codeManagement:
+  azure:
+    servers:
+      - id: mock-azure
+        url: http://localhost:8080
+        apiKey: ''
+        branches:
+          - main
+  bitbucketCloud:
+    servers:
+      - id: example-bitbucket-cloud
+        url: "https://api.bitbucket.org/2.0"
+        username: ""
+        apiKey: ""
+        branches:
+          - main
+  bitbucketServer:
+    servers:
+      - id: example-bitbucket-server
+        url: "http://localhost:7990/rest"
+        username: ""
+        apiKey: ""
+        branches:
+          - main
+  github:
+    servers:
+      - id: mock-github
+        url: http://localhost:8080
+        apiKey: ''
+        branches:
+          - main
+  gitlab: {}
+
+pipelines:
+  azure:
+    servers:
+    - id: mock-azure
+      url: http://localhost:8080
+      apiKey: ''
+      branches:
+      - main
+  github:
+    servers:
+    - id: mock-github
+      url: http://localhost:8080
+      apiKey: ''
+      branches:
+      - main
+  jenkins:
+    servers:
+    - id: example-jenkins
+      url: http://user:key@localhost:32769/
+      branches:
+      - main
+
+projectManagement:
+  azure:
+    defaults:
+      bugs:
+        issueTypes:
+        - Bug
+      incidents:
+        issueTypes:
+        - Issue
+    servers:
+      - id: example-azure
+        url: https://dev.azure.com/example-azure-org
+        apiKey: ''
+        project: Project Name
+  jira:
+    defaults:
+      bugs:
+        issueTypes:
+        - Bug
+      incidents:
+        issueTypes:
+        - Incident
+      ticketPriorities:
+      - Lowest
+      - Low
+      - Medium
+      - High
+      - Highest
+    servers:
+    - id: example-jira-1
+      url: https://example-jira-1.atlassian.net
+      email: user@example.co.uk
+      apiKey: changeme
+      authMethod: BASIC_AUTH
+    - id: example-jira-2
+      url: https://example-jira-2.atlassian.net
+      apiKey: changeme
+      authMethod: BEARER_TOKEN
+    - id: mock-jira
+      url: http://localhost:8080
+      apiKey: ''
+      authMethod: BEARER_TOKEN

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Metrics Settings</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .input-group {
+            display: flex;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #3a80d2;
+        }
+        button.browse {
+            margin-left: 8px;
+        }
+        .buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        #statusMessage {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Code Metrics Settings</h1>
+
+        <div class="form-group">
+            <label for="configPath">Code Metrics Configuration Directory:</label>
+            <div class="input-group">
+                <input type="text" id="configPath" placeholder="Enter path to configuration directory">
+                <button class="browse" id="browseButton">Browse...</button>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button id="saveButton">Save Settings</button>
+        </div>
+
+        <div id="statusMessage" style="display: none;"></div>
+    </div>
+
+    <script>
+        // We'll use Electron's IPC for communication between renderer and main processes
+        const { ipcRenderer } = window.require('electron');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const configPathInput = document.getElementById('configPath');
+            const browseButton = document.getElementById('browseButton');
+            const saveButton = document.getElementById('saveButton');
+            const statusMessage = document.getElementById('statusMessage');
+
+            // Load existing config path if available
+            ipcRenderer.invoke('get-config-path').then(path => {
+                if (path) {
+                    configPathInput.value = path;
+                }
+            }).catch(err => {
+                showStatus('Error loading saved path: ' + err.message, 'error');
+            });
+
+            // Handle browse button click
+            browseButton.addEventListener('click', async () => {
+                try {
+                    const result = await ipcRenderer.invoke('open-directory-dialog');
+                    if (result && !result.canceled && result.filePaths.length > 0) {
+                        configPathInput.value = result.filePaths[0];
+                    }
+                } catch (err) {
+                    showStatus('Error opening file dialog: ' + err.message, 'error');
+                }
+            });
+
+            // Handle save button click
+            saveButton.addEventListener('click', async () => {
+                const path = configPathInput.value.trim();
+                if (!path) {
+                    showStatus('Please specify a configuration directory path', 'error');
+                    return;
+                }
+
+                try {
+                    // Disable the button and show saving status
+                    saveButton.disabled = true;
+                    saveButton.textContent = 'Saving...';
+
+                    await ipcRenderer.invoke('save-config-path', path);
+                    showStatus('Settings saved successfully!', 'success');
+
+                    // Close the window after a short delay to show the success message
+                    setTimeout(() => {
+                        ipcRenderer.invoke('settings-saved');
+                        window.close();
+                    }, 1500);
+                } catch (err) {
+                    // Re-enable the button if there's an error
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'Save Settings';
+                    showStatus('Error saving settings: ' + err.message, 'error');
+                }
+            });
+
+            // Helper function to show status messages
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = type;
+                statusMessage.style.display = 'block';
+
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>
+

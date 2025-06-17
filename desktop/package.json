@@ -1,0 +1,120 @@
+{
+  "name": "code-metrics-desktop",
+  "version": "2.33.1",
+  "description": "Desktop App for the code-metrics service",
+  "main": "dist/index.js",
+  "build": {
+    "appId": "uk.co.deloittedigital.codemetrics",
+    "productName": "Code Metrics",
+    "directories": {
+      "buildResources": "build",
+      "output": "dist-build"
+    },
+    "icon": "build-icons/icons/icon",
+    "files": [
+      "dist/**/*",
+      "build-icons/icons/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/.bin",
+      "!**/*.{map,ts}"
+    ],
+    "extraResources": [
+      {
+        "from": "../backend/dist",
+        "to": "backend"
+      },
+      {
+        "from": "config",
+        "to": "backend/config"
+      },
+      {
+        "from": "../ui/dist",
+        "to": "ui",
+        "filter": [
+          "**/*",
+          "!**/config.json"
+        ]
+      },
+      {
+        "from": "public",
+        "to": "ui"
+      }
+    ],
+    "mac": {
+      "artifactName": "${name}-${version}.${ext}",
+      "target": [
+        "zip",
+        "pkg"
+      ]
+    },
+    "dmg": {
+      "artifactName": "${name}-${version}.${ext}"
+    },
+    "win": {
+      "artifactName": "${name}-${version}.${ext}",
+      "target": "nsis"
+    },
+    "linux": {
+      "artifactName": "${name}-${version}.${ext}",
+      "target": [
+        "AppImage",
+        "tar.gz"
+      ],
+      "maintainer": "DeloitteDigitalUK",
+      "category": "Utility"
+    }
+  },
+  "scripts": {
+    "dev": "concurrently -k \"esbuild --watch --bundle --platform=node --format=cjs --outfile=dist/index.js --external:fs --external:path --external:os --external:crypto --external:electron src/index.ts\" \"cross-env NODE_ENV=development electron dist/index.js\"",
+    "dev:packed": "npm run pack && cross-env NODE_ENV=packed electron 'dist-build/mac-arm64/Code Metrics.app/Contents/Resources/app.asar'",
+    "dev:con": "cross-env NODE_ENV=development SHOW_CONSOLE=true concurrently -k \"esbuild --watch --bundle --platform=node --format=cjs --outfile=dist/index.js --external:fs --external:path --external:os --external:crypto --external:electron src/index.ts\" \"electron dist/index.js\"",
+    "build": "esbuild --bundle --platform=node --format=cjs --outfile=dist/index.js --external:fs --external:path --external:os --external:crypto --external:electron src/index.ts",
+    "build:ext": "npm run build:ext:be && npm run build:ext:fe",
+    "build:ext:be": "npm --prefix ../backend run release:dev",
+    "build:ext:be:prod": "npm --prefix ../backend run release:prod",
+    "build:ext:fe": "npm --prefix ../ui run build",
+    "install:ext": "npm run install:ext:be && npm run install:ext:fe",
+    "install:ext:be": "npm --prefix ../backend ci",
+    "install:ext:fe": "npm --prefix ../ui ci",
+    "release:dev": "npm run build:ext && npm run build",
+    "release:prod": "npm run build:ext:be:prod && npm run build:ext:fe && npm run build",
+    "pack": "electron-builder --dir",
+    "dist:prod": "npm run release:prod && npm run convert-icon",
+    "dist:dev": "npm run release:dev && npm run convert-icon && cross-env DEBUG_DMG=true electron-builder",
+    "dist:all": "npm run clean && npm run convert-icon && npm run release:prod && npm run dist:mac && npm run dist:win && npm run dist:linux",
+    "dist:mac": "electron-builder --mac --universal --publish never",
+    "dist:win": "electron-builder --win --x64",
+    "dist:linux": "electron-builder --linux --x64",
+    "convert-icon": "electron-icon-builder --input=../ui/public/favicon.png --output=build-icons --flatten && cp build-icons/icons/1024x1024.png build-icons/icons/icon.png",
+    "clean": "rm -rf dist dist-build build-icons",
+    "format": "prettier --write \"**/*.+(js|ts|json)\"",
+    "lint": "eslint .",
+    "lint:fix": "npm run lint -- --fix && npm run format"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/DeloitteDigitalUK/code-metrics.git"
+  },
+  "author": "DeloitteDigitalUK",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DeloitteDigitalUK/code-metrics/issues"
+  },
+  "homepage": "https://github.com/DeloitteDigitalUK/code-metrics#readme",
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^35.1.2",
+    "electron-builder": "^26.0.12",
+    "electron-icon-builder": "^2.0.1",
+    "esbuild": "^0.25.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
+    "typescript-eslint": "^7.13.0",
+    "prettier": "^3.3.2"
+  }
+}

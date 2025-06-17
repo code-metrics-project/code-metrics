@@ -1,0 +1,33 @@
+{
+  "values": [
+    {
+      "type": "diffstat",
+      "lines_added": 1,
+      "lines_removed": 1,
+      "status": "modified",
+      "old": {
+        "path": "package.json",
+        "type": "commit_file",
+        "escaped_path": "package.json",
+        "links": {
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/spring-petclinic/src/306220b95c7d94816264b819c6555583922071f2/package.json"
+          }
+        }
+      },
+      "new": {
+        "path": "package.json",
+        "type": "commit_file",
+        "escaped_path": "package.json",
+        "links": {
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/spring-petclinic/src/4dd6c762c3e65af8c5eeac8362853256f2bd5903/package.json"
+          }
+        }
+      }
+    }
+  ],
+  "pagelen": 500,
+  "size": 1,
+  "page": 1
+}

@@ -1,0 +1,94 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  - package-ecosystem: "docker"
+    directory: "/docker"
+    schedule:
+      interval: "daily"
+    # Disable version updates for dependencies, but not security updates, per:
+    # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
+    open-pull-requests-limit: 0
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  - package-ecosystem: "docker"
+    target-branch: "build/dependabot-test"
+    directory: "/docker"
+    schedule:
+      interval: "daily"
+    # Disable version updates for dependencies, but not security updates, per:
+    # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
+    open-pull-requests-limit: 0
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    # Disable version updates for dependencies, but not security updates, per:
+    # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
+    open-pull-requests-limit: 0
+    labels:
+      - "dependencies"
+      - "github_actions"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+      
+  - package-ecosystem: "npm"
+    directory: "/backend"
+    schedule:
+      interval: "daily"
+    # Disable version updates for dependencies, but not security updates, per:
+    # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
+    open-pull-requests-limit: 0
+    labels:
+      - "backend"
+      - "dependencies"
+      - "npm"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+      
+  - package-ecosystem: "npm"
+    directory: "/ui"
+    schedule:
+      interval: "daily"
+    # Disable version updates for dependencies, but not security updates, per:
+    # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
+    open-pull-requests-limit: 0
+    labels:
+      - "dependencies"
+      - "frontend"
+      - "npm"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  - package-ecosystem: "pip"
+    directory: "/machinelearning"
+    schedule:
+      interval: "daily"
+    # Disable version updates for dependencies, but not security updates, per:
+    # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
+    open-pull-requests-limit: 0
+    labels:
+      - "dependencies"
+      - "pip"
+      - "Machine Learning"
+    commit-message:
+      prefix: "chore"
+      include: "scope"

@@ -1,0 +1,10 @@
+{
+  "apiBaseUrl": "http://localhost:3000",
+  "auth": {
+    "required": false,
+    "provided": {
+      "user": "desktop",
+      "pass": "desktop"
+    }
+  }
+}

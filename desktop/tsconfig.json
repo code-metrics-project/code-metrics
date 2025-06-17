@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "types": ["node"],
+    "moduleResolution": "node",
+    "lib": ["ES2022"],
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "outFile": "dist/index.js"
+  },
+  "include": ["src/*.ts"],
+  "exclude": ["dist", "node_modules", "src/__tests__", "dist-build", "build-icons"]
+}

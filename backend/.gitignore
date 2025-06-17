@@ -1,0 +1,41 @@
+node_modules
+
+# test outputs
+coverage*
+lcov
+lcov-backend-merged.info
+
+# env files
+.env
+.env.local
+.env.*.local
+
+# config files
+.config/*
+queries-*.json
+dashboard-config.json
+metadata.json
+remote-config.json
+remote-config.yaml
+remote-config.yml
+workload-config.json
+workload-config.yaml
+workload-config.yml
+users.json
+users.yaml
+users.yml
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+server.crt
+server.key
+
+license.yaml
+
+lambda/codemetrics-lambda.zip
+
+# database files
+data/*.db

@@ -1,0 +1,41 @@
+name: Issue Labeler
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+  contents: read
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set label based on component
+        uses: actions/github-script@v7.0.1
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body;
+            // Extract the component after "Component Implicated"
+            const labelMatch = body.match(/### (?:Component Implicated|Component)\s*\n(.*)/);
+
+            if (labelMatch && labelMatch[1]) {
+              const label = labelMatch[1].trim();
+              // Ensure the label is not empty or a placeholder like "_No response_"
+              if (label && label !== '_No response_') {
+                await github.rest.issues.addLabels({
+                  issue_number: issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  labels: [label]
+                });
+              } else {
+                console.log("No valid component found in the issue body.");
+              }
+            } else {
+              console.log("Component Implicated section not found or incorrectly formatted.");
+            }

@@ -1,0 +1,155 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+        "application": {
+            "properties": {
+                "envVars": {
+                    "properties": {
+                        "keyValues": {
+                            "properties": {},
+                            "type": "object"
+                        },
+                        "secrets": {
+                            "properties": {},
+                            "type": "object"
+                        },
+                        "templates": {
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
+                "image": {
+                    "properties": {
+                        "pullPolicy": {
+                            "type": "string"
+                        },
+                        "repository": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "resources": {
+                    "properties": {},
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
+        "autoscaling": {
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "maxReplicas": {
+                    "type": "integer"
+                },
+                "minReplicas": {
+                    "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                    "type": "integer"
+                }
+            },
+            "type": "object"
+        },
+        "fullnameOverride": {
+            "type": "string"
+        },
+        "imagePullSecrets": {
+            "type": "array"
+        },
+        "ingress": {
+            "properties": {
+                "annotations": {
+                    "properties": {},
+                    "type": "object"
+                },
+                "className": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "hosts": {
+                    "items": {
+                        "properties": {
+                            "host": {
+                                "type": "string"
+                            },
+                            "paths": {
+                                "items": {
+                                    "properties": {
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "pathType": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "type": "array"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "type": "array"
+                },
+                "tls": {
+                    "type": "array"
+                }
+            },
+            "type": "object"
+        },
+        "nameOverride": {
+            "type": "string"
+        },
+        "podAnnotations": {
+            "properties": {},
+            "type": "object"
+        },
+        "podSecurityContext": {
+            "properties": {},
+            "type": "object"
+        },
+        "replicaCount": {
+            "type": "integer"
+        },
+        "securityContext": {
+            "properties": {},
+            "type": "object"
+        },
+        "service": {
+            "properties": {
+                "port": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "serviceAccount": {
+            "properties": {
+                "annotations": {
+                    "properties": {},
+                    "type": "object"
+                },
+                "create": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "type": "object"
+}

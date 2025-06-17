@@ -1,0 +1,43 @@
+# UI details
+CORS_ORIGIN=https://code-metrics.localhost:3001
+
+# Auth details
+AUTHENTICATOR_IMPL=file
+ACCESS_TOKEN_SECRET=changeme
+
+# Cognito authenticator settings
+#COGNITO_USER_POOL_ID=changeme
+#COGNITO_CLIENT_ID=changeme
+
+# Whether to log response bodies
+LOG_RESPONSE_BODY=false
+
+# set to 0 (OFF), 1 (DEBUG) or 2 (VERBOSE)
+LOG_LEVEL=1
+
+# number of API retries on error
+#API_RETRY_LIMIT=5
+
+# Override for *-config.json files (default = current dir)
+#CONFIG_DIR=
+
+# Configuration loading options - useful for development
+#CONFIG_AUTO_RELOAD=false
+#CONFIG_REFRESH_MS=5000
+
+# Whether the cache is enabled (requires datastore)
+LOOKUP_CACHE_ENABLED=true
+
+# The datastore implementation (one of: inmem, dynamodb, mongodb)
+DATASTORE_IMPL=inmem
+
+# DynamoDB datastore settings
+#AWS_REGION=eu-west-1
+#DATABASE_NAME=CodeMetrics
+
+# MongoDB datastore settings
+#DATABASE_URI=mongodb://code-metrics:changeme@localhost:27017
+#DATABASE_NAME=code-metrics
+
+# Secret resolver settings
+#SECRET_RESOLVER_IMPL=file

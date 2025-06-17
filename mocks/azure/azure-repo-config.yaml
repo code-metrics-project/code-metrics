@@ -1,0 +1,177 @@
+plugin: rest
+
+system:
+  stores:
+    churn:
+      preloadFile: "historic/churn.json"
+
+resources:
+  
+  - method: OPTIONS
+    path: /_apis/build
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8
+      file: _apis/OPTIONS-build.json
+      statusCode: 200
+
+  - method: OPTIONS
+    path: /_apis/git
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8
+      file: _apis/OPTIONS-git.json
+      statusCode: 200
+
+  - method: OPTIONS
+    path: /_apis/Location
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8
+      file: _apis/OPTIONS-Location.json
+      statusCode: 200
+
+  - method: OPTIONS
+    path: /_apis/wit
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8
+      file: _apis/OPTIONS-wit.json
+      statusCode: 200
+
+  - method: GET
+    path: /_apis/ResourceAreas
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8; api-version=6.1-preview.1
+      file: _apis/GET-ResourceAreas.json
+      template: true
+      statusCode: 200
+
+  - method: GET
+    path: /{projectName}/_apis/git/repositories
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8; api-version=6.1-preview.1
+      file: workload/_apis/git/GET-repositories.json
+      template: true
+      statusCode: 200
+
+  - method: POST
+    path: /{projectName}/_apis/git/repositories/{repoName}/pullRequestQuery
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8; api-version=6.1-preview.1
+      scriptFile: workload/_apis/git/POST-pullRequestQuery.js
+      template: true
+      statusCode: 200
+
+  - method: GET
+    path: /{projectName}/_apis/git/repositories/{repoName}/pullRequests
+    queryParams:
+      #    $top: "1000"
+      searchCriteria.status: "3"
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8; api-version=6.1-preview.1
+      scriptFile: pullRequests.js
+      template: true
+      statusCode: 200
+
+  - method: GET
+    path: /{projectName}/_apis/git/repositories/{repoName}/pullRequests
+    queryParams:
+      #    $top: "1000"
+      searchCriteria.status: "4"
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8; api-version=6.1-preview.1
+      scriptFile: pullRequests.js
+      template: true
+      statusCode: 200
+
+  - method: GET
+    path: /{projectName}/_apis/git/repositories/{repoName}/pullRequests/{pullRequestId}/commits
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8; api-version=6.1-preview.1
+      scriptFile: commits.js
+      template: true
+      statusCode: 200
+
+  - method: GET
+    path: /{projectName}/_apis/git/repositories/{repoName}/commits/{commitId}/changes
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8; api-version=6.1-preview.1
+      scriptFile: changes.js
+      template: true
+      statusCode: 200
+
+  - method: GET
+    path: /{projectName}/_apis/git/repositories/{repoName}/commits
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8; api-version=6.1-preview.1
+      scriptFile: commits.js
+      template: true
+      statusCode: 200
+
+  - method: GET
+    path: /{projectName}/_apis/build/Builds
+#    queryParams:
+#      maxTime: Thu, 15 Sep 2022 00:00:00 GMT
+#      minTime: Wed, 14 Sep 2022 00:00:00 GMT
+    steps:
+      - type: script
+        code: |
+          const store = stores.open('request');
+          const startTime = context.request.queryParams.minTime ? new Date(context.request.queryParams.minTime) : new Date(0);
+          const finishTime = new Date(startTime.getTime() + 60000);
+          store.save('startTime', startTime.toISOString());
+          store.save('finishTime', finishTime.toISOString());
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8; api-version=6.1-preview.7
+      file: workload/_apis/build/GET-Builds.json
+      template: true
+      statusCode: 200
+
+  - method: GET
+    path: /{projectName}/_apis/build/Builds/{buildId}
+    steps:
+      - type: script
+        code: |
+          const store = stores.open('request');
+          const startTime = new Date();
+          const finishTime = new Date(startTime.getTime() + 60000);
+          store.save('startTime', startTime.toISOString());
+          store.save('finishTime', finishTime.toISOString());
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8; api-version=6.1-preview.7
+      file: workload/_apis/build/GET-Build.json
+      template: true
+      statusCode: 200
+
+  - method: GET
+    path: /_apis/wit/workItems
+    # queryParams:
+    #   ids: "123456"
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8; api-version=6.1-preview.1
+      scriptFile: workload/_apis/workitem/GET-workItems.js
+      template: true
+      statusCode: 200
+
+  - method: POST
+    path: /{organizationName}/{projectName}/_apis/wit/wiql
+    # queryParams:
+    #   timePrecision: true
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8; api-version=6.1-preview.1
+      scriptFile: workload/_apis/wiql/POST-wiql.js
+      template: true
+      statusCode: 200

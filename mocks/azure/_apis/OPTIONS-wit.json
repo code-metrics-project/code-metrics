@@ -1,0 +1,575 @@
+{
+  "value": [
+    {
+      "id": "549816f9-09b0-4e75-9e81-01fbfcd07426",
+      "area": "wit",
+      "resourceName": "queriesBatch",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "5.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "19801631-d4e5-47e9-8166-0330de0ff1e6",
+      "area": "wit",
+      "resourceName": "projectProcessMigration",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "5.2",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "a67d190c-c41f-424b-814d-0e906f659301",
+      "area": "wit",
+      "resourceName": "queries",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{*query}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "afae844b-e2f6-44c2-8053-17b3bb936a40",
+      "area": "wit",
+      "resourceName": "workItemTransitions",
+      "routeTemplate": "_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "4.1",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "fb10264a-8836-48a0-8033-1b0ccd2748d5",
+      "area": "wit",
+      "resourceName": "templates",
+      "routeTemplate": "{project}/{team}/_apis/{area}/{resource}/{templateId}",
+      "resourceVersion": 1,
+      "minVersion": "3.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "0b3a5212-f65b-2102-0d80-1dd77ce4c700",
+      "area": "wit",
+      "resourceName": "githubConnections",
+      "routeTemplate": "{project}/_apis/githubconnections/{connectionId}/repos",
+      "resourceVersion": 1,
+      "minVersion": "7.1",
+      "maxVersion": "7.2",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "bc15bc60-e7a8-43cb-ab01-2106be3983a1",
+      "area": "wit",
+      "resourceName": "tags",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{tagIdOrName}",
+      "resourceVersion": 1,
+      "minVersion": "5.2",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "19335ae7-22f7-4308-93d8-261f9384b7cf",
+      "area": "wit",
+      "resourceName": "comments",
+      "routeTemplate": "{project}/_apis/{area}/workItems/{id}/comments/{revision}",
+      "resourceVersion": 2,
+      "minVersion": "3.0",
+      "maxVersion": "5.0",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "b51fd764-e5c2-4b9b-aaf7-3395cf4bdd94",
+      "area": "wit",
+      "resourceName": "fields",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{fieldNameOrRefName}",
+      "resourceVersion": 3,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "5a172953-1b41-49d3-840a-33f79c3ce89f",
+      "area": "wit",
+      "resourceName": "classificationNodes",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{structureGroup}/{*path}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "1a9c53f7-f243-4447-b110-35ef023636e4",
+      "area": "wit",
+      "resourceName": "wiql",
+      "routeTemplate": "{project}/{team}/_apis/{area}/{resource}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "a02355f5-5f8a-4671-8e32-369d23aac83d",
+      "area": "wit",
+      "resourceName": "wiql",
+      "routeTemplate": "{project}/{team}/_apis/{area}/{resource}/{id}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "6570bf97-d02c-4a91-8d93-3abe9895b1a9",
+      "area": "wit",
+      "resourceName": "updates",
+      "routeTemplate": "{project}/_apis/{area}/workItems/{id}/updates/{updateNumber}",
+      "resourceVersion": 4,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "0cf95f86-6ce1-f410-ccf6-3d8c92b3a1ef",
+      "area": "wit",
+      "resourceName": "githubConnections",
+      "routeTemplate": "{project}/_apis/githubconnections",
+      "resourceVersion": 1,
+      "minVersion": "7.1",
+      "maxVersion": "7.2",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "cad6ca19-1ba1-42b7-8ade-4537e5f82beb",
+      "area": "wit",
+      "resourceName": "githubappsetup",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "5.1",
+      "maxVersion": "5.1",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "a9a9aa7a-8c09-44d3-ad1b-46e855c1e3d3",
+      "area": "wit",
+      "resourceName": "artifactUriQuery",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "3.2",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "1bc988f4-c15f-4072-ad35-497c87e3a909",
+      "area": "wit",
+      "resourceName": "accountMyWorkRecentActivity",
+      "routeTemplate": "_apis/work/{resource}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "8637ac8b-5eb6-4f90-b3f7-4f2ff576a459",
+      "area": "wit",
+      "resourceName": "workItemTypeTemplate",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{type}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "62d3d110-0047-428c-ad3c-4fe872c91c74",
+      "area": "wit",
+      "resourceName": "workItems",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/${type}",
+      "resourceVersion": 3,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "a3f8e27f-b199-4c44-ae43-5fc7d33cda25",
+      "area": "wit",
+      "resourceName": "queries",
+      "routeTemplate": "_apis/{area}/{resource}/{id}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "0b83df8a-3496-4ddb-ba44-63634f4cda61",
+      "area": "wit",
+      "resourceName": "workitemStateColor",
+      "routeTemplate": "_apis/work/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "e07b5fa4-1499-494d-a496-64b860fd64ff",
+      "area": "wit",
+      "resourceName": "attachments",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{id}",
+      "resourceVersion": 3,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "def3d688-ddf5-4096-9024-69beea15cdbd",
+      "area": "wit",
+      "resourceName": "accountMyWork",
+      "routeTemplate": "_apis/work/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "92eefc1f-1e81-473d-88d6-749205248dc3",
+      "area": "wit",
+      "resourceName": "batch",
+      "routeTemplate": "_apis/{area}/${resource}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "958fde80-115e-43fb-bd65-749c48057faf",
+      "area": "wit",
+      "resourceName": "workitemTypeColor",
+      "routeTemplate": "_apis/work/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "1d4da553-5856-4ca5-a3b3-79e0e8fcc142",
+      "area": "wit",
+      "resourceName": "workItemFieldAllowedValues",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "7.1",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "f828fe59-dd87-495d-a17c-7a8d6211ca6c",
+      "area": "wit",
+      "resourceName": "workItemRevisions",
+      "routeTemplate": "{project}/_apis/{area}/reporting/{resource}",
+      "resourceVersion": 2,
+      "minVersion": "2.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "a70579d1-f53a-48ee-a5be-7be8659023b9",
+      "area": "wit",
+      "resourceName": "classificationNodes",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "908509b6-4248-4475-a1cd-829139ba419f",
+      "area": "wit",
+      "resourceName": "workItemsBatch",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "5.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "f74eba29-47a1-4152-9381-84040aced527",
+      "area": "wit",
+      "resourceName": "history",
+      "routeTemplate": "_apis/{area}/workItems/{id}/history/{revisionNumber}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "3.0",
+      "releasedVersion": "3.0"
+    },
+    {
+      "id": "1a31de40-e318-41cd-a6c6-881077df52e3",
+      "area": "wit",
+      "resourceName": "artifactLinkTypes",
+      "routeTemplate": "_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "3.2",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "f6cb3f27-1028-4851-af96-887e570dc21f",
+      "area": "wit",
+      "resourceName": "commentsReactions",
+      "routeTemplate": "{project}/_apis/wit/workItems/{workItemId}/comments/{commentId}/reactions/{reactionType}",
+      "resourceVersion": 1,
+      "minVersion": "5.1",
+      "maxVersion": "7.2",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "9f614388-a9f0-4952-ad6c-89756bd8e388",
+      "area": "wit",
+      "resourceName": "tempQueries",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "7.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "6a90345f-a676-4969-afce-8e163e1d5642",
+      "area": "wit",
+      "resourceName": "templates",
+      "routeTemplate": "{project}/{team}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "3.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "d60eeb6e-e18c-4478-9e94-a0094e28f41c",
+      "area": "wit",
+      "resourceName": "accountRecentMentions",
+      "routeTemplate": "_apis/work/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "72c7ddf8-2cdc-4f60-90cd-ab71c14a399b",
+      "area": "wit",
+      "resourceName": "workItems",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{id}",
+      "resourceVersion": 3,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "370b8590-9562-42be-b0d8-ac06668fc5dc",
+      "area": "wit",
+      "resourceName": "commentsReporting",
+      "routeTemplate": "{project}/_apis/wit/reporting/workitemcomments",
+      "resourceVersion": 1,
+      "minVersion": "5.1",
+      "maxVersion": "5.1",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "b70d8d39-926c-465e-b927-b1bf0e5ca0e0",
+      "area": "wit",
+      "resourceName": "recyclebin",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{id}",
+      "resourceVersion": 2,
+      "minVersion": "2.1",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "b5b5b6d0-0308-40a1-b3f4-b9bb3c66878f",
+      "area": "wit",
+      "resourceName": "workItemLinks",
+      "routeTemplate": "{project}/_apis/{area}/reporting/{resource}",
+      "resourceVersion": 3,
+      "minVersion": "2.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "608aac0a-32e1-4493-a863-b9cf4566d257",
+      "area": "wit",
+      "resourceName": "comments",
+      "routeTemplate": "{project}/_apis/wit/workItems/{workItemId}/comments/{commentId}",
+      "resourceVersion": 4,
+      "minVersion": "5.1",
+      "maxVersion": "7.2",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "a00c85a5-80fa-4565-99c3-bcd2181434bb",
+      "area": "wit",
+      "resourceName": "revisions",
+      "routeTemplate": "{project}/_apis/{area}/workItems/{id}/revisions/{revisionNumber}",
+      "resourceVersion": 3,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "7c8d7a76-4a09-43e8-b5df-bd792f4ac6aa",
+      "area": "wit",
+      "resourceName": "workItemTypes",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{type}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "7c9d7a76-4a09-43e8-b5df-bd792f4ac6aa",
+      "area": "wit",
+      "resourceName": "workItemTypeStates",
+      "routeTemplate": "{project}/_apis/{area}/workitemtypes/{type}/states",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "4a644469-90c5-4fcc-9a9f-be0827d369ec",
+      "area": "wit",
+      "resourceName": "workItemRevisionsDiscussions",
+      "routeTemplate": "{project}/_apis/{area}/reporting/workItemRevisions/discussions",
+      "resourceVersion": 1,
+      "minVersion": "5.1",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "12438500-2f84-4fa7-9f1a-c31871b4959d",
+      "area": "wit",
+      "resourceName": "sendMail",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 5,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "15b19676-8d9e-e224-d795-ca4d1a18024d",
+      "area": "wit",
+      "resourceName": "githubConnections",
+      "routeTemplate": "{project}/_apis/githubconnections/{connectionId}/reposBatch",
+      "resourceVersion": 1,
+      "minVersion": "7.1",
+      "maxVersion": "7.2",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "e33ca5e0-2349-4285-af3d-d72d86781c35",
+      "area": "wit",
+      "resourceName": "commentReactionsEngagedUsers",
+      "routeTemplate": "{project}/_apis/wit/workItems/{workItemId}/comments/{commentId}/reactions/{reactionType}/users",
+      "resourceVersion": 1,
+      "minVersion": "5.1",
+      "maxVersion": "7.2",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "1a3a1536-dca6-4509-b9c3-dd9bb2981506",
+      "area": "wit",
+      "resourceName": "ruleEngine",
+      "routeTemplate": "_apis/{area}/${resource}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "5.2",
+      "releasedVersion": "5.1"
+    },
+    {
+      "id": "bd293ce5-3d25-4192-8e67-e8092e879efb",
+      "area": "wit",
+      "resourceName": "workItemTypesField",
+      "routeTemplate": "{project}/_apis/{area}/workitemtypes/{type}/fields/{field}",
+      "resourceVersion": 3,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "49e03b34-3be0-42e3-8a5d-e8dfb88ac954",
+      "area": "wit",
+      "resourceName": "commentsVersions",
+      "routeTemplate": "{project}/_apis/wit/workItems/{workItemId}/comments/{commentId}/versions/{version}",
+      "resourceVersion": 1,
+      "minVersion": "5.1",
+      "maxVersion": "7.2",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "4e1eb4a5-1970-4228-a682-ec48eb2dca30",
+      "area": "wit",
+      "resourceName": "workItemIcons",
+      "routeTemplate": "_apis/{area}/{resource}/{icon}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "f5d33bc9-5b49-4a3c-a9bd-f3cd46dd2165",
+      "area": "wit",
+      "resourceName": "workItemRelationTypes",
+      "routeTemplate": "_apis/{area}/{resource}/{relation}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "f0f8dc62-3975-48ce-8051-f636b68b52e3",
+      "area": "wit",
+      "resourceName": "workItemTypeColorAndIcon",
+      "routeTemplate": "_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "8bc57545-27e5-420d-b709-f6e3ebcc1fc1",
+      "area": "wit",
+      "resourceName": "workItemsDelete",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "7.1",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "9b9f5734-36c8-415e-ba67-f83b45c31408",
+      "area": "wit",
+      "resourceName": "workItemTypeCategories",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{category}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "7.1"
+    },
+    {
+      "id": "3f0377f8-d4bf-445b-b1e7-f9e5f1ba8fdb",
+      "area": "wit",
+      "resourceName": "remoteLinking",
+      "routeTemplate": "_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "5.0",
+      "maxVersion": "7.2",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "dc0339a9-2967-4780-ace5-fd09266dff9a",
+      "area": "wit",
+      "resourceName": "batch",
+      "routeTemplate": "_apis/{area}/${resource}",
+      "resourceVersion": 1,
+      "minVersion": "7.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "0.0"
+    }
+  ],
+  "count": 57
+}

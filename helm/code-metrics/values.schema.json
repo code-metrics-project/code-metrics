@@ -1,0 +1,727 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+        "code-metrics-api": {
+            "properties": {
+                "application": {
+                    "properties": {
+                        "envVars": {
+                            "properties": {
+                                "keyValues": {
+                                    "properties": {
+                                        "ACCESS_TOKEN_SECRET": {
+                                            "type": "string"
+                                        },
+                                        "AUTHENTICATOR_IMPL": {
+                                            "type": "string"
+                                        },
+                                        "CONFIG_DIR": {
+                                            "type": "string"
+                                        },
+                                        "CORS_ORIGIN": {
+                                            "type": "string"
+                                        },
+                                        "DATASTORE_IMPL": {
+                                            "type": "string"
+                                        },
+                                        "LOG_LEVEL": {
+                                            "type": "integer"
+                                        },
+                                        "LOG_RESPONSE_BODY": {
+                                            "type": "boolean"
+                                        },
+                                        "LOOKUP_CACHE_ENABLED": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "secrets": {
+                                    "properties": {},
+                                    "type": "object"
+                                },
+                                "templates": {
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "fullnameOverride": {
+                            "type": "string"
+                        },
+                        "image": {
+                            "properties": {
+                                "tag": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "nameOverride": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "auth": {
+                    "properties": {
+                        "fromFile": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "config": {
+                    "properties": {
+                        "remoteConfig": {
+                            "properties": {
+                                "codeAnalysis": {
+                                    "properties": {
+                                        "sonar": {
+                                            "properties": {
+                                                "servers": {
+                                                    "items": {
+                                                        "properties": {
+                                                            "apiKey": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "url": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "type": "array"
+                                                },
+                                                "tagKeyTypes": {
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "codeManagement": {
+                                    "properties": {
+                                        "azure": {
+                                            "properties": {
+                                                "servers": {
+                                                    "items": {
+                                                        "properties": {
+                                                            "apiKey": {
+                                                                "type": "string"
+                                                            },
+                                                            "branches": {
+                                                                "items": {
+                                                                    "type": "string"
+                                                                },
+                                                                "type": "array"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "url": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "bitbucket": {
+                                            "properties": {
+                                                "servers": {
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "github": {
+                                            "properties": {
+                                                "servers": {
+                                                    "items": {
+                                                        "properties": {
+                                                            "apiKey": {
+                                                                "type": "string"
+                                                            },
+                                                            "branches": {
+                                                                "items": {
+                                                                    "type": "string"
+                                                                },
+                                                                "type": "array"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "url": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "gitlab": {
+                                            "properties": {
+                                                "servers": {
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "projectManagement": {
+                                    "properties": {
+                                        "jira": {
+                                            "properties": {
+                                                "defaults": {
+                                                    "properties": {
+                                                        "bugTypes": {
+                                                            "items": {
+                                                                "type": "string"
+                                                            },
+                                                            "type": "array"
+                                                        },
+                                                        "ticketPriorities": {
+                                                            "items": {
+                                                                "type": "string"
+                                                            },
+                                                            "type": "array"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "servers": {
+                                                    "items": {
+                                                        "properties": {
+                                                            "apiKey": {
+                                                                "type": "string"
+                                                            },
+                                                            "authMethod": {
+                                                                "type": "string"
+                                                            },
+                                                            "bugTypes": {
+                                                                "items": {
+                                                                    "type": "string"
+                                                                },
+                                                                "type": "array"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "url": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "workloadConfig": {
+                            "properties": {
+                                "repoMappings": {
+                                    "items": {
+                                        "properties": {
+                                            "sonarProjectKey": {
+                                                "type": "string"
+                                            },
+                                            "vcsRepoName": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                },
+                                "workloads": {
+                                    "items": {
+                                        "properties": {
+                                            "codeAnalysis": {
+                                                "properties": {
+                                                    "serverId": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "codeManagement": {
+                                                "properties": {
+                                                    "projectName": {
+                                                        "type": "string"
+                                                    },
+                                                    "repoGroups": {
+                                                        "properties": {
+                                                            "backend": {
+                                                                "properties": {
+                                                                    "repoNames": {
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "type": "array"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            },
+                                                            "frontend": {
+                                                                "properties": {
+                                                                    "sonarTags": {
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "type": "array"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            },
+                                                            "platform": {
+                                                                "properties": {
+                                                                    "repoNames": {
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "type": "array"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "serverId": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "projectManagement": {
+                                                "properties": {
+                                                    "prodFilterJql": {
+                                                        "type": "string"
+                                                    },
+                                                    "project": {
+                                                        "type": "string"
+                                                    },
+                                                    "serverId": {
+                                                        "type": "string"
+                                                    },
+                                                    "teamFilterJql": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "ingress": {
+                    "properties": {
+                        "annotations": {
+                            "properties": {
+                                "traefik.ingress.kubernetes.io/router.entrypoints": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "className": {
+                            "type": "string"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "hosts": {
+                            "items": {
+                                "properties": {
+                                    "host": {
+                                        "type": "string"
+                                    },
+                                    "paths": {
+                                        "items": {
+                                            "properties": {
+                                                "path": {
+                                                    "type": "string"
+                                                },
+                                                "pathType": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "tls": {
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
+                "mocks": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "image": {
+                            "properties": {
+                                "tag": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
+                "secrets": {
+                    "properties": {
+                        "userSecretRef": {
+                            "type": "string"
+                        },
+                        "users": {
+                            "items": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "salt": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
+        "code-metrics-docs": {
+            "properties": {
+                "application": {
+                    "properties": {
+                        "envVars": {
+                            "properties": {
+                                "keyValues": {
+                                    "properties": {},
+                                    "type": "object"
+                                },
+                                "secrets": {
+                                    "properties": {},
+                                    "type": "object"
+                                },
+                                "templates": {
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "fullnameOverride": {
+                            "type": "string"
+                        },
+                        "image": {
+                            "properties": {
+                                "tag": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "nameOverride": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "ingress": {
+                    "properties": {
+                        "annotations": {
+                            "properties": {
+                                "traefik.ingress.kubernetes.io/router.entrypoints": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "className": {
+                            "type": "string"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "hosts": {
+                            "items": {
+                                "properties": {
+                                    "host": {
+                                        "type": "string"
+                                    },
+                                    "paths": {
+                                        "items": {
+                                            "properties": {
+                                                "path": {
+                                                    "type": "string"
+                                                },
+                                                "pathType": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "tls": {
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
+        "code-metrics-ui": {
+            "properties": {
+                "application": {
+                    "properties": {
+                        "envVars": {
+                            "properties": {
+                                "keyValues": {
+                                    "properties": {
+                                        "API_BASE_URL": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "secrets": {
+                                    "properties": {},
+                                    "type": "object"
+                                },
+                                "templates": {
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "fullnameOverride": {
+                            "type": "string"
+                        },
+                        "image": {
+                            "properties": {
+                                "tag": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "nameOverride": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "ingress": {
+                    "properties": {
+                        "annotations": {
+                            "properties": {
+                                "traefik.ingress.kubernetes.io/router.entrypoints": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "className": {
+                            "type": "string"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "hosts": {
+                            "items": {
+                                "properties": {
+                                    "host": {
+                                        "type": "string"
+                                    },
+                                    "paths": {
+                                        "items": {
+                                            "properties": {
+                                                "path": {
+                                                    "type": "string"
+                                                },
+                                                "pathType": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "tls": {
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
+        "mongodb": {
+            "properties": {
+                "application": {
+                    "properties": {
+                        "envVars": {
+                            "properties": {
+                                "keyValues": {
+                                    "properties": {
+                                        "MONGO_INITDB_DATABASE": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "secrets": {
+                                    "properties": {
+                                        "MONGO_INITDB_ROOT_PASSWORD": {
+                                            "properties": {
+                                                "key": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "MONGO_INITDB_ROOT_USERNAME": {
+                                            "properties": {
+                                                "key": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "templates": {
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "fullnameOverride": {
+                            "type": "string"
+                        },
+                        "image": {
+                            "properties": {
+                                "pullPolicy": {
+                                    "type": "string"
+                                },
+                                "tag": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "nameOverride": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "databaseSecret": {
+                    "properties": {
+                        "password": {
+                            "type": "string"
+                        },
+                        "user": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "enabled": {
+                    "type": "boolean"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "type": "object"
+}

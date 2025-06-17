@@ -1,0 +1,241 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+        "application": {
+            "properties": {
+                "envVars": {
+                    "properties": {
+                        "keyValues": {
+                            "properties": {
+                                "ACCESS_TOKEN_SECRET": {
+                                    "type": "string"
+                                },
+                                "AUTHENTICATOR_IMPL": {
+                                    "type": "string"
+                                },
+                                "CONFIG_DIR": {
+                                    "type": "string"
+                                },
+                                "CORS_ORIGIN": {
+                                    "type": "string"
+                                },
+                                "DATASTORE_IMPL": {
+                                    "type": "string"
+                                },
+                                "LOG_LEVEL": {
+                                    "type": "integer"
+                                },
+                                "LOG_RESPONSE_BODY": {
+                                    "type": "boolean"
+                                },
+                                "LOOKUP_CACHE_ENABLED": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "secrets": {
+                            "properties": {},
+                            "type": "object"
+                        },
+                        "templates": {
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
+                "image": {
+                    "properties": {
+                        "pullPolicy": {
+                            "type": "string"
+                        },
+                        "repository": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "resources": {
+                    "properties": {},
+                    "type": "object"
+                },
+                "securityContext": {
+                    "properties": {},
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
+        "auth": {
+            "properties": {
+                "fromFile": {
+                    "type": "boolean"
+                }
+            },
+            "type": "object"
+        },
+        "config": {
+            "properties": {
+                "remoteConfig": {
+                    "properties": {},
+                    "type": "object"
+                },
+                "workloadConfig": {
+                    "properties": {},
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
+        "fullnameOverride": {
+            "type": "string"
+        },
+        "imagePullSecrets": {
+            "type": "array"
+        },
+        "ingress": {
+            "properties": {
+                "annotations": {
+                    "properties": {},
+                    "type": "object"
+                },
+                "className": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "hosts": {
+                    "items": {
+                        "properties": {
+                            "host": {
+                                "type": "string"
+                            },
+                            "paths": {
+                                "items": {
+                                    "properties": {
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "pathType": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "type": "array"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "type": "array"
+                },
+                "tls": {
+                    "type": "array"
+                }
+            },
+            "type": "object"
+        },
+        "mocks": {
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "envVars": {
+                    "properties": {
+                        "keyValues": {
+                            "properties": {
+                                "IMPOSTER_CONFIG_SCAN_RECURSIVE": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
+                "image": {
+                    "properties": {
+                        "pullPolicy": {
+                            "type": "string"
+                        },
+                        "repository": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "resources": {
+                    "properties": {},
+                    "type": "object"
+                },
+                "securityContext": {
+                    "properties": {},
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
+        "nameOverride": {
+            "type": "string"
+        },
+        "podAnnotations": {
+            "properties": {},
+            "type": "object"
+        },
+        "podSecurityContext": {
+            "properties": {},
+            "type": "object"
+        },
+        "replicaCount": {
+            "type": "integer"
+        },
+        "secrets": {
+            "properties": {
+                "userSecretRef": {
+                    "type": "string"
+                },
+                "users": {
+                    "type": "array"
+                }
+            },
+            "type": "object"
+        },
+        "service": {
+            "properties": {
+                "port": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "serviceAccount": {
+            "properties": {
+                "annotations": {
+                    "properties": {},
+                    "type": "object"
+                },
+                "create": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "type": "object"
+}

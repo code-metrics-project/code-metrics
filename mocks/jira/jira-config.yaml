@@ -1,0 +1,12 @@
+plugin: rest
+
+system:
+  stores:
+    bugs:
+      preloadFile: "historic/bugs.json"
+
+resources:
+- path: /rest/api/2/search
+  method: get
+  response:
+    scriptFile: search.js

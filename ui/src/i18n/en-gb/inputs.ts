@@ -1,0 +1,16 @@
+export default {
+  actorType: "Pipeline actor type",
+  branchNames: "Branch names",
+  dataAggregation: "Data aggregation",
+  endDate: "End date",
+  incidentFilter: "Incident filter",
+  issueFilter: "Issue filter",
+  jobGroups: "Job groups",
+  repoGroups: "Repository groups",
+  severityOptions: "Severity options",
+  startDate: "Start date",
+  stageId: "Pipeline stage",
+  tags: "Tags",
+  valueFormat: "Value format",
+  workloads: "Workloads",
+};

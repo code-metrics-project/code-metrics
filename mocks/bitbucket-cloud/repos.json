@@ -1,0 +1,385 @@
+{
+  "values": [
+    {
+      "type": "repository",
+      "full_name": "athena-1234/spring-petclinic",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/spring-petclinic"
+        },
+        "html": {
+          "href": "https://bitbucket.org/athena-1234/spring-petclinic"
+        },
+        "avatar": {
+          "href": "https://bytebucket.org/ravatar/%7Bbe1c1575-83c1-4541-9d98-ba02314a39ae%7D?ts=default"
+        },
+        "pullrequests": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/spring-petclinic/pullrequests"
+        },
+        "commits": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/spring-petclinic/commits"
+        },
+        "forks": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/spring-petclinic/forks"
+        },
+        "watchers": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/spring-petclinic/watchers"
+        },
+        "branches": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/spring-petclinic/refs/branches"
+        },
+        "tags": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/spring-petclinic/refs/tags"
+        },
+        "downloads": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/spring-petclinic/downloads"
+        },
+        "source": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/spring-petclinic/src"
+        },
+        "clone": [
+          {
+            "name": "https",
+            "href": "https://nickhealwebtest@bitbucket.org/athena-1234/spring-petclinic.git"
+          },
+          {
+            "name": "ssh",
+            "href": "git@bitbucket.org:athena-1234/spring-petclinic.git"
+          }
+        ],
+        "hooks": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/spring-petclinic/hooks"
+        }
+      },
+      "name": "spring-petclinic",
+      "slug": "spring-petclinic",
+      "description": "",
+      "scm": "git",
+      "website": null,
+      "owner": {
+        "display_name": "athena",
+        "links": {
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/workspaces/%7B3fec8269-33e2-40ee-9a0a-caaeccc48127%7D"
+          },
+          "avatar": {
+            "href": "https://bitbucket.org/account/athena-1234/avatar/"
+          },
+          "html": {
+            "href": "https://bitbucket.org/%7B3fec8269-33e2-40ee-9a0a-caaeccc48127%7D/"
+          }
+        },
+        "type": "team",
+        "uuid": "{3fec8269-33e2-40ee-9a0a-caaeccc48127}",
+        "username": "athena-1234"
+      },
+      "workspace": {
+        "type": "workspace",
+        "uuid": "{3fec8269-33e2-40ee-9a0a-caaeccc48127}",
+        "name": "athena",
+        "slug": "athena-1234",
+        "links": {
+          "avatar": {
+            "href": "https://bitbucket.org/workspaces/athena-1234/avatar/?ts=1700147588"
+          },
+          "html": {
+            "href": "https://bitbucket.org/athena-1234/"
+          },
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/workspaces/athena-1234"
+          }
+        }
+      },
+      "is_private": true,
+      "project": {
+        "type": "project",
+        "key": "SPRIN",
+        "uuid": "{78011d2b-9c2f-41a9-920f-7e4fa9b27e66}",
+        "name": "spring-petclinic",
+        "links": {
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/workspaces/athena-1234/projects/SPRIN"
+          },
+          "html": {
+            "href": "https://bitbucket.org/athena-1234/workspace/projects/SPRIN"
+          },
+          "avatar": {
+            "href": "https://bitbucket.org/account/user/athena-1234/projects/SPRIN/avatar/32?ts=1700147621"
+          }
+        }
+      },
+      "fork_policy": "no_public_forks",
+      "created_on": "2023-11-16T15:13:41.849223+00:00",
+      "updated_on": "2023-11-16T15:13:45.421915+00:00",
+      "size": 54944,
+      "language": "",
+      "has_issues": false,
+      "has_wiki": false,
+      "uuid": "{be1c1575-83c1-4541-9d98-ba02314a39ae}",
+      "mainbranch": {
+        "name": "main",
+        "type": "branch"
+      },
+      "override_settings": {
+        "default_merge_strategy": true,
+        "branching_model": true
+      },
+      "parent": null
+    },
+    {
+      "type": "repository",
+      "full_name": "athena-1234/sprung-puttclinic",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprung-puttclinic"
+        },
+        "html": {
+          "href": "https://bitbucket.org/athena-1234/sprung-puttclinic"
+        },
+        "avatar": {
+          "href": "https://bytebucket.org/ravatar/%7B5367cd84-66a0-481a-aa1b-5cab26acb857%7D?ts=default"
+        },
+        "pullrequests": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprung-puttclinic/pullrequests"
+        },
+        "commits": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprung-puttclinic/commits"
+        },
+        "forks": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprung-puttclinic/forks"
+        },
+        "watchers": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprung-puttclinic/watchers"
+        },
+        "branches": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprung-puttclinic/refs/branches"
+        },
+        "tags": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprung-puttclinic/refs/tags"
+        },
+        "downloads": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprung-puttclinic/downloads"
+        },
+        "source": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprung-puttclinic/src"
+        },
+        "clone": [
+          {
+            "name": "https",
+            "href": "https://nickhealwebtest@bitbucket.org/athena-1234/sprung-puttclinic.git"
+          },
+          {
+            "name": "ssh",
+            "href": "git@bitbucket.org:athena-1234/sprung-puttclinic.git"
+          }
+        ],
+        "hooks": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprung-puttclinic/hooks"
+        }
+      },
+      "name": "sprung-puttclinic",
+      "slug": "sprung-puttclinic",
+      "description": "",
+      "scm": "git",
+      "website": null,
+      "owner": {
+        "display_name": "athena",
+        "links": {
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/workspaces/%7B3fec8269-33e2-40ee-9a0a-caaeccc48127%7D"
+          },
+          "avatar": {
+            "href": "https://bitbucket.org/account/athena-1234/avatar/"
+          },
+          "html": {
+            "href": "https://bitbucket.org/%7B3fec8269-33e2-40ee-9a0a-caaeccc48127%7D/"
+          }
+        },
+        "type": "team",
+        "uuid": "{3fec8269-33e2-40ee-9a0a-caaeccc48127}",
+        "username": "athena-1234"
+      },
+      "workspace": {
+        "type": "workspace",
+        "uuid": "{3fec8269-33e2-40ee-9a0a-caaeccc48127}",
+        "name": "athena",
+        "slug": "athena-1234",
+        "links": {
+          "avatar": {
+            "href": "https://bitbucket.org/workspaces/athena-1234/avatar/?ts=1700147588"
+          },
+          "html": {
+            "href": "https://bitbucket.org/athena-1234/"
+          },
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/workspaces/athena-1234"
+          }
+        }
+      },
+      "is_private": true,
+      "project": {
+        "type": "project",
+        "key": "SPRUN",
+        "uuid": "{59c617a1-3b88-4839-a690-0a571d67ea5d}",
+        "name": "sprung-puttclinic",
+        "links": {
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/workspaces/athena-1234/projects/SPRUN"
+          },
+          "html": {
+            "href": "https://bitbucket.org/athena-1234/workspace/projects/SPRUN"
+          },
+          "avatar": {
+            "href": "https://bitbucket.org/account/user/athena-1234/projects/SPRUN/avatar/32?ts=1700147714"
+          }
+        }
+      },
+      "fork_policy": "no_public_forks",
+      "created_on": "2023-11-16T15:15:14.645300+00:00",
+      "updated_on": "2023-11-16T15:15:17.486745+00:00",
+      "size": 54945,
+      "language": "",
+      "has_issues": false,
+      "has_wiki": false,
+      "uuid": "{5367cd84-66a0-481a-aa1b-5cab26acb857}",
+      "mainbranch": {
+        "name": "main",
+        "type": "branch"
+      },
+      "override_settings": {
+        "default_merge_strategy": true,
+        "branching_model": true
+      },
+      "parent": null
+    },
+    {
+      "type": "repository",
+      "full_name": "athena-1234/sprang-patclinic",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprang-patclinic"
+        },
+        "html": {
+          "href": "https://bitbucket.org/athena-1234/sprang-patclinic"
+        },
+        "avatar": {
+          "href": "https://bytebucket.org/ravatar/%7B3df1e960-633b-4875-b066-2bd14df43196%7D?ts=default"
+        },
+        "pullrequests": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprang-patclinic/pullrequests"
+        },
+        "commits": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprang-patclinic/commits"
+        },
+        "forks": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprang-patclinic/forks"
+        },
+        "watchers": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprang-patclinic/watchers"
+        },
+        "branches": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprang-patclinic/refs/branches"
+        },
+        "tags": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprang-patclinic/refs/tags"
+        },
+        "downloads": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprang-patclinic/downloads"
+        },
+        "source": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprang-patclinic/src"
+        },
+        "clone": [
+          {
+            "name": "https",
+            "href": "https://nickhealwebtest@bitbucket.org/athena-1234/sprang-patclinic.git"
+          },
+          {
+            "name": "ssh",
+            "href": "git@bitbucket.org:athena-1234/sprang-patclinic.git"
+          }
+        ],
+        "hooks": {
+          "href": "https://api.bitbucket.org/2.0/repositories/athena-1234/sprang-patclinic/hooks"
+        }
+      },
+      "name": "sprang-patclinic",
+      "slug": "sprang-patclinic",
+      "description": "",
+      "scm": "git",
+      "website": null,
+      "owner": {
+        "display_name": "athena",
+        "links": {
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/workspaces/%7B3fec8269-33e2-40ee-9a0a-caaeccc48127%7D"
+          },
+          "avatar": {
+            "href": "https://bitbucket.org/account/athena-1234/avatar/"
+          },
+          "html": {
+            "href": "https://bitbucket.org/%7B3fec8269-33e2-40ee-9a0a-caaeccc48127%7D/"
+          }
+        },
+        "type": "team",
+        "uuid": "{3fec8269-33e2-40ee-9a0a-caaeccc48127}",
+        "username": "athena-1234"
+      },
+      "workspace": {
+        "type": "workspace",
+        "uuid": "{3fec8269-33e2-40ee-9a0a-caaeccc48127}",
+        "name": "athena",
+        "slug": "athena-1234",
+        "links": {
+          "avatar": {
+            "href": "https://bitbucket.org/workspaces/athena-1234/avatar/?ts=1700147588"
+          },
+          "html": {
+            "href": "https://bitbucket.org/athena-1234/"
+          },
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/workspaces/athena-1234"
+          }
+        }
+      },
+      "is_private": true,
+      "project": {
+        "type": "project",
+        "key": "SPRIN",
+        "uuid": "{78011d2b-9c2f-41a9-920f-7e4fa9b27e66}",
+        "name": "spring-petclinic",
+        "links": {
+          "self": {
+            "href": "https://api.bitbucket.org/2.0/workspaces/athena-1234/projects/SPRIN"
+          },
+          "html": {
+            "href": "https://bitbucket.org/athena-1234/workspace/projects/SPRIN"
+          },
+          "avatar": {
+            "href": "https://bitbucket.org/account/user/athena-1234/projects/SPRIN/avatar/32?ts=1700147621"
+          }
+        }
+      },
+      "fork_policy": "no_public_forks",
+      "created_on": "2023-11-16T15:15:57.522377+00:00",
+      "updated_on": "2023-11-16T15:16:00.370668+00:00",
+      "size": 54944,
+      "language": "",
+      "has_issues": false,
+      "has_wiki": false,
+      "uuid": "{3df1e960-633b-4875-b066-2bd14df43196}",
+      "mainbranch": {
+        "name": "main",
+        "type": "branch"
+      },
+      "override_settings": {
+        "default_merge_strategy": true,
+        "branching_model": true
+      },
+      "parent": null
+    }
+  ],
+  "pagelen": 10,
+  "size": 3,
+  "page": 1
+}

@@ -1,0 +1,150 @@
+{
+  "size": 1,
+  "limit": 25,
+  "isLastPage": true,
+  "values": [
+    {
+      "id": 1,
+      "version": 2,
+      "title": "feat: init package",
+      "state": "MERGED",
+      "open": false,
+      "closed": true,
+      "createdDate": 1712141270497,
+      "updatedDate": 1712141305169,
+      "closedDate": 1712141305169,
+      "fromRef": {
+        "id": "refs/heads/feat/init-project",
+        "displayId": "feat/init-project",
+        "latestCommit": "579fd39f9c44df82c0cfdc5b101089a6e4535d5b",
+        "type": "BRANCH",
+        "repository": {
+          "slug": "spring-petclinic",
+          "id": 1,
+          "name": "spring-petclinic",
+          "hierarchyId": "5cafb6c2a6e48887ebe2",
+          "scmId": "git",
+          "state": "AVAILABLE",
+          "statusMessage": "Available",
+          "forkable": true,
+          "project": {
+            "key": "ALL",
+            "id": 1,
+            "name": "all",
+            "public": false,
+            "type": "NORMAL",
+            "links": {
+              "self": [
+                {
+                  "href": "http://localhost:7990/projects/ALL"
+                }
+              ]
+            }
+          },
+          "public": false,
+          "links": {
+            "clone": [
+              {
+                "href": "ssh://git@localhost:7999/all/spring-petclinic.git",
+                "name": "ssh"
+              },
+              {
+                "href": "http://localhost:7990/scm/all/spring-petclinic.git",
+                "name": "http"
+              }
+            ],
+            "self": [
+              {
+                "href": "http://localhost:7990/projects/ALL/repos/spring-petclinic/browse"
+              }
+            ]
+          }
+        }
+      },
+      "toRef": {
+        "id": "refs/heads/main",
+        "displayId": "main",
+        "latestCommit": "2cd3baa532974baa123f13e4b2d86420190a8cac",
+        "type": "BRANCH",
+        "repository": {
+          "slug": "spring-petclinic",
+          "id": 1,
+          "name": "spring-petclinic",
+          "hierarchyId": "5cafb6c2a6e48887ebe2",
+          "scmId": "git",
+          "state": "AVAILABLE",
+          "statusMessage": "Available",
+          "forkable": true,
+          "project": {
+            "key": "ALL",
+            "id": 1,
+            "name": "all",
+            "public": false,
+            "type": "NORMAL",
+            "links": {
+              "self": [
+                {
+                  "href": "http://localhost:7990/projects/ALL"
+                }
+              ]
+            }
+          },
+          "public": false,
+          "links": {
+            "clone": [
+              {
+                "href": "ssh://git@localhost:7999/all/spring-petclinic.git",
+                "name": "ssh"
+              },
+              {
+                "href": "http://localhost:7990/scm/all/spring-petclinic.git",
+                "name": "http"
+              }
+            ],
+            "self": [
+              {
+                "href": "http://localhost:7990/projects/ALL/repos/spring-petclinic/browse"
+              }
+            ]
+          }
+        }
+      },
+      "locked": false,
+      "author": {
+        "user": {
+          "name": "admin",
+          "emailAddress": "admin@admin.com",
+          "id": 2,
+          "displayName": "admin",
+          "active": true,
+          "slug": "admin",
+          "type": "NORMAL",
+          "links": {
+            "self": [
+              {
+                "href": "http://localhost:7990/users/admin"
+              }
+            ]
+          }
+        },
+        "role": "AUTHOR",
+        "approved": false,
+        "status": "UNAPPROVED"
+      },
+      "reviewers": [],
+      "participants": [],
+      "properties": {
+        "resolvedTaskCount": 0,
+        "openTaskCount": 0
+      },
+      "links": {
+        "self": [
+          {
+            "href": "http://localhost:7990/projects/ALL/repos/spring-petclinic/pull-requests/1"
+          }
+        ]
+      }
+    }
+  ],
+  "start": 0
+}

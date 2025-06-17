@@ -1,0 +1,62 @@
+version: '3.3'
+
+services:
+  api:
+    image: deloittedigitaluk/code-metrics-api
+    build:
+      dockerfile: ../docker/Dockerfile.backend
+      context: backend/
+    ports:
+      - "3000:3000"
+    environment:
+      CORS_ORIGIN: "http://localhost:3001"
+      DATABASE_URI: "mongodb://code-metrics:changeme@db:27017"
+    volumes: []
+      # uncomment as required
+      # - "./backend/.env:/backend/.env"
+      # - "./backend/.config:/backend/config"  # NOTE: Expects local folder path of `backend/.config` for mapping into container
+      # - "./backend/remote-config.yaml:/backend/config/remote-config.yaml"
+      # - "./backend/workload-config.yaml:/backend/config/workload-config.yaml"
+      # - "./backend/users.json:/backend/config/users.json"
+      # - "./backend/queries-example.json:/backend/config/queries-example.json"
+
+  ui:
+    image: deloittedigitaluk/code-metrics-ui
+    build: 
+      dockerfile: ../docker/Dockerfile.ui
+      context: ui/
+    ports:
+      - "3001:80"
+    environment:
+      API_BASE_URL: "http://localhost:3000"
+
+  db:
+    image: mongo:5
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: "code-metrics"
+      MONGO_INITDB_ROOT_USERNAME: "code-metrics"
+      MONGO_INITDB_ROOT_PASSWORD: "changeme"
+    volumes:
+      - "metrics-mongo:/data/db"
+
+  docs:
+    image: deloittedigitaluk/code-metrics-docs
+    build: 
+      dockerfile: docker/Dockerfile.docs
+      args:
+        DOCSDIR: ../docs
+    ports:
+      - "8000:8000"
+
+  mlapi:
+    image: deloittedigitaluk/code-metrics-mlapi
+    build:
+      dockerfile: ../docker/Dockerfile.machinelearning
+      context: machinelearning/
+    ports:
+      - "8080:8080"
+
+volumes:
+  metrics-mongo: {}

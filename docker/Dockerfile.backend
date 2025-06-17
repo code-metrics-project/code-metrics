@@ -1,0 +1,29 @@
+ARG IMGREPO=""
+FROM ${IMGREPO}node:20 AS build
+
+# Set to 'release:dev' or 'release' to determine whether cutting a production release.
+ARG RELEASE_TASK="release:dev"
+
+# INSTALL; separate from build to benefit from Docker cache
+WORKDIR /usr/src/app/backend
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# BUILD
+COPY . ./
+RUN npm run ${RELEASE_TASK}
+
+
+FROM ${IMGREPO}node:20 AS run
+
+# Copy built files
+COPY --from=build /usr/src/app/backend/dist ./backend/dist
+
+ENV CONFIG_DIR "/backend/config"
+# set to "2" for verbose logging
+ENV LOG_LEVEL "1"
+
+# RUN
+WORKDIR /backend
+EXPOSE 3000
+CMD [ "node", "dist/index.js" ]

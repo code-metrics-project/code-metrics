@@ -1,0 +1,40 @@
+{{- define "code-metrics-mlapi.application" -}}
+- name: {{ .Chart.Name }}
+  securityContext:
+    {{- toYaml .Values.application.securityContext | nindent 12 }}
+  image: "{{ .Values.application.image.repository }}:{{ .Values.application.image.tag | default .Chart.AppVersion }}"
+  imagePullPolicy: {{ .Values.application.image.pullPolicy }}
+  env:
+  {{- range $key := .Values.application.envVars.templates }}
+  - name: {{ $key }}
+    value: {{ include $key $ }}
+  {{- end }}
+  {{- range $key, $val := .Values.application.envVars.keyValues }}
+  - name: {{ $key }}
+    value: {{ $val | quote }}
+  {{- end }}
+  {{- range $k, $v :=  .Values.application.envVars.secrets }}
+  - name: {{ $k }}
+    valueFrom:
+      secretKeyRef:
+        key: {{ $v.key }}
+        name: {{ $v.name }}
+  {{- end }}
+  volumeMounts:
+  - name: config-volume
+    mountPath: /app/.config
+  ports:
+    - name: http
+      containerPort: {{ .Values.service.port }}
+      protocol: TCP
+  livenessProbe:
+    httpGet:
+      path: /api/health/liveness
+      port: http
+  readinessProbe:
+    httpGet:
+      path: /api/health/readiness
+      port: http
+  resources:
+    {{- toYaml .Values.application.resources | nindent 12 }}
+{{- end -}}
