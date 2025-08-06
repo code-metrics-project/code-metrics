@@ -5,7 +5,7 @@
         <v-col>
           <v-breadcrumbs :items="items"></v-breadcrumbs>
           <h2 class="text-h2">{{ workload.name }}</h2>
-          <p>DORA metrics for this team.</p>
+          <p>DORA metrics for this team. </p>
         </v-col>
       </v-row>
     </v-container>
