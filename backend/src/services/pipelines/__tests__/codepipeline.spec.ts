@@ -20,17 +20,16 @@ if (process.env.MOCKS_PRINT_LOG_ON_CRASH === "true") mocks.printLogOnCrash();
 let mockServer;
 
 const workload: Workload = {
-  codeAnalysis: undefined, codeManagement: undefined,
+  codeAnalysis: undefined,
+  codeManagement: undefined,
   id: "athena",
   pipelines: {
     jobGroups: {
-      "backend": {
+      backend: {
         jobNames: ["/.*Pipeline/"],
-      }
+      },
     },
-    stages: [
-      { stageId: "codepipeline-build-stage" },
-    ],
+    stages: [{ stageId: "codepipeline-build-stage" }],
   },
   projectManagement: {
     type: TicketManagementTypes.JIRA,
@@ -78,16 +77,18 @@ beforeAll(async () => {
       workloads: [workload],
     },
     pipelineConfig: {
-      stages: [{
-        id: "codepipeline-build-stage",
-        description: "build stage",
-        type: PipelinesTypes.CODEPIPELINE,
-        serverId: "test-codepipeline",
-        projectName: "DeloitteDigitalUK",
-        commitMapping: {
-          runProperty: "$.data.head_sha",
+      stages: [
+        {
+          id: "codepipeline-build-stage",
+          description: "build stage",
+          type: PipelinesTypes.CODEPIPELINE,
+          serverId: "test-codepipeline",
+          projectName: "DeloitteDigitalUK",
+          commitMapping: {
+            runProperty: "$.data.head_sha",
+          },
         },
-      }],
+      ],
     },
   });
 });
@@ -101,14 +102,7 @@ describe(`Codepipeline Pipelines integration`, () => {
 
     const startDate = new Date("2020-01-22");
     const endDate = new Date("2020-01-22");
-    const builds = await codepipeline.getRunsForProject(
-      workload.id,
-      ["FirstPipeline"],
-      "",
-      [""],
-      startDate,
-      endDate,
-    );
+    const builds = await codepipeline.getRunsForProject(workload.id, ["FirstPipeline"], "", [""], startDate, endDate);
     expect(builds).toHaveLength(2);
     expect(builds[0].branch).toBe("");
     expect(builds[0].result).toBe(RunResult.Succeeded);
@@ -132,17 +126,17 @@ describe(`Codepipeline Pipelines integration`, () => {
     expect(jobNames).toHaveLength(0);
   });
 
-  it('gets a property of a run', async () => {
+  it("gets a property of a run", async () => {
     const codepipeline = getPipelinesForWorkload(workload, "codepipeline-build-stage");
 
     const propValue = await codepipeline.getPipelineRunProperty(
       workload.id,
-      'octo-org',
-      'octo-repo',
-      '3137f7cb-7cf7-039j-s83l-d7eu3EXAMPLE',
-      '$.pipelineExecution.artifactRevisions[0].revisionId',
+      "octo-org",
+      "octo-repo",
+      "3137f7cb-7cf7-039j-s83l-d7eu3EXAMPLE",
+      "$.pipelineExecution.artifactRevisions[0].revisionId",
     );
 
-    expect(propValue).toBe('7636d59f3c461cEXAMPLE8417dbc6371');
+    expect(propValue).toBe("7636d59f3c461cEXAMPLE8417dbc6371");
   });
 });

@@ -19,9 +19,7 @@
             :workload="workloadId as string"
             :executeOnMount="executeImmediately"
           />
-          <p v-else>
-            Multiple workloads provided in query, please provide just one.
-          </p>
+          <p v-else>Multiple workloads provided in query, please provide just one.</p>
         </v-col>
       </v-row>
     </v-container>
@@ -37,8 +35,10 @@ import { Paths } from "@/router/paths";
 const { t } = useI18n();
 const route = useRoute();
 
-const { workloadId, executeImmediately: queryExecuteImmediately } =
-  route.query as { workloadId: string; executeImmediately: string };
+const { workloadId, executeImmediately: queryExecuteImmediately } = route.query as {
+  workloadId: string;
+  executeImmediately: string;
+};
 const executeImmediately = queryExecuteImmediately === "true";
 
 const items = workloadId

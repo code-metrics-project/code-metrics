@@ -19,8 +19,8 @@ services:
       - "./mocks/config:/backend/config"
 
   mocks:
-    image: deloittedigitaluk/code-metrics-mocks
-    build: 
+    image: ghcr.io/code-metrics-project/code-metrics-mocks
+    build:
       dockerfile: ../docker/Dockerfile.mocks
       context: mocks
     command:

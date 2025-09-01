@@ -2,20 +2,20 @@ import { getPersonalAccessTokenHandler, WebApi } from "azure-devops-node-api/Web
 import { IWorkItemTrackingApi } from "azure-devops-node-api/WorkItemTrackingApi";
 import { WorkItem, WorkItemQueryResult } from "azure-devops-node-api/interfaces/WorkItemTrackingInterfaces";
 import { Datastore, DatastoreCollection } from "../../db/api";
-import { getAllIssueManagementUrls, getWorkloadById, } from "../../config/configMapping";
+import { getAllIssueManagementUrls, getWorkloadById } from "../../config/configMapping";
 import { TicketConfigManager, TicketService, TimeRangeMode } from "./ticketService";
 import { LightweightIssue } from "../../model/tickets";
 import { logger, verbose } from "../../utils/logger/logger";
-import { parseInt } from "lodash";
 import { provideDatastore } from "../../db/factory";
 import { limitConcurrencyAndRetry } from "../../utils/retry";
 import { AzureTicketOptions, TicketManagementTypes } from "../../model/config/common";
 import { truncateDateOnly } from "../../utils/date";
 import { Workload, WorkloadId, WorkloadTicketConfigAzure } from "../../model/config/workload-config";
 import Bottleneck from "bottleneck";
+import { getConfigItemAsNumber } from "../../config/sources/source";
 
 const MAX_RESULTS_PER_QUERY = 200;
-const EXPIRY_SECONDS: number = process.env.EXPIRY_SECONDS ? parseInt(process.env.EXPIRY_SECONDS) : 3600;
+const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600);
 const DEFAULT_ISSUE_PRIORITIES = ["0", "1", "2", "3", "4"];
 const ISSUE_PATTERN = /(?<!#)\d+/;
 
@@ -53,14 +53,23 @@ export class AdoTicketService implements TicketService {
     return connection;
   };
 
-  fetchTickets(workloadId: string, startDate: Date, endDate: Date, priority: string, timeRangeMode: TimeRangeMode): Promise<LightweightIssue[]> {
+  fetchTickets(
+    workloadId: string,
+    startDate: Date,
+    endDate: Date,
+    priority: string,
+    timeRangeMode: TimeRangeMode,
+  ): Promise<LightweightIssue[]> {
     const workload = getWorkloadById(workloadId);
 
     const issueTypes = this.formatIssueTypes(this.getTicketTypesByWorkloadId(workload.id));
     const issueTypeClause = `Where [System.WorkItemType] IN (${issueTypes})`;
     const priorityClause = priority ? `AND [Microsoft.VSTS.Common.Priority] >= ${this.mapPriority(priority)}` : "";
 
-    const dateFieldName = timeRangeMode === TimeRangeMode.CreatedWithinRange ? "[System.CreatedDate]" : "[Microsoft.VSTS.Common.ResolvedDate]";
+    const dateFieldName =
+      timeRangeMode === TimeRangeMode.CreatedWithinRange
+        ? "[System.CreatedDate]"
+        : "[Microsoft.VSTS.Common.ResolvedDate]";
     const endDateClause = endDate ? `AND ${dateFieldName} <= '${truncateDateOnly(endDate)}'` : "";
     const dateClause = `AND ${dateFieldName} >= '${startDate.toISOString()}' ${endDateClause}`;
 
@@ -118,13 +127,8 @@ export class AdoTicketService implements TicketService {
       const query = `Select ${fields.join(", ")} ${wiql}`;
       verbose(`Querying Azure for work items created for ${workloadId} with WIQL: ${query}`);
 
-      const queryRes: WorkItemQueryResult = await limitConcurrencyAndRetry(
-        limiter,
-        async () => issueApi.queryByWiql(
-          { query },
-          { project: ticketManagement.projectName, team: ticketManagement.team },
-          true,
-        ),
+      const queryRes: WorkItemQueryResult = await limitConcurrencyAndRetry(limiter, async () =>
+        issueApi.queryByWiql({ query }, { project: ticketManagement.projectName, team: ticketManagement.team }, true),
       );
 
       resultTotal += queryRes.workItems.length;
@@ -151,10 +155,7 @@ export class AdoTicketService implements TicketService {
     const workItemRes: WorkItem[] = [];
     for (let i = 0; i < issueIds.length; i += MAX_RESULTS_PER_QUERY) {
       const idBatch = issueIds.slice(i, i + MAX_RESULTS_PER_QUERY);
-      const workItemBatch = await limitConcurrencyAndRetry(
-        limiter,
-        async () => issueApi.getWorkItems(idBatch, fields),
-      );
+      const workItemBatch = await limitConcurrencyAndRetry(limiter, async () => issueApi.getWorkItems(idBatch, fields));
       if (workItemBatch) workItemRes.push(...workItemBatch);
     }
     return workItemRes || [];
@@ -254,7 +255,10 @@ export class AdoTicketService implements TicketService {
     }
   };
 
-  matchTicketByIdAndRetrieve = async (message: string | null, workloadId: WorkloadId): Promise<LightweightIssue | null> => {
+  matchTicketByIdAndRetrieve = async (
+    message: string | null,
+    workloadId: WorkloadId,
+  ): Promise<LightweightIssue | null> => {
     const issueId = this.matchTicketId(message);
     if (!issueId) {
       return null;

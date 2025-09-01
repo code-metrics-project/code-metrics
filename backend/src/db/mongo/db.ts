@@ -1,6 +1,7 @@
 import { Collection, Db, Document, Filter, MongoClient } from "mongodb";
 import { AbstractDatastore, DatastoreCollection, EXPIRY_FIELD, QueryFilter } from "../api";
 import { error, logger, verbose } from "../../utils/logger/logger";
+import { getConfigItem } from "../../config/sources/source";
 
 /**
  * MongoDB datastore.
@@ -24,11 +25,11 @@ let client: MongoClient;
  * Invoke once per https://mongodb.github.io/node-mongodb-native/driver-articles/mongoclient.html#mongoclient-connection-pooling
  */
 export const initMongoDb = async () => {
-  const dbUri = process.env.DATABASE_URI;
+  const dbUri = getConfigItem("DATABASE_URI");
   if (!dbUri) {
     throw new Error("DATABASE_URI must be set");
   }
-  let dbName = process.env.DATABASE_NAME;
+  let dbName = getConfigItem("DATABASE_NAME");
   if (!dbName) {
     logger(`Using default database name: ${DEFAULT_DATABASE_NAME}`);
     dbName = DEFAULT_DATABASE_NAME;
@@ -62,7 +63,14 @@ class MongoCollection implements DatastoreCollection {
   };
 
   deleteOne = async (filter: QueryFilter) => {
-    await this.col.deleteOne(filter);
+    const result = await this.col.deleteOne(filter);
+    if (result.deletedCount === 0) {
+      verbose(`Did not find item to delete`, filter);
+      return false;
+    } else {
+      verbose(`Deleted item`, filter);
+      return true;
+    }
   };
 
   listItems = async () => {
@@ -71,7 +79,7 @@ class MongoCollection implements DatastoreCollection {
 
   deleteAll = async () => {
     await this.col.deleteMany({});
-  }
+  };
 }
 
 export class MongoDatastore extends AbstractDatastore<Filter<Document>, MongoCollection> {

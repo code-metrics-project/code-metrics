@@ -131,16 +131,12 @@ export function summariseMetrics(qr: QueryAndResult): ResultsSummary | null {
 }
 
 export function getChartConfig(axisName: string): QueryChartConfig | undefined {
-  const queryType = Array.from(queryTypes.values()).find((qt) =>
-    qt.chart?.axes?.find((a) => a.axisName === axisName),
-  );
+  const queryType = Array.from(queryTypes.values()).find((qt) => qt.chart?.axes?.find((a) => a.axisName === axisName));
   return queryType?.chart;
 }
 
 export function getAllPipelineStages(): string[] {
-  return uniq(
-    getConfig().systemConfig.workloads.flatMap((w) => w.pipelineStages),
-  );
+  return uniq(getConfig().systemConfig.workloads.flatMap((w) => w.pipelineStages));
 }
 
 export function getFirstPipelineStage(): string {

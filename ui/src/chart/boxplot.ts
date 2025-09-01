@@ -3,18 +3,12 @@ import type { AxisOptions } from "@/chart/multichart";
 import { createMultiChartDatasets } from "@/chart/multichart";
 import { getBuckets } from "@/utils/rollingAverages";
 
-export function createBoxPlotChartData(
-  inputs: Map<string, DatedMetrics>,
-  overrides: Record<string, AxisOptions> = {},
-) {
+export function createBoxPlotChartData(inputs: Map<string, DatedMetrics>, overrides: Record<string, AxisOptions> = {}) {
   const buckets = getBuckets<number>(inputs, 60);
   const chartData = createMultiChartDatasets([inputs], overrides);
   chartData.datasets[0].type = "boxPlot";
   chartData.datasets[0].data.forEach((dataPoint) => {
-    const bucket = buckets.find(
-      (bucket) =>
-        dataPoint.x >= bucket.startDate && dataPoint.x <= bucket.endDate,
-    );
+    const bucket = buckets.find((bucket) => dataPoint.x >= bucket.startDate && dataPoint.x <= bucket.endDate);
     if (!bucket) console.warn("Datapoint sits outside bucket range");
     if (Array.isArray(dataPoint.y)) {
       bucket?.values.push(...dataPoint.y);

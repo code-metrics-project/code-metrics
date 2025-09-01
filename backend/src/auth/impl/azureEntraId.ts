@@ -1,13 +1,14 @@
-import { AuthenticationResult, Authenticator, baseAuthenticator } from "../auth";
+import { Authenticator, AuthenticationResult, baseAuthenticator } from "../auth";
+import { getConfigItem } from "../../config/sources/source";
 import { logger } from "../../utils/logger/logger";
 
 //https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth-ropc
 
 import { UsernamePasswordCredential } from "@azure/identity";
 
-const tenantId = process.env.AEID_TENANTID ?? "";
-const clientId = process.env.AEID_CLIENTID ?? "";
-const scopes = process.env.AEID_SCOPE ?? "https://graph.microsoft.com/.default";
+const tenantId = getConfigItem("AEID_TENANTID", "");
+const clientId = getConfigItem("AEID_CLIENTID", "");
+const scopes = getConfigItem("AEID_SCOPE", "https://graph.microsoft.com/.default");
 
 export const getAzureEntraIDAuthenticator = (): Authenticator => {
   return { ...baseAuthenticator, authenticateUser };

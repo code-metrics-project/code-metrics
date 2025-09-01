@@ -5,6 +5,7 @@ FRONTEND_NAME := $(NAME)-ui
 MOCK_NAME := $(NAME)-mocks
 MLAPI_NAME := $(NAME)-mlapi
 DOCS_NAME := $(NAME)-docs
+PROMO_NAME := $(NAME)-promosite
 JENKINS_NAME := demo-jenkins
 
 DEP_UP_RUN := false
@@ -75,15 +76,15 @@ render-helm-demo: _helm-dep_up
 	helm template helm/$(DEMO)
 
 ###### Build ##########
-.PHONEY: build-docker build-docker-backend build-docker-frontend build-docker-mocks build-docker-jenkins build-docker-docs build-docker-machinelearning
-.PHONEY: build-rancher build-rancher-backend build-rancher-frontend build-rancher-mocks build-rancher-jenkins build-rancher-docs build-rancher-machinelearning
-.PHONEY: build-frontend build-backend build-helm build-mocks build-jenkins build-docs
+.PHONEY: build-docker build-docker-backend build-docker-frontend build-docker-mocks build-docker-jenkins build-docker-docs build-docker-machinelearning build-docker-promosite
+.PHONEY: build-rancher build-rancher-backend build-rancher-frontend build-rancher-mocks build-rancher-jenkins build-rancher-docs build-rancher-machinelearning build-rancher-promosite
+.PHONEY: build-frontend build-backend build-helm build-mocks build-jenkins build-docs build-promosite
 .PHONEY: build-helm build-helm-demo
 .PHONEY: deps-node deps-node-backend deps-node-frontend
 
 BUILD_TOOL := docker
 
-build-rancher: build-rancher-backend build-rancher-mocks build-rancher-frontend build-rancher-docs build-rancher-jenkins build-rancher-machinelearning
+build-rancher: build-rancher-backend build-rancher-mocks build-rancher-frontend build-rancher-docs build-rancher-jenkins build-rancher-machinelearning build-rancher-promosite
 
 build-rancher-backend: BUILD_TOOL=nerdctl
 build-rancher-backend: TOOL_ARGS=-n k8s.io
@@ -103,8 +104,11 @@ build-rancher-jenkins: build-jenkins
 build-rancher-machinelearning: BUILD_TOOL=nerdctl
 build-rancher-machinelearning: TOOL_ARGS=-n k8s.io
 build-rancher-machinelearning: build-machinelearning
+build-rancher-promosite: BUILD_TOOL=nerdctl
+build-rancher-promosite: TOOL_ARGS=-n k8s.io
+build-rancher-promosite: build-promosite
 
-build-docker: build-docker-backend build-docker-frontend build-docker-mocks build-docker-docs build-docker-jenkins build-docker-machinelearning
+build-docker: build-docker-backend build-docker-frontend build-docker-mocks build-docker-docs build-docker-jenkins build-docker-machinelearning build-docker-promosite
 
 build-docker-backend: build-backend
 build-docker-frontend: build-frontend
@@ -112,6 +116,7 @@ build-docker-mocks: build-mocks
 build-docker-docs: build-docs
 build-docker-jenkins: build-jenkins
 build-docker-machinelearning: build-machinelearning
+build-docker-promosite: build-promosite
 
 build-frontend:
 	$(BUILD_TOOL) $(TOOL_ARGS) build -t $(FRONTEND_NAME) -f docker/Dockerfile.ui ui/
@@ -130,6 +135,9 @@ build-jenkins:
 
 build-machinelearning:
 	$(BUILD_TOOL) $(TOOL_ARGS) build -t $(MLAPI_NAME) -f docker/Dockerfile.machinelearning machinelearning
+
+build-promosite:
+	$(BUILD_TOOL) $(TOOL_ARGS) build -t $(PROMO_NAME) -f docker/Dockerfile.promosite .
 
 build-helm: lint-helm lint-helm-backend render-helm-backend lint-helm-frontend render-helm-frontend
 	helm dependency update helm/$(NAME)
@@ -155,6 +163,9 @@ deps-node: deps-node-backend deps-node-frontend
 docker-compose-mocks:
 	docker-compose -f compose/docker-compose.yaml -f compose/docker-compose-mocks.yaml -f compose/docker-compose-examples.yaml --project-directory . up --build
 
+docker-compose-promosite:
+	docker-compose -f compose/docker-compose-promosite.yaml --project-directory . up --build
+	
 docker-compose:
 	docker-compose -f compose/docker-compose.yaml --project-directory . up --build
 

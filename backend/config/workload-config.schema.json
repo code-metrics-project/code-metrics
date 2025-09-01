@@ -58,16 +58,10 @@
         "startHour": { "type": "number" },
         "endHour": { "type": "number" },
         "startDay": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "string" }
-          ]
+          "oneOf": [{ "type": "number" }, { "type": "string" }]
         },
         "endDay": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "string" }
-          ]
+          "oneOf": [{ "type": "number" }, { "type": "string" }]
         },
         "timezone": { "type": "string" }
       }

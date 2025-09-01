@@ -20,8 +20,8 @@ const workload: Workload = {
             repo: "octocat",
           },
         ],
-      }
-    }
+      },
+    },
   },
   pipelines: undefined,
   projectManagement: {

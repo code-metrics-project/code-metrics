@@ -1,7 +1,7 @@
 import { AbstractPipelinesService, registerPipelines } from "./pipelinesService";
 import { Run, RunResult, RunWithMetadata } from "../../model/runs";
 import { logger, verbose, warn } from "../../utils/logger/logger";
-import {getRelativeDate, truncateDateOnly} from "../../utils/date";
+import { getRelativeDate, truncateDateOnly } from "../../utils/date";
 import { provideDatastore } from "../../db/factory";
 import { getDataForDateRange, StorableLike } from "../dateWalker";
 import { jsonPathQuery } from "../../utils/json";
@@ -9,13 +9,13 @@ import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName } from "..
 import { DynatraceServer } from "../../model/config/remote-config";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { getAllPipelinesConfig, getWorkloadById } from "../../config/configMapping";
-
 import { StageConfig } from "../../model/config/pipeline-config";
 import { mapJobNameUsingStageConfig } from "./common";
-import {PipelinesTypes} from "../../model/config/common";
+import { PipelinesTypes } from "../../model/config/common";
+import { getConfigItemAsNumber } from "../../config/sources/source";
 
 const COLLECTION_NAME = "dynatrace-events";
-const EXPIRY_SECONDS: number = process.env.EXPIRY_SECONDS ? parseInt(process.env.EXPIRY_SECONDS) : 3600;
+const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600);
 const SEARCH_DAYS_BACK = 365;
 
 type DynatraceCacheItemFilter = {
@@ -96,7 +96,6 @@ class DynatraceClient {
         // no-op
       }
       throw new Error(`Failed to fetch Dynatrace metrics: ${response.status} ${errorBody}`);
-
     } else {
       verbose(`Dynatrace response: ${response.status}`);
     }
@@ -129,7 +128,9 @@ class DynatracePipelinesService extends AbstractPipelinesService {
   }
 
   private getServerConfig(workloadId: WorkloadId): DynatraceServer {
-    const server: DynatraceServer = getAllPipelinesConfig().dynatrace.servers.find((server) => server.id === this.stage.serverId);
+    const server: DynatraceServer = getAllPipelinesConfig().dynatrace.servers.find(
+      (server) => server.id === this.stage.serverId,
+    );
     if (!server) {
       throw new Error(`No Dynatrace server configuration found for workload: ${workloadId}`);
     }
@@ -152,9 +153,7 @@ class DynatracePipelinesService extends AbstractPipelinesService {
       for (const branch of branches) {
         const populator = async (current: Date): Promise<PopulatedItem> => {
           const next = getRelativeDate(current, 1);
-          const builds = await this.getRuns(workload, current, next, connection, vcsProjectName, jobName, [
-            branch,
-          ]);
+          const builds = await this.getRuns(workload, current, next, connection, vcsProjectName, jobName, [branch]);
           return {
             date: truncateDateOnly(current),
             stageId: this.stage.id,
@@ -165,7 +164,12 @@ class DynatracePipelinesService extends AbstractPipelinesService {
           };
         };
 
-        const fields: DynatraceCacheItemFilter = { stageId: this.stage.id, projectName: vcsProjectName, jobName: jobName, branch };
+        const fields: DynatraceCacheItemFilter = {
+          stageId: this.stage.id,
+          projectName: vcsProjectName,
+          jobName: jobName,
+          branch,
+        };
         const runs: PopulatedItem[] = await getDataForDateRange(
           COLLECTION_NAME,
           fields,
@@ -210,7 +214,6 @@ class DynatracePipelinesService extends AbstractPipelinesService {
       const propertyValue = jsonPathQuery(event, propertyJsonPath);
       verbose(`Fetched property ${propertyJsonPath} from dynatrace: ${jobName} event ${runId}`, propertyValue);
       return propertyValue;
-
     } catch (e) {
       warn(`Failed to fetch property name ${propertyJsonPath} events from dynatrace: ${jobName} event ${runId}`, e);
       return null;
@@ -222,12 +225,12 @@ class DynatracePipelinesService extends AbstractPipelinesService {
 
     // TODO discover via API and filter as jobName can be a regex
     return jobGroups[jobGroup]?.jobNames ?? [];
-  }
+  };
 
   buildRunLink = (workloadId: string, jobName: string, runId: string): string => {
     const server = getAllPipelinesConfig().dynatrace.servers.find((server) => server.id === this.stage.serverId);
     return `${server.url}`;
-  }
+  };
 
   private async getRuns(
     workload: Workload,
@@ -246,11 +249,7 @@ class DynatracePipelinesService extends AbstractPipelinesService {
       const filter = {
         [serverConfig.dimensionNames.jobName]: jobName,
       };
-      const metricSelector = this.filterMetricSelector(
-        serverConfig.metricSelector,
-        serverConfig,
-        filter,
-      );
+      const metricSelector = this.filterMetricSelector(serverConfig.metricSelector, serverConfig, filter);
 
       let runs: Run[] = [];
       await this.query(connection, { metricSelector, startDate, endDate }, (dataItem: DynatraceMetricSeries) => {
@@ -264,7 +263,6 @@ class DynatracePipelinesService extends AbstractPipelinesService {
         runs = runs.filter((run) => !run.branch || branches.includes(run.branch));
       }
       return runs;
-
     } catch (e) {
       warn(`Failed to fetch dynatrace events: ${jobName} from ${startDate} to ${endDate}`, e);
       return [];
@@ -281,7 +279,7 @@ class DynatracePipelinesService extends AbstractPipelinesService {
   private filterMetricSelector(
     metricSelector: string,
     serverConfig: DynatraceServer,
-    dimensions: Record<string, string>
+    dimensions: Record<string, string>,
   ): string {
     let selector = metricSelector;
     for (const [dimensionName, dimensionValue] of Object.entries(dimensions)) {
@@ -289,7 +287,7 @@ class DynatracePipelinesService extends AbstractPipelinesService {
       verbose(`Filtered metric selector for ${dimensionName}=${dimensionValue}`);
     }
     // trim newlines
-    selector = selector.replace(/\n/g, '');
+    selector = selector.replace(/\n/g, "");
     verbose(`Built metric selector for dynatrace server ${serverConfig.id}`, selector);
     return selector;
   }
@@ -297,9 +295,9 @@ class DynatracePipelinesService extends AbstractPipelinesService {
   private async query(
     connection: DynatraceClient,
     query: {
-      metricSelector: string,
-      startDate: Date,
-      endDate: Date
+      metricSelector: string;
+      startDate: Date;
+      endDate: Date;
     },
     operation: (data: DynatraceMetricSeries) => void,
   ) {
@@ -310,7 +308,7 @@ class DynatracePipelinesService extends AbstractPipelinesService {
       query.endDate,
     );
 
-    const results = resp.result
+    const results = resp.result;
     verbose(`Retrieved ${results.length} result wrapper items from dynatrace for query`, query);
 
     for (const result of results) {
@@ -337,11 +335,7 @@ class DynatracePipelinesService extends AbstractPipelinesService {
       [serverConfig.dimensionNames.jobName]: jobName,
       [serverConfig.dimensionNames.runId]: runId,
     };
-    const metricSelector = this.filterMetricSelector(
-      serverConfig.metricSelector,
-      serverConfig,
-      filter,
-    );
+    const metricSelector = this.filterMetricSelector(serverConfig.metricSelector, serverConfig, filter);
 
     // both startDate and endDate must be specified or else they will default to now-2h and now respectively
     const startDate = getRelativeDate(new Date(), -SEARCH_DAYS_BACK);
@@ -368,7 +362,7 @@ class DynatracePipelinesService extends AbstractPipelinesService {
     }
     verbose(`Fetched dynatrace event for ${jobName} event with metricSelector`, metricSelector, event);
     return event;
-  }
+  };
 }
 
 const parseEvent = (
@@ -409,13 +403,8 @@ const parseEvent = (
   }
 };
 
-const convertConclusionToResult = (
-  serverConfig: DynatraceServer,
-  outcome: string
-): RunResult => {
-  return outcome.toString() === serverConfig.successfulOutcomeValue
-    ? RunResult.Succeeded
-    : RunResult.Failed;
+const convertConclusionToResult = (serverConfig: DynatraceServer, outcome: string): RunResult => {
+  return outcome.toString() === serverConfig.successfulOutcomeValue ? RunResult.Succeeded : RunResult.Failed;
 };
 
 const transformRepoNameInbound = (config: DynatraceServer, vcsProjectName: string, rawJobName: string): string => {
@@ -424,7 +413,7 @@ const transformRepoNameInbound = (config: DynatraceServer, vcsProjectName: strin
       throw new Error(`Missing project name to prefix job name: ${rawJobName}`);
     }
     if (rawJobName.startsWith(vcsProjectName + "/")) {
-      return rawJobName.split('/')[1];
+      return rawJobName.split("/")[1];
     }
   }
   return rawJobName;

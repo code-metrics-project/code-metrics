@@ -1,6 +1,9 @@
 import { AzureTicketOptions, JiraTicketOptions, ServiceNowTicketOptions } from "./common";
 import { VersionedConfig } from "./base";
 
+export type RemoteServerCategory = "codeAnalysis" | "codeManagement" | "pipelines" | "ticketManagement";
+export type RemoteServerType = "azure" | "bitbucketCloud" | "bitbucketServer" | "github" | "gitlab" | "codepipeline" | "dynatrace" | "jenkins" | "none" | "jira" | "servicenow";
+
 export enum AuthMethod {
   BASIC_AUTH = "BASIC_AUTH",
   BEARER_TOKEN = "BEARER_TOKEN",
@@ -137,7 +140,7 @@ export type PipelinesConfigWrapper = {
   dynatrace?: { servers: DynatraceServer[] };
   github?: { servers: PipelineServer[] };
   jenkins?: { servers: PipelineServer[] };
-  none?: {servers: PipelineServer[] };
+  none?: { servers: PipelineServer[] };
 };
 
 export type TicketManagementConfigWrapper = {

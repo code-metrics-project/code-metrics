@@ -55,7 +55,7 @@ pipelines:
   github:
     servers:
       - id: mock-github
-        url: "http://localhost:8080"
+        url: "http://mocks:8080"
         apiKey: ""
         branches:
           - main

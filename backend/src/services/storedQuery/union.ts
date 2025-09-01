@@ -1,6 +1,7 @@
 import { StoredQueryCollection, StoredQueryCollectionMeta } from "../../model/query";
 import { getStoredQueryService, StoredQueryService } from "./storedQueryService";
 import { verbose } from "../../utils/logger/logger";
+import { getConfigItem } from "../../config/sources/source";
 
 export const getUnionStoredQueryService = (): StoredQueryService => new UnionStoredQueryService();
 
@@ -13,8 +14,8 @@ export class UnionStoredQueryService implements StoredQueryService {
   private readWriteImpl: StoredQueryService;
 
   constructor() {
-    this.readOnlyImpl = getStoredQueryService(process.env.STORED_QUERY_SERVICE_RO ?? "file");
-    this.readWriteImpl = getStoredQueryService(process.env.STORED_QUERY_SERVICE_RW ?? "datastore");
+    this.readOnlyImpl = getStoredQueryService(getConfigItem("STORED_QUERY_SERVICE_RO", "file"));
+    this.readWriteImpl = getStoredQueryService(getConfigItem("STORED_QUERY_SERVICE_RW", "datastore"));
   }
 
   async listCollections(): Promise<StoredQueryCollectionMeta[]> {

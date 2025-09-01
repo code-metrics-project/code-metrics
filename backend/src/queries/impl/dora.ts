@@ -2,7 +2,7 @@ import {
   ChangeFailureRateArgs,
   DeploymentFrequencyArgs,
   LeadTimeForChangesArgs,
-  TimeToRestoreServiceArgs
+  TimeToRestoreServiceArgs,
 } from "../queries";
 import { averageMultipleDailyEntriesByDay } from "../../utils/metrics";
 import { logger } from "../../utils/logger/logger";
@@ -39,7 +39,9 @@ export const fetchChangeFailureRate = async (args: ChangeFailureRateArgs): Promi
   }
 };
 
-export const fetchDeploymentFrequency = async (args: DeploymentFrequencyArgs): Promise<Map<DateStamp, DatedMetrics>> => {
+export const fetchDeploymentFrequency = async (
+  args: DeploymentFrequencyArgs,
+): Promise<Map<DateStamp, DatedMetrics>> => {
   logger(`Fetching deployment frequency for workloads: ${args.workloads} from: ${args.startDate}`);
   const endDate = todayDateOnly();
   const workloads = args.workloads?.length === 1 && args.workloads[0] === "all" ? listWorkloadIds() : args.workloads;
@@ -50,13 +52,7 @@ export const fetchDeploymentFrequency = async (args: DeploymentFrequencyArgs): P
   }
 
   try {
-    return await calculateDeploymentFrequency(
-      workloads,
-      args.stageId,
-      jobGroups,
-      new Date(args.startDate),
-      endDate,
-    );
+    return await calculateDeploymentFrequency(workloads, args.stageId, jobGroups, new Date(args.startDate), endDate);
   } catch (error) {
     throw new Error(`Failed to fetch deployment frequency for workloads: ${args.workloads}: ${error}`);
   }
@@ -76,19 +72,15 @@ export const fetchLeadTimeForChanges = async (args: LeadTimeForChangesArgs): Pro
   const stageId = getIdOfFinalStage(workloads[0]);
 
   try {
-    return await calculateLeadTime(
-      workloads,
-      stageId,
-      jobGroups,
-      new Date(args.startDate),
-      endDate,
-    );
+    return await calculateLeadTime(workloads, stageId, jobGroups, new Date(args.startDate), endDate);
   } catch (error) {
     throw new Error(`Failed to fetch lead time for changes for workloads: ${args.workloads}: ${error}`);
   }
 };
 
-export const fetchTimeToRestoreService = async (args: TimeToRestoreServiceArgs): Promise<Map<DateStamp, DatedMetrics>> => {
+export const fetchTimeToRestoreService = async (
+  args: TimeToRestoreServiceArgs,
+): Promise<Map<DateStamp, DatedMetrics>> => {
   logger(`Fetching time to restore service for workloads: ${args.workloads} from: ${args.startDate}`);
   const endDate = todayDateOnly();
   const workloads = args.workloads?.length === 1 && args.workloads[0] === "all" ? listWorkloadIds() : args.workloads;

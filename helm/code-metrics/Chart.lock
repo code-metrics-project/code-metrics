@@ -11,5 +11,11 @@ dependencies:
 - name: code-metrics-docs
   repository: ""
   version: '*.*.*'
-digest: sha256:2bec80d6501bc24dcf5743808f8ed540c51a1c7cb4c6dfa8af6e05731d2c9303
-generated: "2024-01-29T13:18:54.655785Z"
+- name: code-metrics-promosite
+  repository: ""
+  version: '*.*.*'
+- name: code-metrics-mlapi
+  repository: ""
+  version: '*.*.*'
+digest: sha256:bd3a47c8384475d042d180ffdd9ebe16584991f23abe93816a592d1af5e0e85a
+generated: "2025-06-03T09:36:39.478194+01:00"

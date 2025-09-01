@@ -11,19 +11,20 @@ import {
   PipelineExecution,
   PipelineExecutionStatus,
   PipelineExecutionSummary,
-  PipelineSummary
+  PipelineSummary,
 } from "@aws-sdk/client-codepipeline";
 import { matchOrEquals } from "../../utils/matchers";
 import { Run, RunResult, RunWithMetadata } from "../../model/runs";
 import { jsonPathQuery } from "../../utils/json";
 import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName } from "../../utils/jobs";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
-
 import { StageConfig } from "../../model/config/pipeline-config";
-import {mapJobNameUsingStageConfig} from "./common";
-import {PipelinesTypes} from "../../model/config/common";
+import { mapJobNameUsingStageConfig } from "./common";
+import { PipelinesTypes } from "../../model/config/common";
+import { getConfigItem } from "../../config/sources/source";
 
-export const initCodePipelinePipelines = () => registerPipelines(PipelinesTypes.CODEPIPELINE, (stage) => new CodePipelinePipelinesService(stage));
+export const initCodePipelinePipelines = () =>
+  registerPipelines(PipelinesTypes.CODEPIPELINE, (stage) => new CodePipelinePipelinesService(stage));
 
 class CodePipelinePipelinesService extends AbstractPipelinesService {
   private clients = new Map<WorkloadId, CodePipelineClient>();
@@ -41,7 +42,7 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
       if (!server) {
         throw new Error(`No CodePipeline server configuration found named: ${serverId}`);
       }
-      const awsRegion = process.env.AWS_REGION;
+      const awsRegion = getConfigItem("AWS_REGION");
       if (!awsRegion) {
         throw new Error(`No AWS_REGION environment variable set`);
       }
@@ -64,7 +65,7 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
     vcsProjectName: string,
     branches: string[],
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<Run[]> {
     const client = this.getClient(workloadId);
     const allRuns: Run[] = [];
@@ -75,8 +76,8 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
     }
 
     for (const jobName of jobNames) {
-        const builds = await this.getRunsForRepo(workloadId, startDate, endDate, client, vcsProjectName, jobName);
-        allRuns.push(...builds);
+      const builds = await this.getRunsForRepo(workloadId, startDate, endDate, client, vcsProjectName, jobName);
+      allRuns.push(...builds);
     }
     return allRuns;
   }
@@ -95,15 +96,18 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
     if (sameDay(startDate, endDate)) {
       // semantically this means 'until the end of the start date', per the dateWalker
       // see backend/src/services/dateWalker.ts
-      endDate = new Date(startDate.getTime() + (24 * 60 * 60 * 1000) - 1);
+      endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000 - 1);
     }
 
-    const paginator = paginateListPipelineExecutions({
-      client,
-      pageSize: 100,
-    }, {
-      pipelineName: jobName,
-    });
+    const paginator = paginateListPipelineExecutions(
+      {
+        client,
+        pageSize: 100,
+      },
+      {
+        pipelineName: jobName,
+      },
+    );
     const raw: PipelineExecutionSummary[] = [];
     for await (const page of paginator) {
       raw.push(...page.pipelineExecutionSummaries);
@@ -115,15 +119,15 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
       .filter((execution) => {
         // we can't filter on startDate and endDate in the query (currently unsupported by AWS API),
         // so we have to filter the result list
-        return execution.startTime >= startDate
-          && execution.lastUpdateTime
-          && execution.lastUpdateTime <= endDate;
-
-      }).map((execution) => {
+        return execution.startTime >= startDate && execution.lastUpdateTime && execution.lastUpdateTime <= endDate;
+      })
+      .map((execution) => {
         return this.convertExecutionSummaryToRun(execution, jobName);
       });
 
-    logger(`Retrieved ${runs.length} CodePipeline executions for: ${vcsProjectName}/${jobName} in time range with supported statuses`);
+    logger(
+      `Retrieved ${runs.length} CodePipeline executions for: ${vcsProjectName}/${jobName} in time range with supported statuses`,
+    );
     return runs;
   }
 
@@ -143,10 +147,13 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
   };
 
   discoverJobNames = async (workload: Workload, jobGroup: string): Promise<string[]> => {
-    const paginator = paginateListPipelines({
-      client: this.getClient(workload.id),
-      pageSize: 100,
-    }, {});
+    const paginator = paginateListPipelines(
+      {
+        client: this.getClient(workload.id),
+        pageSize: 100,
+      },
+      {},
+    );
     const raw: PipelineSummary[] = [];
     for await (const page of paginator) {
       raw.push(...page.pipelines);
@@ -155,14 +162,16 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
 
     const jobGroups = listNormalisedJobGroupsForWorkload(workload);
     const jobPatterns = jobGroups[jobGroup]?.jobNames ?? [];
-    const jobNames = raw.filter((pipeline) => {
-      return jobPatterns.some((jobPattern) => matchOrEquals(jobPattern, pipeline.name));
-    }).map((pipeline) => {
-      return pipeline.name;
-    });
+    const jobNames = raw
+      .filter((pipeline) => {
+        return jobPatterns.some((jobPattern) => matchOrEquals(jobPattern, pipeline.name));
+      })
+      .map((pipeline) => {
+        return pipeline.name;
+      });
     logger(`Matched ${jobNames.length} CodePipeline pipelines for: ${workload.id}/${jobGroup}`);
     return jobNames;
-  }
+  };
 
   async getPipelineRunProperty(
     workloadId: WorkloadId,
@@ -175,14 +184,17 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
     const execution = await this.getRawPipelineExecution(workloadId, runId, jobName);
 
     const propertyValue = jsonPathQuery(execution, propertyJsonPath);
-    verbose(`Fetched property ${propertyJsonPath} for CodePipeline execution ${runId} of job ${jobName}`, propertyValue);
+    verbose(
+      `Fetched property ${propertyJsonPath} for CodePipeline execution ${runId} of job ${jobName}`,
+      propertyValue,
+    );
     return propertyValue?.toString();
   }
 
   buildRunLink = (workloadId: string, jobName: string, runId: string): string => {
     const server = getAllPipelinesConfig().codepipeline.servers.find((server) => server.id === this.stage.serverId);
     return `${server.url}/${this.stage.projectName}/_runs/${runId}`;
-  }
+  };
 
   private getRawPipelineExecution = async (
     workloadId: string,
@@ -196,15 +208,19 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
     const client = this.getClient(workloadId);
 
     // see API: https://docs.aws.amazon.com/codepipeline/latest/APIReference/API_GetPipelineExecution.html
-    const execution = await client.send(new GetPipelineExecutionCommand({
-      pipelineExecutionId: runId,
-      pipelineName: jobName,
-    }));
+    const execution = await client.send(
+      new GetPipelineExecutionCommand({
+        pipelineExecutionId: runId,
+        pipelineName: jobName,
+      }),
+    );
     return execution;
-  }
+  };
 
   private convertExecutionSummaryToRun(execution: PipelineExecutionSummary, jobName: string): Run {
-    const duration = (execution.lastUpdateTime ? (execution.lastUpdateTime.getTime() - execution.startTime.getTime()) / 1000 : 0);
+    const duration = execution.lastUpdateTime
+      ? (execution.lastUpdateTime.getTime() - execution.startTime.getTime()) / 1000
+      : 0;
 
     // TODO parse execution.sourceRevisions?.[0]?.revisionUrl for repo and branch
     const repo = "";
@@ -248,8 +264,7 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
  * @param execution
  */
 const notInProgress = (execution) =>
-  execution.status !== PipelineExecutionStatus.InProgress
-  && execution.status !== PipelineExecutionStatus.Stopping;
+  execution.status !== PipelineExecutionStatus.InProgress && execution.status !== PipelineExecutionStatus.Stopping;
 
 const convertResult = (result: PipelineExecutionStatus): RunResult => {
   switch (result) {

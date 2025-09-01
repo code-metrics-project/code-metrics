@@ -5,7 +5,7 @@ import {
   CodeAnalysisConfigWrapper,
   CodeManagementConfigWrapper,
   PipelinesConfigWrapper,
-  TicketManagementServer
+  TicketManagementServer,
 } from "../remote-config";
 import {
   SoftwareComponent,
@@ -13,7 +13,7 @@ import {
   WorkloadId,
   WorkloadPipelinesConfig,
   WorkloadTeamConfig,
-  WorkloadTicketConfig
+  WorkloadTicketConfig,
 } from "../workload-config";
 
 export type V1RemoteConfigWrapper = Partial<VersionedConfig> & {
@@ -42,7 +42,7 @@ export type V1WorkloadDeploymentConfig = {
   /**
    * Outbound mapping of local job names to pipeline job names.
    */
-  jobMapping?: Record<string, string>
+  jobMapping?: Record<string, string>;
 };
 
 export type V1Workload = {
@@ -139,18 +139,14 @@ export type V1WorkloadProjectManagementConfig = {
   serverId: string;
 };
 
-export type V1WorkloadProjectManagementConfigJira =
-  V1WorkloadProjectManagementConfig
-  & JiraIssueOptions;
+export type V1WorkloadProjectManagementConfigJira = V1WorkloadProjectManagementConfig & JiraIssueOptions;
 
-export type DeprecatedWorkloadProjectManagementConfigAzure =
-  V1WorkloadProjectManagementConfig
-  & AzureIssueOptions
-  & {
-  project: string;
-  team: string;
-  ticketPriorities?: string[];
-};
+export type DeprecatedWorkloadProjectManagementConfigAzure = V1WorkloadProjectManagementConfig &
+  AzureIssueOptions & {
+    project: string;
+    team: string;
+    ticketPriorities?: string[];
+  };
 
 /**
  * @deprecated Use `RepoCodeAnalysisMapping` instead.

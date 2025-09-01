@@ -1,8 +1,11 @@
 {
   "recommendations": [
+    "astro-build.astro-vscode",
+    "bradlc.vscode-tailwindcss",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
     "github.vscode-github-actions",
+    "unifiedjs.vscode-mdx",
     "vue.volar",
     "yoavbls.pretty-ts-errors"
   ]

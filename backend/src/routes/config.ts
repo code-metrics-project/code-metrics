@@ -5,9 +5,9 @@ import {
   getAllTicketPriorities,
   getVcsBranches,
   listAllTagPairs,
-  listWorkloads
+  listWorkloads,
 } from "../config/configMapping";
-import { getConfig } from "../config/config";
+import { getConfig, hasConfig } from "../config/config";
 import { listActiveFeatures } from "../utils/features";
 import { getReposForWorkloadId } from "../utils/repos";
 import { getVcsForWorkload } from "../services/codeManagement/vcsService";
@@ -17,11 +17,13 @@ import {
   BootstrapConfig,
   RepoInfo,
   SystemConfig,
-  WorkloadMeta
+  WorkloadMeta,
 } from "../model/config/system-config";
+import { isLicensed } from "../license/validate";
+import { getConfigItem } from "../config/sources/source";
 
-const authSessionStoreMethod: AuthSessionStoreMethod
-  = process.env.CLIENT_SESSION_STORE as AuthSessionStoreMethod || "cookie";
+const authSessionStoreMethod: AuthSessionStoreMethod =
+  (getConfigItem("CLIENT_SESSION_STORE") as AuthSessionStoreMethod) || "cookie";
 
 /**
  * List repos, in repo groups, for each workload.
@@ -65,12 +67,14 @@ const getWorkloadMeta = async (): Promise<WorkloadMeta[]> => {
 // Note: this call is unauthenticated, so no sensitive data should be returned.
 export const fetchBootstrap = async (_req: Request, res: Response<BootstrapConfig>): Promise<void> => {
   const config: BootstrapConfig = {
-    apiVersion: getConfig().metadata.version,
+    apiVersion: getConfig()?.metadata?.version,
     auth: {
       loginUrl: getAuthenticator().loginUrl,
       store: authSessionStoreMethod,
     },
     features: listActiveFeatures(),
+    hasConfig: hasConfig(),
+    isLicensed: await isLicensed(),
   };
   res.json(config);
 };

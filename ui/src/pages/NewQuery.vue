@@ -26,16 +26,11 @@
                   <v-col cols="12" sm="6">
                     <v-card-title class="pl-0">Build a query</v-card-title>
                     <v-card-subtitle class="pl-0 pb-1"
-                      >Add one or more data sources, then filter to explore the
-                      metrics.</v-card-subtitle
+                      >Add one or more data sources, then filter to explore the metrics.</v-card-subtitle
                     >
                   </v-col>
                   <v-col cols="12" sm="6">
-                    <QueryPicker
-                      multiple
-                      :operationState="operationState"
-                      @update-query="(queries) => (selectedQueries = queries)"
-                    />
+                    <QueryPicker multiple :operationState="operationState" v-model="selectedQueries" />
                   </v-col>
                 </v-row>
               </v-container>
@@ -114,9 +109,7 @@ const onUpdateQuery = (updated: StoredQueryCollection) => {
   collection.value = updated;
 };
 
-const queryNameDismissed = async (
-  updatedCollection?: StoredQueryCollection,
-) => {
+const queryNameDismissed = async (updatedCollection?: StoredQueryCollection) => {
   queryNameDialog.value = false;
 
   if (!updatedCollection) {

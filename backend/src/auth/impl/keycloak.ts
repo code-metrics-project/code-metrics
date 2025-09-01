@@ -1,14 +1,12 @@
 import { AuthenticationResult, Authenticator, baseAuthenticator } from "../auth";
-
-import { Keycloak } from "keycloak-backend";
+import { getConfigItem } from "../../config/sources/source";
 
 // Not used yet but here to support other methods such as oauth etc.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const KEYCLOAK_AUTH_METHOD = process.env.KEYCLOAK_AUTH_METHOD ?? "directgrant";
-
-const KEYCLOAKURI = process.env.KEYCLOAK_URI ?? "http://127.0.0.1:8086";
-const KEYCLOAKREALM = process.env.KEYCLOAK_REALM ?? "codemetrics";
-const KEYCLOAKCLIENTID = process.env.KEYCLOAK_CLIENT_ID ?? "codemetrics";
+const KEYCLOAK_AUTH_METHOD = getConfigItem("KEYCLOAK_AUTH_METHOD", "directgrant");
+const KEYCLOAKURI = getConfigItem("KEYCLOAK_URI", "http://127.0.0.1:8086");
+const KEYCLOAKREALM = getConfigItem("KEYCLOAK_REALM", "codemetrics");
+const KEYCLOAKCLIENTID = getConfigItem("KEYCLOAK_CLIENT_ID", "codemetrics");
 
 export const getKeyCloakAuthenticator = (): Authenticator => {
   return { ...baseAuthenticator, authenticateUser };

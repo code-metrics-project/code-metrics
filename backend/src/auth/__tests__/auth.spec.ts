@@ -1,5 +1,5 @@
-import { getUserTokensFromLogin } from "../auth";
 import path from "path";
+import {generateSecurityTokensFromLogin} from "../tokens";
 
 beforeAll(() => {
   process.env.ACCESS_TOKEN_SECRET = "secret";
@@ -8,11 +8,11 @@ beforeAll(() => {
 
 describe("auth", () => {
   it("should return true if the user is authenticated", async () => {
-    const tokens = await getUserTokensFromLogin("admin", "admin");
+    const tokens = await generateSecurityTokensFromLogin("admin", "admin");
     expect(tokens).not.toBeNull();
   });
   it("should return false if the user is not authenticated", async () => {
-    const tokens = await getUserTokensFromLogin("admin", "incorrect");
+    const tokens = await generateSecurityTokensFromLogin("admin", "incorrect");
     expect(tokens).toBeNull();
   });
 });

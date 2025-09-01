@@ -4,21 +4,9 @@
     <v-card-subtitle>{{ subtitle }}</v-card-subtitle>
 
     <v-card-text>
-      <v-combobox
-        v-model="inputPaths"
-        :disabled="busy"
-        label="Paths"
-        @change="onChange"
-        multiple
-        chips
-      />
+      <v-combobox v-model="inputPaths" :disabled="busy" label="Paths" @change="onChange" multiple chips />
 
-      <v-btn
-        :disabled="busy"
-        v-model:pressed="busy"
-        color="primary"
-        @click="runBreakdown"
-      >
+      <v-btn :disabled="busy" v-model:pressed="busy" color="primary" @click="runBreakdown">
         {{ runToggleLabel }}
       </v-btn>
 
@@ -27,25 +15,14 @@
       <v-card v-if="metricBreakdown.length">
         <v-card-title>{{ repo }}</v-card-title>
         <div v-for="(obj, index) in metricBreakdown" :key="index">
-          <v-card-subtitle class="text-subtitle-1"
-            >Path: {{ obj.path }}<br
-          /></v-card-subtitle>
+          <v-card-subtitle class="text-subtitle-1">Path: {{ obj.path }}<br /></v-card-subtitle>
           <v-card-text>
             <div v-for="metric in obj.metrics" :key="metric.title">
-              <v-btn
-                variant="text"
-                icon
-                :href="metric.analysisLink"
-                target="_blank"
+              <v-btn variant="text" icon :href="metric.analysisLink" target="_blank"
                 ><v-icon small>mdi-open-in-new</v-icon></v-btn
               >
               {{ metric.title }}: {{ metric.value }}{{ metric.suffix }}
-              <v-chip
-                v-if="!!metric.badge"
-                x-small
-                :color="metric.badge.color"
-                >{{ metric.badge.content }}</v-chip
-              >
+              <v-chip v-if="!!metric.badge" x-small :color="metric.badge.color">{{ metric.badge.content }}</v-chip>
             </div>
           </v-card-text>
         </div>
@@ -59,12 +36,7 @@
 import axios from "@/utils/axios";
 import { METRIC_BREAKDOWN } from "@/utils/urls";
 import { logger } from "@/utils/logger";
-import {
-  getMetricSuffix,
-  getMetricTitle,
-  categoriseCoverage,
-  MetricValueCategory,
-} from "@/utils/metricDisplay";
+import { getMetricSuffix, getMetricTitle, categoriseCoverage, MetricValueCategory } from "@/utils/metricDisplay";
 
 type TMetricBreakdown = {
   path: string;

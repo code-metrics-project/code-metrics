@@ -1,6 +1,7 @@
 import Bottleneck from "bottleneck";
+import { getConfigItemAsNumber } from "../config/sources/source";
 
-const API_RETRY_LIMIT = (process.env.API_RETRY_LIMIT as unknown as number) ?? 5;
+const API_RETRY_LIMIT = getConfigItemAsNumber("API_RETRY_LIMIT", 5);
 
 /**
  * Limit the concurrency of a function using a Bottleneck instance.
@@ -17,7 +18,11 @@ export const limitConcurrency = async <R>(limiter: Bottleneck, callback: () => P
  * @param callback
  * @param attempts
  */
-export const limitConcurrencyAndRetry = async <R>(limiter: Bottleneck, callback: () => Promise<R>, attempts = API_RETRY_LIMIT): Promise<R> => {
+export const limitConcurrencyAndRetry = async <R>(
+  limiter: Bottleneck,
+  callback: () => Promise<R>,
+  attempts = API_RETRY_LIMIT,
+): Promise<R> => {
   return limiter.schedule(() => retry(callback, attempts));
 };
 

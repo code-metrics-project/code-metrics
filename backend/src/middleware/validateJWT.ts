@@ -1,34 +1,46 @@
 import { RequestHandler } from "express";
-import jwt from "jsonwebtoken";
 import { unauthorised } from "../utils/responses";
-import { AUD, ISS } from "../auth/auth";
+import { TokenTypes, validateAccessToken } from "../auth/tokens";
+import { Request } from "express";
+import { Principal } from "../auth/auth";
 
-const { ACCESS_TOKEN_SECRET } = process.env;
+/**
+ * Represents a request that has been authenticated.
+ */
+export type AuthenticatedRequest = Request & {
+  user: Principal;
+};
 
-export const validateJWT: RequestHandler = async (req, res, next): Promise<void> => {
-  const authToken = req?.headers?.authorization || (req?.query.token as string);
-
-  if (!authToken) {
+/**
+ * Validates the JWT in the request headers or query parameters, including whether the token type is allowed.
+ * @param allowedTokenTypes
+ * @param req
+ * @param res
+ * @param next
+ */
+const validateJWT = async (allowedTokenTypes: TokenTypes[], req, res, next): Promise<void> => {
+  const accessToken = req?.headers?.authorization || (req?.query.token as string);
+  if (!accessToken) {
     unauthorised(res);
     return;
   }
 
-  const formattedAuthToken = authToken.replace("Bearer ", "");
+  const formattedAccessToken = accessToken.replace("Bearer ", "").trim();
+  await validateAccessToken(allowedTokenTypes, formattedAccessToken, (isValid, sub) => {
+    if (isValid) {
+      (req as AuthenticatedRequest).user = { name: sub };
+      return next();
+    }
+    unauthorised(res);
+  });
+};
 
-  jwt.verify(
-    formattedAuthToken,
-    ACCESS_TOKEN_SECRET,
-    {
-      audience: AUD,
-      issuer: ISS,
-    },
-    (err) => {
-      if (err) {
-        unauthorised(res);
-        return;
-      }
-
-      next();
-    },
-  );
+/**
+ * Middleware that checks if the request is authenticated, and whether the token type is allowed.
+ * @param allowedTokenTypes
+ */
+export const requiresAuth = (allowedTokenTypes: TokenTypes[]): RequestHandler => {
+  return async (req, res, next) => {
+    return validateJWT(allowedTokenTypes, req, res, next);
+  };
 };

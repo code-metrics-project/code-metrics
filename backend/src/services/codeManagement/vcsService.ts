@@ -3,17 +3,18 @@ import { DatedMetricEntry } from "../../model/metrics";
 import { logger, verbose } from "../../utils/logger/logger";
 import { getWorkloadById } from "../../config/configMapping";
 import { provideDatastore } from "../../db/factory";
-import { parseInt } from "lodash";
 import { PRECACHE_REPO_LIST, precacheRepoList } from "./precache";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
-import {CodeManagementTypes} from "../../model/config/common";
+import { CodeManagementTypes } from "../../model/config/common";
+import { TMergeRules, TQualityGateManifest } from "../repos/qualityGates";
+import { getConfigItem, getConfigItemAsNumber } from "../../config/sources/source";
 
 type RepoList = {
   key: string;
   value: any;
 };
 
-export const CACHE_REPO_LIST = process.env.CACHE_REPO_LIST != "false";
+export const CACHE_REPO_LIST = getConfigItem("CACHE_REPO_LIST") !== "false";
 const COLLECTION_NAME_COMMIT_PRS = "commit-prs";
 const COLLECTION_NAME_EARLIEST_COMMIT = "earliest-commits";
 const COLLECTION_NAME_VCS_CACHE = "vcs-cache";
@@ -21,9 +22,7 @@ const COLLECTION_NAME_VCS_CACHE = "vcs-cache";
 /**
  * Cache for 6 hours by default.
  */
-const REPO_LIST_EXPIRY_SECONDS: number = process.env.REPO_LIST_EXPIRY_SECONDS
-  ? parseInt(process.env.REPO_LIST_EXPIRY_SECONDS)
-  : 21600;
+const REPO_LIST_EXPIRY_SECONDS: number = getConfigItemAsNumber("REPO_LIST_EXPIRY_SECONDS", 21600)!;
 
 const builders: Record<string, () => VcsService> = {};
 const instances: Record<string, VcsService> = {};
@@ -197,6 +196,22 @@ export type VcsService = {
    * @param repoName
    */
   buildRepoLink(workloadId: WorkloadId, repoName: string): string;
+
+  /**
+   * Fetch the quality gate manifest from a repository.
+   * @param workloadId
+   * @param vcsProjectName
+   * @param repoName
+   */
+  fetchFile(workloadId: WorkloadId, vcsProjectName: string, repoName: string, path: string): Promise<string>;
+
+  /**
+   * Fetch the merge rules for a repository.
+   * @param workloadId
+   * @param vcsProjectName
+   * @param repoName
+   */
+  fetchMergeRules(workloadId: WorkloadId, vcsProjectName: string, repoName: string): Promise<TMergeRules[]>;
 };
 
 export class CachingVcsServiceImpl implements VcsService {
@@ -271,9 +286,9 @@ export class CachingVcsServiceImpl implements VcsService {
   ): Promise<PullRequest | null> => {
     const key = vcsProjectName + "." + repositoryName + "." + commitId;
     return await findOrInsert(workloadId, key, COLLECTION_NAME_COMMIT_PRS, null, () =>
-      this.delegate.getPRForCommit(workloadId, vcsProjectName, repositoryName, commitId)
+      this.delegate.getPRForCommit(workloadId, vcsProjectName, repositoryName, commitId),
     );
-  }
+  };
 
   buildCommitLink = (change: RepoChange, workloadId: WorkloadId, vcsProjectName?: string): string =>
     this.delegate.buildCommitLink(change, workloadId, vcsProjectName);
@@ -292,9 +307,29 @@ export class CachingVcsServiceImpl implements VcsService {
   ): Promise<RepoChange> => {
     const key = vcsProjectName + "." + repositoryName + "." + pullRequestId;
     return findOrInsert(workloadId, key, COLLECTION_NAME_EARLIEST_COMMIT, null, () =>
-      this.delegate.getEarliestCommitForPr(workloadId, vcsProjectName, repositoryName, pullRequestId)
+      this.delegate.getEarliestCommitForPr(workloadId, vcsProjectName, repositoryName, pullRequestId),
     );
-  }
+  };
+
+  /**
+   * Fetch the quality gate manifest from a repository.
+   * @param workloadId
+   * @param vcsProjectName
+   * @param repoName
+   */
+  fetchFile = (workloadId: WorkloadId, vcsProjectName: string, repoName: string, path: string): Promise<string> => {
+    return this.delegate.fetchFile(workloadId, vcsProjectName, repoName, path);
+  };
+
+  /**
+   * Fetch the merge rules for a repository.
+   * @param workloadId
+   * @param vcsProjectName
+   * @param repoName
+   */
+  fetchMergeRules = (workloadId: WorkloadId, vcsProjectName: string, repoName: string): Promise<TMergeRules[]> => {
+    return this.delegate.fetchMergeRules(workloadId, vcsProjectName, repoName);
+  };
 }
 
 /**
@@ -308,7 +343,11 @@ const vcsQueries = new Map<string, Promise<any>>();
  * @param key
  * @param populator
  */
-const readThroughCacheSingleton = async <T>(workloadId: string, key: string, populator: () => Promise<T>): Promise<T> => {
+const readThroughCacheSingleton = async <T>(
+  workloadId: string,
+  key: string,
+  populator: () => Promise<T>,
+): Promise<T> => {
   const serverId = getWorkloadById(workloadId).codeManagement.serverId;
   const compositeKey = serverId + "." + key;
 
@@ -321,7 +360,7 @@ const readThroughCacheSingleton = async <T>(workloadId: string, key: string, pop
           compositeKey,
           COLLECTION_NAME_VCS_CACHE,
           REPO_LIST_EXPIRY_SECONDS,
-          populator
+          populator,
         );
       } finally {
         vcsQueries.delete(compositeKey);
@@ -346,7 +385,7 @@ const findOrInsert = async <T>(
   key: string,
   collectionName: string,
   expireAfterSeconds: number | null,
-  populator: () => Promise<T>
+  populator: () => Promise<T>,
 ) => {
   const serverId = getWorkloadById(workloadId).codeManagement.serverId;
   const compositeKey = serverId + "." + key;

@@ -36,6 +36,9 @@ dependencies:
 - name: code-metrics-docs
   version: '*.*.*'
   condition: code-metrics-docs.enabled
+- name: code-metrics-promosite
+  version: '*.*.*'
+  condition: code-metrics-promosite.enabled
 - name: code-metrics-mlapi
   version: '*.*.*'
   condition: code-metrics-mlapi.enabled

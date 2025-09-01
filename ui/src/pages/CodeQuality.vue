@@ -33,8 +33,7 @@ import CodeAnalysisAggregate from "@/components/CodeAnalysisAggregate.vue";
 
 const route = useRoute();
 
-const { workloadId: workloadIdRaw, executeImmediately: executeImmediatelyRaw } =
-  route.query;
+const { workloadId: workloadIdRaw, executeImmediately: executeImmediatelyRaw } = route.query;
 const workloadId = workloadIdRaw as string;
 const executeImmediately = executeImmediatelyRaw === "true";
 

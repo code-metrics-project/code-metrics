@@ -24,9 +24,7 @@
             :end-date="endDate as string"
             :executeOnMount="executeImmediately"
           />
-          <p v-else>
-            Multiple workloads provided in query, please provide just one.
-          </p>
+          <p v-else>Multiple workloads provided in query, please provide just one.</p>
         </v-col>
       </v-row>
     </v-container>

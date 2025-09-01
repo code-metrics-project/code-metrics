@@ -46,16 +46,16 @@ describe("InMemDB", () => {
     });
   });
 
-  it('should be able to delete all items', async () => {
+  it("should be able to delete all items", async () => {
     const db = getInMemoryDatastore();
     const item = { name: "test", data: "foo" };
-    await db.connect('test', async (col) => {
-      await col.insertOne({ name: 'test' }, item);
+    await db.connect("test", async (col) => {
+      await col.insertOne({ name: "test" }, item);
       await col.deleteAll();
     });
 
-    await db.deleteAll('test');
-    await db.connect('test', async (col) => {
+    await db.deleteAll("test");
+    await db.connect("test", async (col) => {
       const items = await col.listItems();
       expect(items).toEqual([]);
     });

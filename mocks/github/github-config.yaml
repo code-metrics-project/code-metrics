@@ -4,7 +4,7 @@ resources:
   - method: get
     path: /orgs/{org}/repos
     queryParams:
-      type: 'public'
+      type: "public"
     response:
       file: repos.json
 
@@ -12,6 +12,11 @@ resources:
     path: /orgs/{org}/repos
     response:
       content: "[]"
+
+  - method: get
+    path: /repos/{org}/{repo}
+    response:
+      content: repo.json
 
   - method: get
     path: /repos/{owner}/{repo}/commits
@@ -52,8 +57,28 @@ resources:
     path: /repos/{owner}/{repo}/actions/runs/{run_id}
     response:
       file: workflowRun.json
-  
+
   - method: get
     path: /repos/{owner}/{repo}/actions/runs/{run_id}/timing
     response:
       file: workflowTiming.json
+
+  - method: get
+    path: /repos/{owner}/{repo}/contents/{filename}
+    response:
+      file: contents.txt
+
+  - method: get
+    path: /repos/{owner}/{repo}/rulesets
+    response:
+      file: rules.json
+
+  - method: get
+    path: /repos/{owner}/{repo}/rulesets/{rule}
+    response:
+      file: rule.json
+
+  - method: get
+    path: /repos/{owner}/{repo}/branches/{branch}/protection
+    response:
+      file: branch.json

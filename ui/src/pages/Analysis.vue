@@ -19,9 +19,7 @@
           :workload="workloadId as string"
           :executeOnMount="executeImmediately"
         />
-        <p v-else>
-          Multiple workloads provided in query, please provide just one.
-        </p>
+        <p v-else>Multiple workloads provided in query, please provide just one.</p>
       </v-col>
     </v-row>
 
@@ -60,8 +58,7 @@ const route = useRoute();
 
 const { workloadId, executeImmediately: executeImmediatelyRaw } = route.query;
 const executeImmediately = executeImmediatelyRaw === "true";
-const singularWorkloadId =
-  (Array.isArray(workloadId) ? workloadId[0] : workloadId) ?? undefined;
+const singularWorkloadId = (Array.isArray(workloadId) ? workloadId[0] : workloadId) ?? undefined;
 
 const items = computed(() => [
   {

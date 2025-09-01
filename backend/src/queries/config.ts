@@ -45,4 +45,4 @@ export const getQueryByAxis = (axisName: string): QueryType => {
     throw new Error(`Query with axis name ${axisName} not found`);
   }
   return query;
-}
+};

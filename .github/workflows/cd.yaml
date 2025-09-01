@@ -80,8 +80,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: ${{ inputs.push }}
           tags: |
-            deloittedigitaluk/code-metrics-api:${{ inputs.tag }}
-            deloittedigitaluk/code-metrics-api:latest
             ghcr.io/deloittedigitaluk/code-metrics-api:${{ inputs.tag }}
             ghcr.io/deloittedigitaluk/code-metrics-api:latest
           build-args: |
@@ -132,8 +130,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: ${{ inputs.push }}
           tags: |
-            deloittedigitaluk/code-metrics-ui:${{ inputs.tag }}
-            deloittedigitaluk/code-metrics-ui:latest
             ghcr.io/deloittedigitaluk/code-metrics-ui:${{ inputs.tag }}
             ghcr.io/deloittedigitaluk/code-metrics-ui:latest
           build-args: |
@@ -183,8 +179,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: ${{ inputs.push }}
           tags: |
-            deloittedigitaluk/code-metrics-mocks:${{ inputs.tag }}
-            deloittedigitaluk/code-metrics-mocks:latest
             ghcr.io/deloittedigitaluk/code-metrics-mocks:${{ inputs.tag }}
             ghcr.io/deloittedigitaluk/code-metrics-mocks:latest
           build-args: |

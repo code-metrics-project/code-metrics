@@ -20,17 +20,16 @@ if (process.env.MOCKS_PRINT_LOG_ON_CRASH === "true") mocks.printLogOnCrash();
 let mockServer;
 
 const workload: Workload = {
-  codeAnalysis: undefined, codeManagement: undefined,
+  codeAnalysis: undefined,
+  codeManagement: undefined,
   id: "athena",
   pipelines: {
     jobGroups: {
-      "backend": {
+      backend: {
         jobNames: ["octo-repo"],
-      }
+      },
     },
-    stages: [
-      { stageId: "github-build-stage" },
-    ],
+    stages: [{ stageId: "github-build-stage" }],
   },
   projectManagement: {
     type: TicketManagementTypes.JIRA,
@@ -75,16 +74,18 @@ beforeAll(async () => {
       workloads: [workload],
     },
     pipelineConfig: {
-      stages: [{
-        id: "github-build-stage",
-        description: "build stage",
-        type: PipelinesTypes.GITHUB,
-        serverId: "test-github",
-        projectName: "DeloitteDigitalUK",
-        commitMapping: {
-          runProperty: "$.data.head_sha",
+      stages: [
+        {
+          id: "github-build-stage",
+          description: "build stage",
+          type: PipelinesTypes.GITHUB,
+          serverId: "test-github",
+          projectName: "DeloitteDigitalUK",
+          commitMapping: {
+            runProperty: "$.data.head_sha",
+          },
         },
-      }],
+      ],
     },
   });
 });
@@ -98,14 +99,7 @@ describe(`GitHub Pipelines integration`, () => {
 
     const startDate = new Date("2011-04-19");
     const endDate = new Date("2011-04-19");
-    const builds = await github.getRunsForProject(
-      workload.id,
-      ["octo-org"],
-      "octo-repo",
-      ["main"],
-      startDate,
-      endDate,
-    );
+    const builds = await github.getRunsForProject(workload.id, ["octo-org"], "octo-repo", ["main"], startDate, endDate);
     expect(builds).toHaveLength(1);
     expect(builds[0].branch).toBe("main");
     expect(builds[0].result).toBe(RunResult.Succeeded);
@@ -125,40 +119,34 @@ describe(`GitHub Pipelines integration`, () => {
     expect(jobNames).toHaveLength(0);
   });
 
-  it('gets a property of a run', async () => {
+  it("gets a property of a run", async () => {
     const github = getPipelinesForWorkload(workload, "github-build-stage");
 
     const propValue = await github.getPipelineRunProperty(
       workload.id,
-      'octo-org',
-      'octo-repo',
-      '30433642',
-      '$.data.head_sha',
+      "octo-org",
+      "octo-repo",
+      "30433642",
+      "$.data.head_sha",
     );
 
-    expect(propValue).toBe('acb5820ced9479c074f688cc328bf03f341a511d');
+    expect(propValue).toBe("acb5820ced9479c074f688cc328bf03f341a511d");
   });
 
-  it('gets runs for job groups', async () => {
+  it("gets runs for job groups", async () => {
     const github = getPipelinesForWorkload(workload, "github-build-stage");
 
     const startDate = new Date(" 2011-04-19");
     const endDate = new Date("2011-04-19");
-    const runs = await github.getRunsForJobGroups(
-      workload.id,
-      ['backend'],
-      ['main'],
-      startDate,
-      endDate,
-    );
+    const runs = await github.getRunsForJobGroups(workload.id, ["backend"], ["main"], startDate, endDate);
 
     const groupRuns = runs.filter((r) => r.workloadId === "athena" && r.jobGroup === "backend");
     expect(groupRuns).toHaveLength(1);
 
     const run = groupRuns[0].run;
-    expect(run.branch).toBe('main');
-    expect(run.job).toBe('octo-repo');
-    expect(run.repo).toBe('octo-repo');
+    expect(run.branch).toBe("main");
+    expect(run.job).toBe("octo-repo");
+    expect(run.repo).toBe("octo-repo");
     expect(run.result).toBe(RunResult.Succeeded);
   });
 

@@ -68,12 +68,8 @@ export const walkDateRangeBatched = async <T>(
   batchDays: number,
   operation: (batch: Date[], progress: number) => Promise<T>,
 ) => {
-  const days = Math.round(
-    (endDate.getTime() - startDate.getTime()) / MILLIS_PER_DAY,
-  );
-  logger(
-    `${days} days between ${startDate.toISOString()} and ${endDate.toISOString()}`,
-  );
+  const days = Math.round((endDate.getTime() - startDate.getTime()) / MILLIS_PER_DAY);
+  logger(`${days} days between ${startDate.toISOString()} and ${endDate.toISOString()}`);
 
   let batch: Date[] = [];
   for (let i = 0; i <= days; i++) {

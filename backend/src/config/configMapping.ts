@@ -1,7 +1,7 @@
 import uniq from "lodash/uniq";
-import { CodeManagementTypes, } from "../model/config/common";
+import { CodeManagementTypes } from "../model/config/common";
 import { getConfig } from "./config";
-import {getComponentsForWorkloadId, getReposForWorkloadId} from "../utils/repos";
+import { getComponentsForWorkloadId, getReposForWorkloadId } from "../utils/repos";
 import { getPipelinesForWorkload } from "../services/pipelines/pipelinesService";
 import { listNormalisedJobGroupsForWorkload } from "../utils/jobs";
 import {
@@ -11,7 +11,7 @@ import {
   PipelinesConfigWrapper,
   RemoteConfigWrapper,
   RemoteServer,
-  TicketManagementConfigWrapper
+  TicketManagementConfigWrapper,
 } from "../model/config/remote-config";
 import { JobNameMapping, Workload, WorkloadConfigWrapper, WorkloadId } from "../model/config/workload-config";
 
@@ -94,8 +94,8 @@ export const determineJobNames = async (workload: Workload, jobGroup: string): P
   } else {
     const discoveries = workload.pipelines.stages.map(async ({ stageId }) => {
       const pipelinesService = getPipelinesForWorkload(workload, stageId);
-      return await pipelinesService.discoverJobNames(workload, jobGroup) ?? [];
-    })
+      return (await pipelinesService.discoverJobNames(workload, jobGroup)) ?? [];
+    });
     return (await Promise.all(discoveries)).flat();
   }
 };
@@ -230,10 +230,12 @@ export const listAllTagPairs = (): Record<string, string[]> => {
  * tags have to be present on a workload for it to be included.
  * @param tags
  */
-export const getWorkloadsWithTags = (tags: {key: string, value: string}[]): WorkloadId[] => {
-  return getConfig().workloadConfigs.workloads.filter((w) => {
-    return tags.find(({key, value}) => w.tags?.[key] === value);
-  }).map((w) => {
-    return w.id;
-  });
+export const getWorkloadsWithTags = (tags: { key: string; value: string }[]): WorkloadId[] => {
+  return getConfig()
+    .workloadConfigs.workloads.filter((w) => {
+      return tags.find(({ key, value }) => w.tags?.[key] === value);
+    })
+    .map((w) => {
+      return w.id;
+    });
 };

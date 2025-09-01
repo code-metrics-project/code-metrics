@@ -1,21 +1,21 @@
 import fetch from "node-fetch";
 import { limitConcurrency } from "../../utils/retry";
 import { logResponseBody } from "../../utils/responses";
-import { getAllIssueManagementUrls, getWorkloadById, } from "../../config/configMapping";
+import { getAllIssueManagementUrls, getWorkloadById } from "../../config/configMapping";
 import { JiraTicketOptions, TicketManagementTypes } from "../../model/config/common";
 import { logger, verbose, warn } from "../../utils/logger/logger";
 import { TicketConfigManager, TicketService, TimeRangeMode } from "./ticketService";
 import { LightweightIssue } from "../../model/tickets";
 import { provideDatastore } from "../../db/factory";
-import { parseInt } from "lodash";
 import { Datastore, DatastoreCollection } from "../../db/api";
 import { truncateDateOnly } from "../../utils/date";
 import { AuthMethod, TicketManagementServer } from "../../model/config/remote-config";
 import { Workload, WorkloadId, WorkloadTicketConfigJira } from "../../model/config/workload-config";
 import Bottleneck from "bottleneck";
+import { getConfigItemAsNumber } from "../../config/sources/source";
 
 const MAX_RESULTS_PER_QUERY = 100;
-const EXPIRY_SECONDS: number = process.env.EXPIRY_SECONDS ? parseInt(process.env.EXPIRY_SECONDS) : 3600;
+const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600);
 const COLLECTION_NAME_ISSUES = "issues";
 const ISSUE_PATTERN = /([A-Z][A-Z0-9]{1,4}-\d{1,6})/;
 
@@ -46,9 +46,7 @@ export class JiraTicketService implements TicketService {
     const workload = getWorkloadById(workloadId);
     const ticketManagement = this.configManager.getWorkloadConfig(workloadId);
 
-    const teamFilter = ticketManagement?.teamFilterQuery
-      ? `AND ${ticketManagement.teamFilterQuery}`
-      : "";
+    const teamFilter = ticketManagement?.teamFilterQuery ? `AND ${ticketManagement.teamFilterQuery}` : "";
     const issueTypes = this.formatIssueTypes(this.getTicketTypesByWorkloadId(workload.id));
     const priorityClause = priority ? `AND priority >= ${priority}` : "";
     const issueTypeClause = `AND issuetype in (${issueTypes})`;
@@ -70,9 +68,7 @@ export class JiraTicketService implements TicketService {
     const workload = getWorkloadById(workloadId);
     const ticketManagement = this.configManager.getWorkloadConfig(workloadId);
 
-    const teamFilter = ticketManagement.teamFilterQuery
-      ? `AND ${ticketManagement.teamFilterQuery}`
-      : "";
+    const teamFilter = ticketManagement.teamFilterQuery ? `AND ${ticketManagement.teamFilterQuery}` : "";
 
     const issueTypes = this.formatIssueTypes(this.getTicketTypesByWorkloadId(workload.id));
     const priorityClause = priority ? `AND priority >= ${priority}` : "";
@@ -252,7 +248,10 @@ export class JiraTicketService implements TicketService {
     return null;
   };
 
-  matchTicketByIdAndRetrieve = async (message: string | null, workloadId: WorkloadId): Promise<LightweightIssue | null> => {
+  matchTicketByIdAndRetrieve = async (
+    message: string | null,
+    workloadId: WorkloadId,
+  ): Promise<LightweightIssue | null> => {
     const issueId = this.matchTicketId(message);
     if (!issueId) {
       return null;

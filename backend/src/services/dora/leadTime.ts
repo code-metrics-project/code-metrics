@@ -47,7 +47,7 @@ export const calculateLeadTime = async (
  */
 const averageByDay = (
   dailyTotals: Map<Date, Map<string, DailyTotal>>,
-  workloadId: string
+  workloadId: string,
 ): Map<DateStamp, DatedMetrics> => {
   const leadTimes = new Map<DateStamp, DatedMetrics>();
 

@@ -24,11 +24,7 @@
         lg="4"
         xl="2"
       >
-        <DoughnutChart
-          :key="index"
-          :chart-data="data"
-          :chart-options="options"
-        />
+        <DoughnutChart :key="index" :chart-data="data" :chart-options="options" />
       </v-col>
     </v-row>
   </span>
@@ -43,18 +39,9 @@ import type { DatedMetrics } from "@/model/metrics";
 import type { ApexOptions } from "apexcharts";
 import { chooseColour } from "@/utils/colours";
 import DataTable from "@/components/charts/DataTable.vue";
-import {
-  createMultiChartDatasets,
-  type MultiChartData,
-} from "@/chart/multichart";
-import {
-  type ColumnChartData,
-  createColumnChartDatasets,
-} from "@/chart/column";
-import {
-  createDoughnutChartDatasets,
-  type DoughnutChartDataset,
-} from "@/chart/doughnut";
+import { createMultiChartDatasets, type MultiChartData } from "@/chart/multichart";
+import { type ColumnChartData, createColumnChartDatasets } from "@/chart/column";
+import { createDoughnutChartDatasets, type DoughnutChartDataset } from "@/chart/doughnut";
 import { ChartType } from "@/chart/chart-types";
 
 const props = defineProps<{
@@ -87,18 +74,12 @@ const options = computed<ApexOptions>(() => {
   const cd = converted.value;
   const formatters = cd?.formatters;
 
-  opts.dataLabels = buildDataLabels(
-    props.showDataLabels,
-    opts.dataLabels,
-    formatters,
-  );
+  opts.dataLabels = buildDataLabels(props.showDataLabels, opts.dataLabels, formatters);
 
   if (!formatters) {
     return opts;
   }
-  opts.colors = formatters.map((formatter, idx) =>
-    chooseColour(idx, formatter.colourVariant),
-  );
+  opts.colors = formatters.map((formatter, idx) => chooseColour(idx, formatter.colourVariant));
   opts.yaxis = mergeAxes(buildAxes(formatters), opts.yaxis ?? []);
   return opts;
 });

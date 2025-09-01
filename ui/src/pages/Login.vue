@@ -1,17 +1,17 @@
 <template>
   <v-container fill-height class="d-flex align-center justify-center">
-    <v-card width="400" v-if="externalLogin">
+    <v-card width="400" v-if="!showLoginForm">
       <v-card-title class="headline">Please wait</v-card-title>
-      <v-card-text>Checking authentication status...</v-card-text>
+      <v-card-text>Checking login status...</v-card-text>
       <v-card-text>
-        <v-alert v-if="!!alert" :type="alert.type">{{ alert.message }}</v-alert>
+        <AlertMessage :alert="alert" />
         <v-infinite-scroll v-if="!alert" />
       </v-card-text>
     </v-card>
-    <v-card width="400" v-if="!externalLogin">
+    <v-card width="400" v-if="showLoginForm">
       <v-form v-model="valid" @submit.prevent="onLogin">
         <v-card-text>
-          <v-alert v-if="!!alert" :type="alert.type">{{ alert.message }}</v-alert>
+          <AlertMessage :alert="alert" />
           <v-text-field
             autocomplete="username"
             v-model="username"
@@ -45,8 +45,12 @@ import { watch } from "vue";
 import type { Router } from "vue-router";
 import { getConfig } from "@/utils/config.ts";
 import { logger } from "@/utils/logger.ts";
+import AlertMessage from "@/components/AlertMessage.vue";
 
 export default defineComponent({
+  components: {
+    AlertMessage,
+  },
   setup() {
     const router = getCurrentInstance()?.proxy?.$router;
     const authStore = useAuthStore();
@@ -54,7 +58,7 @@ export default defineComponent({
     const username = ref("");
     const password = ref("");
     const showPassword = ref(false);
-    const externalLogin = ref(authStore.isExternalLogin);
+    const showLoginForm = ref(true);
     const authRequired = computed(() => getConfig().webConfig.auth.required ?? true);
 
     async function safeNavigateHome(router: Router) {
@@ -91,7 +95,7 @@ export default defineComponent({
     }
 
     if (!authRequired.value) {
-      externalLogin.value = true;
+      showLoginForm.value = false;
       (async () => {
         try {
           const auth = getConfig().webConfig.auth;
@@ -109,7 +113,7 @@ export default defineComponent({
         }
       })();
     } else if (authStore.isExternalLogin) {
-      externalLogin.value = true;
+      showLoginForm.value = false;
       (async () => {
         try {
           await authStore.checkAuthState();
@@ -123,7 +127,7 @@ export default defineComponent({
       username,
       password,
       showPassword,
-      externalLogin,
+      showLoginForm,
       rules: {
         required: (value: string) => !!value || "Required.",
       },

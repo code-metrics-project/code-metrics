@@ -10,6 +10,7 @@ export const useQueryManager = (title: string) => {
   const allDatasets = ref<QueryAndResult[]>([]);
   const operationState = ref(OperationState.Idle);
   const groupBy = ref<string>("workloadId");
+  const error = ref<Error | null>(null);
 
   const chartData = computed(() => {
     if (allDatasets.value.length === 0) {
@@ -20,6 +21,7 @@ export const useQueryManager = (title: string) => {
 
   const onExecute = async (rawQueries: RawQuery[]) => {
     operationState.value = OperationState.Busy;
+    error.value = null;
     try {
       allDatasets.value = [];
 
@@ -43,6 +45,7 @@ export const useQueryManager = (title: string) => {
       operationState.value = OperationState.Idle;
     } catch (e) {
       console.error(`Failed to run '${title}' queries`, e);
+      error.value = e instanceof Error ? e : new Error(String(e));
       operationState.value = OperationState.Error;
     }
   };
@@ -50,6 +53,7 @@ export const useQueryManager = (title: string) => {
   return {
     allDatasets,
     operationState,
+    error,
     groupBy,
     chartData,
     onExecute,

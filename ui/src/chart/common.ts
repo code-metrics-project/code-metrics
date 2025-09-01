@@ -24,9 +24,7 @@ export type FormattableChartData = {
   formatters?: ChartFormat[];
 };
 
-export function groupByName(
-  input: Map<string, DatedMetrics>,
-): Map<string, DatedValue[]> {
+export function groupByName(input: Map<string, DatedMetrics>): Map<string, DatedValue[]> {
   const namedData = new Map<string, DatedValue[]>();
   input.forEach((datedMetrics, date) => {
     datedMetrics.entries.forEach((entry, name) => {
@@ -72,8 +70,7 @@ export function calculateValuesByTag(
     if (calculatePercentage) {
       const totalName = tagClassifier ? tagClassifier(tag) : "all";
       const grandTotal = grandTotals[totalName] ?? 0;
-      const percentage =
-        grandTotal > 0 ? round((classTotal / grandTotal) * 100, 1) : 0;
+      const percentage = grandTotal > 0 ? round((classTotal / grandTotal) * 100, 1) : 0;
 
       data.set(tag, percentage);
     } else {
@@ -89,9 +86,7 @@ export function calculateValuesByTag(
  * two separate datasets are created, one containing the metrics for "athena" and the other for "gaia".
  * @param input
  */
-export function splitDatasetOnGroupDimension(
-  input: Map<string, DatedMetrics>,
-): Map<string, DatedMetrics>[] {
+export function splitDatasetOnGroupDimension(input: Map<string, DatedMetrics>): Map<string, DatedMetrics>[] {
   const split: Record<string, Map<string, DatedMetrics>> = {};
 
   for (const [date, metrics] of input) {
@@ -144,20 +139,13 @@ export function formatValueAsPercentage(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
 }
 
-export const defaultChartValueFormatter = (value: number): string =>
-  roundTo(value, 1).toString();
+export const defaultChartValueFormatter = (value: number): string => roundTo(value, 1).toString();
 
-export function lookupFormatter(
-  seriesName: string,
-  min?: number,
-  max?: number,
-): ChartFormat {
+export function lookupFormatter(seriesName: string, min?: number, max?: number): ChartFormat {
   const axisName = seriesName.split("/")[0];
   const chartConfig = getChartConfig(axisName);
   const format = chartConfig?.valueFormatter ?? defaultChartValueFormatter;
-  const colourVariant = chartConfig?.axes.find(
-    (axis) => axis.axisName === axisName,
-  )?.variant;
+  const colourVariant = chartConfig?.axes.find((axis) => axis.axisName === axisName)?.variant;
 
   return {
     seriesName,
@@ -187,9 +175,7 @@ export const buildAxes = (formatters: ChartFormat[]): ApexYAxis[] => {
     // find the axis that already contains a series with the same prefix
     let axis = yaxes.find((y) => {
       const existingSeries = (y.seriesName as string[]) ?? [];
-      return existingSeries
-        .map((seriesName) => seriesName.split("/")[0])
-        .includes(namePrefix);
+      return existingSeries.map((seriesName) => seriesName.split("/")[0]).includes(namePrefix);
     });
 
     if (axis) {
@@ -222,20 +208,13 @@ export const buildAxes = (formatters: ChartFormat[]): ApexYAxis[] => {
  * @param a
  * @param b
  */
-export const mergeAxes = (
-  a: ApexYAxis | ApexYAxis[],
-  b: ApexYAxis | ApexYAxis[],
-): ApexYAxis[] => {
+export const mergeAxes = (a: ApexYAxis | ApexYAxis[], b: ApexYAxis | ApexYAxis[]): ApexYAxis[] => {
   const axes = [];
   const aArr = Array.isArray(a) ? a : [a];
   const bArr = Array.isArray(b) ? b : [b];
 
   for (let i = 0; i < Math.max(aArr.length, bArr.length); i++) {
-    const merged = merge(
-      {},
-      i < aArr.length ? aArr[i] : {},
-      i < bArr.length ? bArr[i] : {},
-    );
+    const merged = merge({}, i < aArr.length ? aArr[i] : {}, i < bArr.length ? bArr[i] : {});
     axes.push(merged);
   }
 
@@ -261,14 +240,8 @@ export function buildDataLabels(
 
     // use the same formatter for the data labels as the axis labels
     if (formatters?.length) {
-      dataLabels.formatter = (
-        value: number,
-        opts: { seriesIndex: number | undefined },
-      ): string => {
-        if (
-          opts.seriesIndex !== undefined &&
-          opts.seriesIndex < formatters.length
-        ) {
+      dataLabels.formatter = (value: number, opts: { seriesIndex: number | undefined }): string => {
+        if (opts.seriesIndex !== undefined && opts.seriesIndex < formatters.length) {
           const f = formatters[opts.seriesIndex];
           if (f) {
             return f.format(value);

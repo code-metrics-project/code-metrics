@@ -35,12 +35,7 @@ export const fetchRepoChurn = async (
 
   try {
     const endDate = truncateDateOnly(new Date());
-    const result = await vcsRepoChurnWithArgs(
-      workloadIds,
-      repoGroups,
-      startDate,
-      endDate,
-    );
+    const result = await vcsRepoChurnWithArgs(workloadIds, repoGroups, startDate, endDate);
 
     if (!changeMeasure) {
       warn(`No change measure specified - defaulting to ${ChangeMeasure.ADD_EDIT_DELETE_CUMULATIVE}`);
@@ -59,10 +54,7 @@ export const fetchRepoChurn = async (
  * @param churn
  * @param changeMeasure
  */
-const groupChurn = (
-  churn: RepoChurn[],
-  changeMeasure: ChangeMeasure,
-): Map<DateStamp, DatedMetrics> => {
+const groupChurn = (churn: RepoChurn[], changeMeasure: ChangeMeasure): Map<DateStamp, DatedMetrics> => {
   if (churn.length === 0) return new Map();
 
   const grouped = new Map<DateStamp, DatedMetrics>();

@@ -9,7 +9,7 @@ export type DatastoreCollection = {
 
   insertOne(key: QueryFilter, item): Promise<boolean>;
 
-  deleteOne(filter: QueryFilter): Promise<void>;
+  deleteOne(filter: QueryFilter): Promise<boolean>;
 
   listItems(): Promise<Record<string, any>[]>;
 
@@ -52,8 +52,8 @@ export type Datastore<F extends QueryFilter, C extends DatastoreCollection> = {
   findOrInsertOne<T extends F>(
     collectionName: string,
     filter: F,
-    populator: () => Promise<T>,
-    validator?: ((item: T | null) => boolean),
+    populator: (old: T | null) => Promise<T>,
+    validator?: (item: T | null) => boolean,
   ): Promise<T>;
 
   /**
@@ -70,7 +70,7 @@ export type Datastore<F extends QueryFilter, C extends DatastoreCollection> = {
     collectionName: string,
     date: Date,
     filter: F,
-    populator: () => Promise<T>,
+    populator: (old?: T) => Promise<T>,
     validator?: (item?: T) => boolean,
   ): Promise<T>;
 
@@ -95,8 +95,8 @@ export abstract class AbstractDatastore<F extends QueryFilter, C extends Datasto
   findOrInsertOne = async <T extends F>(
     collectionName: string,
     filter: F,
-    populator: () => Promise<T>,
-    validator?: ((item: T | null) => boolean),
+    populator: (old: T | null) => Promise<T>,
+    validator?: (item: T | null) => boolean,
   ): Promise<T> =>
     this.findOrInsertOneInternal(collectionName, filter, buildBehaviour(this.config), populator, validator);
 
@@ -104,8 +104,8 @@ export abstract class AbstractDatastore<F extends QueryFilter, C extends Datasto
     collectionName: string,
     date: Date,
     filter: F,
-    populator: () => Promise<T>,
-    validator?: ((item: T | null) => boolean),
+    populator: (old: T | null) => Promise<T>,
+    validator?: (item: T | null) => boolean,
   ): Promise<T> =>
     this.findOrInsertOneInternal(collectionName, filter, buildBehaviour(this.config, date), populator, validator);
 
@@ -123,8 +123,8 @@ export abstract class AbstractDatastore<F extends QueryFilter, C extends Datasto
     collectionName: string,
     filter: F,
     behaviour: CacheBehaviour,
-    populator: () => Promise<T>,
-    validator: ((item: T | null) => boolean) = defaultCacheValidator,
+    populator: (old: T | null) => Promise<T>,
+    validator: (item: T | null) => boolean = defaultCacheValidator,
   ): Promise<T> => {
     let cached;
     if (behaviour.store) {
@@ -153,7 +153,7 @@ export abstract class AbstractDatastore<F extends QueryFilter, C extends Datasto
         return cached as unknown as F & T;
       } else {
         logger(`Cache miss in ${collectionName} for`, filter);
-        const item = await this.populate(populator);
+        const item = await this.populate(cached, populator);
         if (behaviour.store) {
           if (behaviour.expire) {
             item[EXPIRY_FIELD] = addSeconds(new Date(), behaviour.ttl);
@@ -171,10 +171,15 @@ export abstract class AbstractDatastore<F extends QueryFilter, C extends Datasto
     }
   };
 
-  private async populate<T>(populator: () => Promise<T>): Promise<T & { [EXPIRY_FIELD]?: Date }> {
+  /**
+   * @param old - the old item, if any - an item might exist but have failed validation
+   * @param populator
+   * @private
+   */
+  private async populate<T>(old: T | null, populator: (old: T | null) => Promise<T>): Promise<T & { [EXPIRY_FIELD]?: Date }> {
     let item: T & { [EXPIRY_FIELD]?: Date };
     try {
-      item = await populator();
+      item = await populator(old);
     } catch (e) {
       throw new Error(`Item populator failed: ${e}`);
     }
@@ -187,7 +192,7 @@ export abstract class AbstractDatastore<F extends QueryFilter, C extends Datasto
       await col.deleteAll();
     });
     logger(`Deleted all items in ${collectionName}`);
-  }
+  };
 }
 
 const buildBehaviour = (config: DatastoreConfig, date?: Date): CacheBehaviour => {

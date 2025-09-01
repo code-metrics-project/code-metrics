@@ -29,9 +29,7 @@
           <template v-slot:item="{ item }">
             <tr>
               <td>
-                <router-link :to="`${Paths.SavedQueries}/${item.id}`"
-                  >{{ item.title }}
-                </router-link>
+                <router-link :to="`${Paths.SavedQueries}/${item.id}`">{{ item.title }} </router-link>
               </td>
               <td class="justify-end d-flex">
                 <v-tooltip text="Delete query">
@@ -114,10 +112,7 @@ const deleteQuery = (collection: StoredQueryCollectionMeta) => {
   });
 };
 
-const onDismissDeleteDialog = async (
-  collection: StoredQueryCollectionMeta,
-  confirm: boolean,
-) => {
+const onDismissDeleteDialog = async (collection: StoredQueryCollectionMeta, confirm: boolean) => {
   if (!confirm) {
     return;
   }

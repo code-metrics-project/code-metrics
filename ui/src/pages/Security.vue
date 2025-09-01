@@ -41,14 +41,9 @@ import { Paths } from "@/router/paths";
 const { t } = useI18n();
 const route = useRoute();
 
-const {
-  workloadId,
-  executeImmediately: executeImmediatelyRaw,
-  branchNames,
-} = route.query;
+const { workloadId, executeImmediately: executeImmediatelyRaw, branchNames } = route.query;
 const executeImmediately = executeImmediatelyRaw === "true";
-const singularWorkloadId =
-  (Array.isArray(workloadId) ? workloadId[0] : workloadId) ?? undefined;
+const singularWorkloadId = (Array.isArray(workloadId) ? workloadId[0] : workloadId) ?? undefined;
 
 const items = [
   {

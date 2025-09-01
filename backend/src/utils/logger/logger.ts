@@ -1,4 +1,5 @@
 import { LogQueue } from "./file";
+import { getConfigItem } from "../../config/sources/source";
 
 enum Styles {
   Reset = "\x1b[0m",
@@ -14,7 +15,10 @@ export enum LogLevel {
   Verbose,
 }
 
-const { LOG_LEVEL, LOG_FILE_PATH } = process.env;
+const { LOG_LEVEL, LOG_FILE_PATH } = {
+  LOG_LEVEL: getConfigItem("LOG_LEVEL"),
+  LOG_FILE_PATH: getConfigItem("LOG_FILE_PATH"),
+};
 const envLogLevel = LOG_LEVEL && LogLevel[LOG_LEVEL as keyof typeof LogLevel];
 
 let logQueue: LogQueue | undefined;
@@ -24,7 +28,7 @@ if (LOG_FILE_PATH) {
 }
 
 // Handle process exit to close file stream properly
-process.on('exit', () => {
+process.on("exit", () => {
   logQueue?.close();
 });
 
@@ -54,8 +58,9 @@ const log = (message: string, level: LogLevel, color: Styles, ...args) => {
   if (logQueue) {
     const timestamp = new Date().toISOString();
     const logLevel = LogLevel[level].toUpperCase();
-    const argsStr = args.length ? ` ${args.map(arg =>
-      typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ')}` : '';
+    const argsStr = args.length
+      ? ` ${args.map((arg) => (typeof arg === "object" ? JSON.stringify(arg) : arg)).join(" ")}`
+      : "";
 
     const logEntry = `[${timestamp}] [${logLevel}] ${message}${argsStr}\n`;
     logQueue.enqueue(logEntry);

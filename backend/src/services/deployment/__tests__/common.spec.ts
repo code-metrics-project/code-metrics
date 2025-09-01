@@ -27,7 +27,7 @@ describe("reifyMetaStageId", () => {
       serverId: "test-jira",
       tableName: undefined,
     },
-    incidents:  {
+    incidents: {
       type: TicketManagementTypes.JIRA,
       serverId: "test-jira",
       tableName: undefined,
@@ -45,7 +45,7 @@ describe("reifyMetaStageId", () => {
       serverId: "test-jira",
       tableName: undefined,
     },
-    incidents:  {
+    incidents: {
       type: TicketManagementTypes.JIRA,
       serverId: "test-jira",
       tableName: undefined,
@@ -82,9 +82,9 @@ describe("reifyMetaStageId", () => {
             serverId: "test-github",
             projectName: "octo-org",
             commitMapping: {
-              runProperty: "$.data.head_sha"
-            }
-          }
+              runProperty: "$.data.head_sha",
+            },
+          },
         ],
       },
     });
@@ -106,7 +106,9 @@ describe("reifyMetaStageId", () => {
   });
 
   it("throws an error when workload has no stages", () => {
-    expect(() => reifyMetaStageId(META_FIRST_STAGE_ID, emptyWorkload)).toThrow("No pipeline stages set for workload: workload2");
+    expect(() => reifyMetaStageId(META_FIRST_STAGE_ID, emptyWorkload)).toThrow(
+      "No pipeline stages set for workload: workload2",
+    );
   });
 
   it("handles workload ID correctly", () => {

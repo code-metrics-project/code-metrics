@@ -19,19 +19,14 @@ const chartColours = [
 const categoryColours = {
   success: ["#09ff90", "#09ff0d", "#04df63"],
   danger: ["rgba(255,9,9,0.59)", "rgba(255,75,9,0.68)", "rgba(255,9,54,0.44)"],
-  warning: [
-    "rgba(255,214,9,0.58)",
-    "rgba(255,235,9,0.69)",
-    "rgba(255,173,9,0.7)",
-  ],
+  warning: ["rgba(255,214,9,0.58)", "rgba(255,235,9,0.69)", "rgba(255,173,9,0.7)"],
   neutral: ["#b8ebf0", "#a7dfe6", "#8dc3ca"],
   unknown: ["#e0e3e3"],
 };
 
 export const chooseColour = (index: number, colourVariant?: string): string => {
   if (colourVariant && Object.keys(categoryColours).includes(colourVariant)) {
-    const category =
-      categoryColours[colourVariant as keyof typeof categoryColours];
+    const category = categoryColours[colourVariant as keyof typeof categoryColours];
     return category[index % category.length];
   } else {
     return chartColours[index % chartColours.length];
@@ -53,12 +48,9 @@ export const shadeColor = (color: string, decimal: number): string => {
   g = g < 255 ? g : 255;
   b = b < 255 ? b : 255;
 
-  const rr =
-    r.toString(16).length === 1 ? `0${r.toString(16)}` : r.toString(16);
-  const gg =
-    g.toString(16).length === 1 ? `0${g.toString(16)}` : g.toString(16);
-  const bb =
-    b.toString(16).length === 1 ? `0${b.toString(16)}` : b.toString(16);
+  const rr = r.toString(16).length === 1 ? `0${r.toString(16)}` : r.toString(16);
+  const gg = g.toString(16).length === 1 ? `0${g.toString(16)}` : g.toString(16);
+  const bb = b.toString(16).length === 1 ? `0${b.toString(16)}` : b.toString(16);
 
   return `#${rr}${gg}${bb}`;
 };

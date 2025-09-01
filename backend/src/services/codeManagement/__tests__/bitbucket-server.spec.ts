@@ -12,7 +12,6 @@ import { initDatastore } from "../../../db/factory";
 import { PullRequest, RepoChange } from "../../../model/vcs";
 import { Workload, WorkloadId } from "../../../model/config/workload-config";
 import { ConfigVersion } from "../../../model/config/base";
-import {createBitbuckerServerConnection} from "../../../utils/bitbucketServerConnection";
 
 jest.setTimeout(30000);
 if (process.env.MOCKS_VERBOSE === "true") mocks.verbose();
@@ -189,7 +188,7 @@ describe(`a Bitbucket Server VCS service`, () => {
   });
 
   it(`correctly diffs a PR`, () => {
-    const expected = {"path": "/package.json"}
+    const expected = { path: "/package.json" };
     const rawdiff = `diff --git src://package.json dst://package.json
 new file mode 100644
 index 0000000..e3bea32
@@ -211,22 +210,21 @@ index 0000000..e3bea32
 +  "author": "Nick Heal",
 +  "license": "ISC"
 +}
-    `
+    `;
 
-    const res = testables.normalisePullRequestFileList(rawdiff, "1")
+    const res = testables.normalisePullRequestFileList(rawdiff, "1");
 
-    expect(res[0]).toEqual(expected)
-
+    expect(res[0]).toEqual(expected);
   });
   it(`correctly diffs a PR - rename `, () => {
-    const expected = {"path": "/abc/Application_v243_before.json"}
+    const expected = { path: "/abc/Application_v243_before.json" };
     const rawdiff = `diff --git src://abc/Application_v242_before.json dst://abc/Application_v243_before.json
 similarity index 100%
 rename from abc/Application_v242_before.json
 rename to abc/Application_v243_before.json
-    `
+    `;
 
-    const res = testables.normalisePullRequestFileList(rawdiff, "2")
-    expect(res[0]).toEqual(expected)
+    const res = testables.normalisePullRequestFileList(rawdiff, "2");
+    expect(res[0]).toEqual(expected);
   });
 });

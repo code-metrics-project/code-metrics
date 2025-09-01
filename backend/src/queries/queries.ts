@@ -8,7 +8,8 @@ import {
   PipelineQueryOptions,
   PipelineStageInput,
   RepoGroups,
-  RollingAverages, SeverityOptionsInput,
+  RollingAverages,
+  SeverityOptionsInput,
   StartDate,
   Workloads,
 } from "../model/queryInputs";
@@ -92,50 +93,35 @@ type VulnerabilitiesArgs = Workloads & StartDate & RollingAverages & RepoGroups;
 export const registerQueries = () => {
   registerQuery({
     name: QueryName.BugsNew,
-    axisNames: [
-      "escaped-bugs",
-      "all-bugs",
-    ],
+    axisNames: ["escaped-bugs", "all-bugs"],
     reduce: ReduceStrategy.SUM,
-    execute: async (args: BugsArgs) =>
-      await fetchNewBugs(args.workloads, args.startDate, args.issueFilter?.priority),
+    execute: async (args: BugsArgs) => await fetchNewBugs(args.workloads, args.startDate, args.issueFilter?.priority),
   });
 
   registerQuery({
     name: QueryName.BugsOpen,
-    axisNames: [
-      "open-bugs"
-    ],
+    axisNames: ["open-bugs"],
     reduce: ReduceStrategy.SUM,
-    execute: async (args: BugsArgs) =>
-      await fetchOpenBugs(args.workloads, args.startDate, args.issueFilter?.priority),
+    execute: async (args: BugsArgs) => await fetchOpenBugs(args.workloads, args.startDate, args.issueFilter?.priority),
   });
 
   registerQuery({
     name: QueryName.ChangeFailureRate,
-    axisNames: [
-      "change-failure-rate",
-    ],
+    axisNames: ["change-failure-rate"],
     reduce: ReduceStrategy.AVERAGE,
     execute: async (args: ChangeFailureRateArgs) => await fetchChangeFailureRate(args),
   });
 
   registerQuery({
     name: QueryName.ChangeCategories,
-    axisNames: [
-      "change-category-ticketed",
-      "change-category-pr",
-      "change-category-commit",
-    ],
+    axisNames: ["change-category-ticketed", "change-category-pr", "change-category-commit"],
     reduce: ReduceStrategy.SUM,
     execute: async (args: ChangeTypeArgs) => await fetchChangeCategories(args),
   });
 
   registerQuery({
     name: QueryName.CodeCoverage,
-    axisNames: [
-      "coverage",
-    ],
+    axisNames: ["coverage"],
     reduce: ReduceStrategy.AVERAGE,
     execute: async (args: CodeMetricHistoryArgs) =>
       await fetchCodeAnalysis(args.workloads, args.repoGroups, "coverage", args.startDate),
@@ -143,9 +129,7 @@ export const registerQueries = () => {
 
   registerQuery({
     name: QueryName.CyclomaticComplexity,
-    axisNames: [
-      "complexity",
-    ],
+    axisNames: ["complexity"],
     reduce: ReduceStrategy.AVERAGE,
     execute: async (args: CodeMetricHistoryArgs) =>
       await fetchCodeAnalysis(args.workloads, args.repoGroups, "complexity", args.startDate),
@@ -153,27 +137,21 @@ export const registerQueries = () => {
 
   registerQuery({
     name: QueryName.DeploymentFrequency,
-    axisNames: [
-      "deployment-frequency",
-    ],
+    axisNames: ["deployment-frequency"],
     reduce: ReduceStrategy.SUM,
     execute: async (args: DeploymentFrequencyArgs) => await fetchDeploymentFrequency(args),
   });
 
   registerQuery({
     name: QueryName.LeadTimeForChanges,
-    axisNames: [
-      "lead-time",
-    ],
+    axisNames: ["lead-time"],
     reduce: ReduceStrategy.AVERAGE,
     execute: async (args: LeadTimeForChangesArgs) => await fetchLeadTimeForChanges(args),
   });
 
   registerQuery({
     name: QueryName.LinesOfCode,
-    axisNames: [
-      "ncloc",
-    ],
+    axisNames: ["ncloc"],
     reduce: ReduceStrategy.SUM,
     execute: async (args: CodeMetricHistoryArgs) =>
       await fetchCodeAnalysis(args.workloads, args.repoGroups, "ncloc", args.startDate),
@@ -181,81 +159,54 @@ export const registerQueries = () => {
 
   registerQuery({
     name: QueryName.NonWorkingPattern,
-    axisNames: [
-      "non-working",
-      "non-working-high",
-      "non-working-medium",
-      "non-working-low",
-    ],
+    axisNames: ["non-working", "non-working-high", "non-working-medium", "non-working-low"],
     reduce: ReduceStrategy.SUM,
-    execute: async (args: NonWorkingPatternArgs) =>
-      await fetchNonWorkingPatternChanges(args),
+    execute: async (args: NonWorkingPatternArgs) => await fetchNonWorkingPatternChanges(args),
   });
 
   registerQuery({
     name: QueryName.PipelineRuns,
-    axisNames: [
-      "runs",
-      "runs-aborted",
-      "runs-failed",
-      "runs-successful",
-    ],
+    axisNames: ["runs", "runs-aborted", "runs-failed", "runs-successful"],
     reduce: ReduceStrategy.SUM,
-    execute: async (args: PipelineRunArgs) =>
-      await fetchPipelineRuns(args),
+    execute: async (args: PipelineRunArgs) => await fetchPipelineRuns(args),
   });
 
   registerQuery({
     name: QueryName.PipelineDurations,
-    axisNames: [
-      "run-duration",
-    ],
+    axisNames: ["run-duration"],
     reduce: ReduceStrategy.AVERAGE,
-    execute: async (args: PipelineDurationArgs) =>
-      await fetchPipelineDurations(args),
+    execute: async (args: PipelineDurationArgs) => await fetchPipelineDurations(args),
   });
 
   registerQuery({
     name: QueryName.ProductionIncidents,
-    axisNames: [
-      "incidents",
-    ],
+    axisNames: ["incidents"],
     reduce: ReduceStrategy.SUM,
     execute: async (args: ProductionIncidentsArgs) =>
-      await fetchIncidents(
-        {
-          workloads: args.workloads,
-          startDate: args.startDate,
-          priority: args.incidentFilter?.priority,
-        },
-      ),
+      await fetchIncidents({
+        workloads: args.workloads,
+        startDate: args.startDate,
+        priority: args.incidentFilter?.priority,
+      }),
   });
 
   registerQuery({
     name: QueryName.PROpenTime,
-    axisNames: [
-      "pr-open-time",
-    ],
+    axisNames: ["pr-open-time"],
     reduce: ReduceStrategy.AVERAGE,
-    execute: async (args: PROpenTimeArgs) =>
-      await fetchPROpenTime(args.workloads, args.startDate, args.repoGroups),
+    execute: async (args: PROpenTimeArgs) => await fetchPROpenTime(args.workloads, args.startDate, args.repoGroups),
   });
 
   registerQuery({
     name: QueryName.PRSize,
-    axisNames: [
-      "pr-size",
-    ],
+    axisNames: ["pr-size"],
     reduce: ReduceStrategy.SUM,
-    execute: async (args: PROpenTimeArgs) =>
-      await fetchPRSize(args.workloads, args.startDate, args.repoGroups),
+    execute: async (args: PROpenTimeArgs) => await fetchPRSize(args.workloads, args.startDate, args.repoGroups),
   });
 
   registerQuery({
     name: QueryName.RepoChurn,
-    axisNames: [
-      "repo-churn",
-    ],
+    axisNames: ["repo-churn"],
     reduce: ReduceStrategy.SUM,
     execute: async (args: RepoChurnArgs) =>
       await fetchRepoChurn(args.workloads, args.startDate, args.changeMeasure, args.repoGroups),
@@ -263,22 +214,14 @@ export const registerQueries = () => {
 
   registerQuery({
     name: QueryName.TimeToRestoreService,
-    axisNames: [
-      "time-to-restore",
-    ],
+    axisNames: ["time-to-restore"],
     reduce: ReduceStrategy.AVERAGE,
     execute: async (args: TimeToRestoreServiceArgs) => await fetchTimeToRestoreService(args),
   });
 
   registerQuery({
     name: QueryName.Vulnerabilities,
-    axisNames: [
-      "vulns-critical",
-      "vulns-high",
-      "vulns-medium",
-      "vulns-low",
-      "vulns-unknown",
-    ],
+    axisNames: ["vulns-critical", "vulns-high", "vulns-medium", "vulns-low", "vulns-unknown"],
     reduce: ReduceStrategy.SUM,
     execute: async (args: VulnerabilitiesArgs) =>
       await fetchVulnerabilities(args.workloads, args.startDate, args.repoGroups),

@@ -34,14 +34,7 @@ async function main() {
     return;
   }
 
-  createApp(App)
-    .use(VueQueryPlugin)
-    .use(pinia)
-    .use(router)
-    .use(i18n)
-    .use(VueApexCharts)
-    .use(vuetify)
-    .mount("#app");
+  createApp(App).use(VueQueryPlugin).use(pinia).use(router).use(i18n).use(VueApexCharts).use(vuetify).mount("#app");
 }
 
 main();

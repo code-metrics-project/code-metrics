@@ -8,7 +8,7 @@ The following artifacts are produced as part of a release:
 
 ## Release key and dev key
 
-The backend includes a public key that is used to validate the [license file](./configuration.md). The public key is bundled inside the backend application binary.
+The backend includes a public key that is used to validate the [license file](../configuration.md). The public key is bundled inside the backend application binary.
 
 During development and testing, a development key is used:
 

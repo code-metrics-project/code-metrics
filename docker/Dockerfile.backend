@@ -16,6 +16,8 @@ RUN npm run ${RELEASE_TASK}
 
 FROM ${IMGREPO}node:20 AS run
 
+LABEL org.opencontainers.image.source=https://github.com/code-metrics-project/releases
+
 # Copy built files
 COPY --from=build /usr/src/app/backend/dist ./backend/dist
 

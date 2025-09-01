@@ -1,5 +1,5 @@
 import * as azdev from "azure-devops-node-api";
-import {getRelativeDate, MILLIS_PER_DAY, truncateDateOnly} from "../../utils/date";
+import { getRelativeDate, MILLIS_PER_DAY, truncateDateOnly } from "../../utils/date";
 import { logger, verbose, warn } from "../../utils/logger/logger";
 import { Run, RunList, RunResult, RunWithMetadata } from "../../model/runs";
 import { Build, BuildResult as ADOBuildResult } from "azure-devops-node-api/interfaces/BuildInterfaces";
@@ -14,9 +14,9 @@ import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName } from "..
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 
 import { StageConfig } from "../../model/config/pipeline-config";
-import {mapJobNamesUsingStageConfig, mapJobNameUsingStageConfig} from "./common";
-import {StorableLike} from "../dateWalker";
-import {PipelinesTypes} from "../../model/config/common";
+import { mapJobNamesUsingStageConfig, mapJobNameUsingStageConfig } from "./common";
+import { StorableLike } from "../dateWalker";
+import { PipelinesTypes } from "../../model/config/common";
 
 const COLLECTION_NAME_PIPELINE_RUNS = "pipeline-executions";
 
@@ -28,7 +28,8 @@ type AzureCacheItemFilter = StorableLike & {
 
 type PopulatedItem = RunList & AzureCacheItemFilter;
 
-export const initAdoPipelines = () => registerPipelines(PipelinesTypes.AZURE, (stage) => new AdoPipelinesService(stage));
+export const initAdoPipelines = () =>
+  registerPipelines(PipelinesTypes.AZURE, (stage) => new AdoPipelinesService(stage));
 
 class AdoPipelinesService extends AbstractPipelinesService {
   private connections: Map<string, azdev.WebApi>;
@@ -121,7 +122,12 @@ class AdoPipelinesService extends AbstractPipelinesService {
       };
     };
 
-    const fields: AzureCacheItemFilter = { stageId: this.stage.id, workloadId, vcsProjectName, date: truncateDateOnly(date) };
+    const fields: AzureCacheItemFilter = {
+      stageId: this.stage.id,
+      workloadId,
+      vcsProjectName,
+      date: truncateDateOnly(date),
+    };
     const runs = await this.datastore.findOrInsertOneDated<RunList>(
       COLLECTION_NAME_PIPELINE_RUNS,
       date,
@@ -129,13 +135,9 @@ class AdoPipelinesService extends AbstractPipelinesService {
       populator,
     );
     // filter repos for this specific query
-    runs.builds = runs.builds.filter((build) =>
-      jobNames.some((jobName) => matchOrEquals(jobName, build.job)),
-    );
+    runs.builds = runs.builds.filter((build) => jobNames.some((jobName) => matchOrEquals(jobName, build.job)));
     if (branches.length) {
-      runs.builds = runs.builds.filter((build) =>
-        branches.includes(build.branch.replace("refs/heads/", "")),
-      );
+      runs.builds = runs.builds.filter((build) => branches.includes(build.branch.replace("refs/heads/", "")));
     }
     return runs;
   };
@@ -186,7 +188,7 @@ class AdoPipelinesService extends AbstractPipelinesService {
       jobGroup,
       run: this.convertBuildToRun(build, jobName),
     };
-  }
+  };
 
   getPipelineRunProperty = async (
     workloadId: WorkloadId,
@@ -195,11 +197,16 @@ class AdoPipelinesService extends AbstractPipelinesService {
     runId: string,
     propertyJsonPath: string,
   ): Promise<string | null> => {
-    logger(`Fetching property ${propertyJsonPath} for azure build ${runId} of job ${jobName} in project ${vcsProjectName}`);
+    logger(
+      `Fetching property ${propertyJsonPath} for azure build ${runId} of job ${jobName} in project ${vcsProjectName}`,
+    );
     const build = await this.getRawPipelineBuild(workloadId, vcsProjectName, jobName, runId);
 
     const propertyValue = jsonPathQuery(build, propertyJsonPath);
-    verbose(`Fetched property ${propertyJsonPath} for azure build ${runId} of job ${jobName} in project ${vcsProjectName}`, propertyValue);
+    verbose(
+      `Fetched property ${propertyJsonPath} for azure build ${runId} of job ${jobName} in project ${vcsProjectName}`,
+      propertyValue,
+    );
     return propertyValue?.toString();
   };
 
@@ -251,10 +258,10 @@ class AdoPipelinesService extends AbstractPipelinesService {
 
     // TODO discover via API and filter as jobName can be a regex
     return jobGroups[jobGroup]?.jobNames ?? [];
-  }
+  };
 
   buildRunLink = (workloadId: string, jobName: string, runId: string): string => {
     const server = getAllPipelinesConfig().azure.servers.find((server) => server.id === this.stage.serverId);
     return `${server.url}/${this.stage.projectName}/_builds/${runId}`;
-  }
+  };
 }

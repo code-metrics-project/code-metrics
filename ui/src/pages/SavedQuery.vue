@@ -44,14 +44,10 @@
           </template>
         </DynamicQuery>
       </v-col>
-      <v-col
-        v-else-if="q.component === QueryComponentType.CodeAnalysisMetricSummary"
-      >
+      <v-col v-else-if="q.component === QueryComponentType.CodeAnalysisMetricSummary">
         <CodeAnalysisAggregate v-bind="q.props" />
       </v-col>
-      <v-col
-        v-else-if="q.component === QueryComponentType.FileCoverageBreakdown"
-      >
+      <v-col v-else-if="q.component === QueryComponentType.FileCoverageBreakdown">
         <FileMetricBreakdown v-bind="q.props" />
       </v-col>
       <v-col v-else>
@@ -71,16 +67,8 @@ import { Paths } from "@/router/paths";
 import DynamicQuery from "@/components/DynamicQuery.vue";
 import CodeAnalysisAggregate from "@/components/CodeAnalysisAggregate.vue";
 import FileMetricBreakdown from "@/components/FileMetricBreakdown.vue";
-import {
-  deleteQueryCollection,
-  getQueryCollection,
-  saveQueryCollection,
-} from "@/queries/stored";
-import {
-  QueryComponentType,
-  type StoredQuery,
-  type StoredQueryCollection,
-} from "@/model/query";
+import { deleteQueryCollection, getQueryCollection, saveQueryCollection } from "@/queries/stored";
+import { QueryComponentType, type StoredQuery, type StoredQueryCollection } from "@/model/query";
 import QueryEditor from "@/components/query/QueryEditor.vue";
 import ChartSelector from "@/components/charts/ChartSelector.vue";
 import { OperationState } from "@/utils/ui";

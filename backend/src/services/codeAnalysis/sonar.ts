@@ -1,18 +1,18 @@
-import {add} from "date-fns";
+import { add } from "date-fns";
 import fetch from "node-fetch";
 import Bottleneck from "bottleneck";
-import {roundTo} from "../../utils/math";
+import { roundTo } from "../../utils/math";
 import reject from "lodash/reject";
 import sortBy from "lodash/sortBy";
 import union from "lodash/union";
 import uniq from "lodash/uniq";
-import {logResponseBody} from "../../utils/responses";
-import {MILLIS_PER_DAY, truncateDateOnly} from "../../utils/date";
-import {logger, verbose, warn} from "../../utils/logger/logger";
-import {getServerConfig, getWorkloadById} from "../../config/configMapping";
-import {CodeAnalysisTypes} from "../../model/config/common";
-import {getCodeAnalysisKeysForWorkloadId, RepoCodeAnalysisKey} from "../../utils/repos";
-import {ComponentCoverage} from "../../model/codeAnalysis";
+import { logResponseBody } from "../../utils/responses";
+import { MILLIS_PER_DAY, truncateDateOnly } from "../../utils/date";
+import { logger, verbose, warn } from "../../utils/logger/logger";
+import { getServerConfig, getWorkloadById } from "../../config/configMapping";
+import { CodeAnalysisTypes } from "../../model/config/common";
+import { getCodeAnalysisKeysForWorkloadId, RepoCodeAnalysisKey } from "../../utils/repos";
+import { ComponentCoverage } from "../../model/codeAnalysis";
 import {
   CodeAnalysisService,
   CsvMetricResponse,
@@ -20,9 +20,9 @@ import {
   MetricHistoryRecord,
   registerCodeAnalysis,
 } from "./codeAnalysisService";
-import {getConfig} from "../../config/config";
-import {AuthMethod, SonarServer} from "../../model/config/remote-config";
-import {Workload, WorkloadId} from "../../model/config/workload-config";
+import { getConfig } from "../../config/config";
+import { AuthMethod, SonarServer } from "../../model/config/remote-config";
+import { Workload, WorkloadId } from "../../model/config/workload-config";
 
 /**
  * Summarise the following metrics by adding an average or total.
@@ -122,7 +122,7 @@ class SonarCodeAnalysisService implements CodeAnalysisService {
     const componentKey = getComponentKey(workloadId, component);
 
     const baseUrl = getBaseUrl(workloadId);
-    const branch = getBranch(workloadId)
+    const branch = getBranch(workloadId);
     const url = `${baseUrl}/api/measures/component?branch=${branch}&component=${componentKey}&metricKeys=${metrics}&ps=1000`;
     return fetch(url, getRequestOptions(workloadId))
       .then((res) => res.json())
@@ -173,7 +173,7 @@ const getProjectKeysForTag = async (
   mustHaveTag?: string,
 ): Promise<string[]> => {
   const baseUrl = getBaseUrl(workloadId);
-  const branch = getBranch(workloadId)
+  const branch = getBranch(workloadId);
   const url = `${baseUrl}/api/components/search_projects?branch=${branch}&ps=500&filter=tags%3D${tagName}`;
   const projectList: any = await fetch(url, getRequestOptions(workloadId))
     .then((res) => res.json())
@@ -572,8 +572,7 @@ const getTagsForProjectKey = async (workloadId: WorkloadId, projectName: string)
 const getBaseUrl = (workloadId: WorkloadId): string =>
   getSonarServer(getWorkloadById(workloadId).codeAnalysis.serverId).url;
 
-const getBranch = (workloadId: WorkloadId): string =>
-  getWorkloadById(workloadId).codeAnalysis.branch ?? 'main';
+const getBranch = (workloadId: WorkloadId): string => getWorkloadById(workloadId).codeAnalysis.branch ?? "main";
 
 const getRequestOptions = (workloadId: WorkloadId) => {
   const workload = getWorkloadById(workloadId);

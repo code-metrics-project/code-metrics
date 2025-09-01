@@ -34,28 +34,13 @@
         <v-container>
           <v-row justify="center" align="center">
             <v-col>
-              <v-btn
-                size="x-small"
-                color="secondary"
-                @click="() => setRelativeDate(-7)"
-                >7 days ago</v-btn
-              >
+              <v-btn size="x-small" color="secondary" @click="() => setRelativeDate(-7)">7 days ago</v-btn>
             </v-col>
             <v-col>
-              <v-btn
-                size="x-small"
-                color="secondary"
-                @click="() => setRelativeDate(-30)"
-                >30 days ago</v-btn
-              >
+              <v-btn size="x-small" color="secondary" @click="() => setRelativeDate(-30)">30 days ago</v-btn>
             </v-col>
             <v-col>
-              <v-btn
-                size="x-small"
-                color="secondary"
-                @click="() => setRelativeDate(-90)"
-                >90 days ago</v-btn
-              >
+              <v-btn size="x-small" color="secondary" @click="() => setRelativeDate(-90)">90 days ago</v-btn>
             </v-col>
           </v-row>
         </v-container>

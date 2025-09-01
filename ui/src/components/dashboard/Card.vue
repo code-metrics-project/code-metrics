@@ -15,25 +15,14 @@
 
       <p v-if="isError">Error fetching data.</p>
 
-      <Component
-        v-if="data"
-        :is="dataRenderers[props.dataView.name]"
-        :data="data"
-        :options="props.dataView.props"
-      />
+      <Component v-if="data" :is="dataRenderers[props.dataView.name]" :data="data" :options="props.dataView.props" />
     </v-card-text>
   </v-card>
 </template>
 
 <script lang="ts" setup>
-import {
-  dataSources,
-  type TDataSourceType,
-} from "@/components/dashboard/dataSources";
-import {
-  dataRenderers,
-  type TDataRendererType,
-} from "@/components/dashboard/dataRenderers";
+import { dataSources, type TDataSourceType } from "@/components/dashboard/dataSources";
+import { dataRenderers, type TDataRendererType } from "@/components/dashboard/dataRenderers";
 
 export type TDashboardCard = {
   dataSource: TDataSourceType;
@@ -46,7 +35,5 @@ export type TDashboardCard = {
 
 const props = defineProps<TDashboardCard>();
 
-const { data, isError, isFetching, isPending } = dataSources[
-  props.dataSource.name
-](props.dataSource.args);
+const { data, isError, isFetching, isPending } = dataSources[props.dataSource.name](props.dataSource.args);
 </script>

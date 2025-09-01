@@ -11,6 +11,7 @@ import { getCodeAnalysisForWorkloadId } from "./codeAnalysisService";
 import { RepoCodeAnalysisKey } from "../../utils/repos";
 import { roundTo } from "../../utils/math";
 import { WorkloadId } from "../../model/config/workload-config";
+import { getConfigItemAsNumber } from "../../config/sources/source";
 
 export type WorkloadRepo = {
   workloadId: string;
@@ -27,12 +28,8 @@ export type RepoNameHolder = {
 
 export type CodeAnalysisIdentifier = RepoGroupHolder | RepoNameHolder;
 
-const coverageDangerThreshold = process.env.COVERAGE_THRESHOLD_DANGER
-  ? parseInt(process.env.COVERAGE_THRESHOLD_DANGER)
-  : 30;
-const coverageWarningThreshold = process.env.COVERAGE_THRESHOLD_WARNING
-  ? parseInt(process.env.COVERAGE_THRESHOLD_WARNING)
-  : 80;
+const coverageDangerThreshold = getConfigItemAsNumber("COVERAGE_THRESHOLD_DANGER", 30);
+const coverageWarningThreshold = getConfigItemAsNumber("COVERAGE_THRESHOLD_WARNING", 80);
 
 const processAggregate = async (
   workloads: string[] | undefined,
@@ -66,7 +63,7 @@ const processAggregate = async (
 };
 
 const setVariants = (data: WorkloadRepoGroupCoverage[]): VariantGroupCoverage[] => {
-  // eslint-disable-next-line
+   
   data.forEach((tag: VariantGroupCoverage) => {
     if (tag.summary?.totalLinesToCover === 0) {
       tag.variant = "no_data";

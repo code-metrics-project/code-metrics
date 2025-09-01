@@ -21,17 +21,16 @@ if (process.env.MOCKS_PRINT_LOG_ON_CRASH === "true") mocks.printLogOnCrash();
 let mockServer;
 
 const workload: Workload = {
-  codeAnalysis: undefined, codeManagement: undefined,
+  codeAnalysis: undefined,
+  codeManagement: undefined,
   id: "athena",
   pipelines: {
     jobGroups: {
-      "backend": {
+      backend: {
         jobNames: ["spring-petclinic"],
-      }
+      },
     },
-    stages: [
-      { stageId: "dynatrace-build-stage" },
-    ],
+    stages: [{ stageId: "dynatrace-build-stage" }],
   },
   projectManagement: {
     type: TicketManagementTypes.JIRA,
@@ -73,7 +72,8 @@ beforeAll(async () => {
                 jobName: "sam-stack-name",
               },
               //entitySelector: "",
-              metricSelector: "example.pipelines.deployment:splitBy(commit-sha,start-time-utc,end-time-utc,build-success,repository,sam-stack-name)",
+              metricSelector:
+                "example.pipelines.deployment:splitBy(commit-sha,start-time-utc,end-time-utc,build-success,repository,sam-stack-name)",
               successfulOutcomeValue: "1",
               prefixProjectName: false,
             },
@@ -88,16 +88,18 @@ beforeAll(async () => {
       workloads: [workload],
     },
     pipelineConfig: {
-      stages: [{
-        id: "dynatrace-build-stage",
-        description: "build stage",
-        type: PipelinesTypes.DYNATRACE,
-        serverId: "test-dynatrace",
-        projectName: "DeloitteDigitalUK",
-        commitMapping: {
-          runProperty: "$.data.head_sha",
+      stages: [
+        {
+          id: "dynatrace-build-stage",
+          description: "build stage",
+          type: PipelinesTypes.DYNATRACE,
+          serverId: "test-dynatrace",
+          projectName: "DeloitteDigitalUK",
+          commitMapping: {
+            runProperty: "$.data.head_sha",
+          },
         },
-      }],
+      ],
     },
   });
 });
@@ -138,40 +140,34 @@ describe(`Dynatrace Pipelines integration`, () => {
     expect(jobNames).toHaveLength(0);
   });
 
-  it('gets a property of a run', async () => {
+  it("gets a property of a run", async () => {
     const dynatrace = getPipelinesForWorkload(workload, "dynatrace-build-stage");
 
     const propValue = await dynatrace.getPipelineRunProperty(
       workload.id,
-      'octo-org',
-      'spring-petclinic',
-      '30433642',
-      '$.commit-sha',
+      "octo-org",
+      "spring-petclinic",
+      "30433642",
+      "$.commit-sha",
     );
 
-    expect(propValue).toBe('1e7c2b4eb848a566652f752284c4995c2e57bc05');
+    expect(propValue).toBe("1e7c2b4eb848a566652f752284c4995c2e57bc05");
   });
 
-  it('gets runs for job groups', async () => {
+  it("gets runs for job groups", async () => {
     const dynatrace = getPipelinesForWorkload(workload, "dynatrace-build-stage");
 
     const startDate = new Date("2011-04-19");
     const endDate = new Date("2011-04-19");
-    const runs = await dynatrace.getRunsForJobGroups(
-      workload.id,
-      ['backend'],
-      ['main'],
-      startDate,
-      endDate,
-    );
+    const runs = await dynatrace.getRunsForJobGroups(workload.id, ["backend"], ["main"], startDate, endDate);
 
     const groupRuns = runs.filter((r) => r.workloadId === "athena" && r.jobGroup === "backend");
     expect(groupRuns).toHaveLength(12);
 
     const run = groupRuns[0].run;
     expect(run.branch).toBeUndefined();
-    expect(run.job).toBe('spring-petclinic');
-    expect(run.repo).toBe('athena/spring-petclinic');
+    expect(run.job).toBe("spring-petclinic");
+    expect(run.repo).toBe("athena/spring-petclinic");
     expect(run.result).toBe(RunResult.Succeeded);
   });
 

@@ -1,4 +1,4 @@
-import { Octokit, RestEndpointMethodTypes } from "@octokit/rest";
+import { Octokit } from "@octokit/rest";
 import { registerVcs, VcsService } from "./vcsService";
 import {
   FileChanges,
@@ -17,11 +17,13 @@ import { MILLIS_PER_DAY, truncateDateOnly } from "../../utils/date";
 import { provideDatastore } from "../../db/factory";
 import { StorableLike, getDataForDateRange } from "../dateWalker";
 import { WorkloadId } from "../../model/config/workload-config";
-import {CodeManagementTypes} from "../../model/config/common";
+import { CodeManagementTypes } from "../../model/config/common";
+import { TMergeRules } from "../repos/qualityGates";
+import { getConfigItemAsNumber } from "../../config/sources/source";
 
 const COLLECTION_NAME_REPO_COMMITS = "repo-commits";
 const COLLECTION_NAME_REPO_CHANGES = "repo-changes";
-const EXPIRY_SECONDS: number = process.env.EXPIRY_SECONDS ? parseInt(process.env.EXPIRY_SECONDS) : 3600;
+const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600)!;
 
 type GithubItemFilter = {
   projectName: string;
@@ -88,6 +90,15 @@ class GithubVcsService implements VcsService {
       this.connections.set(workloadId, connection);
     }
     return connection;
+  }
+
+  async #getDefaultBranch(workloadId: WorkloadId, vcsProjectName: string, repoName: string) {
+    const connection = this.#getConnection(workloadId);
+    const repo = await connection.rest.repos.get({
+      owner: vcsProjectName,
+      repo: repoName,
+    });
+    return repo.data.default_branch;
   }
 
   async fetchChangesInDateRange(
@@ -528,7 +539,9 @@ class GithubVcsService implements VcsService {
         earliestCommit = commit;
       }
     }
-    logger(`Earliest commit for PR ${pullRequestId} for workload ${workloadId} in repo ${repositoryName} is ${earliestCommit.sha} on ${earliestCommit.commit.committer.date}`);
+    logger(
+      `Earliest commit for PR ${pullRequestId} for workload ${workloadId} in repo ${repositoryName} is ${earliestCommit.sha} on ${earliestCommit.commit.committer.date}`,
+    );
     return <RepoChange>{
       date: earliestCommit.commit.committer.date,
       workload: workloadId,
@@ -537,6 +550,112 @@ class GithubVcsService implements VcsService {
       commitId: earliestCommit.sha,
       message: earliestCommit.commit.message,
     };
+  };
+
+  fetchFile = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repoName: string,
+    path: string,
+  ): Promise<string> => {
+    try {
+      const connection = this.#getConnection(workloadId);
+      const response = await connection.rest.repos.getContent({
+        owner: vcsProjectName,
+        repo: repoName,
+        path,
+        headers: {
+          Accept: "application/vnd.github.raw+json",
+        },
+      });
+
+      if (response?.data) {
+        return response.data;
+      } else {
+        console.error("File not found or content not available.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching file from GitHub:", error);
+      return null;
+    }
+  };
+
+  #getBranchProtectionRules = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repoName: string,
+    branch: string,
+  ) => {
+    try {
+      const connection = this.#getConnection(workloadId);
+      const result = await connection.rest.repos.getBranchProtection({
+        owner: vcsProjectName,
+        repo: repoName,
+        branch,
+      });
+      return result.data;
+    } catch (e) {
+      console.error(e);
+      return;
+    }
+  };
+
+  #getRulesets = async (workloadId: WorkloadId, vcsProjectName: string, repoName: string, branch: string) => {
+    try {
+      const connection = this.#getConnection(workloadId);
+      const allRulesetsResponse = await connection.rest.repos.getRepoRulesets({
+        owner: vcsProjectName,
+        repo: repoName,
+        branch,
+      });
+      const allRulesetIds = allRulesetsResponse.data.map((ruleset) => ruleset.id);
+      const allRulesets = await Promise.all(
+        allRulesetIds.map(async (rulesetId) => {
+          const ruleset = await connection.rest.repos.getRepoRuleset({
+            owner: vcsProjectName,
+            repo: repoName,
+            ruleset_id: rulesetId,
+          });
+          return ruleset.data;
+        }),
+      );
+      return allRulesets;
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  };
+
+  fetchMergeRules = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repoName: string,
+  ): Promise<TMergeRules[]> => {
+    const branch = await this.#getDefaultBranch(workloadId, vcsProjectName, repoName);
+    const [branchProtectionRules, rulesets] = await Promise.all([
+      this.#getBranchProtectionRules(workloadId, vcsProjectName, repoName, branch),
+      this.#getRulesets(workloadId, vcsProjectName, repoName, branch),
+    ]);
+    const mergeRules: TMergeRules[] = [
+      ...(branchProtectionRules && branchProtectionRules.required_status_checks
+        ? branchProtectionRules.required_status_checks.checks.map((bpr) => ({ name: bpr.context, id: bpr.app_id }))
+        : []),
+      ...rulesets
+        .map((ruleset) => {
+          const requiredStatusChecks = ruleset.rules.filter((rule) => rule.type === "required_status_checks");
+          return requiredStatusChecks
+            .map((rsc) => {
+              return rsc.parameters.required_status_checks.map((r) => ({
+                name: r.context,
+                id: r.integration_id,
+              }));
+            })
+            .flat();
+        })
+        .flat(),
+    ];
+    return mergeRules;
   };
 
   buildCommitLink = (change: RepoChange, workloadId: WorkloadId): string =>

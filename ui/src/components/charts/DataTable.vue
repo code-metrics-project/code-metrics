@@ -11,12 +11,7 @@
     </v-row>
     <v-row>
       <v-col>
-        <v-data-table
-          :headers="headers"
-          :items="allItems"
-          :sort-by="[{ key: 'date' }]"
-          :items-per-page="50"
-        />
+        <v-data-table :headers="headers" :items="allItems" :sort-by="[{ key: 'date' }]" :items-per-page="50" />
       </v-col>
     </v-row>
   </v-container>
@@ -49,7 +44,5 @@ const headers = computed(() => {
   ];
 });
 
-const allItems = computed(() =>
-  convertColumnChartDatasetToTable(props.chartData),
-);
+const allItems = computed(() => convertColumnChartDatasetToTable(props.chartData));
 </script>

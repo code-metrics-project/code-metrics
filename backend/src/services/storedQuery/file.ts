@@ -4,6 +4,7 @@ import path from "path";
 import { getConfigDirs, readConfig } from "../../config/config";
 import fs, { writeFile } from "fs/promises";
 import { logger, verbose } from "../../utils/logger/logger";
+import { getConfigItem } from "../../config/sources/source";
 
 export const getFileStoredQueryService = (): StoredQueryService => new FileStoredQueryService();
 
@@ -18,7 +19,7 @@ export class FileStoredQueryService implements StoredQueryService {
   }
 
   async listCollections(): Promise<StoredQueryCollectionMeta[]> {
-    const collections: StoredQueryCollectionMeta[] = []
+    const collections: StoredQueryCollectionMeta[] = [];
 
     for (const dir of this.loadDirs) {
       const files = await fs.readdir(dir);
@@ -83,11 +84,12 @@ export class FileStoredQueryService implements StoredQueryService {
 }
 
 const getStoredQueryDir = (configDirs: string[]): string => {
-  const STORED_QUERY_DIR = process.env.STORED_QUERY_DIR;
+  const STORED_QUERY_DIR = getConfigItem("STORED_QUERY_DIR");
   if (!STORED_QUERY_DIR) {
     // take last, giving precedence to the last directory
     return configDirs[configDirs.length - 1];
   }
-}
+  return STORED_QUERY_DIR;
+};
 
 const buildQueryFilePrefix = (collection: string): string => `queries-${collection}`;

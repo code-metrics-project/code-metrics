@@ -180,28 +180,18 @@ describe(`GitHub VCS integration`, () => {
     expect(link).toBe(`${mockServer.baseUrl()}/DeloitteDigitalUK/octo-repo/pull/5`);
   });
 
-  it('should get the PR associated with a commit', async () => {
+  it("should get the PR associated with a commit", async () => {
     const github = getVcsForWorkload(workload);
 
-    const pr = await github.getPRForCommit(
-      workload.id,
-      "octo-org",
-      "octo-repo",
-      "a1b2c3d4"
-    );
+    const pr = await github.getPRForCommit(workload.id, "octo-org", "octo-repo", "a1b2c3d4");
     expect(pr.id).toBe(1347);
     expect(pr.title).toBe("Amazing new feature");
   });
 
-  it('should get the earliest commit for a PR', async () => {
+  it("should get the earliest commit for a PR", async () => {
     const github = getVcsForWorkload(workload);
 
-    const commit = await github.getEarliestCommitForPr(
-      workload.id,
-      "octo-org",
-      "octo-repo",
-      1347,
-    );
+    const commit = await github.getEarliestCommitForPr(workload.id, "octo-org", "octo-repo", 1347);
     expect(commit.commitId).toBe("6dcb09b5b57875f334f61aebed695e2e4193db5e");
     expect(commit.date).toBe("2011-04-14T16:00:49Z");
     expect(commit.message).toBe("Fix all the bugs");

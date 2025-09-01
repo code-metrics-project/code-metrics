@@ -29,11 +29,7 @@ import { getWorkloadDetail } from "@/services/workload";
 import Dashboard from "@/components/dashboard/Dashboard.vue";
 import { getRelativeDate } from "@/utils/date";
 import type { TDashboard } from "@/queries/dashboards";
-import {
-  formatSecondsAsDaysAndHours,
-  formatSecondsAsHoursAndMinutes,
-  formatValueAsPercentage,
-} from "@/chart/common";
+import { formatSecondsAsDaysAndHours, formatSecondsAsHoursAndMinutes, formatValueAsPercentage } from "@/chart/common";
 
 const DAYS_BACK = 15;
 const SHORT_DAYS_BACK = 7;

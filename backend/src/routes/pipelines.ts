@@ -7,18 +7,9 @@ import { WorkloadId } from "../model/config/workload-config";
 import { getIdOfFirstStage, reifyMetaStageId } from "../services/deployment/common";
 
 // e.g. /api/pipeline/runs?workloads=ibt&startDate=2022-03-01
-export const getPipelineRuns = async (
-  req: Request,
-  res: Response<RunWithMetadata[] | string>,
-): Promise<void> => {
+export const getPipelineRuns = async (req: Request, res: Response<RunWithMetadata[] | string>): Promise<void> => {
   try {
-    const {
-      workloads,
-      startDate,
-      jobGroups,
-      branch,
-      stageId,
-    } = req.query;
+    const { workloads, startDate, jobGroups, branch, stageId } = req.query;
 
     if (!branch) {
       throw new ValidationError("Missing branch query parameter");
@@ -32,7 +23,6 @@ export const getPipelineRuns = async (
       stageId,
     });
     res.json(runs);
-
   } catch (e) {
     if (e instanceof ValidationError) {
       res.statusCode = 400;
@@ -44,10 +34,7 @@ export const getPipelineRuns = async (
 };
 
 // e.g. /api/pipeline/run?runId=foo&workloadId=bar&jobName=baz
-export const getPipelineRun = async (
-  req: Request,
-  res: Response<RunWithMetadata | string>,
-): Promise<void> => {
+export const getPipelineRun = async (req: Request, res: Response<RunWithMetadata | string>): Promise<void> => {
   try {
     const runId = req.query.runId as string;
     if (!runId) {
@@ -71,7 +58,7 @@ export const getPipelineRun = async (
     if (!run) {
       res.statusCode = 404;
       res.send(`Run not found for ${workloadId} / ${runId}`);
-      return
+      return;
     } else {
       res.json(run);
     }
@@ -86,10 +73,7 @@ export const getPipelineRun = async (
 };
 
 // e.g. /api/pipeline/run?runId=foo&workloadId=bar&jobName=baz
-export const getPipelineRunRedirect = async (
-  req: Request,
-  res: Response<RunWithMetadata | string>,
-): Promise<void> => {
+export const getPipelineRunRedirect = async (req: Request, res: Response<RunWithMetadata | string>): Promise<void> => {
   try {
     const runId = req.query.runId as string;
     if (!runId) {
@@ -113,11 +97,10 @@ export const getPipelineRunRedirect = async (
     if (!runUrl) {
       res.statusCode = 404;
       res.send(`Run not found for ${workloadId} / ${runId}`);
-      return
+      return;
     } else {
-      res.redirect(runUrl)
+      res.redirect(runUrl);
     }
-
   } catch (e) {
     if (e instanceof ValidationError) {
       res.statusCode = 400;
@@ -156,7 +139,7 @@ export const getPipelineDeployments = async (
     if (!run) {
       res.statusCode = 404;
       res.send(`Run not found for ${workloadId} / ${runId}`);
-      return
+      return;
     }
     const deploymentRuns = await fetchDeploymentsForRun(workloadId, stageId, jobName, runId);
     res.json(deploymentRuns);

@@ -59,6 +59,7 @@ code-metrics-api:
         LOG_RESPONSE_BODY: false
         LOG_LEVEL: 1
         CONFIG_DIR: "/backend/.config"
+        STRICT_CONFIG_LOAD: false
         #COGNITO_USER_POOL_ID: changeme
         #COGNITO_CLIENT_ID: changeme
         #API_RETRY_LIMIT: 5

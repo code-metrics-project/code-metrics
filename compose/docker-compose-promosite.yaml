@@ -1,0 +1,7 @@
+services:
+  codemetrics-promosite:
+    build:
+      dockerfile: docker/Dockerfile.promosite
+    container_name: codemetrics-promosite
+    ports:
+      - 4321:8080

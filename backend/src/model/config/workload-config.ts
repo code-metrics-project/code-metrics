@@ -5,7 +5,7 @@ import {
   JiraTicketOptions,
   PipelinesTypes,
   ServiceNowTicketOptions,
-  TicketManagementTypes
+  TicketManagementTypes,
 } from "./common";
 import { VersionedConfig } from "./base";
 
@@ -34,7 +34,7 @@ export type WorkloadPipelineStage = {
   /**
    * Outbound mapping of local job names to pipeline job names.
    */
-  jobMapping?: Record<string, string>
+  jobMapping?: Record<string, string>;
 };
 
 export type WorkloadPipelinesConfig = {
@@ -79,17 +79,18 @@ export type BaseWorkloadTicketConfig = {
   serverId: string;
 };
 
-export type WorkloadTicketConfigAzure = BaseWorkloadTicketConfig & AzureTicketOptions & {
-  team: string;
-  ticketPriorities?: string[];
-};
+export type WorkloadTicketConfigAzure = BaseWorkloadTicketConfig &
+  AzureTicketOptions & {
+    team: string;
+    ticketPriorities?: string[];
+  };
 
 export type WorkloadTicketConfigJira = BaseWorkloadTicketConfig & JiraTicketOptions;
 
 export type WorkloadTicketConfigServiceNow = BaseWorkloadTicketConfig & ServiceNowTicketOptions;
 
 export type WorkloadTicketConfig =
-  WorkloadTicketConfigAzure
+  | WorkloadTicketConfigAzure
   | WorkloadTicketConfigJira
   | WorkloadTicketConfigServiceNow;
 

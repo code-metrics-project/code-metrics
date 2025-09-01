@@ -11,21 +11,15 @@ describe("buildPath", () => {
   });
 
   it("returns path with multiple query parameters", () => {
-    expect(buildPath("/example", { foo: "bar", baz: "qux" })).toBe(
-      "/example?foo=bar&baz=qux",
-    );
+    expect(buildPath("/example", { foo: "bar", baz: "qux" })).toBe("/example?foo=bar&baz=qux");
   });
 
   it("encodes query parameters", () => {
-    expect(buildPath("/example", { foo: "baz qux" })).toBe(
-      "/example?foo=baz%20qux",
-    );
+    expect(buildPath("/example", { foo: "baz qux" })).toBe("/example?foo=baz%20qux");
   });
 
   it("filters out undefined query parameters", () => {
-    expect(buildPath("/example", { foo: "bar", baz: undefined })).toBe(
-      "/example?foo=bar",
-    );
+    expect(buildPath("/example", { foo: "bar", baz: undefined })).toBe("/example?foo=bar");
   });
 
   it("adds leading slash if missing", () => {
@@ -37,14 +31,8 @@ describe("buildPath", () => {
   });
 
   it("ignores falsy query parameters", () => {
-    expect(buildPath("/example", { bar: "baz", foo: "" })).toBe(
-      "/example?bar=baz",
-    );
-    expect(buildPath("/example", { bar: "baz", foo: null })).toBe(
-      "/example?bar=baz",
-    );
-    expect(buildPath("/example", { bar: "baz", foo: undefined })).toBe(
-      "/example?bar=baz",
-    );
+    expect(buildPath("/example", { bar: "baz", foo: "" })).toBe("/example?bar=baz");
+    expect(buildPath("/example", { bar: "baz", foo: null })).toBe("/example?bar=baz");
+    expect(buildPath("/example", { bar: "baz", foo: undefined })).toBe("/example?bar=baz");
   });
 });

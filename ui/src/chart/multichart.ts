@@ -1,10 +1,6 @@
 import type { DatedMetrics } from "@/model/metrics";
 import { verbose } from "@/utils/logger";
-import type {
-  ChartFormat,
-  DatedValue,
-  FormattableChartData,
-} from "@/chart/common";
+import type { ChartFormat, DatedValue, FormattableChartData } from "@/chart/common";
 import { groupByName, lookupFormatter } from "@/chart/common";
 import type { ChartTypes } from "@/chart/chart-types";
 

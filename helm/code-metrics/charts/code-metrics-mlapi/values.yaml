@@ -9,7 +9,7 @@ fullnameOverride: ""
 
 application:
   image:
-    repository: docker.io/library/code-metrics-mlapi
+    repository: ghcr.io/code-metrics-project/code-metrics-mlapi
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""

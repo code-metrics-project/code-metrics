@@ -1,10 +1,7 @@
 import type { DatedMetrics } from "@/model/metrics";
 import { getColourForKey } from "@/utils/colours";
 import type { FormattableChartData } from "@/chart/common";
-import {
-  calculateValuesByTag,
-  splitDatasetOnGroupDimension,
-} from "@/chart/common";
+import { calculateValuesByTag, splitDatasetOnGroupDimension } from "@/chart/common";
 
 export type DoughnutChartData = {
   data: number[];
@@ -20,14 +17,10 @@ export type DoughnutChartDataset = FormattableChartData & {
  * Create a single doughnut chart dataset.
  * @param metrics
  */
-export function createDoughnutChartData(
-  metrics: Map<string, number>,
-): DoughnutChartData {
+export function createDoughnutChartData(metrics: Map<string, number>): DoughnutChartData {
   const labels = [...metrics.keys()];
   const data = [...metrics.values()];
-  const colors = [...metrics.keys()].map((key, index) =>
-    getColourForKey(key, index),
-  );
+  const colors = [...metrics.keys()].map((key, index) => getColourForKey(key, index));
   return {
     data,
     labels,
@@ -39,9 +32,7 @@ export function createDoughnutChartData(
  * Create datasets for zero or more doughnut charts.
  * @param inputs
  */
-export function createDoughnutChartDatasets(
-  inputs: Map<string, DatedMetrics>[],
-): DoughnutChartDataset {
+export function createDoughnutChartDatasets(inputs: Map<string, DatedMetrics>[]): DoughnutChartDataset {
   // Doughnut charts are a special case where we need to calculate the relative percentages
   // between tags *within each dataset*.
   // This is because for each dataset, there will be a separate chart.

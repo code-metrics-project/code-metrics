@@ -1,4 +1,4 @@
-import { AggregatedFileChanges, EnrichedRepoChange, FileChanges, RepoChange, } from "../../model/vcs";
+import { AggregatedFileChanges, EnrichedRepoChange, FileChanges, RepoChange } from "../../model/vcs";
 import { getVcsBranches, getWorkloadById } from "../../config/configMapping";
 import { getVcsForWorkload } from "../codeManagement/vcsService";
 import { getIssueMgmtForWorkload } from "../projectManangement/issueMgmtService";

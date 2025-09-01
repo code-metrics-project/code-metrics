@@ -1,6 +1,8 @@
 ARG IMGREPO=""
 FROM ${IMGREPO}jenkins/jenkins:lts
 
+LABEL org.opencontainers.image.source=https://github.com/code-metrics-project/releases
+
 USER root
 RUN mkdir /usr/share/jenkins/ref/plugins && \
     chown -R jenkins:jenkins /usr/share/jenkins/ref/plugins

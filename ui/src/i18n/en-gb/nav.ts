@@ -10,7 +10,9 @@ export default {
   programChanges: "Programme Changes",
   programPipelines: "Programme Pipelines",
   programSecurity: "Programme Security",
+  programQualityGates: "Programme Quality Gates",
   newQuery: "Query",
+  qualityGates: "Quality Gates",
   security: "Security",
   workload: "Workloads",
 };

@@ -17,9 +17,10 @@ import { Datastore, DatastoreCollection, QueryFilter } from "../../db/api";
 import { registerVcs, VcsService } from "./vcsService";
 import { truncateDateOnly } from "../../utils/date";
 import { WorkloadId } from "../../model/config/workload-config";
-import {CodeManagementTypes} from "../../model/config/common";
+import { CodeManagementTypes } from "../../model/config/common";
 
-export const initBitbucketCloudVcs = () => registerVcs(CodeManagementTypes.BITBUCKET_CLOUD, () => new BitbucketCloudVcsService());
+export const initBitbucketCloudVcs = () =>
+  registerVcs(CodeManagementTypes.BITBUCKET_CLOUD, () => new BitbucketCloudVcsService());
 
 async function paginate<T, U extends { values?: U["values"] }>(
   connection: APIClient,
@@ -309,6 +310,23 @@ class BitbucketCloudVcsService implements VcsService {
     pullRequestId: number,
   ): Promise<RepoChange> => {
     throw new Error("Fetching earliest commit for PR is not implemented.");
+  };
+
+  fetchFile = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repoName: string,
+    path: string,
+  ): Promise<string> => {
+    throw new Error("Fetching file is not implemented.");
+  };
+
+  fetchMergeRules = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repoName: string,
+  ): Promise<TMergeRules[]> => {
+    throw new Error("Fetching merge rules is not implemented.");
   };
 
   buildCommitLink = (change: RepoChange, workloadId: WorkloadId): string =>

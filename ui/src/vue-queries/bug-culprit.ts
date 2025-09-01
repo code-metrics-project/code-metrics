@@ -3,6 +3,7 @@ import { BUG_CULPRIT_FILES } from "@/utils/urls";
 import axios from "@/utils/axios";
 import type { RepoData } from "@/model/vcs";
 import type { Ref } from "vue";
+import { KEYS } from "./keys";
 
 type BugCulpritRequest = {
   daysBack: number | Ref<number>;
@@ -23,7 +24,7 @@ async function runQuery({ queryKey }: QueryFunctionContext<BugCulpritQueryKey>) 
 export function useBugCulprit(query: BugCulpritRequest) {
   return useQuery({
     enabled: false,
-    queryKey: ["bug-culprit", query] as BugCulpritQueryKey,
+    queryKey: [KEYS.BUG_CULPRITS, query] as BugCulpritQueryKey,
     queryFn: runQuery,
   });
 }

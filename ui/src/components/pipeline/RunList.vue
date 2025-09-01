@@ -1,19 +1,13 @@
 <template>
   <v-card>
     <v-card-title>Pipeline runs</v-card-title>
-    <v-card-subtitle
-      >List pipeline runs by workload and repository.</v-card-subtitle
-    >
+    <v-card-subtitle>List pipeline runs by workload and repository.</v-card-subtitle>
     <v-card-text>
       <v-row>
         <v-col cols="9">
           <v-row>
             <v-col cols="12">
-              <workload-names
-                :defaults="workloads"
-                @input="(w) => (workloads = w)"
-                :operationState="operationState"
-              />
+              <workload-names :defaults="workloads" @input="(w) => (workloads = w)" :operationState="operationState" />
             </v-col>
           </v-row>
           <v-row>
@@ -27,20 +21,12 @@
           </v-row>
           <v-row>
             <v-col cols="12">
-              <DatePicker
-                v-model="startDateInput"
-                label="Start date"
-                :operationState="operationState"
-              />
+              <DatePicker v-model="startDateInput" label="Start date" :operationState="operationState" />
             </v-col>
           </v-row>
           <v-row>
             <v-col cols="12">
-              <DatePicker
-                v-model="endDateInput"
-                label="End date"
-                :operationState="operationState"
-              />
+              <DatePicker v-model="endDateInput" label="End date" :operationState="operationState" />
             </v-col>
           </v-row>
           <v-row>
@@ -57,34 +43,17 @@
           <v-row>
             <v-col>
               <v-card-subtitle class="pl-0 mt-4>"> Display </v-card-subtitle>
-              <v-checkbox
-                v-model="showRepository"
-                label="Show repository"
-                :disabled="busy"
-                class="my-0"
-              />
+              <v-checkbox v-model="showRepository" label="Show repository" :disabled="busy" class="my-0" />
             </v-col>
           </v-row>
         </v-col>
       </v-row>
       <v-row>
         <v-col>
-          <v-btn
-            :disabled="busy"
-            @click="fetchRuns"
-            color="primary"
-            class="mr-2"
-          >
+          <v-btn :disabled="busy" @click="fetchRuns" color="primary" class="mr-2">
             {{ fetchLabel }}
           </v-btn>
-          <v-progress-circular
-            v-if="busy"
-            :model-value="progress"
-            color="primary"
-            :width="4"
-            :size="32"
-            class="mr-3"
-          />
+          <v-progress-circular v-if="busy" :model-value="progress" color="primary" :width="4" :size="32" class="mr-3" />
         </v-col>
       </v-row>
     </v-card-text>
@@ -95,36 +64,23 @@
         <v-col />
         <v-col>
           <v-spacer />
-          <v-text-field
-            v-model="search"
-            append-icon="mdi-magnify"
-            label="Search"
-            single-line
-            hide-details
-          />
+          <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details />
         </v-col>
       </v-row>
     </v-card-title>
 
     <v-sheet color="grey-lighten-4" v-if="summary">
       <v-card-item>
-        <v-card-subtitle class="subtitle-1 font-weight-bold"
-          >Summary</v-card-subtitle
-        >
+        <v-card-subtitle class="subtitle-1 font-weight-bold">Summary</v-card-subtitle>
       </v-card-item>
       <v-card-text class="run-summary">
         <span class="font-weight-medium">{{ summary.total }} runs</span>
+        <span class="ml-4"><v-icon color="red" class="mr-1">mdi-close-circle</v-icon>Failed: {{ summary.failed }}</span>
         <span class="ml-4"
-          ><v-icon color="red" class="mr-1">mdi-close-circle</v-icon>Failed:
-          {{ summary.failed }}</span
+          ><v-icon color="green" class="mr-1">mdi-check-circle</v-icon>Succeeded: {{ summary.succeeded }}</span
         >
         <span class="ml-4"
-          ><v-icon color="green" class="mr-1">mdi-check-circle</v-icon
-          >Succeeded: {{ summary.succeeded }}</span
-        >
-        <span class="ml-4"
-          ><v-icon color="orange" class="mr-1">mdi-minus-circle</v-icon>Aborted:
-          {{ summary.aborted }}</span
+          ><v-icon color="orange" class="mr-1">mdi-minus-circle</v-icon>Aborted: {{ summary.aborted }}</span
         >
       </v-card-text>
     </v-sheet>
@@ -157,29 +113,13 @@
         <span class="title__content">{{ item.repo }}</span>
       </template>
       <template v-slot:[`item.duration`]="{ item }">
-        <span class="title__content">{{
-          humaniseDuration(item.duration)
-        }}</span>
+        <span class="title__content">{{ humaniseDuration(item.duration) }}</span>
       </template>
       <template v-slot:[`item.result`]="{ item }">
         <span class="run-row-issue"
-          ><v-icon
-            v-if="item.result === RunResult.Succeeded"
-            color="green"
-            class="mr-1"
-            >mdi-check-circle</v-icon
-          >
-          <v-icon
-            v-else-if="item.result === RunResult.Aborted"
-            color="orange"
-            class="mr-1"
-            >mdi-minus-circle</v-icon
-          >
-          <v-icon
-            v-else-if="item.result === RunResult.Failed"
-            color="red"
-            class="mr-1"
-            >mdi-close-circle</v-icon
+          ><v-icon v-if="item.result === RunResult.Succeeded" color="green" class="mr-1">mdi-check-circle</v-icon>
+          <v-icon v-else-if="item.result === RunResult.Aborted" color="orange" class="mr-1">mdi-minus-circle</v-icon>
+          <v-icon v-else-if="item.result === RunResult.Failed" color="red" class="mr-1">mdi-close-circle</v-icon
           ><v-icon v-else color="grey" class="mr-1">mdi-circle</v-icon>
           {{ item.result }}
         </span>
@@ -191,11 +131,7 @@
 <script lang="ts">
 // @ts-nocheck
 import DatePicker from "@/components/DatePicker.vue";
-import {
-  getRelativeDate,
-  humaniseDuration,
-  walkDateRangeBatched,
-} from "@/utils/date";
+import { getRelativeDate, humaniseDuration, walkDateRangeBatched } from "@/utils/date";
 import WorkloadNames from "@/components/inputs/WorkloadNames.vue";
 import JobGroups from "@/components/inputs/JobGroups.vue";
 import { OperationState } from "@/utils/ui";

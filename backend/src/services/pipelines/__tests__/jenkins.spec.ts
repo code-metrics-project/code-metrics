@@ -19,17 +19,16 @@ if (process.env.MOCKS_PRINT_LOG_ON_CRASH === "true") mocks.printLogOnCrash();
 let mockServer;
 
 const workload: Workload = {
-  codeAnalysis: undefined, codeManagement: undefined,
+  codeAnalysis: undefined,
+  codeManagement: undefined,
   id: "athena",
   pipelines: {
     jobGroups: {
-      "backend": {
+      backend: {
         jobNames: ["octo-repo"],
-      }
+      },
     },
-    stages: [
-      { stageId: "jenkins-build-stage" },
-    ],
+    stages: [{ stageId: "jenkins-build-stage" }],
   },
   projectManagement: {
     type: TicketManagementTypes.JIRA,
@@ -71,16 +70,18 @@ beforeAll(async () => {
       workloads: [workload],
     },
     pipelineConfig: {
-      stages: [{
-        id: "jenkins-build-stage",
-        description: "build stage",
-        type: PipelinesTypes.JENKINS,
-        serverId: "test-jenkins",
-        projectName: "DeloitteDigitalUK",
-        commitMapping: {
-          runProperty: "$.data.head_sha",
+      stages: [
+        {
+          id: "jenkins-build-stage",
+          description: "build stage",
+          type: PipelinesTypes.JENKINS,
+          serverId: "test-jenkins",
+          projectName: "DeloitteDigitalUK",
+          commitMapping: {
+            runProperty: "$.data.head_sha",
+          },
         },
-      }],
+      ],
     },
   });
 });

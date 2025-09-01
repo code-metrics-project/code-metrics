@@ -6,7 +6,7 @@ import { getWorkloadById } from "../config/configMapping";
 
 export const groupBy = async (
   query: RawQuery,
-  dataset: Map<DateStamp, DatedMetrics>
+  dataset: Map<DateStamp, DatedMetrics>,
 ): Promise<Map<string, IntermediaryDatedMetrics>> => {
   const dimensionName = query.groupBy ?? "workloadId";
   verbose(`Grouping ${query.queryName} metrics by ${dimensionName}`);
@@ -20,14 +20,16 @@ export const groupBy = async (
           const dayEntries = groupByDimension(daily, day, dimensionName, metric, axisName);
           daily.set(day, dayEntries);
         } catch (e) {
-          throw new Error(`Error grouping ${query.queryName} metric ${JSON.stringify(metric)} by ${dimensionName}: ${e}`);
+          throw new Error(
+            `Error grouping ${query.queryName} metric ${JSON.stringify(metric)} by ${dimensionName}: ${e}`,
+          );
         }
       }
     }
   }
 
   return reduceToSingle(daily);
-}
+};
 
 const groupByDimension = (
   allEntries: Map<DateStamp, Map<string, number[]>>,
@@ -60,7 +62,7 @@ const groupByDimension = (
 
   // this looks something like "coverage/athena-frontend" (workload and repo group)
   // or "coverage/account-pod" (a tag name)
-  const metricKey = axisName + "/" + dimensionValue
+  const metricKey = axisName + "/" + dimensionValue;
 
   const entry = dayEntries.get(metricKey) ?? [];
   entry.push(metric.value);
@@ -73,9 +75,7 @@ const groupByDimension = (
  * Reduce the grouped metrics to a single value per day.
  * @param daily
  */
-function reduceToSingle(
-  daily: Map<DateStamp, Map<string, number[]>>
-): Map<string, IntermediaryDatedMetrics> {
+function reduceToSingle(daily: Map<DateStamp, Map<string, number[]>>): Map<string, IntermediaryDatedMetrics> {
   const output = new Map<string, IntermediaryDatedMetrics>();
 
   for (const [day, entries] of daily) {

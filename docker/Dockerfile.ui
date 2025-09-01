@@ -13,7 +13,9 @@ RUN npm run build
 
 FROM ${IMGREPO}nginx AS run
 
-ENV API_BASE_URL="http://localhost:3000"
+LABEL org.opencontainers.image.source=https://github.com/code-metrics-project/releases
+
+ENV API_BASE_URL "http://localhost:3000"
 
 # Copy built files
 COPY --from=build /usr/src/app/ui/dist /usr/share/nginx/html

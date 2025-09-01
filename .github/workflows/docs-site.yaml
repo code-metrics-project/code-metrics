@@ -1,4 +1,4 @@
-name: Update external docs site
+name: Update external documentation sites
 
 on:
   workflow_dispatch: # Allows manual triggering
@@ -7,10 +7,19 @@ on:
         description: "Push changes to external docs repo"
         required: true
         default: "false"
+      push_promosite:
+        description: "Push promosite to external website repo"
+        required: true
+        default: "false"
   workflow_call: # Allows calling from another workflow
     inputs:
       push_changes:
         description: "Push changes to external docs repo"
+        required: true
+        default: "false"
+        type: string
+      push_promosite:
+        description: "Push promosite to external website repo"
         required: true
         default: "false"
         type: string
@@ -37,7 +46,7 @@ jobs:
         working-directory: code-metrics/scripts
         run: ./update-external-docs-site.sh -y
 
-      - name: Check for changes
+      - name: Check for docs changes
         id: check-changes
         working-directory: code-metrics-docs
         run: |
@@ -53,8 +62,48 @@ jobs:
         if: ${{ steps.check-changes.outputs.has_changes == 'true' && github.event.inputs.push_changes == 'true' }}
         working-directory: code-metrics-docs
         run: |
-          git config --global user.name 'Code Metrics docs bot'
+          git config --global user.name 'CodeMetrics docs bot'
           git config --global user.email 'code-metrics-project@users.noreply.github.com'
           git add -A
           git commit -m "docs: updates documentation site."
+          git push
+
+  build-and-push-promosite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ github.event.inputs.push_promosite == 'true' }}
+    steps:
+      - name: Checkout code-metrics repo
+        uses: actions/checkout@v4
+        with:
+          path: code-metrics
+
+      - name: Checkout website repo
+        uses: actions/checkout@v4
+        with:
+          # TODO: Revert repo name to /websites when custom domain is set up
+          repository: code-metrics-project/code-metrics-project.github.io
+
+          ssh-key: ${{ secrets.WEBSITE_REPO_SSH_KEY }}
+          ref: main
+          path: website
+
+      - name: Build promosite
+        working-directory: code-metrics/promosite
+        run: |
+          npm ci
+          npm run build
+
+      - name: Copy built promosite files
+        run: |
+          rm -rf website/*
+          cp -r code-metrics/promosite/dist/* website/
+
+      - name: Commit and push website changes
+        working-directory: website
+        run: |
+          git config --global user.name 'CodeMetrics website bot'
+          git config --global user.email 'code-metrics-project@users.noreply.github.com'
+          git add -A
+          git commit -m "docs: update promosite deployment"
           git push

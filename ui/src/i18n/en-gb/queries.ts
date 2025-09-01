@@ -22,14 +22,12 @@ export default {
   description: {
     "bugs-new": "How many new bugs occurred or escaped to production.",
     "bugs-open": "The number of open bugs.",
-    "change-failure-rate":
-      "Percentage of deployments that result in an incident.",
+    "change-failure-rate": "Percentage of deployments that result in an incident.",
     "change-categories": "The types of changes (PR, commit, ticketed).",
     "code-coverage": "The unit test coverage.",
     "cyclomatic-complexity": "A measure of code complexity.",
     "deployment-frequency": "How often changes are deployed.",
-    "lead-time-for-changes":
-      "Elapsed time from start of feature development to deployment.",
+    "lead-time-for-changes": "Elapsed time from start of feature development to deployment.",
     "lines-of-code": "The total lines of code for the repository.",
     "non-working-pattern": "Commits made outside of working hours or days.",
     "pipeline-runs": "The number of times the pipeline was run.",

@@ -1,6 +1,6 @@
 import path from "path";
 import fs, { readFile } from "fs/promises";
-import { logger, verbose } from "../utils/logger/logger";
+import { logger, verbose, warn } from "../utils/logger/logger";
 import { ConfigHolder } from "../model/config/common";
 import yaml from "js-yaml";
 import _merge from "lodash/merge";
@@ -11,18 +11,22 @@ import { Workload, WorkloadConfigWrapper } from "../model/config/workload-config
 import { ConfigVersion, VersionedConfig } from "../model/config/base";
 import { StageConfigWrapper } from "../model/config/pipeline-config";
 import { redactAndRenderAsJson } from "../utils/logger/redact";
+import { isStrictMode } from "../utils/strict";
+import { getConfigItem } from "./sources/source";
 
 let cachedConfig: ConfigHolder;
 
 export const clearCachedConfig = () => (cachedConfig = null);
 
-export const getConfig = (): ConfigHolder => {
+export const getConfig = (): Partial<ConfigHolder> => {
   if (!cachedConfig) {
-    throw new Error("No configuration has been loaded - call loadConfig() first");
+    warn("No configuration has been loaded - call loadConfig() first");
+    return {};
   }
   return cachedConfig;
 };
 
+let configLoaded = false;
 export const loadConfig = async (overrides?: {
   dir?: string;
   remoteConfig?: RemoteConfigWrapper;
@@ -32,29 +36,52 @@ export const loadConfig = async (overrides?: {
   const configDirs = getConfigDirs(overrides?.dir);
   logger(`Loading from configuration dir: ${configDirs}`);
 
-  const loadedConfig: ConfigHolder = {
-    // (optional) file in app dir
-    metadata: await readConfig([__dirname], "metadata", { required: false }, { name: "code-metrics-backend", version: "dev" }),
+  try {
+    const loadedConfig: ConfigHolder = {
+      // (optional) file in app dir
+      metadata: await readConfig(
+        [__dirname],
+        "metadata",
+        { required: false },
+        { name: "code-metrics-backend", version: "dev" },
+      ),
 
-    // files in config dir
-    remoteConfigs:
-      overrides?.remoteConfig ??
-      (await readConfig(configDirs, "remote-config", { required: true, resolveSecrets: true })),
+      // files in config dir
+      remoteConfigs:
+        overrides?.remoteConfig ??
+        (await readConfig(configDirs, "remote-config", { required: true, resolveSecrets: true })),
 
-    workloadConfigs:
-      overrides?.workloadConfig ??
-      (await readConfig(configDirs, "workload-config", { required: true, resolveSecrets: true })),
+      workloadConfigs:
+        overrides?.workloadConfig ??
+        (await readConfig(configDirs, "workload-config", { required: true, resolveSecrets: true })),
 
-    pipelineConfigs:
-      overrides?.pipelineConfig ??
-      (await readConfig(configDirs, "pipeline-config", { required: false, resolveSecrets: true }, { stages: [] })),
-  };
-  cachedConfig = applyDefaults(polyfillLegacyConfig(loadedConfig));
+      pipelineConfigs:
+        overrides?.pipelineConfig ??
+        (await readConfig(configDirs, "pipeline-config", { required: false, resolveSecrets: true }, { stages: [] })),
+    };
+    cachedConfig = applyDefaults(polyfillLegacyConfig(loadedConfig));
+    configLoaded = true;
 
-  logger(`Loaded version ${cachedConfig.metadata.version}`);
-  verbose(`Remote Configuration: ${redactAndRenderAsJson(cachedConfig.remoteConfigs)}`);
-  verbose(`Workload Configuration: ${redactAndRenderAsJson(cachedConfig.workloadConfigs)}`);
-  verbose(`Pipeline Configuration: ${redactAndRenderAsJson(cachedConfig.pipelineConfigs)}`);
+    logger(`Loaded version ${cachedConfig.metadata.version}`);
+    verbose(`Remote Configuration: ${redactAndRenderAsJson(cachedConfig.remoteConfigs)}`);
+    verbose(`Workload Configuration: ${redactAndRenderAsJson(cachedConfig.workloadConfigs)}`);
+    verbose(`Pipeline Configuration: ${redactAndRenderAsJson(cachedConfig.pipelineConfigs)}`);
+  } catch (e) {
+    if (isStrictMode()) {
+      throw e;
+    } else {
+      warn("Failed to load config", e);
+    }
+  }
+};
+
+export const hasConfig = () => {
+  return configLoaded;
+};
+
+export const requiresConfig = (req, res, next) => {
+  if (!hasConfig()) throw new Error("Failed to load config");
+  next();
 };
 
 /**
@@ -63,8 +90,11 @@ export const loadConfig = async (overrides?: {
  * @param dir
  */
 export const getConfigDirs = (dir?: string): string[] => {
-  const d = dir ?? process.env.CONFIG_DIR ?? process.cwd();
-  return d.split(",").map((d) => d.trim()).filter((d) => d.length > 0);
+  const d = dir ?? getConfigItem("CONFIG_DIR") ?? process.cwd();
+  return d
+    .split(",")
+    .map((d) => d.trim())
+    .filter((d) => d.length > 0);
 };
 
 /**
@@ -75,14 +105,16 @@ export const getConfigDirs = (dir?: string): string[] => {
  */
 const discoverConfig = async (dirs: string[], filePrefix: string): Promise<string[]> => {
   const extensions = [".yaml", ".yml", ".json"];
-  const configFiles: string[] = []
+  const configFiles: string[] = [];
 
   for (const dir of dirs) {
-    const configs = (await fs.readdir(dir)).filter((f) => {
-      return f.startsWith(filePrefix) && extensions.some((ext) => f.endsWith(ext));
-    }).map((f) => {
-      return path.join(dir, f)
-    });
+    const configs = (await fs.readdir(dir))
+      .filter((f) => {
+        return f.startsWith(filePrefix) && extensions.some((ext) => f.endsWith(ext));
+      })
+      .map((f) => {
+        return path.join(dir, f);
+      });
     configFiles.push(...configs);
   }
 
@@ -99,7 +131,7 @@ const discoverConfig = async (dirs: string[], filePrefix: string): Promise<strin
  * There is a special case for handling top level properties of
  * type array. When an array is encountered with the same property
  * name its contents are merged.
- * 
+ *
  * If the configs themselves are arrays, they are concatenated.
  * @param configs
  */
@@ -107,7 +139,7 @@ export const mergeConfigs = <T>(configs: T[]): T => {
   if (!configs.length) {
     return <T>{};
   }
-  
+
   // Handle case where configs themselves are arrays
   if (Array.isArray(configs[0])) {
     // Create a properly typed array result using type assertion
@@ -118,7 +150,7 @@ export const mergeConfigs = <T>(configs: T[]): T => {
     }
     return result as unknown as T;
   }
-  
+
   const merged = configs[0];
   for (let i = 1; i < configs.length; i++) {
     const config = configs[i];
@@ -190,11 +222,15 @@ const applyWorkloadDefaults = (config: ConfigHolder, workload: Workload) => {
   const remoteTicketMgmt = config.remoteConfigs.ticketManagement;
 
   const workloadProjectMgmt = workload.projectManagement;
-  const projectMgmtDefaults = remoteTicketMgmt[workloadProjectMgmt.type]?.servers.find((s) => s.id === workloadProjectMgmt.serverId)?.defaults;
+  const projectMgmtDefaults = remoteTicketMgmt[workloadProjectMgmt.type]?.servers.find(
+    (s) => s.id === workloadProjectMgmt.serverId,
+  )?.defaults;
   _merge(workloadProjectMgmt, projectMgmtDefaults);
 
   const workloadIncidentMgmt = workload.incidents;
-  const incidentMgmtDefaults = remoteTicketMgmt[workloadIncidentMgmt.type]?.servers.find((s) => s.id === workloadIncidentMgmt.serverId)?.defaults;
+  const incidentMgmtDefaults = remoteTicketMgmt[workloadIncidentMgmt.type]?.servers.find(
+    (s) => s.id === workloadIncidentMgmt.serverId,
+  )?.defaults;
   _merge(workloadIncidentMgmt, incidentMgmtDefaults);
 };
 

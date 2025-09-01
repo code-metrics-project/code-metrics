@@ -16,12 +16,7 @@ export const fetchPRSize = async (
 
   try {
     const endDate = truncateDateOnly(new Date());
-    const result = await vcsPRSizeWithArgs(
-      workloads,
-      repoGroups,
-      startDate,
-      endDate,
-    );
+    const result = await vcsPRSizeWithArgs(workloads, repoGroups, startDate, endDate);
 
     logger(`Parsing PR size`);
     return groupPRSize(result);

@@ -1,13 +1,9 @@
 <template>
   <v-dialog v-model="active" max-width="400" persistent>
-    <v-card
-      :subtitle="dialog?.subtitle"
-      :text="dialog?.text"
-      :title="dialog?.title"
-    >
+    <v-card :subtitle="dialog?.subtitle" :text="dialog?.text" :title="dialog?.title">
       <template v-slot:actions>
         <v-spacer />
-        <v-btn v-if="dialog?.showCancel" @click="cancel"> Cancel</v-btn>
+        <v-btn v-if="dialog?.showCancel" @click="cancel"> {{ dialog?.cancelTitle }}</v-btn>
         <v-btn name="confirm" @click="confirm">
           {{ dialog?.confirmTitle }}
         </v-btn>
@@ -34,9 +30,19 @@ const checkNextDialog = () => {
 };
 
 const dismiss = (result: boolean) => {
-  dialog.value?.onDismiss(result);
-  active.value = false;
-  checkNextDialog();
+  const onDone = () => {
+    active.value = false;
+    checkNextDialog();
+  };
+  const onDismiss = dialog.value?.onDismiss;
+  if (onDismiss) {
+    // don't dismiss the dialog until the promise resolves
+    onDismiss(result)
+      .catch((e) => console.error("An error occurred when dismissing the dialog", e))
+      .finally(onDone);
+  } else {
+    onDone();
+  }
 };
 
 const cancel = () => dismiss(false);

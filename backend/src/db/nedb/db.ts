@@ -3,13 +3,14 @@ import cloneDeep from "lodash/cloneDeep";
 import { error, logger, verbose } from "../../utils/logger/logger";
 import Datastore from "@seald-io/nedb";
 import path from "path";
+import { getConfigItem } from "../../config/sources/source";
 
 let dbDir: string | undefined;
 const collections = new Map<string, Datastore>();
 
 export const initNeDB = async (filePath?: string): Promise<void> => {
   collections.clear();
-  dbDir = filePath ?? process.env.DATASTORE_PATH as string;
+  dbDir = filePath ?? getConfigItem("DATASTORE_PATH");
 };
 
 /**
@@ -96,11 +97,17 @@ export class NeDBCollection implements DatastoreCollection {
     });
   };
 
-  deleteOne = async (filter: QueryFilter): Promise<void> => {
+  deleteOne = async (filter: QueryFilter): Promise<boolean> => {
     return new Promise((resolve, reject) => {
-      this.db.remove(filter, { multi: false }, (err) => {
+      this.db.remove(filter, { multi: false }, (err, count) => {
         if (err) return reject(err);
-        resolve();
+        if (count === 0) {
+          verbose("Did not find item to delete", filter);
+          return resolve(false);
+        } else {
+          verbose("Deleted item", filter);
+          return resolve(true);
+        }
       });
     });
   };

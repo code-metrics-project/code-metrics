@@ -1,12 +1,10 @@
-const UUID = Java.type("java.util.UUID");
-
 const { projectName: adoProjectName, repoName, commitId } = context.request.pathParams;
 
 const changes = [];
 const changeCount = Math.round(Math.random() * 9) + 1; // Between 1-10 commit changes
 for (let i = 0; i < changeCount; i++) {
-  const gOID = UUID.randomUUID().toString();
-  const gOOID = UUID.randomUUID().toString();
+  const gOID = random.uuid();
+  const gOOID = random.uuid();
 
   const gFileNum = Math.round(Math.random() * 50); // Random 'file' in 50
 

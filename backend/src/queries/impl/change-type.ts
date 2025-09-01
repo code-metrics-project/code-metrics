@@ -17,20 +17,19 @@ type ChangeItem = {
 };
 
 export const fetchChangeCategories = async (args: ChangeTypeArgs): Promise<Map<DateStamp, DatedMetrics>> => {
-  logger(`Fetching change categories for workloads: ${args.workloads} and repo groups: ${args.repoGroups} from: ${args.startDate}`);
+  logger(
+    `Fetching change categories for workloads: ${args.workloads} and repo groups: ${args.repoGroups} from: ${args.startDate}`,
+  );
   try {
     const endDate = todayDateOnly();
     const workloads = args.workloads?.length === 1 && args.workloads[0] === "all" ? listWorkloadIds() : args.workloads;
     const repoGroups = args.repoGroups?.length ? args.repoGroups : listRepoGroups();
 
-    return await listCatagorisedChanges(
-      workloads,
-      repoGroups,
-      new Date(args.startDate),
-      endDate,
-    );
+    return await listCatagorisedChanges(workloads, repoGroups, new Date(args.startDate), endDate);
   } catch (error) {
-    throw new Error(`Failed to fetch change categories for workloads: ${args.workloads} and repo groups: ${args.repoGroups}: ${error}`);
+    throw new Error(
+      `Failed to fetch change categories for workloads: ${args.workloads} and repo groups: ${args.repoGroups}: ${error}`,
+    );
   }
 };
 
@@ -41,13 +40,7 @@ const listCatagorisedChanges = async (
   endDate: Date,
 ): Promise<Map<DateStamp, DatedMetrics>> => {
   // fetch enriched changes with links populated
-  const changes = await fetchRepoChanges(
-    workloads,
-    repoGroups,
-    startDate,
-    endDate,
-    true,
-  ) as EnrichedRepoChange[];
+  const changes = (await fetchRepoChanges(workloads, repoGroups, startDate, endDate, true)) as EnrichedRepoChange[];
 
   const categorisedChanges = inferCategory(changes);
 
@@ -84,7 +77,7 @@ const listCatagorisedChanges = async (
 const categoriseChange = (change: EnrichedRepoChange): ChangeCategory => {
   let category: ChangeCategory;
   if (change.links.issueId) {
-    category = "ticketed"
+    category = "ticketed";
   } else {
     const prLink = change.links.prLink;
     if (prLink) {

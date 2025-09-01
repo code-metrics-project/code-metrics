@@ -21,6 +21,14 @@
             >
             <v-btn
               :to="{
+                name: 'Workload Quality Gates',
+                params: { workloadId },
+              }"
+              class="mb-2 mr-2"
+              >Quality gates</v-btn
+            >
+            <v-btn
+              :to="{
                 name: 'Code Quality',
                 query: {
                   workloadId,

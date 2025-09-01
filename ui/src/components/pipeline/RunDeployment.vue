@@ -6,24 +6,9 @@
     <v-card-title>{{ runRow.title }}</v-card-title>
     <v-card-subtitle
       ><span class="run-row-issue">
-        <v-icon
-          v-if="runRow.result === RunResult.Succeeded"
-          color="green"
-          class="mr-1"
-          >mdi-circle</v-icon
-        >
-        <v-icon
-          v-else-if="runRow.result === RunResult.Aborted"
-          color="orange"
-          class="mr-1"
-          >mdi-circle</v-icon
-        >
-        <v-icon
-          v-else-if="runRow.result === RunResult.Failed"
-          color="red"
-          class="mr-1"
-          >mdi-circle</v-icon
-        >
+        <v-icon v-if="runRow.result === RunResult.Succeeded" color="green" class="mr-1">mdi-circle</v-icon>
+        <v-icon v-else-if="runRow.result === RunResult.Aborted" color="orange" class="mr-1">mdi-circle</v-icon>
+        <v-icon v-else-if="runRow.result === RunResult.Failed" color="red" class="mr-1">mdi-circle</v-icon>
         <v-icon v-else color="grey" class="mr-1">mdi-circle</v-icon> </span
       >{{ runRow.result }}</v-card-subtitle
     >

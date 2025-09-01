@@ -62,7 +62,7 @@ jobs:
             fi
             new_tag="ghcr.io/${REPO}/${repo}:$tag"
 
-            echo "******** Pulling from Dockerhub *********"
+            echo "******** Pulling $image from Dockerhub *********"
             docker pull "$image"
         
             # Tag the image to match the original path in GHCR

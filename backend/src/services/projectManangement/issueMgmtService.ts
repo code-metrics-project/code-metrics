@@ -1,9 +1,5 @@
 import { verbose } from "../../utils/logger/logger";
-import {
-  TicketManagementTypes,
-
-
-} from "../../model/config/common";
+import { TicketManagementTypes } from "../../model/config/common";
 import { getServerConfig, getWorkloadById } from "../../config/configMapping";
 import { getConfig } from "../../config/config";
 import { TicketConfigManager, TicketService } from "../tickets/ticketService";
@@ -39,7 +35,9 @@ const getIssueMgmt = (type: string): IssueMgmtService => {
 /**
  * Uses the workload's `projectManagement` configuration.
  */
-export abstract class AbstractIssueMgmtConfigManager<C extends WorkloadTicketConfig, I> implements TicketConfigManager<C, I> {
+export abstract class AbstractIssueMgmtConfigManager<C extends WorkloadTicketConfig, I>
+  implements TicketConfigManager<C, I>
+{
   abstract getDefaultTicketTypes(): string[];
 
   getWorkloadConfig(workloadId: WorkloadId): C {
@@ -55,6 +53,6 @@ export abstract class AbstractIssueMgmtConfigManager<C extends WorkloadTicketCon
 
   getServerConfig(serverType: TicketManagementTypes, workloadId: WorkloadId): TicketManagementServer {
     const serverId = this.getWorkloadConfig(workloadId).serverId;
-    return getServerConfig(getConfig().remoteConfigs.ticketManagement[serverType]?.servers, serverId)
+    return getServerConfig(getConfig().remoteConfigs.ticketManagement[serverType]?.servers, serverId);
   }
 }

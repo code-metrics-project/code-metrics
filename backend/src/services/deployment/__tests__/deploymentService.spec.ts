@@ -19,7 +19,7 @@ if (process.env.MOCKS_VERBOSE === "true") mocks.verbose();
 if (process.env.MOCKS_PRINT_LOG_ON_CRASH === "true") mocks.printLogOnCrash();
 jest.setTimeout(30000);
 
-describe('DeploymentService', () => {
+describe("DeploymentService", () => {
   const workload: Workload = {
     codeAnalysis: undefined,
     id: "athena",
@@ -29,9 +29,7 @@ describe('DeploymentService', () => {
       projectName: "octocat",
       repoGroups: {
         backend: {
-          components: [
-            { name: "octo-repo", repo: "octo-repo" },
-          ],
+          components: [{ name: "octo-repo", repo: "octo-repo" }],
         },
       },
     },
@@ -74,7 +72,7 @@ describe('DeploymentService', () => {
     await mockServer?.stop();
   });
 
-  it('should get a single deployment pipeline configuration for a workload', async () => {
+  it("should get a single deployment pipeline configuration for a workload", async () => {
     const service = getDeploymentService();
 
     const config = service.getStageConfigForWorkload(workload, "deployment-stage");
@@ -82,7 +80,7 @@ describe('DeploymentService', () => {
     expect(config.commitMapping.runProperty).toBe("$.data.head_sha");
   });
 
-  it('should find the PR associated with a run', async () => {
+  it("should find the PR associated with a run", async () => {
     const service = getDeploymentService();
 
     const run: Run = {
@@ -99,7 +97,7 @@ describe('DeploymentService', () => {
     expect(pr.title).toBe("Amazing new feature");
   });
 
-  it('should calculate the date bounds for a run', async () => {
+  it("should calculate the date bounds for a run", async () => {
     const service = getDeploymentService();
 
     const run: Run = {
@@ -120,19 +118,13 @@ describe('DeploymentService', () => {
     expect(bounds.end).toStrictEqual(new Date("2011-04-19T00:01:00Z"));
   });
 
-  it('should calculate the lead times for a workload', async () => {
+  it("should calculate the lead times for a workload", async () => {
     const service = getDeploymentService();
 
     const startDate = new Date("2011-04-19");
     const endDate = new Date("2011-04-19");
 
-    const leadTimes = await service.calculateLeadTimes(
-      "athena",
-      "deployment-stage",
-      ["backend"],
-      startDate,
-      endDate
-    );
+    const leadTimes = await service.calculateLeadTimes("athena", "deployment-stage", ["backend"], startDate, endDate);
     expect(leadTimes.size).toBe(1);
 
     for (const [date, metrics] of leadTimes) {
@@ -151,25 +143,19 @@ describe('DeploymentService', () => {
             deployed: new Date("2011-04-19T19:43:08.000Z"),
             leadTime: 445339,
             workloadId: "athena",
-          }
+          },
         ],
       });
     }
   });
 
-  it('should fetch the deployments for a workload by job group', async () => {
+  it("should fetch the deployments for a workload by job group", async () => {
     const service = getDeploymentService();
 
     const startDate = new Date("2011-04-19");
     const endDate = new Date("2011-04-19");
 
-    const deployments = await service.fetchDeployments(
-      "athena",
-      "deployment-stage",
-      ["backend"],
-      startDate,
-      endDate
-    );
+    const deployments = await service.fetchDeployments("athena", "deployment-stage", ["backend"], startDate, endDate);
     expect(deployments["backend"]).toHaveLength(1);
 
     for (const [jobGroup, runs] of Object.entries(deployments)) {
@@ -184,7 +170,7 @@ describe('DeploymentService', () => {
         repo: "octo-repo",
         duration: 600,
         user: "octocat",
-        userType: "User"
+        userType: "User",
       });
     }
   });
@@ -234,9 +220,9 @@ async function startGitHubMock(workload: Workload) {
           serverId: "test-github",
           projectName: "octo-org",
           commitMapping: {
-            runProperty: "$.data.head_sha"
-          }
-        }
+            runProperty: "$.data.head_sha",
+          },
+        },
       ],
     },
   });

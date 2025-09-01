@@ -2,15 +2,18 @@ import { bootstrap, startApi } from "./app";
 import serverlessExpress from "@codegenie/serverless-express";
 import { error, verbose } from "./utils/logger/logger";
 import { InvocationMode } from "./model/global";
+import { getConfigItem, getConfigItemAsBoolean } from "./config/sources/source";
 
-global.invocationMode = process.env.INVOCATION_MODE as InvocationMode ?? InvocationMode.ServeApi;
-global.isLambda = !!process.env.LAMBDA_TASK_ROOT;
+global.invocationMode = (getConfigItem("INVOCATION_MODE") as InvocationMode) ?? InvocationMode.ServeApi;
+global.isLambda = getConfigItemAsBoolean("LAMBDA_TASK_ROOT");
 
 let serverlessExpressInstance;
 
 const startup = async () => {
   switch (global.invocationMode) {
     case InvocationMode.UpdateCache:
+      // Note: This is setting an environment variable for legacy compatibility
+      // In future, this should be handled through the configuration system
       process.env.PRECACHE_REPO_LIST = "true";
       await bootstrap();
       break;
@@ -26,6 +29,8 @@ const startup = async () => {
 console.log("Invocation mode:", global.invocationMode);
 
 if (global.isLambda) {
+  // Note: This is setting an environment variable for legacy compatibility
+  // In future, this should be handled through the configuration system
   process.env.CONFIG_DIR = "/var/task/config";
 
   switch (global.invocationMode) {
@@ -51,7 +56,6 @@ if (global.isLambda) {
       console.error("Invalid invocation mode", global.invocationMode);
       process.exit(1);
   }
-
 } else {
   require("log-timestamp");
   startup().catch((reason) => {

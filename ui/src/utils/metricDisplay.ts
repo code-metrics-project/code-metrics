@@ -15,9 +15,7 @@ export function getMetricTitle(m: string): string {
       return "Lines of code";
     default:
       m = m.replaceAll("_", " ");
-      return (
-        m.substring(0, 1).toUpperCase() + (m.length > 1 ? m.substring(1) : "")
-      );
+      return m.substring(0, 1).toUpperCase() + (m.length > 1 ? m.substring(1) : "");
   }
 }
 

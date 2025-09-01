@@ -13,9 +13,10 @@ import { provideDatastore } from "../../db/factory";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { StageConfig, StageConfigWrapper } from "../../model/config/pipeline-config";
 import { LEGACY_FIRST_STAGE_ID } from "./common";
+import { getConfigItemAsNumber } from "../../config/sources/source";
 
 const COLLECTION_NAME_DEPLOY_BOUNDS = "deploy-bounds";
-const EXPIRY_SECONDS: number = process.env.EXPIRY_SECONDS ? parseInt(process.env.EXPIRY_SECONDS) : 3600;
+const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600)!;
 
 type DailyTotalDeploy = {
   run: string;
@@ -92,7 +93,7 @@ export type DeploymentService = {
     stageId: string,
     jobGroups: string[],
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ) => Promise<Map<Date, Map<string, DailyTotal>>>;
 };
 
@@ -107,7 +108,7 @@ export const getDeploymentService = (): DeploymentService => {
     instance = new DeploymentServiceImpl(allStageConfigs);
   }
   return instance;
-}
+};
 
 class DeploymentServiceImpl implements DeploymentService {
   private stageConfigs: StageConfigWrapper;
@@ -184,12 +185,7 @@ class DeploymentServiceImpl implements DeploymentService {
     const pr = await this.findPrForRun(workloadId, stageId, run);
     const vcs = getVcsForWorkload(getWorkloadById(workloadId));
 
-    const earliestCommit = await vcs.getEarliestCommitForPr(
-      workloadId,
-      pr.vcsProjectName,
-      run.repo,
-      pr.id,
-    );
+    const earliestCommit = await vcs.getEarliestCommitForPr(workloadId, pr.vcsProjectName, run.repo, pr.id);
     const bounds = {
       start: new Date(earliestCommit.date),
       end: addSeconds(new Date(run.startDate), run.duration),
@@ -203,7 +199,7 @@ class DeploymentServiceImpl implements DeploymentService {
     stageId: string,
     jobGroups: string[],
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<Map<Date, Map<string, DailyTotal>>> => {
     logger(`Calculating lead times for ${workloadId} between ${startDate} and ${endDate}`);
 
@@ -219,7 +215,7 @@ class DeploymentServiceImpl implements DeploymentService {
 
     logger(`Calculated lead times for ${workloadId} between ${startDate} and ${endDate}`);
     return dailyTotals;
-  }
+  };
 
   fetchDeployments = async (
     workloadId: WorkloadId,
@@ -246,8 +242,8 @@ class DeploymentServiceImpl implements DeploymentService {
 
     const deployments: Record<string, Run[]> = {};
     for (const jobGroup of jobGroups) {
-      // TODO change this into a simpler list of job names in the deployment config
-      let jobNames = await determineJobNames(workload, jobGroup);
+      // TODO: change this into a simpler list of job names in the deployment config
+      const jobNames = await determineJobNames(workload, jobGroup);
 
       const jobRuns = await deploymentPipeline.getRunsForProject(
         workload.id,
@@ -263,14 +259,14 @@ class DeploymentServiceImpl implements DeploymentService {
 
     logger(`Fetched deployments for ${workloadId} between ${startDate} and ${endDate}`);
     return deployments;
-  }
+  };
 
   #determineMainBranch = async (workloadId: WorkloadId, stage: StageConfig): Promise<string> => {
     const deploymentPipeline = getDeploymentPipelineProvider(workloadId, stage);
     const branches = await deploymentPipeline.getBranchesForWorkload(workloadId);
 
     // TODO don't guess default branch name
-    let mainBranch: string
+    let mainBranch: string;
     if (!branches.length) {
       mainBranch = "main";
     } else {
@@ -278,7 +274,7 @@ class DeploymentServiceImpl implements DeploymentService {
     }
 
     return mainBranch;
-  }
+  };
 
   /**
    * Calculate the lead time for a workload's job groups on a given day.
@@ -298,11 +294,9 @@ class DeploymentServiceImpl implements DeploymentService {
     const deployments = await this.fetchDeployments(workload.id, stageId, jobGroups, current, current);
 
     for (const [jobGroup, runs] of Object.entries(deployments)) {
-      const currentDay = dailyTotals.get(current)
-        ?? new Map<string, DailyTotal>();
+      const currentDay = dailyTotals.get(current) ?? new Map<string, DailyTotal>();
 
-      const currentDayJobGroup = currentDay.get(jobGroup)
-        ?? { total: 0, count: 0, deploys: [] };
+      const currentDayJobGroup = currentDay.get(jobGroup) ?? { total: 0, count: 0, deploys: [] };
 
       for (const run of runs) {
         try {
@@ -327,7 +321,7 @@ class DeploymentServiceImpl implements DeploymentService {
             };
             verbose(`Calculated lead time for ${workload.id}-${jobGroup} run ${run.id}`, deploy);
             return deploy;
-          }
+          };
 
           const deploy = await this.datastore.findOrInsertOneDated<DailyTotalDeploy>(
             COLLECTION_NAME_DEPLOY_BOUNDS,
@@ -338,7 +332,6 @@ class DeploymentServiceImpl implements DeploymentService {
           currentDayJobGroup.total += deploy.leadTime;
           currentDayJobGroup.count++;
           currentDayJobGroup.deploys.push(deploy);
-
         } catch (e) {
           warn(`Failed to calculate lead time for ${workload.id}-${jobGroup} run ${run.id}: ${e}`);
         }

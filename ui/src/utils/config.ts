@@ -20,41 +20,13 @@ let webConfig: WebConfig;
 let bootstrapConfig: BootstrapConfig;
 let systemConfig: SystemConfig;
 
-let baseAssetUrl: string | null = null;
-
-/**
- * Get the base URL for assets, which is either the current file URL or the root path.
- * This is used to resolve relative paths for assets in the application.
- */
-export function getBaseAssetUrl(): string {
-  if (!baseAssetUrl) {
-    baseAssetUrl = window.location.protocol === "file:" ? findAppPath(window.location) : "/";
-    console.log("baseAssetUrl", baseAssetUrl);
-  }
-  return baseAssetUrl;
-}
-
-/**
- * Return the path to the application root based on the current location.
- * @param location
- */
-function findAppPath(location: Location): string {
-  let slashIndex = location.href.lastIndexOf("/ui/");
-  if (slashIndex === -1) {
-    console.warn("Could not find '/ui/' in the URL, using last slash");
-    slashIndex = location.href.lastIndexOf("/");
-  }
-  // return the path up to and including '/ui/'
-  return location.href.substring(0, slashIndex + 4);
-}
-
 /**
  * Configuration for the web application itself.
  */
 export async function fetchWebConfig(): Promise<Record<string, any>> {
   if (!webConfig) {
     try {
-      webConfig = await fetchConfig(getBaseAssetUrl() + "config.json");
+      webConfig = await fetchConfig("/config.json");
     } catch (e) {
       console.error("Failed to retrieve app config", e);
       throw e;

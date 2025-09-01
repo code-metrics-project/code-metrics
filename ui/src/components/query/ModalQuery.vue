@@ -62,12 +62,7 @@ watch(dialog, (value) => {
         <v-card-item>
           <v-skeleton-loader type="card" v-if="!chartData" height="400" />
 
-          <DynamicChart
-            v-if="chartData"
-            :chart-data="chartData"
-            :chart-type="chartType"
-            :show-data-labels="true"
-          />
+          <DynamicChart v-if="chartData" :chart-data="chartData" :chart-type="chartType" :show-data-labels="true" />
 
           <export-csv-button v-if="chartData" :datasets="chartData" />
         </v-card-item>

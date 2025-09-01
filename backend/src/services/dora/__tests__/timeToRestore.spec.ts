@@ -7,7 +7,9 @@ import { Workload } from "../../../model/config/workload-config";
 import { ConfigVersion } from "../../../model/config/base";
 
 const workload: Workload = {
-  codeAnalysis: undefined, codeManagement: undefined, pipelines: undefined,
+  codeAnalysis: undefined,
+  codeManagement: undefined,
+  pipelines: undefined,
   incidents: {
     type: TicketManagementTypes.JIRA,
     serverId: "mock-jira",
@@ -16,7 +18,7 @@ const workload: Workload = {
   projectManagement: {
     type: TicketManagementTypes.JIRA,
     serverId: "mock-jira",
-  } as any
+  } as any,
 };
 
 beforeAll(async () => {
@@ -36,7 +38,7 @@ beforeAll(async () => {
           servers: [],
         },
       },
-      ticketManagement: {}
+      ticketManagement: {},
     },
     workloadConfig: {
       version: ConfigVersion.V2_0,
@@ -45,41 +47,40 @@ beforeAll(async () => {
   });
 });
 
-describe('time to restore service', () => {
-  it('should fetch time to restore service', async () => {
+describe("time to restore service", () => {
+  it("should fetch time to restore service", async () => {
     const incidents = [
       {
-        created: '2021-01-01T00:00:00.000Z',
-        resolutiondate: '2021-01-01T12:00:00.000Z',
-        key: 'ATHENA-1',
+        created: "2021-01-01T00:00:00.000Z",
+        resolutiondate: "2021-01-01T12:00:00.000Z",
+        key: "ATHENA-1",
       },
       {
-        created: '2021-01-01T00:00:00.000Z',
-        resolutiondate: '2021-01-02T09:00:00.000Z',
-        key: 'ATHENA-2',
+        created: "2021-01-01T00:00:00.000Z",
+        resolutiondate: "2021-01-02T09:00:00.000Z",
+        key: "ATHENA-2",
       },
       {
-        created: '2021-01-02T00:00:00.000Z',
-        resolutiondate: '2021-01-02T06:00:00.000Z',
-        key: 'ATHENA-3',
+        created: "2021-01-02T00:00:00.000Z",
+        resolutiondate: "2021-01-02T06:00:00.000Z",
+        key: "ATHENA-3",
       },
       {
-        created: '2021-01-02T00:00:00.000Z',
+        created: "2021-01-02T00:00:00.000Z",
         resolutiondate: undefined,
-        key: 'ATHENA-4',
+        key: "ATHENA-4",
       },
     ];
 
-    registerIncidentMgmt(TicketManagementTypes.JIRA, () => ({
-      fetchTickets: jest.fn().mockReturnValue(Promise.resolve(incidents)),
-    } as any));
-
-    const result = await calculateTimeToRestore(
-      [workload.id],
-      new Date('2021-01-01'),
-      new Date('2021-01-02'),
-      "High",
+    registerIncidentMgmt(
+      TicketManagementTypes.JIRA,
+      () =>
+        ({
+          fetchTickets: jest.fn().mockReturnValue(Promise.resolve(incidents)),
+        }) as any,
     );
+
+    const result = await calculateTimeToRestore([workload.id], new Date("2021-01-01"), new Date("2021-01-02"), "High");
 
     expect(result.size).toBe(2);
 

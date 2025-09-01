@@ -1,21 +1,22 @@
-import {Octokit} from "@octokit/rest";
-import {AbstractPipelinesService, registerPipelines} from "./pipelinesService";
-import {ActorType, Run, RunResult, RunWithMetadata} from "../../model/runs";
-import {getAllPipelinesConfig, getWorkloadById} from "../../config/configMapping";
-import {logger, verbose, warn} from "../../utils/logger/logger";
-import {truncateDateOnly} from "../../utils/date";
-import {provideDatastore} from "../../db/factory";
-import {getDataForDateRange, StorableLike} from "../dateWalker";
-import {jsonPathQuery} from "../../utils/json";
-import {listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName} from "../../utils/jobs";
-import {Workload, WorkloadId} from "../../model/config/workload-config";
+import { Octokit } from "@octokit/rest";
+import { AbstractPipelinesService, registerPipelines } from "./pipelinesService";
+import { ActorType, Run, RunResult, RunWithMetadata } from "../../model/runs";
+import { getAllPipelinesConfig, getWorkloadById } from "../../config/configMapping";
+import { logger, verbose, warn } from "../../utils/logger/logger";
+import { truncateDateOnly } from "../../utils/date";
+import { provideDatastore } from "../../db/factory";
+import { getDataForDateRange, StorableLike } from "../dateWalker";
+import { jsonPathQuery } from "../../utils/json";
+import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName } from "../../utils/jobs";
+import { Workload, WorkloadId } from "../../model/config/workload-config";
 
-import {StageConfig} from "../../model/config/pipeline-config";
-import {mapJobNameUsingStageConfig} from "./common";
-import {PipelinesTypes} from "../../model/config/common";
+import { StageConfig } from "../../model/config/pipeline-config";
+import { mapJobNameUsingStageConfig } from "./common";
+import { PipelinesTypes } from "../../model/config/common";
+import { getConfigItemAsNumber } from "../../config/sources/source";
 
 const COLLECTION_NAME_PIPELINE_RUNS = "pipeline-executions";
-const EXPIRY_SECONDS: number = process.env.EXPIRY_SECONDS ? parseInt(process.env.EXPIRY_SECONDS) : 3600;
+const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600);
 
 type GithubCacheItemFilter = {
   stageId: string;
@@ -26,7 +27,21 @@ type GithubCacheItemFilter = {
 
 type PopulatedItem = StorableLike & GithubCacheItemFilter & { builds: Run[] };
 
-type WorkflowRunConclusion = "completed" | "action_required" | "cancelled" | "failure" | "startup_failure" | "neutral" | "skipped" | "stale" | "success" | "timed_out" | "in_progress" | "queued" | "requested" | "waiting"
+type WorkflowRunConclusion =
+  | "completed"
+  | "action_required"
+  | "cancelled"
+  | "failure"
+  | "startup_failure"
+  | "neutral"
+  | "skipped"
+  | "stale"
+  | "success"
+  | "timed_out"
+  | "in_progress"
+  | "queued"
+  | "requested"
+  | "waiting";
 
 type WorkflowRun = {
   id: number;
@@ -38,14 +53,15 @@ type WorkflowRun = {
   conclusion: WorkflowRunConclusion;
   repository: { name: string };
   actor: {
-    login: string,
-    type: string
+    login: string;
+    type: string;
   };
 };
 
 type WorkflowRunResponse = { data: WorkflowRun };
 
-export const initGithubPipelines = () => registerPipelines(PipelinesTypes.GITHUB, (stage) => new GithubPipelinesService(stage));
+export const initGithubPipelines = () =>
+  registerPipelines(PipelinesTypes.GITHUB, (stage) => new GithubPipelinesService(stage));
 
 class GithubPipelinesService extends AbstractPipelinesService {
   constructor(stage: StageConfig) {
@@ -102,7 +118,12 @@ class GithubPipelinesService extends AbstractPipelinesService {
           };
         };
 
-        const fields: GithubCacheItemFilter = { stageId: this.stage.id, projectName: vcsProjectName, jobName: jobName, branch };
+        const fields: GithubCacheItemFilter = {
+          stageId: this.stage.id,
+          projectName: vcsProjectName,
+          jobName: jobName,
+          branch,
+        };
         const runs: PopulatedItem[] = await getDataForDateRange(
           COLLECTION_NAME_PIPELINE_RUNS,
           fields,
@@ -130,9 +151,9 @@ class GithubPipelinesService extends AbstractPipelinesService {
 
     // search syntax per https://docs.github.com/en/search-github/getting-started-with-searching-on-github/understanding-the-search-syntax#query-for-dates
     const createRange =
-        startDate === endDate
-            ? truncateDateOnly(startDate)
-            : `${truncateDateOnly(startDate)}..${truncateDateOnly(endDate)}`;
+      startDate === endDate
+        ? truncateDateOnly(startDate)
+        : `${truncateDateOnly(startDate)}..${truncateDateOnly(endDate)}`;
 
     const resp = await connection.paginate(connection.actions.listWorkflowRunsForRepo, {
       owner: vcsProjectName,
@@ -145,7 +166,7 @@ class GithubPipelinesService extends AbstractPipelinesService {
     });
 
     const raw = resp as WorkflowRun[];
-    logger(`Retrieved ${raw.length} runs for github repo: ${vcsProjectName}/${jobName} with supported statuses`)
+    logger(`Retrieved ${raw.length} runs for github repo: ${vcsProjectName}/${jobName} with supported statuses`);
 
     let runs: Run[] = [];
     for (const run of raw) {
@@ -181,18 +202,23 @@ class GithubPipelinesService extends AbstractPipelinesService {
     runId: string,
     propertyJsonPath: string,
   ): Promise<string | null> {
-    logger(`Fetching property ${propertyJsonPath} for github run ${runId} of job ${jobName} in project ${vcsProjectName}`);
+    logger(
+      `Fetching property ${propertyJsonPath} for github run ${runId} of job ${jobName} in project ${vcsProjectName}`,
+    );
     const run = await this.getRawPipelineRun(workloadId, vcsProjectName, jobName, runId);
 
     const propertyValue = jsonPathQuery(run, propertyJsonPath);
-    verbose(`Fetched property ${propertyJsonPath} for github run ${runId} of job ${jobName} in project ${vcsProjectName}`, propertyValue);
+    verbose(
+      `Fetched property ${propertyJsonPath} for github run ${runId} of job ${jobName} in project ${vcsProjectName}`,
+      propertyValue,
+    );
     return propertyValue?.toString();
   }
 
   buildRunLink = (workloadId: string, jobName: string, runId: string): string => {
     const server = getAllPipelinesConfig().github.servers.find((server) => server.id === this.stage.serverId);
     return `${server.url?.length ? server.url : "https://github.com"}/${this.stage.projectName}/${jobName}/actions/runs/${runId}`;
-  }
+  };
 
   private getRawPipelineRun = async (
     workloadId: WorkloadId,
@@ -216,10 +242,12 @@ class GithubPipelinesService extends AbstractPipelinesService {
     // work-around to reify the object so we can query it with jsonpath
     run = JSON.parse(JSON.stringify(run));
     return run as unknown as WorkflowRunResponse;
-  }
+  };
 
   private convertWorkflowRunToRun = (run: WorkflowRun, jobName: string): Run => {
-    const duration = run.updated_at ? (new Date(run.updated_at).getTime() - new Date(run.run_started_at).getTime()) / 1000 : 0;
+    const duration = run.updated_at
+      ? (new Date(run.updated_at).getTime() - new Date(run.run_started_at).getTime()) / 1000
+      : 0;
     return {
       id: run.id.toString(),
       job: jobName ?? run.name,
@@ -231,14 +259,14 @@ class GithubPipelinesService extends AbstractPipelinesService {
       user: run.actor.login,
       userType: ActorType[run.actor.type],
     };
-  }
+  };
 
   discoverJobNames = async (workload: Workload, jobGroup: string): Promise<string[]> => {
     const jobGroups = listNormalisedJobGroupsForWorkload(workload);
 
     // TODO discover via API and filter as jobName can be a regex
     return jobGroups[jobGroup]?.jobNames ?? [];
-  }
+  };
 }
 
 const convertConclusionToResult = (conclusion: WorkflowRunConclusion): RunResult => {

@@ -35,13 +35,7 @@ export const vcsRepoChanges = async (request: Request, response: Response<RepoCh
   // format: yyyy-mm-dd
   const endDate = (args?.endDate as string) ?? truncateDateOnly(new Date());
 
-  const result = await fetchRepoChanges(
-    workloadIds,
-    repoGroups,
-    new Date(startDate),
-    new Date(endDate),
-    true,
-  );
+  const result = await fetchRepoChanges(workloadIds, repoGroups, new Date(startDate), new Date(endDate), true);
 
   response.send(result);
 };
@@ -66,14 +60,8 @@ export const vcsRepoChurn = async (req: Request, res: Response<RepoChurn[] | str
     // format: yyyy-mm-dd
     const endDate = (args?.endDate as string) ?? truncateDateOnly(new Date());
 
-    const result = await vcsRepoChurnWithArgs(
-      workloadIds,
-      repoGroups,
-      startDate,
-      endDate,
-    );
+    const result = await vcsRepoChurnWithArgs(workloadIds, repoGroups, startDate, endDate);
     res.json(result);
-
   } catch (e) {
     if (e instanceof ValidationError) {
       res.statusCode = 400;
@@ -112,12 +100,7 @@ export const vcsPROpenTime = async (req: Request, res: Response<PREvent[] | stri
     // format: yyyy-mm-dd
     const endDate = (args?.endDate as string) ?? truncateDateOnly(new Date());
 
-    const result = await vcsPROpenTimeWithArgs(
-      workloadIds,
-      repoGroups,
-      startDate,
-      endDate,
-    );
+    const result = await vcsPROpenTimeWithArgs(workloadIds, repoGroups, startDate, endDate);
     res.json(result);
   } catch (e) {
     if (e instanceof ValidationError) {

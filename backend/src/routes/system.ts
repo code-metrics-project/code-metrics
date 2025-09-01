@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { logger, warn } from "../utils/logger/logger";
-import { precacheRepoList } from "../services/codeManagement/precache"
+import { precacheRepoList } from "../services/codeManagement/precache";
 
 /**
  * Cache management operations.
@@ -13,11 +13,13 @@ export const manageCache = async (req: Request, res: Response): Promise<void> =>
       case "update-cache": {
         const startTime = Date.now();
         logger("Triggering cache refresh");
-        precacheRepoList().then(() => {
-          logger(`Cache refresh complete [duration: ${Date.now() - startTime}ms]`);
-        }).catch((error) => {
-          warn(`Error refreshing cache`, error);
-        });
+        precacheRepoList()
+          .then(() => {
+            logger(`Cache refresh complete [duration: ${Date.now() - startTime}ms]`);
+          })
+          .catch((error) => {
+            warn(`Error refreshing cache`, error);
+          });
         res.sendStatus(202);
         break;
       }

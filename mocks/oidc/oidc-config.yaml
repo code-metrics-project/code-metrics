@@ -1,0 +1,26 @@
+# Runs an OpenID Connect server using the oidc-server plugin
+plugin: oidc-server
+
+# Provides endpoints:
+#   /.well-known/openid-configuration
+#   /.well-known/jwks.json
+#   /oidc/authorize
+#   /oidc/token
+#   /oidc/userinfo
+
+# Plugin configuration for OIDC server
+config:
+  users:
+    - username: "admin"
+      password: "admin"
+      claims:
+        sub: "alice"
+        email: "alice@example.com"
+        name: "Alice Smith"
+
+  clients:
+    - client_id: "codemetrics"
+      client_secret: "changeme"
+      redirect_uris:
+        - "http://localhost:3001/login/callback"
+        - "http://code-metrics.localhost:3001/login/callback"

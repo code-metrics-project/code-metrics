@@ -2,7 +2,7 @@ import { addDays } from "date-fns";
 import { truncateDateOnly } from "../utils/date";
 import { DatedMetrics, DateStamp, IntermediaryDatedMetrics, MetricEntry } from "../model/metrics";
 
-export function toIntermediateMap(label: string, values: number[]):Map<string, IntermediaryDatedMetrics> {
+export function toIntermediateMap(label: string, values: number[]): Map<string, IntermediaryDatedMetrics> {
   const startDate = new Date("2022-01-01");
   const valueMap = new Map<string, IntermediaryDatedMetrics>();
   values.forEach((n, i) => {
@@ -18,7 +18,7 @@ export function toIntermediateMap(label: string, values: number[]):Map<string, I
   return valueMap;
 }
 
-export function toDatedMetricsMap(label: string, values: number[]):Map<DateStamp, DatedMetrics> {
+export function toDatedMetricsMap(label: string, values: number[]): Map<DateStamp, DatedMetrics> {
   const startDate = new Date("2022-01-01");
   const valueMap = new Map<DateStamp, DatedMetrics>();
   values.forEach((n, i) => {

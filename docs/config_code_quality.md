@@ -18,7 +18,7 @@ For SonarQube, set the `url` to the server URL, and use a token with appropriate
 - Create an access token to enable read only access
 
 > It is recommended a service user is created for this integration.
-> See [further instructions](https://docs.sonarqube.org/latest/user-guide/user-token/).
+> See [further instructions](https://docs.sonarsource.com/sonarqube-server/latest/user-guide/managing-tokens/).
 
 ### Configuration file
 
@@ -75,7 +75,7 @@ codeAnalysis:
     - id: none
 ```
 
-In the associated [workflow configuration](./config_workflow.md), the `codeAnalysis` type should be set to `none`.
+In the associated [workload configuration](./config_workloads.md), the `codeAnalysis` type should be set to `none`.
 
 ```yaml
 # workload-config.yaml

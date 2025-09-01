@@ -14,6 +14,6 @@ export const dataRenderers = {
 export type TDataRendererType = {
   [K in keyof typeof dataRenderers]: {
     name: K;
-    props: Omit<InstanceType<typeof dataRenderers[K]>["$props"], "data">;
+    props: Omit<InstanceType<(typeof dataRenderers)[K]>["$props"], "data">;
   };
 }[keyof typeof dataRenderers];

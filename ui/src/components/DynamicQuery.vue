@@ -6,6 +6,8 @@
       <v-card-subtitle>{{ subtitle }}</v-card-subtitle>
     </div>
 
+    <AlertMessage :alert="alert" />
+
     <v-card-text>
       <DynamicInputs
         @input="onInput"
@@ -34,17 +36,8 @@
       </DynamicInputs>
     </v-card-text>
 
-    <CodeAnalysisMetricSummary
-      v-if="chartData"
-      :summarise="summarise"
-      :metrics="allDatasets"
-    />
-    <DynamicChart
-      v-if="chartData"
-      :chart-data="chartData"
-      :chart-type="chartType"
-      :show-data-labels="showDataLabels"
-    />
+    <CodeAnalysisMetricSummary v-if="chartData" :summarise="summarise" :metrics="allDatasets" />
+    <DynamicChart v-if="chartData" :chart-data="chartData" :chart-type="chartType" :show-data-labels="showDataLabels" />
   </v-card>
 </template>
 
@@ -54,12 +47,14 @@ import DynamicInputs from "@/components/DynamicInputs.vue";
 import CodeAnalysisMetricSummary from "@/components/CodeAnalysisMetricSummary.vue";
 import DynamicChart from "@/components/charts/DynamicChart.vue";
 import type { StoredQueryCollection } from "@/model/query";
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import type { QueryName } from "@/queries/queries";
 import QueryGroup from "@/components/query/QueryGroup.vue";
 import { getGroupBy } from "@/queries/config";
 import { useQueryManager } from "@/composables/query-manager";
 import { ChartType } from "@/chart/chart-types";
+import AlertMessage from "@/components/AlertMessage.vue";
+import { type Alert } from "@/utils/ui";
 
 type TProps = {
   defaultInputs?: Record<string, any>;
@@ -77,17 +72,24 @@ const props = withDefaults(defineProps<TProps>(), {
 });
 const emit = defineEmits(["input", "updateQuery"]);
 
-const supportedDimensions = computed<string[]>(() =>
-  getGroupBy(props.queryTypes),
-);
+const supportedDimensions = computed<string[]>(() => getGroupBy(props.queryTypes));
 
 function onInput(inputs: any) {
   // bubble-up input event
   emit("input", inputs);
 }
 
-const { onExecute, groupBy, operationState, allDatasets, chartData } =
-  useQueryManager(props.title);
+const { onExecute, groupBy, operationState, allDatasets, chartData, error } = useQueryManager(props.title);
+
+const alert = computed<Alert | null>(() => {
+  if (error.value) {
+    return {
+      type: "error",
+      message: error.value.message || "An error occurred while running the query",
+    };
+  }
+  return null;
+});
 
 function onUpdateQuery(queries: StoredQueryCollection) {
   // bubble-up updateQuery event

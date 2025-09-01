@@ -3,12 +3,13 @@ import { getFileStoredQueryService } from "./file";
 import { logger } from "../../utils/logger/logger";
 import { getDatastoreStoredQueryService } from "./datastore";
 import { getUnionStoredQueryService } from "./union";
+import { getConfigItem } from "../../config/sources/source";
 
 const DEFAULT_STORED_QUERY_SERVICE = "union";
 const instances: Record<string, StoredQueryService> = {};
 
 export const getActiveStoredQueryService = (): StoredQueryService =>
-  getStoredQueryService(process.env.STORED_QUERY_SERVICE ?? DEFAULT_STORED_QUERY_SERVICE);
+  getStoredQueryService(getConfigItem("STORED_QUERY_SERVICE", DEFAULT_STORED_QUERY_SERVICE));
 
 export const getStoredQueryService = (implName: string): StoredQueryService => {
   let instance = instances[implName];

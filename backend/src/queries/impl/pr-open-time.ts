@@ -29,12 +29,7 @@ export const fetchPROpenTime = async (
 
   try {
     const endDate = truncateDateOnly(new Date());
-    const result = await vcsPROpenTimeWithArgs(
-      workloadIds,
-      repoGroups,
-      startDate,
-      endDate,
-    );
+    const result = await vcsPROpenTimeWithArgs(workloadIds, repoGroups, startDate, endDate);
 
     logger(`Parsing PR open time`);
     return groupPROpenTime(result);

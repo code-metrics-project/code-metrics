@@ -28,12 +28,7 @@ describe("summariseNumeric", () => {
   });
 });
 
-function addMetric(
-  dated: Map<string, DatedMetrics>,
-  date: string,
-  tag: string,
-  value: number,
-) {
+function addMetric(dated: Map<string, DatedMetrics>, date: string, tag: string, value: number) {
   const entries = new Map<string, MetricEntry>();
   entries.set(tag, { date: date, value: value });
   dated.set(date, { entries });

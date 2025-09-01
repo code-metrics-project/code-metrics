@@ -11,12 +11,7 @@
       density="compact"
       variant="outlined"
     >
-      <v-btn
-        v-for="stage in stages"
-        :key="stage"
-        :value="stage"
-        :disabled="busy"
-      >
+      <v-btn v-for="stage in stages" :key="stage" :value="stage" :disabled="busy">
         {{ stage }}
       </v-btn>
     </v-btn-toggle>

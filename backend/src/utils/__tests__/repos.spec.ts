@@ -2,7 +2,7 @@ import {
   getCodeAnalysisKeysForWorkloadId,
   getComponentsForWorkloadId,
   getReposForWorkloadId,
-  lookupRepoGroupForRepoName
+  lookupRepoGroupForRepoName,
 } from "../repos";
 import { clearCachedConfig, loadConfig } from "../../config/config";
 import path from "path";

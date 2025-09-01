@@ -191,10 +191,7 @@ export const getComponentsForWorkload = async (
  * @param workloadId
  * @param codeAnalysisKey
  */
-export const getComponentNameForCodeAnalysisKey = (
-  workloadId: WorkloadId,
-  codeAnalysisKey: string
-): string => {
+export const getComponentNameForCodeAnalysisKey = (workloadId: WorkloadId, codeAnalysisKey: string): string => {
   const workload = getWorkloadById(workloadId);
 
   // prefer mappings defined in the workload
@@ -212,10 +209,7 @@ export const getComponentNameForCodeAnalysisKey = (
  * @param workloadId
  * @param codeAnalysisKey
  */
-export const getVcsNameForCodeAnalysisKey = (
-  workloadId: WorkloadId,
-  codeAnalysisKey: string
-): string => {
+export const getVcsNameForCodeAnalysisKey = (workloadId: WorkloadId, codeAnalysisKey: string): string => {
   const workload = getWorkloadById(workloadId);
 
   // prefer mappings defined in the workload
@@ -234,10 +228,7 @@ export const getVcsNameForCodeAnalysisKey = (
  * @param workloadId
  * @param component
  */
-export const getCodeAnalysisKeysForComponent = (
-  workloadId: WorkloadId,
-  component: SoftwareComponent,
-): string[] => {
+export const getCodeAnalysisKeysForComponent = (workloadId: WorkloadId, component: SoftwareComponent): string[] => {
   const workload = getWorkloadById(workloadId);
 
   // prefer mappings defined in the workload

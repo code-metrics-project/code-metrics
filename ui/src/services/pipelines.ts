@@ -1,11 +1,7 @@
 import axios from "@/utils/axios";
 import { truncateDateOnly } from "@/utils/date";
 import { RunResult, type RunWithMetadata } from "@/model/runs";
-import {
-  PIPELINE_DEPLOYMENTS,
-  PIPELINE_RUN,
-  PIPELINE_RUNS,
-} from "@/utils/urls";
+import { PIPELINE_DEPLOYMENTS, PIPELINE_RUN, PIPELINE_RUNS } from "@/utils/urls";
 
 export type RunRow = {
   workloadId: string;
@@ -55,10 +51,7 @@ export async function fetchForDateRange(
   const runs = json.map((runItem) => {
     return convertRunToRow(runItem);
   });
-  console.log(
-    `${runs.length} runs from ${startDate.toISOString()} to ${endDate.toISOString()}`,
-    runs,
-  );
+  console.log(`${runs.length} runs from ${startDate.toISOString()} to ${endDate.toISOString()}`, runs);
   return runs;
 }
 
@@ -81,9 +74,7 @@ export async function fetchRunById(
   return run;
 }
 
-export async function lookupDeploymentRuns(
-  input: RunWithMetadata,
-): Promise<RunWithMetadata[]> {
+export async function lookupDeploymentRuns(input: RunWithMetadata): Promise<RunWithMetadata[]> {
   const response = await axios.get(PIPELINE_DEPLOYMENTS, {
     params: {
       workloadId: input.workloadId,
@@ -93,9 +84,6 @@ export async function lookupDeploymentRuns(
     },
   });
   const deployments = response.data as RunWithMetadata[];
-  console.log(
-    `Fetched ${deployments.length} deployments for run ${input.run.job} / #${input.run.id}`,
-    deployments,
-  );
+  console.log(`Fetched ${deployments.length} deployments for run ${input.run.job} / #${input.run.id}`, deployments);
   return deployments;
 }

@@ -2,7 +2,7 @@ import { createRouter, createWebHistory, type RouteLocationNormalized } from "vu
 import { useAuthStore } from "@/store/auth";
 import { Paths } from "./paths";
 import { pinia } from "@/main";
-import { fetchSystemConfig } from "@/utils/config";
+import { fetchSystemConfig, getBootstrap } from "@/utils/config";
 
 const routes = [
   {
@@ -101,6 +101,11 @@ const routes = [
     component: () => import(/* webpackChunkName: "pipelinehealth" */ "@/pages/PipelineHealth.vue"), //dynamic import of component and dependency
   },
   {
+    path: Paths.ProgramQualityGates,
+    name: "Quality Gates",
+    component: () => import(/* webpackChunkName: "security" */ "@/pages/QualityGates.vue"), //dynamic import of component and dependency
+  },
+  {
     path: Paths.ProgramSecurity,
     name: "Security",
     component: () => import(/* webpackChunkName: "security" */ "@/pages/Security.vue"), //dynamic import of component and dependency
@@ -126,13 +131,28 @@ const routes = [
     component: () => import(/* webpackChunkName: "codequality" */ "@/pages/CodeQuality.vue"), //dynamic import of component and dependency
   },
   {
+    path: Paths.WorkloadQualityGates,
+    name: "Workload Quality Gates",
+    component: () => import(/* webpackChunkName: "security" */ "@/pages/QualityGates.vue"), //dynamic import of component and dependency
+  },
+  {
+    path: Paths.LicenseMissing,
+    name: "License Missing",
+    component: () => import(/* webpackChunkName: "licensemissing" */ "@/pages/LicenseMissing.vue"), //dynamic import of component and dependency
+  },
+  {
+    path: Paths.ConfigMissing,
+    name: "Config Missing",
+    component: () => import(/* webpackChunkName: "configmissing" */ "@/pages/ConfigMissing.vue"), //dynamic import of component and dependency
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "404",
-    component: () => import(/* webpackChunkName: "login" */ "@/pages/404.vue"), //dynamic import of component and dependency },
+    component: () => import(/* webpackChunkName: "error404" */ "@/pages/404.vue"), //dynamic import of component and dependency },
   },
 ];
 
-const unauthenticatedRoutes = ["Login", "LoginCallback", "Logout"];
+const unauthenticatedRoutes = ["Login", "LoginCallback", "Logout", "License Missing", "Config Missing"];
 
 const isUnauthenticatedRoute = (route: RouteLocationNormalized) => {
   return unauthenticatedRoutes.includes(route.name as string);
@@ -141,6 +161,22 @@ const isUnauthenticatedRoute = (route: RouteLocationNormalized) => {
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+});
+
+router.beforeEach(async (to) => {
+  const systemConfig = await getBootstrap();
+  if (!systemConfig.isLicensed && to.path !== Paths.LicenseMissing) {
+    router.push({ name: "License Missing" });
+    return false;
+  }
+});
+
+router.beforeEach(async (to) => {
+  const systemConfig = await getBootstrap();
+
+  if (!systemConfig.hasConfig && to.path !== Paths.LicenseMissing && to.path !== Paths.ConfigMissing) {
+    return { name: "Config Missing" };
+  }
 });
 
 router.beforeEach(async (to, _from, next) => {
@@ -154,7 +190,7 @@ router.beforeEach(async (to, _from, next) => {
     }
 
     // system config required for authenticated routes
-    await fetchSystemConfig(authStore.accessToken!!);
+    await fetchSystemConfig(authStore.tokens?.accessToken!!);
   }
 
   next();

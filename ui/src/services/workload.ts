@@ -11,9 +11,7 @@ export function getWorkloadDetails(): WorkloadDetail[] {
 }
 
 function countReposForWorkload(workloadId: string): Record<string, number> {
-  const workload = getConfig().systemConfig.workloads.find(
-    (w) => w.id === workloadId
-  );
+  const workload = getConfig().systemConfig.workloads.find((w) => w.id === workloadId);
   if (!workload) {
     return {};
   }

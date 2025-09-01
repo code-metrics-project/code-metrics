@@ -63,7 +63,9 @@ export const calculateChangeFailureRate = async (
 
       const failureRate = Math.min(1, (dayIncidents.length + failedDeployments.length) / dayDeployments.length);
 
-      logger(`On day: ${day}, ${dayIncidents.length} incidents created, ${dayDeployments.length} deployments [${failedDeployments.length} failed]. Calculated daily failure rate: ${failureRate}`);
+      logger(
+        `On day: ${day}, ${dayIncidents.length} incidents created, ${dayDeployments.length} deployments [${failedDeployments.length} failed]. Calculated daily failure rate: ${failureRate}`,
+      );
       const currentDay = truncateDateOnly(day);
       const datedMetrics = metrics.get(currentDay) ?? { "change-failure-rate": [] };
 
@@ -76,7 +78,7 @@ export const calculateChangeFailureRate = async (
   }
 
   return metrics;
-}
+};
 
 const fetchDeployments = async (workload: Workload, stageId: string, startDate: Date, endDate: Date) => {
   const jobGroups = listJobGroups(workload);

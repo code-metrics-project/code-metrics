@@ -1,11 +1,6 @@
 <template>
   <v-row>
-    <v-col
-      v-for="item in props.dashboard.data"
-      :key="item.id"
-      cols="12"
-      :md="item.presentationOptions?.width"
-    >
+    <v-col v-for="item in props.dashboard.data" :key="item.id" cols="12" :md="item.presentationOptions?.width">
       <Card
         :data-source="item.dataSource"
         :data-view="item.dataView"

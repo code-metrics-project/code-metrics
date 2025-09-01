@@ -3,12 +3,15 @@ export enum Paths {
   Login = "/login",
   LoginCallback = "/login/callback",
   Logout = "/logout",
+  LicenseMissing = "/license/error",
+  ConfigMissing = "/config/error",
 
   Program = "/program",
   ProgramMetrics = "/program/metrics",
   ProgramNarratives = "/program/changes",
   ProgramPipelineHealth = "/program/pipeline-health",
   ProgramSecurity = "/program/security",
+  ProgramQualityGates = "/program/quality-gates",
 
   Workloads = "/workload",
   WorkloadChanges = "/workload/changes",
@@ -18,6 +21,7 @@ export enum Paths {
   WorkloadPipelineRuns = "/workload/pipeline-runs",
   WorkloadPipelineRun = "/workload/pipeline-run",
   WorkloadPipelineHealth = "/workload/pipeline-health",
+  WorkloadQualityGates = "/workload/:workloadId/quality-gates",
   ProgramTickets = "/workload/tickets",
   DORA = "/workload/dora",
 

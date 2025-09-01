@@ -9,7 +9,14 @@ const isProdBuild = process.env.NODE_ENV === "production";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "./",
+  /**
+   * The base path *must* be set to the root path ("/") for the application to work correctly
+   * when the UI is served as a single page app that has sub-paths.
+   *
+   * For example, the UI has a sub-path like /workloads/... which means that the base path must
+   * be set to "/" so that the application can resolve its assets (like CSS and JS files) correctly.
+   */
+  base: "/",
   build: {
     sourcemap: true,
   },

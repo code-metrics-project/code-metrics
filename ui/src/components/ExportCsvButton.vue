@@ -9,9 +9,7 @@
     aria-description="Export the results to a CSV file"
   >
     <slot name="prepend">
-      <v-icon
-        :icon="busy ? 'mdi-progress-download' : 'mdi-file-export-outline'"
-      />
+      <v-icon :icon="busy ? 'mdi-progress-download' : 'mdi-file-export-outline'" />
     </slot>
     <slot name="default">Export</slot>
   </v-btn>
@@ -21,10 +19,7 @@
 import { exportDatasetAsLocalFile } from "@/utils/download";
 import { ref } from "vue";
 import { convertColumnChartDatasetToTable } from "@/utils/metrics";
-import {
-  type ColumnChartData,
-  createColumnChartDatasets,
-} from "@/chart/column";
+import { type ColumnChartData, createColumnChartDatasets } from "@/chart/column";
 import { type DatedMetrics } from "@/model/metrics";
 
 /**

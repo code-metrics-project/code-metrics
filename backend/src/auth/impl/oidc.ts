@@ -2,7 +2,7 @@ import { AuthenticationResult, Authenticator } from "../auth";
 import { logger, verbose, warn } from "../../utils/logger/logger";
 import { Express, Request, Response } from "express";
 import { success } from "../../utils/responses";
-import { checkAuthenticated } from "../../routes/authenticate";
+import { checkAuthenticated } from "../../routes/authentication";
 import { getUiBaseUrl } from "../../utils/server";
 import {
   AuthorizationParameters,
@@ -11,23 +11,24 @@ import {
   generators,
   Issuer,
   OpenIDCallbackChecks,
-  TokenSet
-} from 'openid-client';
+  TokenSet,
+} from "openid-client";
 import { readEncryptedCookie, writeEncryptedCookie } from "../../utils/cookies";
 import { SecureRouter } from "../../routes/router";
+import { getConfigItem } from "../../config/sources/source";
 
-const OIDC_ISSUER_BASE_URL = process.env.OIDC_ISSUER_BASE_URL
-const OIDC_CLIENT_ID = process.env.OIDC_CLIENT_ID
-const OIDC_CLIENT_SECRET: string = process.env.OIDC_CLIENT_SECRET ?? '';
-const OIDC_USER_CLAIM: string = process.env.OIDC_USER_CLAIM ?? 'sub';
-const OIDC_SCOPES: string = process.env.OIDC_SCOPES ?? 'openid email';
-const OIDC_AUDIENCE: string | null = process.env.OIDC_AUDIENCE;
-const OIDC_USE_PKCE: boolean = process.env.OIDC_USE_PKCE === 'true';
-const OIDC_REDIRECT_URI: string | null = process.env.OIDC_REDIRECT_URI;
+const OIDC_ISSUER_BASE_URL = getConfigItem("OIDC_ISSUER_BASE_URL");
+const OIDC_CLIENT_ID = getConfigItem("OIDC_CLIENT_ID");
+const OIDC_CLIENT_SECRET: string = getConfigItem("OIDC_CLIENT_SECRET", "");
+const OIDC_USER_CLAIM: string = getConfigItem("OIDC_USER_CLAIM", "sub");
+const OIDC_SCOPES: string = getConfigItem("OIDC_SCOPES", "openid email");
+const OIDC_AUDIENCE: string | null = getConfigItem("OIDC_AUDIENCE");
+const OIDC_USE_PKCE: boolean = getConfigItem("OIDC_USE_PKCE") === "true";
+const OIDC_REDIRECT_URI: string | null = getConfigItem("OIDC_REDIRECT_URI");
 
 const AUTH_PATH = "/api/oidc/auth";
 const REDIRECT_URI_PATH = "/login/callback";
-const SESSION_COOKIE_NAME = 'codemetrics.session';
+const SESSION_COOKIE_NAME = "codemetrics.session";
 const INITIAL_SESSION_COOKIE_EXPIRY = 1000 * 60 * 10; // 10 minutes
 
 type SessionCookie = {
@@ -37,7 +38,7 @@ type SessionCookie = {
 
 export const getOidcAuthenticator = (): Authenticator => {
   return { loginUrl: AUTH_PATH, initialise, configureRoutes, checkAuthState, authenticateUser, logout };
-}
+};
 
 let client: Client | null = null;
 
@@ -63,7 +64,6 @@ const determineRedirectUri = (): URL => {
 const discover = async (req: Request, res: Response, next: () => void) => {
   if (client) {
     verbose("OIDC client already discovered");
-
   } else {
     verbose("Discovering OIDC issuer from", OIDC_ISSUER_BASE_URL);
     let issuer: Issuer;
@@ -80,7 +80,7 @@ const discover = async (req: Request, res: Response, next: () => void) => {
       client_id: OIDC_CLIENT_ID,
       client_secret: OIDC_CLIENT_SECRET,
       redirect_uris: [redirectUri.toString()],
-      response_types: ['code'],
+      response_types: ["code"],
     });
   }
   next();
@@ -100,9 +100,8 @@ const redirectToAuthz = async (req: Request, res: Response): Promise<void> => {
     verbose("Using PKCE for authorization flow");
     const codeVerifier = generators.codeVerifier();
     authzParams.code_challenge = generators.codeChallenge(codeVerifier);
-    authzParams.code_challenge_method = 'S256';
+    authzParams.code_challenge_method = "S256";
     writeSessionCookie(res, { codeVerifier }, new Date(Date.now() + INITIAL_SESSION_COOKIE_EXPIRY));
-
   } else {
     verbose("Not using PKCE for authorization flow");
   }
@@ -142,10 +141,7 @@ const handleCallback = async (req: Request): Promise<string> => {
   }
 };
 
-const performTokenExchange = async (
-  req: Request,
-  params: CallbackParamsType
-): Promise<TokenSet | null> => {
+const performTokenExchange = async (req: Request, params: CallbackParamsType): Promise<TokenSet | null> => {
   logger(`Performing token exchange`);
 
   const checks: OpenIDCallbackChecks = {};
@@ -162,7 +158,6 @@ const performTokenExchange = async (
       return null;
     }
     checks.code_verifier = sessionCookie.codeVerifier;
-
   } else {
     verbose("Not using PKCE - skipping PKCE checks");
   }

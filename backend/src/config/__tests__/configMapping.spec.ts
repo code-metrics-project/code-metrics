@@ -11,15 +11,15 @@ import {
   CodeAnalysisTypes,
   CodeManagementTypes,
   PipelinesTypes,
-  TicketManagementTypes
+  TicketManagementTypes,
 } from "../../model/config/common";
 import { initDatastore } from "../../db/factory";
 import { initGithubPipelines } from "../../services/pipelines/github";
 import { JobNameMapping, Workload } from "../../model/config/workload-config";
 import { ConfigVersion } from "../../model/config/base";
-import {initSonar} from "../../services/codeAnalysis/sonar";
-import {initAdoVcs} from "../../services/codeManagement/azure";
-import {initAdoPipelines} from "../../services/pipelines/azure";
+import { initSonar } from "../../services/codeAnalysis/sonar";
+import { initAdoVcs } from "../../services/codeManagement/azure";
+import { initAdoPipelines } from "../../services/pipelines/azure";
 
 // stub out unneeded fetch import
 jest.mock("node-fetch", () => ({}));
@@ -83,7 +83,7 @@ beforeAll(async () => {
                 sonarTags: ["fe"],
               },
               platform: {
-                components: [ { name: "cloud-config", repo: "cloud-config" }],
+                components: [{ name: "cloud-config", repo: "cloud-config" }],
               },
             },
             projectName: "myTestFrontendProject",
@@ -92,20 +92,18 @@ beforeAll(async () => {
             type: TicketManagementTypes.JIRA,
             serverId: "test-jira",
             ticketPriorities: [],
-            ticketTypes: [ "Bug" ],
+            ticketTypes: ["Bug"],
             projectName: "PROJ",
           },
           incidents: {
             type: TicketManagementTypes.JIRA,
             serverId: "test-jira",
             ticketPriorities: [],
-            ticketTypes: [ "Incident" ],
+            ticketTypes: ["Incident"],
             projectName: "PROJ",
           },
           pipelines: {
-            stages: [
-              { stageId: "azure-build-stage" },
-            ],
+            stages: [{ stageId: "azure-build-stage" }],
           },
         },
         {
@@ -135,20 +133,18 @@ beforeAll(async () => {
             type: TicketManagementTypes.JIRA,
             serverId: "test-jira",
             ticketPriorities: [],
-            ticketTypes: [ "Bug" ],
+            ticketTypes: ["Bug"],
             projectName: "PROJ",
           },
           incidents: {
             type: TicketManagementTypes.JIRA,
             serverId: "test-jira",
             ticketPriorities: [],
-            ticketTypes: [ "Bug" ],
+            ticketTypes: ["Bug"],
             projectName: "PROJ",
           },
           pipelines: {
-            stages: [
-              { stageId: "azure-build-stage" },
-            ],
+            stages: [{ stageId: "azure-build-stage" }],
           },
         },
         {
@@ -175,20 +171,18 @@ beforeAll(async () => {
             type: TicketManagementTypes.JIRA,
             serverId: "test-jira",
             ticketPriorities: [],
-            ticketTypes: [ "Bug" ],
+            ticketTypes: ["Bug"],
             projectName: "PROJ",
           },
           incidents: {
             type: TicketManagementTypes.JIRA,
             serverId: "test-jira",
             ticketPriorities: [],
-            ticketTypes: [ "Bug" ],
+            ticketTypes: ["Bug"],
             projectName: "PROJ",
           },
           pipelines: {
-            stages: [
-              { stageId: "azure-build-stage" },
-            ],
+            stages: [{ stageId: "azure-build-stage" }],
           },
         },
       ],
@@ -216,7 +210,7 @@ beforeAll(async () => {
           },
         },
       ],
-    }
+    },
   });
 });
 
@@ -243,9 +237,7 @@ describe("config mapping", () => {
     const workload: Workload = {
       id: "example",
       pipelines: {
-        stages: [
-          { stageId: "github-build-stage" },
-        ],
+        stages: [{ stageId: "github-build-stage" }],
         jobNameMapping: undefined,
         jobGroups: {},
       },
@@ -262,9 +254,7 @@ describe("config mapping", () => {
     const workload: Workload = {
       id: "example",
       pipelines: {
-        stages: [
-          { stageId: "github-build-stage" },
-        ],
+        stages: [{ stageId: "github-build-stage" }],
         jobNameMapping: undefined,
         jobGroups: {
           backend: {
@@ -288,9 +278,7 @@ describe("config mapping", () => {
     const workload: Workload = {
       id: "example",
       pipelines: {
-        stages: [
-          { stageId: "github-build-stage" },
-        ],
+        stages: [{ stageId: "github-build-stage" }],
         jobNameMapping: JobNameMapping.RepoName,
         jobGroups: undefined,
       },
@@ -319,17 +307,15 @@ describe("config mapping", () => {
     const workload: Workload = {
       id: "example",
       pipelines: {
-        stages: [
-          { stageId: "github-build-stage" },
-        ],
+        stages: [{ stageId: "github-build-stage" }],
         jobNameMapping: JobNameMapping.None,
         jobGroups: {
-            backend: {
-                jobNames: ["api"],
-            },
-            frontend: {
-                jobNames: ["web"],
-            },
+          backend: {
+            jobNames: ["api"],
+          },
+          frontend: {
+            jobNames: ["web"],
+          },
         },
       },
       codeManagement: undefined,
@@ -345,9 +331,7 @@ describe("config mapping", () => {
     const workload: Workload = {
       id: "example",
       pipelines: {
-        stages: [
-          { stageId: "github-build-stage" },
-        ],
+        stages: [{ stageId: "github-build-stage" }],
         jobNameMapping: JobNameMapping.None,
         jobGroups: {},
       },
@@ -365,9 +349,7 @@ describe("config mapping", () => {
     const workload: Workload = {
       id: "workload-fe-1",
       pipelines: {
-        stages: [
-          { stageId: "github-build-stage" },
-        ],
+        stages: [{ stageId: "github-build-stage" }],
         jobNameMapping: JobNameMapping.RepoName,
         jobGroups: {},
       },
@@ -388,9 +370,7 @@ describe("config mapping", () => {
     const workload: Workload = {
       id: "workload-fe-1",
       pipelines: {
-        stages: [
-          { stageId: "github-build-stage" },
-        ],
+        stages: [{ stageId: "github-build-stage" }],
         jobNameMapping: JobNameMapping.ComponentName,
         jobGroups: {},
       },
@@ -407,18 +387,17 @@ describe("config mapping", () => {
   });
 
   it("should return workload IDs containing the given tag", () => {
-    expect(getWorkloadsWithTags([{ key: "country", value: "GB" }])).toStrictEqual(
-      ["workload-fe-1", "workload-fe-2"]
-    );
-    expect(getWorkloadsWithTags([{ key: "department", value: "sales" }])).toStrictEqual(
-      ["workload-fe-1"]
-    );
+    expect(getWorkloadsWithTags([{ key: "country", value: "GB" }])).toStrictEqual(["workload-fe-1", "workload-fe-2"]);
+    expect(getWorkloadsWithTags([{ key: "department", value: "sales" }])).toStrictEqual(["workload-fe-1"]);
   });
 
   it("should return workload IDs containing all tag values", () => {
-    expect(getWorkloadsWithTags([{ key: "country", value: "GB" }, { key: "country", value: "US" }])).toStrictEqual(
-      ["workload-fe-1", "workload-fe-2", "workload-be"]
-    );
+    expect(
+      getWorkloadsWithTags([
+        { key: "country", value: "GB" },
+        { key: "country", value: "US" },
+      ]),
+    ).toStrictEqual(["workload-fe-1", "workload-fe-2", "workload-be"]);
   });
 
   it("should return an empty array when no workloads match the tag", () => {

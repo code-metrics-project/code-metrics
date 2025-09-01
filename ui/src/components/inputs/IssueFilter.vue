@@ -16,19 +16,13 @@
 <script lang="ts">
 import { OperationState } from "@/utils/ui";
 import { getIssuePriorities } from "@/services/issues";
-import {
-  getDefaultValue,
-  InputType,
-  type IssueFilterInputs,
-} from "@/queries/inputs";
+import { getDefaultValue, InputType, type IssueFilterInputs } from "@/queries/inputs";
 
 const issuePriorities = getIssuePriorities();
 
 function suggestStartingPriority() {
   // pick one above the lowest, if present
-  return issuePriorities.length > 0
-    ? issuePriorities[Math.min(1, issuePriorities.length)].value
-    : undefined;
+  return issuePriorities.length > 0 ? issuePriorities[Math.min(1, issuePriorities.length)].value : undefined;
 }
 
 export default {
@@ -40,9 +34,7 @@ export default {
     defaults: {
       type: Object as () => Partial<IssueFilterInputs>,
       default: () => {
-        return getDefaultValue<Partial<IssueFilterInputs>>(
-          InputType.ISSUE_FILTER,
-        );
+        return getDefaultValue<Partial<IssueFilterInputs>>(InputType.ISSUE_FILTER);
       },
     },
     priorityLabel: {

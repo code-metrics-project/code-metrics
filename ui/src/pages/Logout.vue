@@ -4,9 +4,7 @@
       <v-card-title class="headline">You're logged out</v-card-title>
       <v-card-text>You are logged out of Code Metrics.</v-card-text>
       <v-card-text>
-        <v-alert v-if="!!alert" :type="alert.type" class="mb-3">{{
-          alert.message
-        }}</v-alert>
+        <v-alert v-if="!!alert" :type="alert.type" class="mb-3">{{ alert.message }}</v-alert>
         <v-btn color="primary" :to="Paths.Login">Log in</v-btn>
       </v-card-text>
     </v-card>
@@ -27,9 +25,7 @@ export default defineComponent({
   setup() {
     return {
       alert: computed(() => {
-        const error = new URLSearchParams(document.location.search).get(
-          "error",
-        );
+        const error = new URLSearchParams(document.location.search).get("error");
         return getErrorMessage(error);
       }),
     };

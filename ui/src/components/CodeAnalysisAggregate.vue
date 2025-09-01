@@ -5,11 +5,7 @@
 
     <v-card-text>
       <div class="my-4">
-        <WorkloadNames
-          :defaults="workloadIds"
-          @input="(w) => (workloadIds = w)"
-          :operationState="operationState"
-        />
+        <WorkloadNames :defaults="workloadIds" @input="(w) => (workloadIds = w)" :operationState="operationState" />
       </div>
       <div class="my-4">
         <RepoGroups
@@ -29,18 +25,10 @@
         />
       </div>
       <div class="my-4">
-        <DatePicker
-          v-model="startDate"
-          :operationState="operationState"
-          label="Start date"
-        />
+        <DatePicker v-model="startDate" :operationState="operationState" label="Start date" />
       </div>
       <div class="my-4">
-        <DatePicker
-          v-model="endDate"
-          :operationState="operationState"
-          label="End date"
-        />
+        <DatePicker v-model="endDate" :operationState="operationState" label="End date" />
       </div>
       <div class="my-4">
         <v-checkbox
@@ -50,61 +38,33 @@
           hide-details
         />
       </div>
-      <v-btn
-        v-model:pressed="runToggle"
-        :disabled="runToggle"
-        color="primary"
-        @click="runAggregate"
-      >
+      <v-btn v-model:pressed="runToggle" :disabled="runToggle" color="primary" @click="runAggregate">
         {{ runToggleLabel }}
       </v-btn>
     </v-card-text>
 
     <v-container fluid v-if="formattedResultData?.length">
       <v-row>
-        <v-col
-          v-for="(result, index) in formattedResultData"
-          :key="index"
-          :cols="12"
-          :sm="6"
-          :md="4"
-          :lg="3"
-          :xl="2"
-        >
+        <v-col v-for="(result, index) in formattedResultData" :key="index" :cols="12" :sm="6" :md="4" :lg="3" :xl="2">
           <v-card>
             <v-sheet :color="result.variant">
               <v-card-title class="white--text">{{ result.name }}</v-card-title>
             </v-sheet>
 
             <div v-if="result.hasMetrics">
-              <v-card-title class="text-h3"
-                >{{ formatDecimal(result.summary.coverage, 1) }}%</v-card-title
-              >
+              <v-card-title class="text-h3">{{ formatDecimal(result.summary.coverage, 1) }}%</v-card-title>
               <v-card-subtitle
-                ><span
-                  v-if="
-                    result.summary.coverage < result.previous.summary.coverage
-                  "
-                  ><v-icon color="#F44336">mdi-arrow-down-bold</v-icon
-                  >{{ result.delta }}% change</span
-                ><span
-                  v-else-if="
-                    result.summary.coverage > result.previous.summary.coverage
-                  "
-                  ><v-icon color="#4CAF50">mdi-arrow-up-bold</v-icon>+{{
-                    result.delta
-                  }}% change</span
-                ><span v-else
-                  ><v-icon color="#559bea">mdi-circle-medium</v-icon>No
-                  change</span
-                ></v-card-subtitle
+                ><span v-if="result.summary.coverage < result.previous.summary.coverage"
+                  ><v-icon color="#F44336">mdi-arrow-down-bold</v-icon>{{ result.delta }}% change</span
+                ><span v-else-if="result.summary.coverage > result.previous.summary.coverage"
+                  ><v-icon color="#4CAF50">mdi-arrow-up-bold</v-icon>+{{ result.delta }}% change</span
+                ><span v-else><v-icon color="#559bea">mdi-circle-medium</v-icon>No change</span></v-card-subtitle
               >
             </div>
             <div v-else>
               <v-card-title class="text-h6">No coverage data</v-card-title>
               <v-card-subtitle v-if="result.staleData"
-                ><v-icon class="mr-1">mdi-alert</v-icon
-                >{{ result.staleData }}</v-card-subtitle
+                ><v-icon class="mr-1">mdi-alert</v-icon>{{ result.staleData }}</v-card-subtitle
               >
             </div>
 
@@ -120,33 +80,21 @@
               <v-spacer />
 
               <span class="text--secondary">Total lines to cover: </span>
-              <strong>{{
-                formatInteger(result.summary.totalLinesToCover)
-              }}</strong>
+              <strong>{{ formatInteger(result.summary.totalLinesToCover) }}</strong>
             </v-card-text>
 
             <v-card-actions>
               <v-menu open-on-hover>
                 <template v-slot:activator="{ props }">
-                  <v-btn color="primary" v-bind="props"
-                    >Repositories <v-icon>mdi-menu-down</v-icon></v-btn
-                  >
+                  <v-btn color="primary" v-bind="props">Repositories <v-icon>mdi-menu-down</v-icon></v-btn>
                 </template>
 
                 <v-list>
-                  <v-list-item
-                    v-for="(item, index) in result.links"
-                    :key="index"
-                  >
-                    <v-list-item-title class="mr-3">{{
-                      item.title
-                    }}</v-list-item-title>
+                  <v-list-item v-for="(item, index) in result.links" :key="index">
+                    <v-list-item-title class="mr-3">{{ item.title }}</v-list-item-title>
 
                     <template v-slot:append>
-                      <RepoLink
-                        :workload-id="item.workloadId"
-                        :repo-name="item.repoName"
-                      />
+                      <RepoLink :workload-id="item.workloadId" :repo-name="item.repoName" />
                       <v-btn
                         color="grey-darken-1"
                         density="compact"
@@ -291,15 +239,11 @@ export default {
         this.formattedResultData = aggregateResponse.current
           .filter((current: VariantGroupCoverage) => current.numProjects > 0)
           .map((current) => {
-            const previous: VariantGroupCoverage =
-              aggregateResponse.previous.find(
-                (prevData) => prevData.name === current.name,
-              );
-
-            const deltaDesc = formatDecimal(
-              current.summary.coverage - previous.summary.coverage,
-              1,
+            const previous: VariantGroupCoverage = aggregateResponse.previous.find(
+              (prevData) => prevData.name === current.name,
             );
+
+            const deltaDesc = formatDecimal(current.summary.coverage - previous.summary.coverage, 1);
 
             let staleData: CoverageSummary;
             if (current.variant === "no_data") {

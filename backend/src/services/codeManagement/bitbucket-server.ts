@@ -1,4 +1,4 @@
-import parseGitDiff, {AnyFileChange} from "parse-git-diff";
+import parseGitDiff, { AnyFileChange } from "parse-git-diff";
 import { type BitbucketServerConnection, createBitbuckerServerConnection } from "../../utils/bitbucketServerConnection";
 import { DatedMetricEntry } from "../../model/metrics";
 import { logger, verbose, warn } from "../../utils/logger/logger";
@@ -18,12 +18,13 @@ import { registerVcs, VcsService } from "./vcsService";
 import { MILLIS_PER_DAY, truncateDateOnly } from "../../utils/date";
 import { getDataForDateRange } from "../dateWalker";
 import { WorkloadId } from "../../model/config/workload-config";
-import {CodeManagementTypes} from "../../model/config/common";
+import { CodeManagementTypes } from "../../model/config/common";
 
 const COLLECTION_NAME_REPO_COMMITS = "repo-commits";
 const COLLECTION_NAME_REPO_CHANGES = "repo-changes";
 
-export const initBitbucketServerVcs = () => registerVcs(CodeManagementTypes.BITBUCKET_SERVER, () => new BitbucketServerVcsService());
+export const initBitbucketServerVcs = () =>
+  registerVcs(CodeManagementTypes.BITBUCKET_SERVER, () => new BitbucketServerVcsService());
 
 const listPullRequestFiles = async (
   connection: BitbucketServerConnection,
@@ -36,22 +37,18 @@ const listPullRequestFiles = async (
     repositorySlug: repositoryName,
     pullRequestId: pullRequestId,
   });
-  return normalisePullRequestFileList(rawGitDiffString, pullRequestId)
+  return normalisePullRequestFileList(rawGitDiffString, pullRequestId);
 };
 
-const normalisePullRequestFileList = (
-    rawGitDiffString:  string,
-    pullRequestId: string,
-): PrFileChangeItem[] => {
+const normalisePullRequestFileList = (rawGitDiffString: string, pullRequestId: string): PrFileChangeItem[] => {
   const diff = parseGitDiff(rawGitDiffString).files;
   logger(`Found ${diff.length} files on PR ${pullRequestId}`);
-  return diff
-      .map((file) => {
-        if (file.type == 'RenamedFile') {
-          return { path: file.pathAfter.startsWith("/") ? file.pathAfter : `/${file.pathAfter}` }
-        }
-        return { path: file.path.replace('dst://', '/') };
-      });
+  return diff.map((file) => {
+    if (file.type == "RenamedFile") {
+      return { path: file.pathAfter.startsWith("/") ? file.pathAfter : `/${file.pathAfter}` };
+    }
+    return { path: file.path.replace("dst://", "/") };
+  });
 };
 
 class BitbucketServerVcsService implements VcsService {
@@ -487,6 +484,23 @@ class BitbucketServerVcsService implements VcsService {
     throw new Error("Fetching earliest commit for PR is not implemented.");
   };
 
+  fetchFile = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repoName: string,
+    path: string,
+  ): Promise<string> => {
+    throw new Error("Fetching file is not implemented.");
+  };
+
+  fetchMergeRules = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repoName: string,
+  ): Promise<TMergeRules[]> => {
+    throw new Error("Fetching merge rules is not implemented.");
+  };
+
   buildCommitLink = (change: RepoChange, workloadId: WorkloadId): string =>
     `${this.buildRepoLink(workloadId, change.repo)}/commit/${change.commitId}`;
 
@@ -496,7 +510,6 @@ class BitbucketServerVcsService implements VcsService {
   buildRepoLink = (workloadId: WorkloadId, repoName: string): string =>
     `${getAllCodeManagementUrls()[workloadId]}/${repoName}`;
 }
-
 
 export const testables = {
   normalisePullRequestFileList,

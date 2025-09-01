@@ -29,7 +29,8 @@ import { registerVcs, VcsService } from "./vcsService";
 import { StorableLike, getDataForDateRange } from "../dateWalker";
 import { WorkloadId } from "../../model/config/workload-config";
 import Bottleneck from "bottleneck";
-import {CodeManagementTypes} from "../../model/config/common";
+import { CodeManagementTypes } from "../../model/config/common";
+import { TMergeRules } from "../repos/qualityGates";
 
 const REFS_HEADS_STR = "refs/heads/";
 
@@ -92,7 +93,11 @@ class AdoVcsService implements VcsService {
           warn("No commitId found for commit, skipping data fetch");
         } else {
           try {
-            changes.push(await limitConcurrencyAndRetry(limiter, () => gitApi.getChanges(commitId, repositoryName, vcsProjectName)));
+            changes.push(
+              await limitConcurrencyAndRetry(limiter, () =>
+                gitApi.getChanges(commitId, repositoryName, vcsProjectName),
+              ),
+            );
           } catch (e) {
             error(e, commitId);
             errorCount++;
@@ -485,6 +490,23 @@ class AdoVcsService implements VcsService {
     pullRequestId: number,
   ): Promise<RepoChange> => {
     throw new Error("Fetching earliest commit for PR is not implemented.");
+  };
+
+  fetchFile = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repoName: string,
+    path: string,
+  ): Promise<string> => {
+    throw new Error("Fetching file is not implemented.");
+  };
+
+  fetchMergeRules = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repoName: string,
+  ): Promise<TMergeRules[]> => {
+    throw new Error("Fetching merge rules is not implemented.");
   };
 
   buildCommitLink = (change: RepoChange, workloadId: WorkloadId): string =>

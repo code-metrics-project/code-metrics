@@ -1,6 +1,6 @@
 import Jenkins from "jenkins";
 import { Run, RunResult, RunWithMetadata } from "../../model/runs";
-import {getAllPipelinesConfig, getAllRemoteConfig, getWorkloadById} from "../../config/configMapping";
+import { getAllPipelinesConfig, getAllRemoteConfig, getWorkloadById } from "../../config/configMapping";
 import { AbstractPipelinesService, registerPipelines } from "./pipelinesService";
 import { matchOrEquals } from "../../utils/matchers";
 import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName } from "../../utils/jobs";
@@ -8,8 +8,8 @@ import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { logger, verbose } from "../../utils/logger/logger";
 import { jsonPathQuery } from "../../utils/json";
 import { StageConfig } from "../../model/config/pipeline-config";
-import {mapJobNamesUsingStageConfig, mapJobNameUsingStageConfig} from "./common";
-import {PipelinesTypes} from "../../model/config/common";
+import { mapJobNamesUsingStageConfig, mapJobNameUsingStageConfig } from "./common";
+import { PipelinesTypes } from "../../model/config/common";
 
 const JENKINS_BRANCH_PARAMETER = "BRANCH_NAME";
 
@@ -56,7 +56,8 @@ type TJenkinsBuild = {
   duration: number;
 };
 
-export const initJenkinsPipelines = () => registerPipelines(PipelinesTypes.JENKINS, (config) => new JenkinsPipelinesService(config));
+export const initJenkinsPipelines = () =>
+  registerPipelines(PipelinesTypes.JENKINS, (config) => new JenkinsPipelinesService(config));
 
 class JenkinsPipelinesService extends AbstractPipelinesService {
   private connections: Map<string, Jenkins>;
@@ -72,7 +73,7 @@ class JenkinsPipelinesService extends AbstractPipelinesService {
     if (!this.connections.has(connectionId) || reset) {
       const remoteServerId = this.stage.serverId;
       const jenkinsServer = getAllRemoteConfig().pipelines.jenkins.servers.find(
-          (server) => server.id === remoteServerId,
+        (server) => server.id === remoteServerId,
       );
 
       connection = new Jenkins({
@@ -87,12 +88,12 @@ class JenkinsPipelinesService extends AbstractPipelinesService {
   };
 
   getRunsForProject = async (
-      workloadId: string,
-      rawJobNames: string[],
-      pipelinesProjectName: string,
-      branches: string[],
-      startDate: Date,
-      endDate: Date,
+    workloadId: string,
+    rawJobNames: string[],
+    pipelinesProjectName: string,
+    branches: string[],
+    startDate: Date,
+    endDate: Date,
   ): Promise<Run[]> => {
     const workload = getWorkloadById(workloadId);
 
@@ -107,25 +108,29 @@ class JenkinsPipelinesService extends AbstractPipelinesService {
     if (!jobsMatchingRepo.length) return [];
 
     const multiBranchJobs = jobsMatchingRepo
-        .filter((job) => job._class === EJenkinsJobClass.Multibranch)
-        .map((mbJob) => {
-          if (!branches?.length) return mbJob.jobs;
-          return mbJob.jobs.filter((job) => {
-            return !!branches.find((branch) => branch.match(job.displayName)?.length);
-          });
-        })
-        .flat();
+      .filter((job) => job._class === EJenkinsJobClass.Multibranch)
+      .map((mbJob) => {
+        if (!branches?.length) return mbJob.jobs;
+        return mbJob.jobs.filter((job) => {
+          return !!branches.find((branch) => branch.match(job.displayName)?.length);
+        });
+      })
+      .flat();
     const multibranchRuns = (
-        await Promise.all(
-            multiBranchJobs.map(async (job) => getRunsForJob(workloadId, this.stage, buildApi, job.fullName, startDate, endDate)),
-        )
+      await Promise.all(
+        multiBranchJobs.map(async (job) =>
+          getRunsForJob(workloadId, this.stage, buildApi, job.fullName, startDate, endDate),
+        ),
+      )
     ).flat();
 
     const otherJobs = jobsMatchingRepo.filter((job) => job._class !== EJenkinsJobClass.Multibranch);
     const otherRuns = (
-        await Promise.all(
-            otherJobs.map(async (job) => getRunsForJob(workloadId, this.stage, buildApi, job.fullName, startDate, endDate, branches)),
-        )
+      await Promise.all(
+        otherJobs.map(async (job) =>
+          getRunsForJob(workloadId, this.stage, buildApi, job.fullName, startDate, endDate, branches),
+        ),
+      )
     ).flat();
 
     return [...multibranchRuns, ...otherRuns];
@@ -151,11 +156,11 @@ class JenkinsPipelinesService extends AbstractPipelinesService {
   }
 
   getPipelineRunProperty = async (
-      workloadId: WorkloadId,
-      vcsProjectName: string,
-      jobName: string,
-      runId: string,
-      propertyJsonPath: string,
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    jobName: string,
+    runId: string,
+    propertyJsonPath: string,
   ): Promise<string | null> => {
     const workload = getWorkloadById(workloadId);
     jobName = mapJobNameUsingStageConfig(workload, jobName, this.stage.id);
@@ -174,12 +179,12 @@ class JenkinsPipelinesService extends AbstractPipelinesService {
 
     // TODO discover via API and filter as jobName can be a regex
     return jobGroups[jobGroup]?.jobNames ?? [];
-  }
+  };
 
   buildRunLink = (workloadId: string, jobName: string, runId: string): string => {
     const server = getAllPipelinesConfig().jenkins.servers.find((server) => server.id === this.stage.serverId);
     return `${server.url}/${this.stage.projectName}/jobs/${jobName}/builds/${runId}`;
-  }
+  };
 }
 
 function extractJobs(jobs: TJenkinsJob[]): TJenkinsJob[] {
@@ -215,13 +220,13 @@ function convertBuildToRun(buildInfo: TJenkinsBuild, jobName: string, branchName
 }
 
 async function getRunsForJob(
-    workloadId: WorkloadId,
-    stage: StageConfig,
-    connection: Jenkins,
-    jobName: string,
-    startDate: Date,
-    endDate: Date,
-    branches?: string[],
+  workloadId: WorkloadId,
+  stage: StageConfig,
+  connection: Jenkins,
+  jobName: string,
+  startDate: Date,
+  endDate: Date,
+  branches?: string[],
 ) {
   const workload = getWorkloadById(workloadId);
   jobName = mapJobNameUsingStageConfig(workload, jobName, stage.id);
@@ -242,9 +247,9 @@ async function getRunsForJob(
       const actions = buildInfo.actions;
       const parameterActions = actions.filter((action) => action._class === EJenkinsActionClass.Parameters);
       const branchParameter = parameterActions
-          .map((parameterAction) => parameterAction.parameters)
-          .flat()
-          .find((action) => action.name === JENKINS_BRANCH_PARAMETER);
+        .map((parameterAction) => parameterAction.parameters)
+        .flat()
+        .find((action) => action.name === JENKINS_BRANCH_PARAMETER);
       if (!branchParameter) {
         console.warn(`Job ${jobName} build ${i} had no branch parameter.`);
         continue;

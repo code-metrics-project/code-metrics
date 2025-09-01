@@ -3,7 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { liveness, readiness } from "./routes/health";
-import { manageCache } from "./routes/system"
+import { manageCache } from "./routes/system";
 import { findBugCulprits } from "./routes/bugCulprits";
 import { fetchBugHistory } from "./routes/tickets";
 import { fileMetricBreakdown } from "./routes/codeAnalysisBreakdown";
@@ -43,7 +43,13 @@ import {
 } from "./routes/savedQueries";
 import { getAuthenticator } from "./auth/auth";
 import { getCorsOrigin } from "./utils/server";
-import { logout } from "./routes/authenticate";
+import {
+  refreshSession,
+  logout,
+  generateServiceToken,
+  revokeServiceToken,
+  listServiceTokenIds
+} from "./routes/authentication";
 import { initCodePipelinePipelines } from "./services/pipelines/codepipeline";
 import { initDynatracePipelines } from "./services/pipelines/dynatrace";
 import { SecureRouter } from "./routes/router";
@@ -54,9 +60,11 @@ import { initNoOpPipelines } from "./services/pipelines/noop";
 import { initNoOpIncidents } from "./services/incidentManagement/noop";
 import { initNoOpIssues } from "./services/projectManangement/noop";
 import { InvocationMode } from "./model/global";
+import { fetchQualityGates } from "./routes/qualityGates";
+import { getConfigItemAsNumber, getConfigItemAsBoolean, getConfigItem } from "./config/sources/source";
 
-const CONFIG_REFRESH_MS = (process.env.CONFIG_REFRESH_MS as unknown as number) ?? 30000;
-const configReloadFlag = process.env.CONFIG_AUTO_RELOAD === "true";
+const CONFIG_REFRESH_MS = getConfigItemAsNumber("CONFIG_REFRESH_MS", 30000);
+const configReloadFlag = getConfigItemAsBoolean("CONFIG_AUTO_RELOAD");
 
 /**
  * Wrapper to load configuration files, initialise services and connections.
@@ -150,7 +158,13 @@ const addRoutes = (router: SecureRouter) => {
   // auth
   const authenticator = getAuthenticator();
   authenticator.configureRoutes(router);
+  router.addUnauthenticatedRoute("post", "/api/refresh", refreshSession);
   router.addUnauthenticatedRoute("get", "/api/logout", logout);
+
+  // service token endpoints can't be used with service tokens themselves; we only allow access tokens.
+  router.addRouteWithOptions("post", "/api/tokens", { tokenTypes: [ "access_token"] }, generateServiceToken);
+  router.addRouteWithOptions("get", "/api/tokens", { tokenTypes: [ "access_token"] }, listServiceTokenIds);
+  router.addRouteWithOptions("delete", "/api/tokens/:tokenId", { tokenTypes: [ "access_token"] }, revokeServiceToken);
 
   // config
   router.addUnauthenticatedRoute("get", "/api/system/bootstrap", fetchBootstrap);
@@ -188,6 +202,10 @@ const addRoutes = (router: SecureRouter) => {
   // query
   router.addRoute("post", "/api/query", executeQuery);
 
+  // quality-gates
+  router.addRoute("post", "/api/quality-gates", fetchQualityGates);
+
+  // dashboards
   router.addRoute("get", "/api/dashboards", getDashboards);
   router.addRoute("get", "/api/dashboards/:id", getDashboard);
 
@@ -199,9 +217,7 @@ const addRoutes = (router: SecureRouter) => {
 };
 
 export const bootstrap = async () => {
-  if (!(await validateLicense())) {
-    process.exit(2);
-  }
+  await validateLicense();
   await initServices();
   if (configReloadFlag) setInterval(initServices, CONFIG_REFRESH_MS);
 };
@@ -211,10 +227,11 @@ export const startApi = async (): Promise<Express> => {
   if (global.isLambda) {
     logger(`CodeMetrics API ready`);
   } else {
-    const listenPort = (process.env.PORT as unknown as number) ?? 3000;
-    const listenHost = global.invocationMode === InvocationMode.DesktopMode
-          ? 'localhost'
-          : (process.env.ADDR as string | undefined) ?? '0.0.0.0';
+    const listenPort = getConfigItemAsNumber("PORT", 3000);
+    const listenHost =
+      global.invocationMode === InvocationMode.DesktopMode
+        ? "localhost"
+        : getConfigItem("ADDR", "0.0.0.0");
 
     app.listen(listenPort, listenHost, () => {
       logger(`CodeMetrics API listening on ${listenHost}:${listenPort}`);

@@ -5,7 +5,7 @@ import { Workload, WorkloadId, WorkloadPipelineStage } from "../../model/config/
 import { verbose, warn } from "../../utils/logger/logger";
 import { getDeploymentService } from "../deployment/deploymentService";
 import { lookupJobGroupForJobName } from "../../utils/jobs";
-import {dateDiffDays, getRelativeDate, walkDateRange} from "../../utils/date";
+import { dateDiffDays, getRelativeDate, walkDateRange } from "../../utils/date";
 
 /**
  * Fetches runs for the given workloads, job groups, branches, and date range.
@@ -95,7 +95,7 @@ async function findDownstreamRuns(
   jobGroup: string,
   branch: string,
   commitId: string,
-  run: RunWithMetadata
+  run: RunWithMetadata,
 ): Promise<RunWithMetadata[]> {
   const allStageIds = workload.pipelines.stages.map((stage) => stage.stageId);
   const subsequentStageIds = allStageIds.slice(allStageIds.indexOf(stageId) + 1);
@@ -104,9 +104,11 @@ async function findDownstreamRuns(
   const inputRunStartDate = new Date(run.run.startDate);
   const daysToSearch = Math.min(MAX_DAYS_TO_SEARCH, dateDiffDays(inputRunStartDate, new Date()));
   const searchEndDate = getRelativeDate(inputRunStartDate, daysToSearch);
-  verbose(`Searching for deployments for run ${run.run.id} from ${inputRunStartDate.toISOString()} to ${searchEndDate.toISOString()}`);
+  verbose(
+    `Searching for deployments for run ${run.run.id} from ${inputRunStartDate.toISOString()} to ${searchEndDate.toISOString()}`,
+  );
 
-  const pipelines= getPipelinesForWorkload(workload, stageId);
+  const pipelines = getPipelinesForWorkload(workload, stageId);
   const deploymentService = getDeploymentService();
 
   const found: RunWithMetadata[] = [];
@@ -117,9 +119,15 @@ async function findDownstreamRuns(
       const subsequentRuns = await pipelines.getRunsForJobGroups(workload.id, [jobGroup], [branch], current, nextDay);
       for (const subsequentRun of subsequentRuns) {
         try {
-          const subsequentCommitId = await deploymentService.findCommitIdForRun(workload.id, subsequentStageId, subsequentRun.run);
+          const subsequentCommitId = await deploymentService.findCommitIdForRun(
+            workload.id,
+            subsequentStageId,
+            subsequentRun.run,
+          );
           if (subsequentCommitId === commitId) {
-            verbose(`Found deployment for run ${run.run.id} in stage ${subsequentStageId} with ID ${subsequentRun.run.id}`);
+            verbose(
+              `Found deployment for run ${run.run.id} in stage ${subsequentStageId} with ID ${subsequentRun.run.id}`,
+            );
             found.push(subsequentRun);
           }
         } catch (e) {
@@ -158,7 +166,7 @@ export const fetchDeploymentsForRun = async (
     return [];
   }
 
-  const pipelines= getPipelinesForWorkload(workload, stageId);
+  const pipelines = getPipelinesForWorkload(workload, stageId);
   const run = await pipelines.getRunById(workloadId, jobName, runId);
   if (!run) {
     warn(`Could not find run with ID: ${runId}`);
@@ -172,14 +180,7 @@ export const fetchDeploymentsForRun = async (
   verbose(`Found commit ID ${commitId} for run ${runId}`);
 
   // find all pipeline runs from the workload's deployment provider where the start date >= this run's start date
-  const found = await findDownstreamRuns(
-    workload,
-    stageId,
-    jobGroup,
-    branch,
-    commitId,
-    run,
-  );
+  const found = await findDownstreamRuns(workload, stageId, jobGroup, branch, commitId, run);
   return found;
 };
 
@@ -194,7 +195,7 @@ export const getPipelineStage = (workload: Workload, stageId: string): WorkloadP
     throw new Error(`No pipeline stage configuration found for workload: ${workload.id} with stage: ${stageId}`);
   }
   return pipelineStage;
-}
+};
 
 /**
  * Maps the job name using the stage configuration.
@@ -206,7 +207,7 @@ export const getPipelineStage = (workload: Workload, stageId: string): WorkloadP
 export const mapJobNameUsingStageConfig = (workload: Workload, jobName: string, stageId: string) => {
   const pipelineStage = getPipelineStage(workload, stageId);
   return pipelineStage.jobMapping?.[jobName] ?? jobName;
-}
+};
 
 /**
  * Maps an array of job names using the stage configuration.
@@ -215,5 +216,5 @@ export const mapJobNameUsingStageConfig = (workload: Workload, jobName: string, 
  * @param stageId
  */
 export const mapJobNamesUsingStageConfig = (workload: Workload, jobNames: string[], stageId: string) => {
-    return jobNames.map((jobName) => mapJobNameUsingStageConfig(workload, jobName, stageId));
-}
+  return jobNames.map((jobName) => mapJobNameUsingStageConfig(workload, jobName, stageId));
+};

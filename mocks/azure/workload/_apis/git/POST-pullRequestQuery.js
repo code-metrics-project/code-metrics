@@ -1,5 +1,3 @@
-const UUID = Java.type("java.util.UUID");
-
 const { projectName: adoProjectName, repoName } = context.request.pathParams;
 
 const req = JSON.parse(context.request.body);
@@ -29,7 +27,7 @@ for (let i = 0; i < req.queries.length; i++) {
               href: "${system.server.url}/_apis/GraphProfile/MemberAvatars/aad.ZTYyZGY1N2ItYjJiZi03MDk1LWE0YmMtYTg5ODljY2MxODAy",
             },
           },
-          id: UUID.randomUUID().toString(),
+          id: random.uuid(),
           uniqueName: "user@example.com",
           imageUrl: "${system.server.url}/_api/_common/identityImage?id=e62df57b-b2bf-6095-a4bc-a8989ccc1802",
           descriptor: "aad.ZTYyZGY1N2ItYjJiZi03MDk1LWE0YmMtYTg5ODljY2MxODAy",
@@ -42,7 +40,7 @@ for (let i = 0; i < req.queries.length; i++) {
         targetRefName: "refs/heads/main",
         mergeStatus: "succeeded",
         isDraft: false,
-        mergeId: UUID.randomUUID().toString(),
+        mergeId: random.uuid(),
         lastMergeSourceCommit: {
           commitId: "37f178d8821778f35200f8e2af37fabec50e2945",
           url: "${system.server.url}/_apis/git/repositories/7b4091ee-129f-454a-a4b0-2165b37a7196/commits/37f178d8821778f35200f8e2af37fabec50e2945",

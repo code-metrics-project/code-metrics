@@ -3,7 +3,7 @@ import { getWorkloadById } from "../../config/configMapping";
 import { RepoCodeAnalysisKey } from "../../utils/repos";
 import { ComponentCoverage } from "../../model/codeAnalysis";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
-import {CodeAnalysisTypes} from "../../model/config/common";
+import { CodeAnalysisTypes } from "../../model/config/common";
 
 const builders: Record<string, () => CodeAnalysisService> = {};
 const instances: Record<string, CodeAnalysisService> = {};

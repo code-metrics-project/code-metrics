@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { type MetricEntry } from "@/model/metrics";
-import {
-  buildAxes,
-  buildDataLabels,
-  calculatePercentageByTag,
-  type ChartFormat,
-  mergeAxes,
-} from "@/chart/common";
+import { buildAxes, buildDataLabels, calculatePercentageByTag, type ChartFormat, mergeAxes } from "@/chart/common";
 import type { DatedMetrics } from "@/model/metrics";
 
 describe("calculatePercentageByTag", () => {
@@ -155,10 +149,7 @@ describe("mergeAxes", () => {
     const a = [{ title: { text: "Axis A1" } }, { title: { text: "Axis A2" } }];
     const b = [{ title: { text: "Axis B1" } }, { title: { text: "Axis B2" } }];
     const result = mergeAxes(a, b);
-    expect(result).toEqual([
-      { title: { text: "Axis B1" } },
-      { title: { text: "Axis B2" } },
-    ]);
+    expect(result).toEqual([{ title: { text: "Axis B1" } }, { title: { text: "Axis B2" } }]);
   });
 
   it("merges an array and a single axis correctly", () => {
@@ -193,10 +184,7 @@ describe("mergeAxes", () => {
     const a = [{ title: { text: "Axis A1" } }];
     const b = [{ title: { text: "Axis B1" } }, { title: { text: "Axis B2" } }];
     const result = mergeAxes(a, b);
-    expect(result).toEqual([
-      { title: { text: "Axis B1" } },
-      { title: { text: "Axis B2" } },
-    ]);
+    expect(result).toEqual([{ title: { text: "Axis B1" } }, { title: { text: "Axis B2" } }]);
   });
 });
 
@@ -217,9 +205,7 @@ describe("buildDataLabels", () => {
   });
 
   it("uses provided formatter for the correct series index", () => {
-    const formatters: ChartFormat[] = [
-      { seriesName: "series1", format: (value) => `formatted ${value}` },
-    ];
+    const formatters: ChartFormat[] = [{ seriesName: "series1", format: (value) => `formatted ${value}` }];
     const result = buildDataLabels(true, undefined, formatters);
     const formattedValue = result.formatter?.(123, { seriesIndex: 0 });
     expect(formattedValue).toBe("formatted 123");

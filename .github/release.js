@@ -13,7 +13,7 @@ module.exports = async ({github, context}, changes) => {
         owner: 'DeloitteDigitalUK',
         repo: 'code-metrics',
         tag_name: releaseVersion,
-        body: `${changes}\n\n## Docker images\n\nSee Docker images on Docker Hub:\n\n- [API backend](https://hub.docker.com/repository/docker/deloittedigitaluk/code-metrics-api)\n- [Frontend](https://hub.docker.com/repository/docker/deloittedigitaluk/code-metrics-ui)\n`,
+        body: `${changes}\n\n## Docker images\n\nSee Docker images on [GitHub Container Registry](https://github.com/orgs/code-metrics-project/packages?repo_name=releases)\n`,
     });
     const releaseId = release.data.id;
 

@@ -4,7 +4,7 @@
     <v-card-subtitle>Outcome of pipeline runs.</v-card-subtitle>
 
     <v-card-text v-if="!!alert">
-      <v-alert :type="alert.type">{{ alert.message }}</v-alert>
+      <AlertMessage :alert="alert" />
     </v-card-text>
 
     <v-container fluid>
@@ -25,29 +25,15 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col
-          cols="12"
-          sm="6"
-          lg="4"
-          xl="2"
-          v-for="outcomes in workloadOutcomes"
-          :key="outcomes.key"
-        >
+        <v-col cols="12" sm="6" lg="4" xl="2" v-for="outcomes in workloadOutcomes" :key="outcomes.key">
           <v-card variant="flat">
             <v-card-title class="text-center">{{ outcomes.key }}</v-card-title>
             <v-card-item>
-              <div class="text-h4 text-center">
-                {{ Math.round(outcomes.success) }}%
-              </div>
+              <div class="text-h4 text-center">{{ Math.round(outcomes.success) }}%</div>
               <DoughnutChart :chart-data="outcomes.chartData" />
             </v-card-item>
             <v-card-actions class="mt-0">
-              <v-btn
-                v-if="outcomes.runsUrl"
-                color="primary"
-                :to="outcomes.runsUrl"
-                >Show runs</v-btn
-              >
+              <v-btn v-if="outcomes.runsUrl" color="primary" :to="outcomes.runsUrl">Show runs</v-btn>
             </v-card-actions>
           </v-card>
         </v-col>
@@ -59,17 +45,18 @@
 <script lang="ts">
 // @ts-nocheck
 import DynamicInputs from "@/components/DynamicInputs.vue";
-import {executeQuery} from "@/services/query";
-import {OperationState} from "@/utils/ui";
-import {calculatePercentageByTag} from "@/chart/common";
-import {logger} from "@/utils/logger";
+import AlertMessage from "@/components/AlertMessage.vue";
+import { executeQuery } from "@/services/query";
+import { OperationState } from "@/utils/ui";
+import { calculatePercentageByTag } from "@/chart/common";
+import { logger } from "@/utils/logger";
 import DoughnutChart from "@/components/charts/DoughnutChart.vue";
-import {QueryName} from "@/queries/queries";
-import {listJobGroups, listWorkloadIds} from "@/utils/config";
-import {InputType} from "@/queries/inputs";
-import {createDoughnutChartData} from "@/chart/doughnut";
-import {Paths} from "@/router/paths";
-import {buildPath} from "@/utils/path";
+import { QueryName } from "@/queries/queries";
+import { listJobGroups, listWorkloadIds } from "@/utils/config";
+import { InputType } from "@/queries/inputs";
+import { createDoughnutChartData } from "@/chart/doughnut";
+import { Paths } from "@/router/paths";
+import { buildPath } from "@/utils/path";
 
 export default {
   name: "PipelineOutcome",
@@ -84,6 +71,7 @@ export default {
   components: {
     DoughnutChart,
     DynamicInputs,
+    AlertMessage,
   },
   props: {
     workload: {
@@ -191,9 +179,7 @@ export default {
           logger(`No pipeline outcomes for:`, `${workload}-${jobGroup}`);
         }
       } catch (e) {
-        throw new Error(
-          `Failed to fetch pipeline runs for ${workload}/${jobGroup}: ${e}`,
-        );
+        throw new Error(`Failed to fetch pipeline runs for ${workload}/${jobGroup}: ${e}`);
       }
     },
     computeUrlToPipelineRuns(workloadId, stageId, jobGroup) {
@@ -218,7 +204,7 @@ export default {
       workloadOutcomes: [],
       operationState: OperationState.Idle,
       queryTypes: [QueryName.PipelineRuns],
-      alert: null,
+      alert: null as Alert | null,
       defaultInputs: {
         workloads,
         stageId: this.stageId,

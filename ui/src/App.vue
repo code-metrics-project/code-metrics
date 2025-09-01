@@ -17,7 +17,7 @@ import Dialog from "@/components/Dialog.vue";
 import Toast from "@/components/Toast.vue";
 import NavBar from "./components/NavBar.vue";
 import Footer from "./components/Footer.vue";
-import { useInactivityDialog } from "@/composables/inactivity-dialog";
+import { useInactivityDialog } from "@/composables/inactivity-checker.ts";
 
 useInactivityDialog();
 </script>

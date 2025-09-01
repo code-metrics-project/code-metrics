@@ -6,9 +6,7 @@
     @input="onInput"
   >
     <template v-slot:buttons>
-      <v-btn @click="getHistoryAsCsv" color="secondary" class="ml-2">
-        Download as CSV
-      </v-btn>
+      <v-btn @click="getHistoryAsCsv" color="secondary" class="ml-2"> Download as CSV </v-btn>
     </template>
   </DynamicQuery>
 </template>

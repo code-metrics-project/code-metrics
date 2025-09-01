@@ -1,12 +1,15 @@
 import { defineStore } from "pinia";
+import { logger } from "@/utils/logger.ts";
 
 export type DialogItem = {
+  deduplicationId?: string;
   confirmTitle: string;
   showCancel?: boolean;
+  cancelTitle?: string;
   subtitle?: string;
   title: string;
   text: string;
-  onDismiss: (result?: boolean) => void;
+  onDismiss: (result?: boolean) => Promise<void>;
 };
 
 type DialogState = {
@@ -20,7 +23,17 @@ export const useDialogStore = defineStore("dialog", {
 
   actions: {
     push(item: DialogItem) {
-      this.dialogs.push({ ...item, showCancel: item.showCancel ?? true });
+      if (item.deduplicationId) {
+        if (this.dialogs.find((d) => d.deduplicationId === item.deduplicationId)) {
+          logger(`Skipping enqueue of dialog [deduplicationId='${item.deduplicationId}',title='${item.title}']`);
+          return;
+        }
+      }
+      this.dialogs.push({
+        ...item,
+        showCancel: item.showCancel ?? true,
+        cancelTitle: item.cancelTitle ?? "Cancel",
+      });
     },
   },
 });

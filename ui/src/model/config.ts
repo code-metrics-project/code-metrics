@@ -34,6 +34,8 @@ export type BootstrapConfig = {
     store: AuthSessionStoreMethod;
   };
   features: FeatureConfig;
+  hasConfig: boolean;
+  isLicensed: boolean;
 };
 
 export type SystemConfig = {

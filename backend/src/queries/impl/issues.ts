@@ -8,9 +8,7 @@ import { DatedMetrics, DateStamp } from "../../model/metrics";
 import { getIncidentMgmtForWorkload } from "../../services/incidentManagement/incidentMgmtService";
 import { TimeRangeMode } from "../../services/tickets/ticketService";
 
-export const fetchIncidents = async (
-  args: Record<string, any>,
-): Promise<Map<DateStamp, DatedMetrics>> => {
+export const fetchIncidents = async (args: Record<string, any>): Promise<Map<DateStamp, DatedMetrics>> => {
   const { workloads, startDate, endDate, priority } = parseTicketArgs(args, true);
   logger(`Fetching incidents for workloads: ${workloads}, from: ${startDate}`);
 
@@ -36,9 +34,7 @@ export const fetchNewBugs = async (
   startDate: string,
   priority: string,
 ): Promise<Map<DateStamp, DatedMetrics>> => {
-  logger(
-    `Fetching new bugs for workloads: ${workloads}, at/above: ${priority}, from: ${startDate}`,
-  );
+  logger(`Fetching new bugs for workloads: ${workloads}, at/above: ${priority}, from: ${startDate}`);
 
   try {
     const bugs = await fetchNewBugsWithArgs({
@@ -66,9 +62,7 @@ export const fetchOpenBugs = async (
   startDate: string,
   priority: string,
 ): Promise<Map<DateStamp, DatedMetrics>> => {
-  logger(
-    `Fetching open bugs for workloads: ${workloads}, at/above: ${priority}, from: ${startDate}`,
-  );
+  logger(`Fetching open bugs for workloads: ${workloads}, at/above: ${priority}, from: ${startDate}`);
 
   try {
     return await fetchOpenBugsWithArgs({
@@ -86,10 +80,7 @@ export const fetchOpenBugs = async (
  * @param issues
  * @param keyPrefix
  */
-export const groupIssues = (
-  issues: LightweightIssue[],
-  keyPrefix: string,
-): Map<DateStamp, DatedMetrics> => {
+export const groupIssues = (issues: LightweightIssue[], keyPrefix: string): Map<DateStamp, DatedMetrics> => {
   if (issues.length === 0) {
     return new Map();
   }

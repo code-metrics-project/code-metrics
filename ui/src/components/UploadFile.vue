@@ -4,7 +4,7 @@
     <v-card-subtitle>Upload a SARIF format report.</v-card-subtitle>
 
     <v-card-text v-if="!!alert">
-      <v-alert :type="alert.type">{{ alert.message }}</v-alert>
+      <AlertMessage :alert="alert" />
     </v-card-text>
 
     <v-container fluid>
@@ -26,17 +26,8 @@
               v-model="repoName"
             />
             <DatePicker label="Report date" v-model="reportDate" />
-            <VFileInput
-              label="SARIF file"
-              v-model="chosenFile"
-              accept=".sarif"
-              :disabled="busy"
-              :multiple="false"
-            />
-            <VBtn
-              color="primary"
-              @click.prevent="upload"
-              :disabled="busy || !workload?.length || !chosenFile?.length"
+            <VFileInput label="SARIF file" v-model="chosenFile" accept=".sarif" :disabled="busy" :multiple="false" />
+            <VBtn color="primary" @click.prevent="upload" :disabled="busy || !workload?.length || !chosenFile?.length"
               >Upload
             </VBtn>
           </v-card-text>
@@ -56,6 +47,8 @@ import { VULNERABILITIES } from "@/utils/urls";
 import DatePicker from "@/components/DatePicker.vue";
 import { getTodayDateOnly } from "@/utils/date";
 import { getReposForWorkloadId } from "@/utils/config";
+import AlertMessage from "@/components/AlertMessage.vue";
+import type { Alert } from "@/utils/ui";
 
 type PersistVulnsQueryParams = {
   workload: string;
@@ -65,7 +58,7 @@ type PersistVulnsQueryParams = {
 
 const operationState = ref(OperationState.Idle);
 const chosenFile = ref<File[]>();
-const alert = ref(null);
+const alert = ref<Alert>(null);
 const repoNames = ref([]);
 const repoName = ref("");
 const reportDate = ref(getTodayDateOnly());

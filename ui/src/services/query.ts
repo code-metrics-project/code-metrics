@@ -5,9 +5,7 @@ import { QUERY } from "@/utils/urls";
 import type { DatedMetrics } from "@/model/metrics";
 import type { RawQuery } from "@/model/query";
 
-export async function executeQuery(
-  query: RawQuery
-): Promise<Map<string, DatedMetrics>> {
+export async function executeQuery(query: RawQuery): Promise<Map<string, DatedMetrics>> {
   try {
     logger(`Running "${query.queryName}" query`);
     const response = await axios.post(QUERY, query);

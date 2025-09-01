@@ -8,18 +8,10 @@ type Bucket<Content> = {
   values: Content[];
 };
 
-export function getBuckets<Content>(
-  data: Map<string, DatedMetrics>,
-  bucketSizeInDays: number,
-) {
+export function getBuckets<Content>(data: Map<string, DatedMetrics>, bucketSizeInDays: number) {
   const buckets: Bucket<Content>[] = [];
-  const dates = [...data.keys()].sort(
-    (a, b) => new Date(b).getTime() - new Date(a).getTime(),
-  );
-  const dateRange = dateDiff(
-    new Date(dates[dates.length - 1]),
-    new Date(dates[0]),
-  );
+  const dates = [...data.keys()].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  const dateRange = dateDiff(new Date(dates[dates.length - 1]), new Date(dates[0]));
   const bucketSizeInMs = MILLIS_PER_DAY * bucketSizeInDays;
   const numberOfBuckets = Math.floor(dateRange / bucketSizeInMs) + 1;
   const lastBucketEnd = dates[0];
@@ -44,11 +36,7 @@ function getAllTags(data: Map<string, DatedMetrics>) {
   return tags;
 }
 
-function getRollingAverage(
-  data: Map<string, DatedMetrics>,
-  tags: Set<string>,
-  spanInDays: number,
-) {
+function getRollingAverage(data: Map<string, DatedMetrics>, tags: Set<string>, spanInDays: number) {
   const buckets = getBuckets<DatedMetrics>(data, spanInDays);
 
   const filledBuckets: Bucket<DatedMetrics>[] = buckets.map((bucket) => {
@@ -67,19 +55,13 @@ function getRollingAverage(
      * Subtract a day here from the bucket end date, otherwise the first day of the chart always
      * has the rolling average value as 0 which skews the whole thing.
      */
-    const dateString = truncateDateOnly(
-      add(new Date(bucket.endDate).getTime(), { days: -1 }),
-    );
+    const dateString = truncateDateOnly(add(new Date(bucket.endDate).getTime(), { days: -1 }));
     const bucketEntries = new Map();
     for (const tag of tags) {
       const [total, numberOfEntries] = bucket.values.reduce(
         ([runningTotal, runningNumberOfEntries], val) => {
-          if (!val.entries.has(tag))
-            return [runningTotal, runningNumberOfEntries];
-          return [
-            runningTotal + val.entries.get(tag)!.value,
-            runningNumberOfEntries + 1,
-          ];
+          if (!val.entries.has(tag)) return [runningTotal, runningNumberOfEntries];
+          return [runningTotal + val.entries.get(tag)!.value, runningNumberOfEntries + 1];
         },
         [0, 0],
       );
@@ -99,10 +81,7 @@ function getRollingAverage(
   return bucketMap;
 }
 
-export function getRollingAverages(
-  data: Map<string, DatedMetrics>,
-  spanInDays: number,
-) {
+export function getRollingAverages(data: Map<string, DatedMetrics>, spanInDays: number) {
   const tags = getAllTags(data);
   return getRollingAverage(data, tags, spanInDays);
 }

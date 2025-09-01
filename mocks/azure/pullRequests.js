@@ -1,4 +1,3 @@
-const UUID = Java.type("java.util.UUID");
 const MILLIS_PER_HOUR = 1000 * 3600;
 const now = new Date();
 
@@ -35,9 +34,9 @@ function generatePrs(date) {
     const creationDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 9, 0));
     const closedDate = new Date(creationDate.getTime() + Math.round(MILLIS_PER_HOUR * openHours));
 
-    const commitId1 = UUID.randomUUID().toString();
-    const commitId2 = UUID.randomUUID().toString();
-    const commitId3 = UUID.randomUUID().toString();
+    const commitId1 = random.uuid();
+    const commitId2 = random.uuid();
+    const commitId3 = random.uuid();
     const pullRequestId = Math.round(Math.random() * 30000);
 
     const jiraIssueId = (++startingJiraId).toString();

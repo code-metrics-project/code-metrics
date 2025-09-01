@@ -43,26 +43,24 @@ export const listNonWorkingPatternChanges = async (
   endDate: Date,
   splitBySeverity: boolean,
 ): Promise<Map<DateStamp, DatedMetrics>> => {
-  const changes = await fetchRepoChanges(
-    workloads,
-    repoGroups,
-    startDate,
-    endDate,
-    false,
-  );
+  const changes = await fetchRepoChanges(workloads, repoGroups, startDate, endDate, false);
 
   const outsideWorkingPattern = extractNonWorkingChanges(changes);
 
   const metrics = new Map<DateStamp, DatedMetrics>();
   for (const change of outsideWorkingPattern) {
     const day = truncateDateOnly(change.date);
-    const dailyMetrics = metrics.get(day) ?? (splitBySeverity ? {
-      "non-working-high": [],
-      "non-working-medium": [],
-      "non-working-low": [],
-    } : {
-      "non-working": [],
-    });
+    const dailyMetrics =
+      metrics.get(day) ??
+      (splitBySeverity
+        ? {
+            "non-working-high": [],
+            "non-working-medium": [],
+            "non-working-low": [],
+          }
+        : {
+            "non-working": [],
+          });
 
     const repoGroup = lookupRepoGroupForRepoName(change.workloadId, change.repoName);
     const dimensions: MetricItemDimensions = {
@@ -97,7 +95,7 @@ export const listNonWorkingPatternChanges = async (
   }
 
   return interpolateMissing(metrics, MissingBehaviour.SET_TO_ZERO);
-}
+};
 
 /**
  * Get the working pattern for a workload. All hours are converted to UTC.
@@ -138,26 +136,20 @@ const toUTC = (pattern: TeamWorkingPattern): TeamWorkingPattern => {
   return newPattern;
 };
 
-const fromLocalTimeToUTC = (
-  dayIndex: number,
-  hour: number,
-  timezone: string,
-): Date => {
+const fromLocalTimeToUTC = (dayIndex: number, hour: number, timezone: string): Date => {
   // dayIndex is 0-6, starting on Sunday
   // 2001 is a non-leap year
   // 8 January 2001 (2001, 0, 7) is a Monday
   const date = new Date(2001, 0, dayIndex + 7, hour);
   return fromZonedTime(date, timezone);
-}
+};
 
-const categoriseSeverity = (
-  changeDateTime: Date, pattern: TeamWorkingPattern
-): NonWorkingSeverity => {
-  if (changeDateTime.getUTCDay() + 7 < (pattern.startDay as number + 7)
-    || changeDateTime.getUTCDay() + 7 > (pattern.endDay as number + 7)) {
-
+const categoriseSeverity = (changeDateTime: Date, pattern: TeamWorkingPattern): NonWorkingSeverity => {
+  if (
+    changeDateTime.getUTCDay() + 7 < (pattern.startDay as number) + 7 ||
+    changeDateTime.getUTCDay() + 7 > (pattern.endDay as number) + 7
+  ) {
     return NonWorkingSeverity.High;
-
   } else {
     let hours: number;
     if (changeDateTime.getUTCHours() < pattern.startHour) {
@@ -179,31 +171,34 @@ const categoriseSeverity = (
 };
 
 const extractNonWorkingChanges = (changes: RepoChange[]): NonWorkingChange[] => {
-  const outsideWorkingPattern = changes.filter((change) => {
-    const workload = getWorkloadById(change.workload);
-    const changeDateTime = new Date(change.date);
-    const pattern = getWorkingPatternForWorkload(workload);
+  const outsideWorkingPattern = changes
+    .filter((change) => {
+      const workload = getWorkloadById(change.workload);
+      const changeDateTime = new Date(change.date);
+      const pattern = getWorkingPatternForWorkload(workload);
 
-    return changeDateTime.getUTCHours() < pattern.startHour
-      || changeDateTime.getUTCHours() > pattern.endHour
-      || (changeDateTime.getUTCDay() + 7) < (pattern.startDay as number + 7)
-      || (changeDateTime.getUTCDay() + 7) > (pattern.endDay as number + 7);
+      return (
+        changeDateTime.getUTCHours() < pattern.startHour ||
+        changeDateTime.getUTCHours() > pattern.endHour ||
+        changeDateTime.getUTCDay() + 7 < (pattern.startDay as number) + 7 ||
+        changeDateTime.getUTCDay() + 7 > (pattern.endDay as number) + 7
+      );
+    })
+    .map((change) => {
+      const workload = getWorkloadById(change.workload);
+      const changeDateTime = new Date(change.date);
+      const pattern = getWorkingPatternForWorkload(workload);
+      const severity = categoriseSeverity(changeDateTime, pattern);
 
-  }).map((change) => {
-    const workload = getWorkloadById(change.workload);
-    const changeDateTime = new Date(change.date);
-    const pattern = getWorkingPatternForWorkload(workload);
-    const severity = categoriseSeverity(changeDateTime, pattern);
-
-    const nwChange: NonWorkingChange = {
-      workloadId: change.workload,
-      repoName: change.repo,
-      commitHash: change.commitId,
-      date: new Date(change.date),
-      severity,
-    };
-    return nwChange;
-  });
+      const nwChange: NonWorkingChange = {
+        workloadId: change.workload,
+        repoName: change.repo,
+        commitHash: change.commitId,
+        date: new Date(change.date),
+        severity,
+      };
+      return nwChange;
+    });
 
   verbose(`Non-working pattern changes:`, outsideWorkingPattern.length);
   return outsideWorkingPattern;

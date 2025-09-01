@@ -6,7 +6,7 @@
           alt="Code Metrics logo"
           class="shrink ml-3 mr-2"
           contain
-          :src="`${getBaseAssetUrl()}assets/img/codemetrics_small_title.png`"
+          :src="`/assets/img/codemetrics_small_title.png`"
           transition="scale-transition"
           width="200"
         />
@@ -25,40 +25,20 @@
 
       <template v-slot:append>
         <ThemeSelector />
-        <v-app-bar-nav-icon
-          v-if="isAuthenticated"
-          class="d-block d-lg-none"
-          @click.stop="drawer = !drawer"
-        >
+        <v-app-bar-nav-icon v-if="isAuthenticated" class="d-block d-lg-none" @click.stop="drawer = !drawer">
           <v-icon>mdi-menu</v-icon>
           <span class="d-sr-only">Open main navigation</span>
         </v-app-bar-nav-icon>
       </template>
     </v-app-bar>
 
-    <v-navigation-drawer
-      v-if="isAuthenticated"
-      v-model="drawer"
-      absolute
-      right
-      temporary
-    >
+    <v-navigation-drawer v-if="isAuthenticated" v-model="drawer" absolute right temporary>
       <v-list nav dense>
-        <v-list-item role="option" :to="Paths.Home">{{
-          t("nav.home")
-        }}</v-list-item>
-        <v-list-item role="option" :to="Paths.Program">{{
-          t("nav.program")
-        }}</v-list-item>
-        <v-list-item role="option" :to="Paths.Workloads">{{
-          t("nav.workload")
-        }}</v-list-item>
-        <v-list-item role="option" :to="Paths.NewQuery">{{
-          t("nav.newQuery")
-        }}</v-list-item>
-        <v-list-item role="option" :to="Paths.Explore">{{
-          t("nav.explore")
-        }}</v-list-item>
+        <v-list-item role="option" :to="Paths.Home">{{ t("nav.home") }}</v-list-item>
+        <v-list-item role="option" :to="Paths.Program">{{ t("nav.program") }}</v-list-item>
+        <v-list-item role="option" :to="Paths.Workloads">{{ t("nav.workload") }}</v-list-item>
+        <v-list-item role="option" :to="Paths.NewQuery">{{ t("nav.newQuery") }}</v-list-item>
+        <v-list-item role="option" :to="Paths.Explore">{{ t("nav.explore") }}</v-list-item>
         <v-list-item role="option" v-if="isAuthenticated && authRequired" @click.prevent="onLogout">{{
           t("nav.logout")
         }}</v-list-item>
@@ -73,7 +53,7 @@ import { useI18n } from "vue-i18n";
 import ThemeSelector from "./ThemeSelector.vue";
 import { useAuthStore } from "@/store/auth";
 import { Paths } from "@/router/paths";
-import { getBaseAssetUrl, getConfig } from "@/utils/config.ts";
+import { getConfig } from "@/utils/config.ts";
 
 const { t } = useI18n();
 const authStore = useAuthStore();

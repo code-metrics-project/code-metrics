@@ -1,9 +1,4 @@
-import {
-  convertMetricsMapToObj,
-  getMetricsMetadata,
-  interpolateMissing,
-  MissingBehaviour,
-} from "../metrics";
+import { convertMetricsMapToObj, getMetricsMetadata, interpolateMissing, MissingBehaviour } from "../metrics";
 import { toDatedMetricsMap, toIntermediateMap } from "../../tests/utils";
 
 describe("metrics", () => {

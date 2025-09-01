@@ -6,12 +6,7 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  type Theme,
-  themes,
-  useThemeStore,
-  useThemeWatcher,
-} from "@/store/theme";
+import { type Theme, themes, useThemeStore, useThemeWatcher } from "@/store/theme";
 
 useThemeWatcher();
 

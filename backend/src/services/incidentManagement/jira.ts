@@ -1,4 +1,4 @@
-import {JiraTicketOptions, TicketManagementTypes} from "../../model/config/common";
+import { JiraTicketOptions, TicketManagementTypes } from "../../model/config/common";
 import { AbstractIncidentMgmtConfigManager, registerIncidentMgmt } from "./incidentMgmtService";
 import { JiraTicketService } from "../tickets/jira";
 import { WorkloadTicketConfigJira } from "../../model/config/workload-config";
@@ -11,6 +11,7 @@ class JiraConfigManager extends AbstractIncidentMgmtConfigManager<WorkloadTicket
   }
 }
 
-export const initJiraIncidents = () => registerIncidentMgmt(TicketManagementTypes.JIRA, () => {
-  return new JiraTicketService(new JiraConfigManager());
-});
+export const initJiraIncidents = () =>
+  registerIncidentMgmt(TicketManagementTypes.JIRA, () => {
+    return new JiraTicketService(new JiraConfigManager());
+  });

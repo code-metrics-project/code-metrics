@@ -1,5 +1,13 @@
 import { defineStore } from "pinia";
-import { checkAuthState, login, type LoginResponse, LoginResult, logout } from "@/services/auth";
+import {
+  checkAuthState,
+  login,
+  type LoginResponse,
+  LoginResult,
+  logout,
+  refreshSession,
+  type SecurityTokens,
+} from "@/services/auth";
 import { Paths } from "@/router/paths";
 import { logger } from "@/utils/logger";
 import { getBootstrap, getConfig } from "@/utils/config";
@@ -8,7 +16,7 @@ import type { RouteLocation, RouteLocationPathRaw, Router } from "vue-router";
 import { isTokenExpired } from "@/utils/auth";
 
 type AuthState = {
-  accessToken: string | undefined;
+  tokens?: SecurityTokens;
   status: LoginResult;
 };
 
@@ -17,14 +25,24 @@ type LoginDetails = {
   password: string;
 };
 
-const SESSION_STORAGE_KEY = "cm-session";
+const ACCESS_TOKEN_KEY = "cm-session";
+const REFRESH_TOKEN_KEY = "cm-refresh";
 const POST_LOGIN_DEST_KEY = "cm-post-login-dest";
 
 export const useAuthStore = defineStore("auth", {
-  state: (): AuthState => ({
-    accessToken: getSessionHolder().get(SESSION_STORAGE_KEY) ?? undefined,
-    status: LoginResult.Unsent,
-  }),
+  state: (): AuthState => {
+    const session = getSessionHolder();
+    const accessToken = session.get(ACCESS_TOKEN_KEY);
+    const refreshToken = session.get(REFRESH_TOKEN_KEY);
+
+    let tokens: SecurityTokens | undefined;
+    if (accessToken && refreshToken) {
+      tokens = { accessToken, refreshToken };
+    } else {
+      tokens = undefined;
+    }
+    return { tokens, status: LoginResult.Unsent };
+  },
 
   actions: {
     async checkAuthState() {
@@ -61,27 +79,31 @@ export const useAuthStore = defineStore("auth", {
 
     processAuthResponse(conclusion: LoginResponse) {
       switch (conclusion.result) {
-        case LoginResult.Success:
-          this.accessToken = conclusion.accessToken;
-          getSessionHolder().set(SESSION_STORAGE_KEY, conclusion.accessToken);
+        case LoginResult.Success: {
+          const tokens = conclusion.tokens;
+          const session = getSessionHolder();
+          session.set(ACCESS_TOKEN_KEY, tokens.accessToken);
+          session.set(REFRESH_TOKEN_KEY, tokens.refreshToken);
+          this.tokens = tokens;
           break;
-
-        case LoginResult.LoginRequired:
+        }
+        case LoginResult.LoginRequired: {
           if (this.isExternalLogin) {
-            const loginUrl = getBootstrap().auth.loginUrl!!;
+            const loginUrl = getBootstrap().auth.loginUrl!;
             const fullLoginUrl = loginUrl.startsWith("/") ? getConfig().webConfig.apiBaseUrl + loginUrl : loginUrl;
 
             logger("Redirecting to login page", fullLoginUrl);
             window.location.href = fullLoginUrl;
           }
           break;
-
-        default:
+        }
+        default: {
           if (this.isExternalLogin) {
             logger(`Login result: ${conclusion.result} - redirecting to logout page`);
             window.location.href = `${Paths.Logout}?error=${conclusion.result}`;
           }
           break;
+        }
       }
       this.status = conclusion.result;
     },
@@ -107,10 +129,26 @@ export const useAuthStore = defineStore("auth", {
       return Paths.Home;
     },
 
+    async refreshSession() {
+      logger("Refreshing session");
+      const refreshToken = getSessionHolder().get(REFRESH_TOKEN_KEY);
+      if (!refreshToken) {
+        throw new Error("No refresh token found in session storage");
+      }
+      try {
+        const conclusion = await refreshSession(refreshToken);
+        this.processAuthResponse(conclusion);
+      } catch (e: any) {
+        throw new Error(e);
+      }
+    },
+
     async logout() {
       try {
         await logout();
-        getSessionHolder().remove(SESSION_STORAGE_KEY);
+        const session = getSessionHolder();
+        session.remove(ACCESS_TOKEN_KEY);
+        session.remove(REFRESH_TOKEN_KEY);
         sessionStorage.removeItem(POST_LOGIN_DEST_KEY);
         // Force refresh on logout to mitigate any state issues.
         window.location.href = `${window.location.origin}${Paths.Logout}`;
@@ -121,10 +159,10 @@ export const useAuthStore = defineStore("auth", {
   },
 
   getters: {
-    isAuthenticated: (state) => {
-      return !!state.accessToken && !isTokenExpired(state.accessToken);
+    isAuthenticated: (state): boolean => {
+      return !!state.tokens && !isTokenExpired(state.tokens.accessToken);
     },
-    isExternalLogin: () => {
+    isExternalLogin: (): boolean => {
       return !!getBootstrap().auth.loginUrl;
     },
   },

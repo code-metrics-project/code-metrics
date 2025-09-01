@@ -12,11 +12,7 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
 import { OperationState } from "@/utils/ui";
-import {
-  getDefaultValue,
-  InputType,
-  type SeverityOptionsInput,
-} from "@/queries/inputs";
+import { getDefaultValue, InputType, type SeverityOptionsInput } from "@/queries/inputs";
 import type { CommonInputProps } from "@/components/inputs/CommonInputProps";
 
 type TProps = CommonInputProps<SeverityOptionsInput> & {
@@ -24,8 +20,7 @@ type TProps = CommonInputProps<SeverityOptionsInput> & {
 };
 
 const props = withDefaults(defineProps<TProps>(), {
-  defaults: () =>
-    getDefaultValue<SeverityOptionsInput>(InputType.SEVERITY_OPTIONS),
+  defaults: () => getDefaultValue<SeverityOptionsInput>(InputType.SEVERITY_OPTIONS),
 
   operationState: OperationState.Idle,
 });

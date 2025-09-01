@@ -40,8 +40,7 @@ export const getSessionHolder = (): AuthSessionHolder => {
       case "sessionstorage": {
         sessionHolder = {
           get: (key: string) => sessionStorage.getItem(key),
-          set: (key: string, value: string) =>
-            sessionStorage.setItem(key, value),
+          set: (key: string, value: string) => sessionStorage.setItem(key, value),
           remove: (key: string) => sessionStorage.removeItem(key),
         };
         break;

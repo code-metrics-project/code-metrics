@@ -16,6 +16,7 @@ import { error, logger, verbose } from "../../utils/logger/logger";
 import { AttributeValue } from "@aws-sdk/client-dynamodb/dist-types/models/models_0";
 import { sleep } from "../../utils/math";
 import { convertFromDdbMap, convertToDdbMap } from "./converter";
+import { getConfigItem } from "../../config/sources/source";
 
 /**
  * DynamoDB datastore.
@@ -41,11 +42,11 @@ let client: DynamoDBClient;
  * Invoke once.
  */
 export const initDynamoDB = async () => {
-  const region = process.env.AWS_REGION;
+  const region = getConfigItem("AWS_REGION");
   if (!region) {
     throw new Error("AWS_REGION must be set");
   }
-  let tablePrefix = process.env.DATABASE_NAME;
+  let tablePrefix = getConfigItem("DATABASE_NAME");
   if (!tablePrefix) {
     logger(`Using default table prefix: ${DEFAULT_TABLE_PREFIX}`);
     tablePrefix = DEFAULT_TABLE_PREFIX;
@@ -142,7 +143,14 @@ class DynamoTable implements DatastoreCollection {
       Key: key,
     });
     try {
-      await this.client.send(command);
+      const result = await this.client.send(command);
+      if (result.Attributes) {
+        verbose(`Deleted item ${JSON.stringify(itemKey)} from table ${this.tableName}`);
+        return true;
+      } else {
+        verbose(`Item ${JSON.stringify(itemKey)} not found in table ${this.tableName}`);
+        return false;
+      }
     } catch (e) {
       if (e.name === "ResourceNotFoundException") {
         verbose(`Could not delete item ${JSON.stringify(itemKey)} from table ${this.tableName} as it does not exist`);
@@ -158,7 +166,7 @@ class DynamoTable implements DatastoreCollection {
     });
     try {
       const response = await this.client.send(command);
-      return response.Items.map((item : CacheEntry) => {
+      return response.Items.map((item: CacheEntry) => {
         return convertFromDdbMap(item.CacheValue.M);
       });
     } catch (e) {
@@ -178,12 +186,12 @@ class DynamoTable implements DatastoreCollection {
               Key: {
                 CacheKey: {
                   S: ".*",
-                }
-              }
-            }
-          }
-        ]
-      }
+                },
+              },
+            },
+          },
+        ],
+      },
     });
 
     try {
@@ -195,7 +203,7 @@ class DynamoTable implements DatastoreCollection {
         throw e;
       }
     }
-  }
+  };
 }
 
 export class DynamoDatastore extends AbstractDatastore<QueryFilter, DynamoTable> {

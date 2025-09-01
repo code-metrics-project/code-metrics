@@ -59,12 +59,7 @@ const error = ref<string>();
 
 onMounted(async () => {
   try {
-    item.value = await fetchRunById(
-      workloadId as string,
-      stageId as string,
-      jobName as string,
-      runId as string,
-    );
+    item.value = await fetchRunById(workloadId as string, stageId as string, jobName as string, runId as string);
   } catch (e) {
     error.value = `Unable to find pipeline run. ${e}`;
   }

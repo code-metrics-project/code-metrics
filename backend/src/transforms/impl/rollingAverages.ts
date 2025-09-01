@@ -36,7 +36,12 @@ const getAllTags = (data: Map<string, IntermediaryDatedMetrics>) => {
   return tags;
 };
 
-const getRollingAverage = (data: Map<string, IntermediaryDatedMetrics>, tags: Set<string>, spanInDays: number, model: Model) => {
+const getRollingAverage = (
+  data: Map<string, IntermediaryDatedMetrics>,
+  tags: Set<string>,
+  spanInDays: number,
+  model: Model,
+) => {
   const buckets = getBuckets(data, spanInDays, 1);
 
   const filledBuckets: Bucket[] = buckets.map((bucket) => {

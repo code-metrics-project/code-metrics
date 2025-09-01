@@ -56,4 +56,4 @@ export const calculateDeploymentFrequency = async (
     }
   }
   return metrics;
-}
+};

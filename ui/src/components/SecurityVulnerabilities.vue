@@ -4,7 +4,7 @@
     <v-card-subtitle>Security vulnerability information.</v-card-subtitle>
 
     <v-card-text v-if="!!alert">
-      <v-alert :type="alert.type">{{ alert.message }}</v-alert>
+      <AlertMessage :alert="alert" />
     </v-card-text>
 
     <v-container fluid>
@@ -23,18 +23,9 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col
-          cols="12"
-          sm="6"
-          lg="4"
-          xl="2"
-          v-for="outcomes in workloadOutcomes"
-          :key="outcomes.key"
-        >
+        <v-col cols="12" sm="6" lg="4" xl="2" v-for="outcomes in workloadOutcomes" :key="outcomes.key">
           <div class="text-h5 text-center">{{ outcomes.key }}</div>
-          <div class="text-h4 text-center">
-            {{ Math.round(outcomes.total) }} total
-          </div>
+          <div class="text-h4 text-center">{{ Math.round(outcomes.total) }} total</div>
           <DoughnutChart :chart-data="outcomes.chartData" />
         </v-col>
       </v-row>
@@ -45,6 +36,7 @@
 <script lang="ts">
 // @ts-nocheck
 import DynamicInputs from "@/components/DynamicInputs.vue";
+import AlertMessage from "@/components/AlertMessage.vue";
 import { executeQuery } from "@/services/query";
 import { OperationState } from "@/utils/ui";
 import { calculatePercentageByTag } from "@/chart/common";
@@ -60,6 +52,7 @@ export default {
   components: {
     DoughnutChart,
     DynamicInputs,
+    AlertMessage,
   },
   props: {
     workload: {
@@ -139,15 +132,10 @@ export default {
             chartData,
           });
         } else {
-          logger(
-            `No security vulnerabilities for:`,
-            `${workload}-${repoGroup}`,
-          );
+          logger(`No security vulnerabilities for:`, `${workload}-${repoGroup}`);
         }
       } catch (e) {
-        throw new Error(
-          `Failed to fetch security vulnerabilities for ${workload}/${repoGroup}: ${e}`,
-        );
+        throw new Error(`Failed to fetch security vulnerabilities for ${workload}/${repoGroup}: ${e}`);
       }
     },
   },

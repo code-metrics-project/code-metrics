@@ -35,17 +35,12 @@ import { Paths } from "@/router/paths";
 import PipelineOutcomes from "@/components/pipeline/PipelineOutcomes.vue";
 import { useI18n } from "vue-i18n";
 import { InputType } from "@/queries/inputs";
-import {getFirstPipelineStage} from "@/queries/config";
+import { getFirstPipelineStage } from "@/queries/config";
 
 const { t } = useI18n();
 const route = useRoute();
 
-const {
-  workloadId,
-  executeImmediately: executeImmediatelyRaw,
-  stageId: stageIdRaw,
-  branchName,
-} = route.query;
+const { workloadId, executeImmediately: executeImmediatelyRaw, stageId: stageIdRaw, branchName } = route.query;
 
 const executeImmediately = executeImmediatelyRaw === "true";
 const stageId = stageIdRaw?.length ? stageIdRaw : getFirstPipelineStage();

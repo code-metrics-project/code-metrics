@@ -174,7 +174,7 @@ ticketManagement:
     - id: none
 ```
 
-In the associated [workflow configuration](./config_workflow.md), the `incidents` type should be set to `none`.
+In the associated [workload configuration](./config_workloads.md), the `incidents` type should be set to `none`.
 
 ```yaml
 # workload-config.yaml

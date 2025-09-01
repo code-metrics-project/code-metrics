@@ -16,11 +16,9 @@ type DailyPipelineSummary = {
   totalDuration: number;
 };
 
-type PipelineDatedMetrics = { dimensions: MetricItemDimensions, summary: DailyPipelineSummary };
+type PipelineDatedMetrics = { dimensions: MetricItemDimensions; summary: DailyPipelineSummary };
 
-export const fetchPipelineRuns = async (
-  args: PipelineRunArgs,
-): Promise<Map<DateStamp, DatedMetrics>> => {
+export const fetchPipelineRuns = async (args: PipelineRunArgs): Promise<Map<DateStamp, DatedMetrics>> => {
   logger(`Fetching pipeline runs for workloads: ${args.workloads} from: ${args.startDate}`);
 
   try {
@@ -48,31 +46,26 @@ export const fetchPipelineRuns = async (
  * @param filter
  * @param allRuns
  */
-const actorFilter = (
-  filter: ActorType,
-  allRuns: RunWithMetadata[]
-): RunWithMetadata[] => {
+const actorFilter = (filter: ActorType, allRuns: RunWithMetadata[]): RunWithMetadata[] => {
   if (filter === ActorType.All) {
-    verbose("[actorFilter] ActorType is all - skipping filter")
-    return allRuns
+    verbose("[actorFilter] ActorType is all - skipping filter");
+    return allRuns;
   }
   return allRuns.filter(({ run }) => {
     if (run.userType === filter) {
-      verbose(`userType matched (${filter}) - including run: ${run.id}`)
+      verbose(`userType matched (${filter}) - including run: ${run.id}`);
       return true;
     }
     if (!run.userType) {
-      verbose(`userType undefined - including run: ${run.id}`)
+      verbose(`userType undefined - including run: ${run.id}`);
       return true;
     }
-    verbose(`No matching userType - excluding run: ${run.id}`)
+    verbose(`No matching userType - excluding run: ${run.id}`);
     return false;
   });
-}
+};
 
-export const fetchPipelineDurations = async (
-  args: PipelineDurationArgs,
-): Promise<Map<DateStamp, DatedMetrics>> => {
+export const fetchPipelineDurations = async (args: PipelineDurationArgs): Promise<Map<DateStamp, DatedMetrics>> => {
   logger(`Fetching pipeline durations for workloads: ${args.workloads} from: ${args.startDate}`);
 
   try {
@@ -96,10 +89,7 @@ export const fetchPipelineDurations = async (
  * @param workloadRuns
  * @param valueFormat
  */
-const groupRuns = (
-  workloadRuns: RunWithMetadata[],
-  valueFormat: ValueFormat,
-): Map<DateStamp, DatedMetrics> => {
+const groupRuns = (workloadRuns: RunWithMetadata[], valueFormat: ValueFormat): Map<DateStamp, DatedMetrics> => {
   logger(`Processing ${workloadRuns.length} pipeline runs`);
   if (workloadRuns.length === 0) {
     return new Map();
@@ -109,9 +99,10 @@ const groupRuns = (
   const grouped = new Map<DateStamp, DatedMetrics>();
 
   summarise(workloadRuns, false).forEach((metrics, date) => {
-    const datedMetrics: DatedMetrics = valueFormat === ValueFormat.COUNT
-      ? { "runs-aborted": [], "runs-failed": [], "runs-successful": [] }
-      : { runs: [] };
+    const datedMetrics: DatedMetrics =
+      valueFormat === ValueFormat.COUNT
+        ? { "runs-aborted": [], "runs-failed": [], "runs-successful": [] }
+        : { runs: [] };
 
     for (const { dimensions, summary } of metrics) {
       if (valueFormat === ValueFormat.COUNT) {
@@ -144,10 +135,7 @@ const groupRuns = (
  * @param workloadRuns
  * @param successfulOnly
  */
-const groupDurations = (
-  workloadRuns: RunWithMetadata[],
-  successfulOnly: boolean,
-): Map<DateStamp, DatedMetrics> => {
+const groupDurations = (workloadRuns: RunWithMetadata[], successfulOnly: boolean): Map<DateStamp, DatedMetrics> => {
   logger(`Processing ${workloadRuns.length} pipeline durations`);
   if (workloadRuns.length === 0) {
     return new Map();
@@ -214,7 +202,7 @@ const summarise = (
           failed: 0,
           successful: 0,
           totalDuration: 0,
-        }
+        },
       };
       datedEntries.push(metrics);
     }
@@ -243,5 +231,5 @@ const summarise = (
 
 export const testables = {
   groupRuns,
-  actorFilter
+  actorFilter,
 };

@@ -25,7 +25,7 @@ describe("getPipelineStage", () => {
 
   it("throws an error if the stage ID is not found in the workload", () => {
     expect(() => getPipelineStage(mockWorkload, "non-existent-stage")).toThrow(
-      `No pipeline stage configuration found for workload: ${mockWorkload.id} with stage: non-existent-stage`
+      `No pipeline stage configuration found for workload: ${mockWorkload.id} with stage: non-existent-stage`,
     );
   });
 });
@@ -60,7 +60,7 @@ describe("mapJobNameUsingStageConfig", () => {
 
   it("throws an error if the stage ID is not found in the workload", () => {
     expect(() => mapJobNameUsingStageConfig(mockWorkload, jobName, "non-existent-stage")).toThrow(
-      `No pipeline stage configuration found for workload: ${mockWorkload.id} with stage: non-existent-stage`
+      `No pipeline stage configuration found for workload: ${mockWorkload.id} with stage: non-existent-stage`,
     );
   });
 });

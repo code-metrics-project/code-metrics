@@ -8,11 +8,6 @@ const config: JestConfigWithTsJest = {
   testEnvironment: "node",
   collectCoverage: true,
   coverageReporters: ["json", "html", "lcov", "text"],
-  globals: {
-    "ts-jest": {
-      isolatedModules: false
-    }
-  }
 };
 
 export default config;

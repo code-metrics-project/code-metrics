@@ -6,7 +6,10 @@ const transformTypes = new Map<TransformTypes, Transformer>();
 
 export type Transformer = {
   transform: TransformTypes;
-  apply: (dataset: Map<string, IntermediaryDatedMetrics>, transformArgs: Args) => Promise<Map<string, IntermediaryDatedMetrics>>;
+  apply: (
+    dataset: Map<string, IntermediaryDatedMetrics>,
+    transformArgs: Args,
+  ) => Promise<Map<string, IntermediaryDatedMetrics>>;
 };
 
 const registerTransform = (transform: Transformer) => transformTypes.set(transform.transform, transform);

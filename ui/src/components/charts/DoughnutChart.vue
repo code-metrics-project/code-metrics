@@ -1,10 +1,5 @@
 <template>
-  <apexchart
-    width="100%"
-    type="donut"
-    :options="options"
-    :series="chartData.data"
-  />
+  <apexchart width="100%" type="donut" :options="options" :series="chartData.data" />
 </template>
 
 <script lang="ts" setup>

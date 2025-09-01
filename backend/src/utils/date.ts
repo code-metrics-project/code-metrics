@@ -4,7 +4,7 @@ import { DateStamp } from "../model/metrics";
 
 export const MILLIS_PER_DAY = 1000 * 3600 * 24;
 
-export const truncateDateOnly = (date: Date | string): DateStamp => 
+export const truncateDateOnly = (date: Date | string): DateStamp =>
   formatISO(date, { representation: "date" }) as DateStamp;
 
 /**
@@ -54,7 +54,7 @@ export const dateDiffDays = (date1: Date | string, date2: Date | string): number
  */
 export const sameDay = (date1: Date | string, date2: Date | string): boolean => {
   return dateDiffDays(date1, date2) === 0;
-}
+};
 
 /**
  * Check if two dates are the same date and time.
@@ -63,7 +63,7 @@ export const sameDay = (date1: Date | string, date2: Date | string): boolean => 
  */
 export const sameDate = (date1: Date | string, date2: Date | string): boolean => {
   return dateDiff(date1, date2) === 0;
-}
+};
 
 /**
  * Walks a date range sequentially, and inclusively, running the given operation on each day.

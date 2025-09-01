@@ -3,7 +3,10 @@ import { logger } from "../utils/logger/logger";
 import {
   DeprecatedWorkloadProjectManagementConfigAzure,
   V1WorkloadProjectManagementConfigJira,
-  JiraIssueOptions, V1RemoteConfigWrapper, V1Workload, V1WorkloadConfigWrapper
+  JiraIssueOptions,
+  V1RemoteConfigWrapper,
+  V1Workload,
+  V1WorkloadConfigWrapper,
 } from "../model/config/v1/v1model";
 import { RemoteConfigWrapper, TicketManagementServer } from "../model/config/remote-config";
 import {
@@ -12,7 +15,7 @@ import {
   Workload,
   WorkloadConfigWrapper,
   WorkloadTicketConfigAzure,
-  WorkloadTicketConfigJira
+  WorkloadTicketConfigJira,
 } from "../model/config/workload-config";
 import { determineConfigVersion } from "./config";
 import { ConfigVersion } from "../model/config/base";
@@ -65,7 +68,7 @@ const polyfillRemoteConfigs = (rawRemoteConfig: V1RemoteConfigWrapper | RemoteCo
             ticketTypes: legacyJiraDefaults.bugs?.issueTypes ?? legacyJiraDefaults.bugTypes,
             ticketPriorities: legacyJiraDefaults.ticketPriorities,
             teamFilterQuery: legacyJiraDefaults.bugs?.teamFilterJql ?? legacyJiraDefaults.teamFilterJql,
-          }
+          },
         });
 
         if (legacyJiraDefaults.incidents) {
@@ -83,7 +86,7 @@ const polyfillRemoteConfigs = (rawRemoteConfig: V1RemoteConfigWrapper | RemoteCo
       }
 
       v2RemoteConfig.ticketManagement[ticketMgmtType] = {
-        servers: jiraServers
+        servers: jiraServers,
       };
       logger(`Polyfilled remote ticket management for ${ticketMgmtType}`);
     }
@@ -138,7 +141,6 @@ const polyfillTicketMgmt = (configVersion: ConfigVersion, rawWorkload: V1Workloa
     };
     v2Workload.incidents = v2IncidentMgmt;
     logger(`Polyfilled workload ${v1Workload.id} incident management config`);
-
   } else if (v1Workload.projectManagement.type === TicketManagementTypes.AZURE) {
     const v1ProjMgmt = v1Workload.projectManagement as unknown as DeprecatedWorkloadProjectManagementConfigAzure;
 
@@ -260,7 +262,10 @@ const polyfillRepoGroups = (configVersion: ConfigVersion, rawWorkload: V1Workloa
   }
 };
 
-const polyfillRepoMappings = (configVersion: ConfigVersion, rawWorkloadConfg: V1WorkloadConfigWrapper | WorkloadConfigWrapper) => {
+const polyfillRepoMappings = (
+  configVersion: ConfigVersion,
+  rawWorkloadConfg: V1WorkloadConfigWrapper | WorkloadConfigWrapper,
+) => {
   if (configVersion !== ConfigVersion.V1_0) {
     return;
   }

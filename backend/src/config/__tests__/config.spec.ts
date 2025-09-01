@@ -7,18 +7,26 @@ import { StageConfigWrapper } from "../../model/config/pipeline-config";
 
 describe("readConfig", () => {
   it("should parse the JSON config", async () => {
-    const config: WorkloadConfigWrapper = await readConfig([path.join(__dirname, "test-data/json")], "workload-config", {
-      required: true,
-    });
+    const config: WorkloadConfigWrapper = await readConfig(
+      [path.join(__dirname, "test-data/json")],
+      "workload-config",
+      {
+        required: true,
+      },
+    );
     expect(config).toBeTruthy();
     expect(config.workloads).toHaveLength(1);
     expect(config.workloads[0].codeAnalysis.mappings).toHaveLength(1);
   });
 
   it("should parse the YAML workload config", async () => {
-    const config: WorkloadConfigWrapper = await readConfig([path.join(__dirname, "test-data/yaml")], "workload-config", {
-      required: true,
-    });
+    const config: WorkloadConfigWrapper = await readConfig(
+      [path.join(__dirname, "test-data/yaml")],
+      "workload-config",
+      {
+        required: true,
+      },
+    );
     expect(config).toBeTruthy();
     expect(config.workloads).toHaveLength(1);
     expect(config.workloads[0].codeAnalysis.mappings).toHaveLength(1);
@@ -44,7 +52,9 @@ describe("readConfig", () => {
   });
 
   it("should fail to load a nonexistent required file", async () => {
-    await expect(readConfig([path.join(__dirname, "test-data")], "does-not-exist", { required: true })).rejects.toThrow();
+    await expect(
+      readConfig([path.join(__dirname, "test-data")], "does-not-exist", { required: true }),
+    ).rejects.toThrow();
   });
 
   it("should ignore failure to load a nonexistent non-required file", async () => {
@@ -112,16 +122,16 @@ describe("mergeConfigs", () => {
 
     const config1: ArrayItem[] = [
       { id: "item1", value: "value1" },
-      { id: "item2", value: "value2", nested: { property: "prop2" } }
+      { id: "item2", value: "value2", nested: { property: "prop2" } },
     ];
 
     const config2: ArrayItem[] = [
       { id: "item3", value: "value3" },
-      { id: "item4", value: "value4", nested: { property: "prop4" } }
+      { id: "item4", value: "value4", nested: { property: "prop4" } },
     ];
 
     const merged = mergeConfigs<ArrayItem[]>([config1, config2]);
-    
+
     expect(Array.isArray(merged)).toBe(true);
     expect(merged).toHaveLength(4);
     expect(merged[0].id).toBe("item1");

@@ -5,22 +5,20 @@ import {
   determineJobNames,
   getAllPipelinesConfig,
   getServerConfig,
-  getWorkloadById
+  getWorkloadById,
 } from "../../config/configMapping";
-import {Workload, WorkloadId} from "../../model/config/workload-config";
-import {getDeploymentService } from "../deployment/deploymentService";
-import { StageConfig} from "../../model/config/pipeline-config";
-import {PipelinesTypes} from "../../model/config/common";
+import { Workload, WorkloadId } from "../../model/config/workload-config";
+import { getDeploymentService } from "../deployment/deploymentService";
+import { StageConfig } from "../../model/config/pipeline-config";
+import { PipelinesTypes } from "../../model/config/common";
+import { getConfigItemAsBoolean } from "../../config/sources/source";
 
-const CACHE_PIPELINE_BUILDS = process.env.CACHE_PIPELINE_BUILDS != "false";
+const CACHE_PIPELINE_BUILDS = getConfigItemAsBoolean("CACHE_PIPELINE_BUILDS", true);
 
 const builders: Record<string, (stage: StageConfig) => PipelinesService> = {};
 const instances: Record<string, PipelinesService> = {};
 
-export const registerPipelines = (
-  type: PipelinesTypes,
-  builder: (stage: StageConfig) => PipelinesService
-) => {
+export const registerPipelines = (type: PipelinesTypes, builder: (stage: StageConfig) => PipelinesService) => {
   verbose(`Registered pipeline implementation for: ${type}`);
   builders[type] = builder;
 };
@@ -28,10 +26,7 @@ export const registerPipelines = (
 export const getPipelinesForWorkload = (workload: Workload, stageId: string): PipelinesService =>
   getPipelines(workload, stageId);
 
-export const getPipelines = (
-  workload: Workload | WorkloadId,
-  stageId: string,
-): PipelinesService => {
+export const getPipelines = (workload: Workload | WorkloadId, stageId: string): PipelinesService => {
   if (typeof workload === "string") {
     workload = getWorkloadById(workload);
   }
@@ -89,18 +84,13 @@ export type PipelinesService = {
     endDate: Date,
   ): Promise<Run[]>;
 
-  discoverJobNames(
-    workload: Workload,
-    jobGroup: string
-  ): Promise<string[]>;
+  discoverJobNames(workload: Workload, jobGroup: string): Promise<string[]>;
 
   /**
    * Get the list of branches for a workload.
    * @param workloadId
    */
-  getBranchesForWorkload(
-    workloadId: string,
-  ): Promise<string[]>;
+  getBranchesForWorkload(workloadId: string): Promise<string[]>;
 
   /**
    * Get a pipeline run by ID.
@@ -108,7 +98,7 @@ export type PipelinesService = {
    * @param jobName
    * @param runId
    */
-  getRunById(workloadId: WorkloadId, jobName: string,runId: string): Promise<RunWithMetadata | null>;
+  getRunById(workloadId: WorkloadId, jobName: string, runId: string): Promise<RunWithMetadata | null>;
 
   /**
    * Get the value of a property for a pipeline run.
@@ -166,14 +156,16 @@ export abstract class AbstractPipelinesService implements PipelinesService {
       );
       logger(`Found ${groupRuns.length} pipeline runs for ${workloadId}-${jobGroup}`);
 
-      allRuns.push(...groupRuns.map((run) => {
-        return {
-          run,
-          workloadId,
-          stageId: this.stage.id,
-          jobGroup,
-        };
-      }));
+      allRuns.push(
+        ...groupRuns.map((run) => {
+          return {
+            run,
+            workloadId,
+            stageId: this.stage.id,
+            jobGroup,
+          };
+        }),
+      );
     }
 
     return allRuns;
@@ -191,10 +183,7 @@ export abstract class AbstractPipelinesService implements PipelinesService {
   abstract getRunById(workloadId: WorkloadId, jobName: string, runId: string): Promise<RunWithMetadata | null>;
 
   async getBranchesForWorkload(workloadId: string): Promise<string[]> {
-    const server = getServerConfig(
-      getAllPipelinesConfig()[this.stage.type].servers,
-      this.stage.serverId,
-    );
+    const server = getServerConfig(getAllPipelinesConfig()[this.stage.type].servers, this.stage.serverId);
     return server.branches ?? [];
   }
 
@@ -206,10 +195,7 @@ export abstract class AbstractPipelinesService implements PipelinesService {
     propertyJsonPath: string,
   ): Promise<string | null>;
 
-  abstract discoverJobNames(
-    workload: Workload,
-    jobGroup: string
-  ): Promise<string[]>;
+  abstract discoverJobNames(workload: Workload, jobGroup: string): Promise<string[]>;
 
   abstract buildRunLink(workloadId: string, jobName: string, runId: string): string;
 }
@@ -239,20 +225,12 @@ export class CachingPipelinesServiceImpl implements PipelinesService {
     startDate: Date,
     endDate: Date,
   ): Promise<Run[]> =>
-    this.delegate.getRunsForProject(
-      workloadId,
-      jobGroups,
-      pipelinesProjectName,
-      branches,
-      startDate,
-      endDate,
-    );
+    this.delegate.getRunsForProject(workloadId, jobGroups, pipelinesProjectName, branches, startDate, endDate);
 
-  getRunById = (workloadId: WorkloadId, jobName: string,runId: string): Promise<RunWithMetadata | null> =>
+  getRunById = (workloadId: WorkloadId, jobName: string, runId: string): Promise<RunWithMetadata | null> =>
     this.delegate.getRunById(workloadId, jobName, runId);
 
-  getBranchesForWorkload = (workloadId: string): Promise<string[]> =>
-    this.delegate.getBranchesForWorkload(workloadId);
+  getBranchesForWorkload = (workloadId: string): Promise<string[]> => this.delegate.getBranchesForWorkload(workloadId);
 
   getPipelineRunProperty = (
     workloadId: WorkloadId,

@@ -22,7 +22,9 @@ if (process.env.MOCKS_PRINT_LOG_ON_CRASH === "true") mocks.printLogOnCrash();
 let mockServer;
 
 const workload: Workload = {
-  codeAnalysis: undefined, codeManagement: undefined, pipelines: undefined,
+  codeAnalysis: undefined,
+  codeManagement: undefined,
+  pipelines: undefined,
   id: "athena",
   incidents: {
     type: TicketManagementTypes.JIRA,
@@ -90,7 +92,13 @@ describe(`a Jira issue management service`, () => {
   it(`lists incidents`, async () => {
     const jira = getIncidentMgmtForWorkload(workload);
 
-    const incidents = await jira.fetchTickets(workload.id, addDays(new Date(), -7), new Date(), "Low", TimeRangeMode.CreatedWithinRange);
+    const incidents = await jira.fetchTickets(
+      workload.id,
+      addDays(new Date(), -7),
+      new Date(),
+      "Low",
+      TimeRangeMode.CreatedWithinRange,
+    );
     expect(incidents.length).toBeGreaterThanOrEqual(1);
     expect(incidents[0].key).not.toBeNull();
     expect(incidents[0].issueType).toBe("Incident");

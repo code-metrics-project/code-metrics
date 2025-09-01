@@ -18,17 +18,16 @@ if (process.env.MOCKS_VERBOSE === "true") mocks.verbose();
 if (process.env.MOCKS_PRINT_LOG_ON_CRASH === "true") mocks.printLogOnCrash();
 
 const workload: Workload = {
-  codeAnalysis: undefined, codeManagement: undefined,
+  codeAnalysis: undefined,
+  codeManagement: undefined,
   id: "athena",
   pipelines: {
     jobGroups: {
-      "backend": {
+      backend: {
         jobNames: ["octo-repo"],
-      }
+      },
     },
-    stages: [
-      { stageId: "azure-build-stage" },
-    ],
+    stages: [{ stageId: "azure-build-stage" }],
   },
   projectManagement: {
     type: TicketManagementTypes.AZURE,
@@ -73,16 +72,18 @@ beforeAll(async () => {
       workloads: [workload],
     },
     pipelineConfig: {
-      stages: [{
-        id: "azure-build-stage",
-        description: "build stage",
-        type: PipelinesTypes.AZURE,
-        serverId: "test-azure",
-        projectName: "athena",
-        commitMapping: {
-          runProperty: "$.data.head_sha",
+      stages: [
+        {
+          id: "azure-build-stage",
+          description: "build stage",
+          type: PipelinesTypes.AZURE,
+          serverId: "test-azure",
+          projectName: "athena",
+          commitMapping: {
+            runProperty: "$.data.head_sha",
+          },
         },
-      }],
+      ],
     },
   });
 });
@@ -121,18 +122,18 @@ describe("Azure Pipelines integration", () => {
     expect(builds).toHaveLength(0);
   });
 
-  it('gets a property of a run', async () => {
+  it("gets a property of a run", async () => {
     const azure = getPipelinesForWorkload(workload, "azure-build-stage");
 
     const propValue = await azure.getPipelineRunProperty(
       workload.id,
-      'athena',
-      'spring-petclinic',
-      '2',
-      '$.sourceVersion',
+      "athena",
+      "spring-petclinic",
+      "2",
+      "$.sourceVersion",
     );
 
-    expect(propValue).toBe('80e98688993227435b416ae57aaa2625a30573c3');
+    expect(propValue).toBe("80e98688993227435b416ae57aaa2625a30573c3");
   });
 
   it(`lists job names`, async () => {

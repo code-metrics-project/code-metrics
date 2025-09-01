@@ -52,6 +52,7 @@ code-metrics-api:
         LOG_RESPONSE_BODY: false
         LOG_LEVEL: 1
         CONFIG_DIR: "/backend/.config"
+        STRICT_CONFIG_LOAD: false
         #COGNITO_USER_POOL_ID: changeme
         #COGNITO_CLIENT_ID: changeme
         #API_RETRY_LIMIT: 5
@@ -298,3 +299,27 @@ code-metrics-docs:
           - path: /
             pathType: ImplementationSpecific
     tls: [ ]
+
+code-metrics-promosite:
+  enabled: true
+  application:
+    image:
+      tag: "latest"
+    fullnameOverride: "promo"
+    nameOverride: "promo"
+    envVars:
+      templates: []
+      secrets: {}
+      keyValues: {}
+
+  ingress:
+    enabled: true
+    className: ""
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    hosts:
+      - host: promo.code-metrics.127.0.0.1.sslip.io
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []

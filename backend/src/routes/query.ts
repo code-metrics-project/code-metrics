@@ -9,10 +9,7 @@ import { TagInput } from "../model/queryInputs";
 import { getWorkloadsWithTags } from "../config/configMapping";
 import uniq from "lodash/uniq";
 
-export const executeQuery = async (
-  req: Request,
-  res: Response<MetricsWireFormat>,
-): Promise<void> => {
+export const executeQuery = async (req: Request, res: Response<MetricsWireFormat>): Promise<void> => {
   const raw: RawQuery = req.body;
   const query = getQueryByName(raw.queryName);
   try {
@@ -27,10 +24,8 @@ export const executeQuery = async (
   }
 };
 
-export const processArgs = (
-  args: Record<string, any>
-): Record<string, any> => {
-  const processed = {...args};
+export const processArgs = (args: Record<string, any>): Record<string, any> => {
+  const processed = { ...args };
   const tags = (args as TagInput).tags;
   if (tags?.length) {
     const workloads: string[] = [

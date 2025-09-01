@@ -18,14 +18,11 @@
             <v-icon color="primary" icon="mdi-cog"></v-icon>
           </template>
           <v-card-text
-            >Interrogate all the data in CodeMetrics, with the option to save
-            frequently used queries.</v-card-text
+            >Interrogate all the data in CodeMetrics, with the option to save frequently used queries.</v-card-text
           >
           <v-divider />
           <v-card-actions>
-            <v-btn color="primary" plain :to="Paths.NewQuery"
-              >Create a new query</v-btn
-            >
+            <v-btn color="primary" plain :to="Paths.NewQuery">Create a new query</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -37,27 +34,19 @@
           <v-card-text>View previously saved queries.</v-card-text>
           <v-divider />
           <v-card-actions>
-            <v-btn color="primary" plain :to="Paths.SavedQueries"
-              >View saved queries</v-btn
-            >
+            <v-btn color="primary" plain :to="Paths.SavedQueries">View saved queries</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
       <v-col cols="12" sm="6" lg="3">
-        <v-card
-          title="Create Dashboard"
-          class="d-flex flex-column fill-height"
-          disabled
-        >
+        <v-card title="Create Dashboard" class="d-flex flex-column fill-height" disabled>
           <template v-slot:prepend>
             <v-icon color="primary" icon="mdi-view-dashboard-edit"></v-icon>
           </template>
           <v-card-text> Coming soon... </v-card-text>
           <v-divider />
           <v-card-actions>
-            <v-btn color="primary" plain :to="Paths.ProgramSecurity"
-              >Create a new dashboard</v-btn
-            >
+            <v-btn color="primary" plain :to="Paths.ProgramSecurity">Create a new dashboard</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -66,14 +55,10 @@
           <template v-slot:prepend>
             <v-icon color="primary" icon="mdi-view-dashboard"></v-icon>
           </template>
-          <v-card-text
-            >View previously saved or pre-configured dashboards.</v-card-text
-          >
+          <v-card-text>View previously saved or pre-configured dashboards.</v-card-text>
           <v-divider />
           <v-card-actions>
-            <v-btn color="primary" plain :to="Paths.SavedDashboards"
-              >View a saved dashboard</v-btn
-            >
+            <v-btn color="primary" plain :to="Paths.SavedDashboards">View a saved dashboard</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>

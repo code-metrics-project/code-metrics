@@ -7,71 +7,33 @@
         <v-col cols="9">
           <v-row>
             <v-col cols="6">
-              <workload-names
-                :defaults="workloads"
-                @input="(w) => (workloads = w)"
-                :operationState="operationState"
-              />
+              <workload-names :defaults="workloads" @input="(w) => (workloads = w)" :operationState="operationState" />
             </v-col>
             <v-col cols="6">
-              <repo-groups
-                :defaults="repoGroups"
-                @input="(rg) => (repoGroups = rg)"
-                :operationState="operationState"
-              />
+              <repo-groups :defaults="repoGroups" @input="(rg) => (repoGroups = rg)" :operationState="operationState" />
             </v-col>
           </v-row>
           <v-row>
             <v-col cols="6">
-              <DatePicker
-                v-model="startDate"
-                label="Start date"
-                :operationState="operationState"
-              />
+              <DatePicker v-model="startDate" label="Start date" :operationState="operationState" />
             </v-col>
             <v-col cols="6">
-              <DatePicker
-                v-model="endDate"
-                label="End date"
-                :operationState="operationState"
-              />
+              <DatePicker v-model="endDate" label="End date" :operationState="operationState" />
             </v-col>
           </v-row>
         </v-col>
         <v-col cols="3">
           <v-card-subtitle>
             Display
-            <v-checkbox
-              v-model="groupTickets"
-              label="Group tickets"
-              :disabled="busy"
-              class="my-2"
-            />
-            <v-checkbox
-              v-model="showMessages"
-              label="Show messages"
-              :disabled="busy"
-              class="my-0"
-            />
+            <v-checkbox v-model="groupTickets" label="Group tickets" :disabled="busy" class="my-2" />
+            <v-checkbox v-model="showMessages" label="Show messages" :disabled="busy" class="my-0" />
           </v-card-subtitle>
         </v-col>
       </v-row>
-      <v-btn
-        :disabled="busy"
-        @click="fetchChanges"
-        color="primary"
-        class="mr-2"
-      >
+      <v-btn :disabled="busy" @click="fetchChanges" color="primary" class="mr-2">
         {{ fetchLabel }}
       </v-btn>
-      <v-progress-circular
-        v-if="busy"
-        :model-value="progress"
-        color="primary"
-        :width="4"
-        :size="32"
-        class="mr-3"
-      />
+      <v-progress-circular v-if="busy" :model-value="progress" color="primary" :width="4" :size="32" class="mr-3" />
     </v-card-text>
 
     <v-card-title>
@@ -79,13 +41,7 @@
       <v-row>
         <v-spacer />
         <v-col>
-          <v-text-field
-            v-model="search"
-            append-icon="mdi-magnify"
-            label="Search"
-            single-line
-            hide-details
-          />
+          <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details />
         </v-col>
       </v-row>
     </v-card-title>
@@ -94,24 +50,16 @@
       <v-row>
         <v-col cols="8">
           <v-card-item>
-            <v-card-subtitle class="subtitle-1 font-weight-bold"
-              >Summary</v-card-subtitle
-            >
+            <v-card-subtitle class="subtitle-1 font-weight-bold">Summary</v-card-subtitle>
           </v-card-item>
           <v-card-text class="change-summary">
             <span class="font-weight-medium">{{ summary.total }} changes</span>
             <span v-if="groupTickets">&nbsp;(grouped)</span>
+            <span class="ml-3"><v-icon color="red" class="mr-1">mdi-bug</v-icon>Bugs: {{ summary.bugs }}</span>
+            <span class="ml-3"><v-icon color="blue" class="mr-1">mdi-ticket</v-icon>Tasks: {{ summary.tasks }}</span>
             <span class="ml-3"
-              ><v-icon color="red" class="mr-1">mdi-bug</v-icon>Bugs:
-              {{ summary.bugs }}</span
-            >
-            <span class="ml-3"
-              ><v-icon color="blue" class="mr-1">mdi-ticket</v-icon>Tasks:
-              {{ summary.tasks }}</span
-            >
-            <span class="ml-3"
-              ><v-icon color="orange" class="mr-1">mdi-help-rhombus</v-icon>No
-              ticket: {{ summary.prs + summary.bareCommits }}</span
+              ><v-icon color="orange" class="mr-1">mdi-help-rhombus</v-icon>No ticket:
+              {{ summary.prs + summary.bareCommits }}</span
             >
           </v-card-text>
         </v-col>
@@ -155,15 +103,9 @@
       </template>
       <template v-slot:[`item.id`]="{ item }">
         <span class="change-row-issue">
-          <v-icon v-if="item.type === 'PR'" color="green" class="mr-1"
-            >mdi-source-pull</v-icon
-          >
-          <v-icon v-else-if="item.type === 'Commit'" color="grey" class="mr-1"
-            >mdi-code-tags</v-icon
-          >
-          <v-icon v-else-if="item.type === 'Bug'" color="red" class="mr-1"
-            >mdi-bug</v-icon
-          >
+          <v-icon v-if="item.type === 'PR'" color="green" class="mr-1">mdi-source-pull</v-icon>
+          <v-icon v-else-if="item.type === 'Commit'" color="grey" class="mr-1">mdi-code-tags</v-icon>
+          <v-icon v-else-if="item.type === 'Bug'" color="red" class="mr-1">mdi-bug</v-icon>
           <v-icon v-else color="blue" class="mr-1">mdi-ticket</v-icon>
           <a :href="item.link" target="_blank">{{ item.id }}</a>
         </span>
@@ -350,8 +292,7 @@ export default {
     summarise(changes: ChangeRow[]): RepoChangeSummary {
       return {
         bugs: changes.filter((c) => c.type === "Bug").length,
-        tasks: changes.filter((c) => c.type !== "Bug" && c.type !== "PR")
-          .length,
+        tasks: changes.filter((c) => c.type !== "Bug" && c.type !== "PR").length,
         prs: changes.filter((c) => c.type === "PR").length,
         bareCommits: changes.filter((c) => c.type === "Commit").length,
         total: changes.length,
@@ -373,12 +314,7 @@ export default {
           async (batch: Date[], progress) => {
             const firstDate = batch[0];
             const endDate = batch[batch.length - 1];
-            const changes = await fetchForDateRange(
-              this.workloads,
-              this.repoGroups,
-              firstDate,
-              endDate,
-            );
+            const changes = await fetchForDateRange(this.workloads, this.repoGroups, firstDate, endDate);
 
             // append and refresh UI
             this.rawChanges.push(...changes);
@@ -409,9 +345,7 @@ export default {
           };
         } else {
           group.commits.push(...change.commits);
-          if (
-            new Date(change.date).getTime() < new Date(group.date).getTime()
-          ) {
+          if (new Date(change.date).getTime() < new Date(group.date).getTime()) {
             group.date = change.date;
           }
           if (change.message) {
@@ -425,9 +359,7 @@ export default {
       }
       groupedRows.push(...Object.values(groups));
 
-      logger(
-        `Grouped ${changes.length} changes into ${groupedRows.length} groups`,
-      );
+      logger(`Grouped ${changes.length} changes into ${groupedRows.length} groups`);
       return groupedRows;
     },
   },

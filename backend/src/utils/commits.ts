@@ -29,7 +29,8 @@ export const discoverLinks = async (
 
     if (!issue) {
       issue =
-        (await issueMgmt.matchTicketByIdAndRetrieve(pr.title, workloadId)) ?? (await issueMgmt.matchTicketByIdAndRetrieve(pr.message, workloadId));
+        (await issueMgmt.matchTicketByIdAndRetrieve(pr.title, workloadId)) ??
+        (await issueMgmt.matchTicketByIdAndRetrieve(pr.message, workloadId));
       if (issue) {
         logger(`Found issue ${issue.key} in referenced PR #${pr.id}`);
       } else {

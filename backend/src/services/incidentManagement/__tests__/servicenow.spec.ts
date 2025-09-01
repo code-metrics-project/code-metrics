@@ -22,7 +22,9 @@ if (process.env.MOCKS_PRINT_LOG_ON_CRASH === "true") mocks.printLogOnCrash();
 let mockServer;
 
 const workload: Workload = {
-  codeAnalysis: undefined, codeManagement: undefined, pipelines: undefined,
+  codeAnalysis: undefined,
+  codeManagement: undefined,
+  pipelines: undefined,
   id: "athena",
   incidents: {
     type: TicketManagementTypes.SERVICENOW,
@@ -96,7 +98,13 @@ describe(`a ServiceNow issue management service`, () => {
   it(`lists incidents`, async () => {
     const servicenow = getIncidentMgmtForWorkload(workload);
 
-    const incidents = await servicenow.fetchTickets(workload.id, addDays(new Date(), -7), new Date(), "3", TimeRangeMode.CreatedWithinRange);
+    const incidents = await servicenow.fetchTickets(
+      workload.id,
+      addDays(new Date(), -7),
+      new Date(),
+      "3",
+      TimeRangeMode.CreatedWithinRange,
+    );
     expect(incidents.length).toBeGreaterThanOrEqual(1);
 
     const firstIssue = incidents[0];

@@ -1,8 +1,8 @@
-import {registerQuery} from "@/queries/config";
-import {InputType} from "@/queries/inputs";
-import {summariseNumeric} from "@/queries/summary";
-import {doIfFeatureActive, Features} from "@/utils/features";
-import {formatSecondsAsDaysAndHours, formatSecondsAsHoursAndMinutes, formatValueAsPercentage,} from "@/chart/common";
+import { registerQuery } from "@/queries/config";
+import { InputType } from "@/queries/inputs";
+import { summariseNumeric } from "@/queries/summary";
+import { doIfFeatureActive, Features } from "@/utils/features";
+import { formatSecondsAsDaysAndHours, formatSecondsAsHoursAndMinutes, formatValueAsPercentage } from "@/chart/common";
 
 export enum QueryName {
   CodeCoverage = "code-coverage",
@@ -28,12 +28,7 @@ export enum QueryName {
 export function registerQueries() {
   registerQuery({
     name: QueryName.BugsNew,
-    requires: [
-      InputType.TAGS,
-      InputType.WORKLOAD_NAMES,
-      InputType.START_DATE,
-      InputType.ISSUE_FILTER,
-    ],
+    requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.START_DATE, InputType.ISSUE_FILTER],
     chart: {
       axes: [{ axisName: "escaped-bugs" }, { axisName: "all-bugs" }],
     },
@@ -42,12 +37,7 @@ export function registerQueries() {
 
   registerQuery({
     name: QueryName.BugsOpen,
-    requires: [
-      InputType.TAGS,
-      InputType.WORKLOAD_NAMES,
-      InputType.START_DATE,
-      InputType.ISSUE_FILTER,
-    ],
+    requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.START_DATE, InputType.ISSUE_FILTER],
     chart: {
       axes: [{ axisName: "open-bugs" }],
     },
@@ -57,12 +47,7 @@ export function registerQueries() {
   doIfFeatureActive(Features.dora, () => {
     registerQuery({
       name: QueryName.ChangeFailureRate,
-      requires: [
-        InputType.TAGS,
-        InputType.WORKLOAD_NAMES,
-        InputType.START_DATE,
-        InputType.INCIDENT_FILTER,
-      ],
+      requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.START_DATE, InputType.INCIDENT_FILTER],
       chart: {
         axes: [{ axisName: "change-failure-rate" }],
         valueFormatter: formatValueAsPercentage,
@@ -73,12 +58,7 @@ export function registerQueries() {
 
   registerQuery({
     name: QueryName.ChangeCategories,
-    requires: [
-      InputType.TAGS,
-      InputType.WORKLOAD_NAMES,
-      InputType.REPO_GROUPS,
-      InputType.START_DATE,
-    ],
+    requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.REPO_GROUPS, InputType.START_DATE],
     chart: {
       axes: [
         { axisName: "change-category-ticketed" },
@@ -90,12 +70,7 @@ export function registerQueries() {
 
   registerQuery({
     name: QueryName.CodeCoverage,
-    requires: [
-      InputType.TAGS,
-      InputType.WORKLOAD_NAMES,
-      InputType.REPO_GROUPS,
-      InputType.START_DATE,
-    ],
+    requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.REPO_GROUPS, InputType.START_DATE],
     chart: {
       axes: [{ axisName: "coverage" }],
     },
@@ -103,12 +78,7 @@ export function registerQueries() {
 
   registerQuery({
     name: QueryName.CyclomaticComplexity,
-    requires: [
-      InputType.TAGS,
-      InputType.WORKLOAD_NAMES,
-      InputType.REPO_GROUPS,
-      InputType.START_DATE,
-    ],
+    requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.REPO_GROUPS, InputType.START_DATE],
     chart: {
       axes: [{ axisName: "complexity" }],
     },
@@ -133,12 +103,7 @@ export function registerQueries() {
   doIfFeatureActive(Features.dora, () => {
     registerQuery({
       name: QueryName.LeadTimeForChanges,
-      requires: [
-        InputType.TAGS,
-        InputType.WORKLOAD_NAMES,
-        InputType.JOB_GROUPS,
-        InputType.START_DATE,
-      ],
+      requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.JOB_GROUPS, InputType.START_DATE],
       chart: {
         axes: [{ axisName: "lead-time" }],
         valueFormatter: formatSecondsAsDaysAndHours,
@@ -148,12 +113,7 @@ export function registerQueries() {
 
   registerQuery({
     name: QueryName.LinesOfCode,
-    requires: [
-      InputType.TAGS,
-      InputType.WORKLOAD_NAMES,
-      InputType.REPO_GROUPS,
-      InputType.START_DATE,
-    ],
+    requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.REPO_GROUPS, InputType.START_DATE],
     chart: {
       axes: [{ axisName: "ncloc" }],
     },
@@ -218,27 +178,16 @@ export function registerQueries() {
 
   registerQuery({
     name: QueryName.ProductionIncidents,
-    requires: [
-      InputType.TAGS,
-      InputType.WORKLOAD_NAMES,
-      InputType.START_DATE,
-      InputType.INCIDENT_FILTER,
-    ],
+    requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.START_DATE, InputType.INCIDENT_FILTER],
     chart: {
       axes: [{ axisName: "incidents" }],
     },
-    summariser: (results) =>
-      summariseNumeric(results, "Production incidents", "mdi-alert-octagram"),
+    summariser: (results) => summariseNumeric(results, "Production incidents", "mdi-alert-octagram"),
   });
 
   registerQuery({
     name: QueryName.PROpenTime,
-    requires: [
-      InputType.TAGS,
-      InputType.WORKLOAD_NAMES,
-      InputType.REPO_GROUPS,
-      InputType.START_DATE,
-    ],
+    requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.REPO_GROUPS, InputType.START_DATE],
     chart: {
       axes: [{ axisName: "pr-open-time" }],
       valueFormatter: formatSecondsAsDaysAndHours,
@@ -247,12 +196,7 @@ export function registerQueries() {
 
   registerQuery({
     name: QueryName.PRSize,
-    requires: [
-      InputType.TAGS,
-      InputType.WORKLOAD_NAMES,
-      InputType.REPO_GROUPS,
-      InputType.START_DATE,
-    ],
+    requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.REPO_GROUPS, InputType.START_DATE],
     chart: {
       axes: [{ axisName: "pr-size" }],
     },
@@ -260,12 +204,7 @@ export function registerQueries() {
 
   registerQuery({
     name: QueryName.RepoChurn,
-    requires: [
-      InputType.TAGS,
-      InputType.WORKLOAD_NAMES,
-      InputType.REPO_GROUPS,
-      InputType.START_DATE,
-    ],
+    requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.REPO_GROUPS, InputType.START_DATE],
     chart: {
       axes: [{ axisName: "repo-churn" }],
     },
@@ -274,12 +213,7 @@ export function registerQueries() {
   doIfFeatureActive(Features.dora, () => {
     registerQuery({
       name: QueryName.TimeToRestoreService,
-      requires: [
-        InputType.TAGS,
-        InputType.WORKLOAD_NAMES,
-        InputType.START_DATE,
-        InputType.INCIDENT_FILTER,
-      ],
+      requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.START_DATE, InputType.INCIDENT_FILTER],
       chart: {
         axes: [{ axisName: "time-to-restore" }],
         valueFormatter: formatSecondsAsHoursAndMinutes,
@@ -289,12 +223,7 @@ export function registerQueries() {
 
   registerQuery({
     name: QueryName.Vulnerabilities,
-    requires: [
-      InputType.TAGS,
-      InputType.WORKLOAD_NAMES,
-      InputType.REPO_GROUPS,
-      InputType.START_DATE,
-    ],
+    requires: [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.REPO_GROUPS, InputType.START_DATE],
     chart: {
       axes: [
         { axisName: "vulns-critical", variant: "danger" },

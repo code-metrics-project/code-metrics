@@ -1,8 +1,4 @@
-import {
-  TicketManagementTypes,
-
-
-} from "../../model/config/common";
+import { TicketManagementTypes } from "../../model/config/common";
 import { LightweightIssue } from "../../model/tickets";
 import { TicketManagementServer } from "../../model/config/remote-config";
 import { Workload, WorkloadId, WorkloadTicketConfig } from "../../model/config/workload-config";
@@ -54,8 +50,8 @@ export type TicketService = {
  * All access to issue management configuration should go through this interface.
  */
 export type TicketConfigManager<C extends WorkloadTicketConfig, I> = {
-  getDefaultTicketTypes(): string[]
-  getWorkloadConfig(workloadId: WorkloadId): C
-  getServerDefaults(workloadId: WorkloadId): I
-  getServerConfig(serverType: TicketManagementTypes, workloadId: WorkloadId): TicketManagementServer
-}
+  getDefaultTicketTypes(): string[];
+  getWorkloadConfig(workloadId: WorkloadId): C;
+  getServerDefaults(workloadId: WorkloadId): I;
+  getServerConfig(serverType: TicketManagementTypes, workloadId: WorkloadId): TicketManagementServer;
+};

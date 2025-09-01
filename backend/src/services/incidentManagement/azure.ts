@@ -1,4 +1,4 @@
-import {AzureTicketOptions, TicketManagementTypes} from "../../model/config/common";
+import { AzureTicketOptions, TicketManagementTypes } from "../../model/config/common";
 import { AbstractIncidentMgmtConfigManager, registerIncidentMgmt } from "./incidentMgmtService";
 import { AdoTicketService } from "../tickets/azure";
 import { WorkloadTicketConfigAzure } from "../../model/config/workload-config";
@@ -11,6 +11,7 @@ class AdoConfigManager extends AbstractIncidentMgmtConfigManager<WorkloadTicketC
   }
 }
 
-export const initAdoIncidents = () => registerIncidentMgmt(TicketManagementTypes.AZURE, () => {
-  return new AdoTicketService(new AdoConfigManager());
-});
+export const initAdoIncidents = () =>
+  registerIncidentMgmt(TicketManagementTypes.AZURE, () => {
+    return new AdoTicketService(new AdoConfigManager());
+  });

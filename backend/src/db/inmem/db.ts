@@ -54,11 +54,15 @@ class InMemoryCollection implements DatastoreCollection {
       const itemIndex = this.items.indexOf(match);
       if (itemIndex > -1) {
         this.items.splice(itemIndex, 1);
+        verbose(`Deleted item`, filter);
+        return true;
       } else {
-        verbose(`Did not find item to delete`, match);
+        verbose(`Did not find item to delete`, filter);
+        return false;
       }
     } else {
       verbose(`Did not find item to delete matching filter`, filter);
+      return false;
     }
   };
 

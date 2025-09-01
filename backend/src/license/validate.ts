@@ -1,7 +1,8 @@
 import { getConfigDirs, readConfig } from "../config/config";
-import { error, verbose } from "../utils/logger/logger";
+import { verbose, warn } from "../utils/logger/logger";
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 import { publicKey } from "./pubkey-license.json";
+import { isStrictMode } from "../utils/strict";
 
 type LicenseWrapper = {
   email: string;
@@ -39,29 +40,47 @@ const verifyJwt = async (
   });
 };
 
+let licenceValidated = false;
 export const validateLicense = async (dir?: string): Promise<boolean> => {
   const configDirs = getConfigDirs(dir);
   verbose(`Loading license file from ${configDirs}`);
-  const license = await readConfig<LicenseWrapper>(configDirs, "license", {
-    required: true,
-    resolveSecrets: true,
-  });
-  if (license.key) {
+  try {
+    const license = await readConfig<LicenseWrapper>(configDirs, "license", {
+      required: true,
+      resolveSecrets: true,
+    });
     try {
       const valid = await verifyJwt(license.key, publicKey, LICENSE_AUD, LICENSE_ISS, license.email);
       if (valid) {
         verbose(`License is valid`);
+        licenceValidated = true;
         return true;
       } else {
-        error(`License is invalid`);
+        throw new Error(`License is invalid`);
       }
     } catch (e) {
       if (e instanceof TokenExpiredError) {
-        error(`License has expired`);
+        throw new Error(`License has expired`);
       } else {
-        error(`License is invalid: ${e}`);
+        throw new Error(`License is invalid: ${e}`);
       }
     }
+  } catch (e) {
+    if (isStrictMode()) {
+      throw e;
+    } else {
+      warn("License missing, most routes will be unavailable", e);
+      return false;
+    }
   }
-  return false;
+};
+
+export const isLicensed = async () => {
+  if (licenceValidated) return true;
+  return validateLicense();
+};
+
+export const requiresLicense = async (req, res, next) => {
+  if (!(await isLicensed())) throw new Error("License required for this route.");
+  next();
 };

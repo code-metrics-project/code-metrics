@@ -1,10 +1,5 @@
 <template>
-  <DynamicChart
-    v-if="data"
-    :chart-type="ChartType.MultiChart"
-    :chart-data="[data]"
-    :chart-options="options"
-  />
+  <DynamicChart v-if="data" :chart-type="ChartType.MultiChart" :chart-data="[data]" :chart-options="options" />
 </template>
 
 <script lang="ts" setup>

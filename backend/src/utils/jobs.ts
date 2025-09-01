@@ -1,6 +1,6 @@
-import {getWorkloadById} from "../config/configMapping";
+import { getWorkloadById } from "../config/configMapping";
 
-import {JobGroup, JobNameMapping, Workload, WorkloadId} from "../model/config/workload-config";
+import { JobGroup, JobNameMapping, Workload, WorkloadId } from "../model/config/workload-config";
 
 /**
  * Lists all the job groups for a workload, normalised by the job name mapping.

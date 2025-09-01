@@ -65,10 +65,7 @@ export async function fetchForDateRange(
     }
     return row;
   });
-  console.log(
-    `${changes.length} changes from ${startDate.toISOString()} to ${endDate.toISOString()}`,
-    changes,
-  );
+  console.log(`${changes.length} changes from ${startDate.toISOString()} to ${endDate.toISOString()}`, changes);
   return changes;
 }
 

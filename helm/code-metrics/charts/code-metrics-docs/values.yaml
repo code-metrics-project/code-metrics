@@ -6,7 +6,7 @@ replicaCount: 1
 
 application:
   image:
-    repository: docker.io/library/code-metrics-docs
+    repository: ghcr.io/code-metrics-project/code-metrics-docs
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""

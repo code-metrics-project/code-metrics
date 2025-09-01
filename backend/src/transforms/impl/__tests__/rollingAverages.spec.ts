@@ -20,7 +20,10 @@ describe("toRollingAverage", () => {
       spansInDays: 7,
       model: "simple",
     });
-    const expectedResult = toIntermediateMap("example/1-week-average", [-1, -1, 12, 13, 13, 14, 14.5, 15.2, 15.2, 16.4]);
+    const expectedResult = toIntermediateMap(
+      "example/1-week-average",
+      [-1, -1, 12, 13, 13, 14, 14.5, 15.2, 15.2, 16.4],
+    );
     expect(result).toEqual(expectedResult);
   });
 

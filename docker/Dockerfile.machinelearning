@@ -1,5 +1,5 @@
 ARG IMGREPO=""
-FROM ${IMGREPO}ghcr.io/astral-sh/uv:bookworm-slim as builder
+FROM ${IMGREPO}ghcr.io/astral-sh/uv:bookworm-slim AS builder
 
 WORKDIR /app
 COPY . /app
@@ -7,6 +7,8 @@ RUN uv build
 
 ARG IMGREPO=""
 FROM ${IMGREPO}ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+
+LABEL org.opencontainers.image.source=https://github.com/code-metrics-project/releases
 
 ENV MLAPI_PORT 8080
 ENV MLAPI_ADDR "0.0.0.0"

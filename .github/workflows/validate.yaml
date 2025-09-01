@@ -33,12 +33,6 @@ on:
         required: true
         type: string
 env:
-  IMPOSTER_VERSION: "4.6.8"
-  IMPOSTER_CLI_VERSION: "1.1.4"
-
-  # avoid rate limits for public docker hub
-  IMPOSTER_DOCKER_REGISTRY: "public.ecr.aws/imposter"
-
   # prefer ipv4 stack (see https://nodejs.org/api/cli.html#--dns-result-orderorder)
   NODE_OPTIONS: "--dns-result-order=ipv4first"
 
@@ -135,7 +129,7 @@ jobs:
   build-desktop-mac-win:
     strategy:
       matrix:
-        os: [ windows-latest, macos-latest ]
+        os: [windows-latest, macos-latest]
         include:
           # This is 10:1min cost
           - os: macos-latest
@@ -148,7 +142,7 @@ jobs:
             buildScript: dist:win
             artifactName: win-build
 
-    #if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -210,10 +204,8 @@ jobs:
       - name: Install backend dependencies
         working-directory: backend
         run: npm config get cache && npm ci --prefer-offline --verbose
-      - name: Install Imposter CLI and pull mock engine
-        run: |
-          curl -L https://raw.githubusercontent.com/imposter-project/imposter-cli/main/install/install_imposter.sh | bash -
-          imposter engine pull -t docker-all
+      - name: Install Imposter
+        uses: imposter-project/imposter-github-action/setup@v0.6.1
       - name: Copy dummy config for testing
         working-directory: backend
         run: |
@@ -273,10 +265,8 @@ jobs:
       - name: Install backend dependencies
         working-directory: backend
         run: npm config get cache && npm ci --prefer-offline --verbose
-      - name: Install Imposter CLI and pull mock engine
-        run: |
-          curl -L https://raw.githubusercontent.com/imposter-project/imposter-cli/main/install/install_imposter.sh | bash -
-          imposter engine pull
+      - name: Install Imposter
+        uses: imposter-project/imposter-github-action/setup@v0.6.1
       - name: Copy dummy config for testing
         working-directory: backend
         run: |
@@ -317,10 +307,8 @@ jobs:
       - name: Install backend dependencies
         working-directory: backend
         run: npm config get cache && npm ci --prefer-offline --verbose
-      - name: Install Imposter CLI and pull mock engine
-        run: |
-          curl -L https://raw.githubusercontent.com/imposter-project/imposter-cli/main/install/install_imposter.sh | bash -
-          imposter engine pull -t docker-all
+      - name: Install Imposter
+        uses: imposter-project/imposter-github-action/setup@v0.6.1
       - name: Copy dummy config for testing
         working-directory: backend
         run: |
@@ -444,7 +432,7 @@ jobs:
 
   run-e2e:
     # This job has high resource requirements and should be run on a larger instance.
-    # Large instances are more expensive, so we only use them for this job.
+    # Large instances are more expensive, so we use them sparingly.
     runs-on: ubuntu-latest-l
     needs: [build-backend, run-backend-slowtest, backend-integration-test, build-frontend]
     if: ${{ always() && !failure() && !cancelled() && (((needs.build-frontend.result == 'success' || (needs.build-backend.result == 'success' && needs.run-backend-slowtest.result == 'success' && needs.backend-integration-test.result == 'success'))) || inputs.githubComponents != 0) }}
@@ -463,10 +451,8 @@ jobs:
           key: npm-${{ github.run_id }}
           restore-keys: |
             npm-
-      - name: Install Imposter CLI and pull mock engine
-        run: |
-          curl -L https://raw.githubusercontent.com/imposter-project/imposter-cli/main/install/install_imposter.sh | bash -
-          imposter engine pull
+      - name: Install Imposter
+        uses: imposter-project/imposter-github-action/setup@v0.6.1
       - name: E2E test UI with mock backend
         env:
           MOCKS_PRINT_LOG_ON_CRASH: "true"
@@ -531,7 +517,7 @@ jobs:
         run-e2e,
         merge-test-reports,
         build-desktop-linux,
-        build-desktop-mac-win
+        build-desktop-mac-win,
       ]
     if: ${{ always() && startsWith(github.ref, 'refs/tags/') && failure() && !cancelled() }}
     steps:

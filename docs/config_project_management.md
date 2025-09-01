@@ -180,7 +180,7 @@ ticketManagement:
     - id: none
 ```
 
-In the associated [workflow configuration](./config_workflow.md), the `projectManagement` type should be set to `none`.
+In the associated [workload configuration](./config_workloads.md), the `projectManagement` type should be set to `none`.
 
 ```yaml
 # workload-config.yaml

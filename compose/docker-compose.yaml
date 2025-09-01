@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
   api:
-    image: deloittedigitaluk/code-metrics-api
+    image: ghcr.io/code-metrics-project/code-metrics-api
     build:
       dockerfile: ../docker/Dockerfile.backend
       context: backend/
@@ -21,8 +21,8 @@ services:
       # - "./backend/queries-example.json:/backend/config/queries-example.json"
 
   ui:
-    image: deloittedigitaluk/code-metrics-ui
-    build: 
+    image: ghcr.io/code-metrics-project/code-metrics-ui
+    build:
       dockerfile: ../docker/Dockerfile.ui
       context: ui/
     ports:
@@ -42,8 +42,8 @@ services:
       - "metrics-mongo:/data/db"
 
   docs:
-    image: deloittedigitaluk/code-metrics-docs
-    build: 
+    image: ghcr.io/code-metrics-project/code-metrics-docs
+    build:
       dockerfile: docker/Dockerfile.docs
       args:
         DOCSDIR: ../docs
@@ -51,7 +51,7 @@ services:
       - "8000:8000"
 
   mlapi:
-    image: deloittedigitaluk/code-metrics-mlapi
+    image: ghcr.io/code-metrics-project/code-metrics-mlapi
     build:
       dockerfile: ../docker/Dockerfile.machinelearning
       context: machinelearning/

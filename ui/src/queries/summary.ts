@@ -4,11 +4,7 @@ import type { StoredQuery, StoredQueryCollection } from "@/model/query";
 import type { ResultsSummary, ResultsSummaryItem } from "@/queries/config";
 import type { QueryName } from "@/queries/queries";
 
-export function summariseNumeric(
-  results: Map<string, DatedMetrics>,
-  title: string,
-  icon: string,
-): ResultsSummary {
+export function summariseNumeric(results: Map<string, DatedMetrics>, title: string, icon: string): ResultsSummary {
   const items: Record<string, ResultsSummaryItem> = {};
   for (const data of results.values()) {
     for (const [tag, entry] of data.entries) {

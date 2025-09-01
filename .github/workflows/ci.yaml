@@ -49,8 +49,8 @@ jobs:
             # Ensure that the count is a proper integer
             if [[ -z "$count" ]]; then count=0; fi
             if [[ "${i:0:1}" == "."  ]]; then i=${i:1}; fi
-            if [[ "${i}" == "mocks" ]]; then i="backend"; fi
-            echo "${i}Components=${count}" >> $GITHUB_OUTPUT
+            if [[ "${i}" == "mocks" && $( grep 'backendComponents=0' $GITHUB_OUTPUT | wc -l ) -ne 0 ]]; then component="backend"; else component="${i}"; fi
+            echo "${component}Components=${count}" >> $GITHUB_OUTPUT
           done;
 
   validate-config:

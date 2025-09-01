@@ -1,4 +1,4 @@
-import { RemoteConfigWrapper, TicketManagementServer } from "./remote-config";
+import { RemoteConfigWrapper } from "./remote-config";
 import { WorkloadConfigWrapper } from "./workload-config";
 import { StageConfigWrapper } from "./pipeline-config";
 
@@ -47,7 +47,7 @@ export enum PipelinesTypes {
   DYNATRACE = "dynatrace",
   GITHUB = "github",
   JENKINS = "jenkins",
-  NONE = "none"
+  NONE = "none",
 }
 
 // export type CodeAnalysisTypes = keyof CodeAnalysisConfigWrapper;

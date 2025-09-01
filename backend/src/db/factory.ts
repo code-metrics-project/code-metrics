@@ -10,12 +10,12 @@ import { InMemoryDatastore } from "./inmem/db";
 import { initMongoDb, MongoDatastore } from "./mongo/db";
 import { logger, verbose } from "../utils/logger/logger";
 import { DynamoDatastore, initDynamoDB } from "./dynamodb/db";
-import {initNeDB, NeDBDatastore} from "./nedb/db";
-
+import { initNeDB, NeDBDatastore } from "./nedb/db";
+import { getConfigItemAsBoolean, getConfigItem } from "../config/sources/source";
 
 export type DatastoreFactory = (config: DatastoreConfig) => Datastore<any, any>;
 
-const isCacheEnabled = () => process.env.LOOKUP_CACHE_ENABLED === "true";
+const isCacheEnabled = () => getConfigItemAsBoolean("LOOKUP_CACHE_ENABLED");
 export const IN_MEMORY_DATASTORE = "inmem";
 
 const registered: Record<string, { init: () => Promise<void>; factory: DatastoreFactory }> = {};
@@ -62,7 +62,7 @@ export const provideDatastore = <F extends QueryFilter, C extends DatastoreColle
 const getImplementation = () => {
   let implName: string;
   if (isCacheEnabled()) {
-    implName = process.env.DATASTORE_IMPL ?? defaultFactoryName;
+    implName = getConfigItem("DATASTORE_IMPL", defaultFactoryName);
   } else {
     implName = IN_MEMORY_DATASTORE;
   }
@@ -108,11 +108,11 @@ const registerFactories = () => {
     true,
   );
   registerDatastore(
-      "localdb",
-      async () => {
-        await initNeDB();
-      },
-      (config) => new NeDBDatastore(config),
+    "localdb",
+    async () => {
+      await initNeDB();
+    },
+    (config) => new NeDBDatastore(config),
   );
   registerDatastore(
     "dynamodb",

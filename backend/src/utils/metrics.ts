@@ -2,11 +2,12 @@ import { dateDiffDays, getRelativeDateAsString, MILLIS_PER_DAY } from "./date";
 import { logger, verbose } from "./logger/logger";
 import {
   DatedMetrics,
-  IntermediaryDatedMetrics, DateStamp,
+  IntermediaryDatedMetrics,
+  DateStamp,
   MetricEntry,
   MetricItem,
   MetricItemDimensions,
-  MetricsWireFormat
+  MetricsWireFormat,
 } from "../model/metrics";
 import { isMatch } from "lodash";
 
@@ -61,12 +62,7 @@ const interpolateMissingUsingMetadata = (
   collapseToSingleByDay: boolean,
 ): Map<DateStamp, DatedMetrics> => {
   if (metadata.earliestDate != null && metadata.latestDate != null) {
-    return interpolateMissingInternal(
-      input,
-      metadata,
-      missingBehaviour,
-      collapseToSingleByDay,
-    );
+    return interpolateMissingInternal(input, metadata, missingBehaviour, collapseToSingleByDay);
   }
   return input;
 };
@@ -127,7 +123,8 @@ const interpolateMissingInternal = (
                 const previous = getRelativeDateAsString(earliestDate, i - 1);
                 const previousDayEntries = output.get(previous) as DatedMetrics;
 
-                const previousDayMetrics: MetricItem[] = previousDayEntries[axisName]?.filter((m) => isMatch(m.dimensions, dimensionSet)) ?? [];
+                const previousDayMetrics: MetricItem[] =
+                  previousDayEntries[axisName]?.filter((m) => isMatch(m.dimensions, dimensionSet)) ?? [];
                 entries = previousDayMetrics.map((m) => ({ ...m, date: new Date(current) }));
               }
               break;
@@ -192,7 +189,14 @@ export const getMetricsMetadata = (
     }
   });
 
-  return { uniqueAxisNames: allNames, uniqueDimensionSets: allDimensionSets, earliestDate, latestDate, min: minVal, max: maxVal };
+  return {
+    uniqueAxisNames: allNames,
+    uniqueDimensionSets: allDimensionSets,
+    earliestDate,
+    latestDate,
+    min: minVal,
+    max: maxVal,
+  };
 };
 
 export const convertMetricsMapToObj = (m: Map<string, IntermediaryDatedMetrics>): MetricsWireFormat => {

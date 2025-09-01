@@ -19,7 +19,9 @@ describe("date", () => {
   });
 
   it("should determine the relative date", () => {
-    expect(getRelativeDate(new Date("2021-01-01T12:34:56.789Z"), 1)).toStrictEqual(new Date("2021-01-02T00:00:00.000Z"));
+    expect(getRelativeDate(new Date("2021-01-01T12:34:56.789Z"), 1)).toStrictEqual(
+      new Date("2021-01-02T00:00:00.000Z"),
+    );
   });
 
   it("should calculate the date difference in days", () => {

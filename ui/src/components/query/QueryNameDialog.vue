@@ -1,17 +1,8 @@
 <template>
   <v-dialog v-model="dialog" max-width="400" persistent>
-    <v-card
-      subtitle="Enter a name for this collection of queries"
-      title="Save query"
-    >
+    <v-card subtitle="Enter a name for this collection of queries" title="Save query">
       <template v-slot:text>
-        <v-text-field
-          name="queryName"
-          v-model="collectionTitle"
-          label="Collection name"
-          outlined
-          required
-        />
+        <v-text-field name="queryName" v-model="collectionTitle" label="Collection name" outlined required />
       </template>
       <template v-slot:actions>
         <v-spacer />
@@ -68,7 +59,7 @@ const saveName = async () => {
 
     const collectionId = generateIdFromTitle(collectionTitle.value);
 
-    const collection = props.collection!!;
+    const collection = props.collection!;
     collection.id = collectionId;
     collection.title = collectionTitle.value;
 

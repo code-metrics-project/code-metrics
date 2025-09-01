@@ -17,7 +17,7 @@ import { OperationState } from "@/utils/ui";
 type Option = {
   text: string;
   value: number;
-}
+};
 
 const OPTIONS: Option[] = [
   {
@@ -56,7 +56,10 @@ export default defineComponent({
     const selected = ref<Option[]>(props.defaults);
 
     function onChange() {
-      context.emit("input", selected.value.map((sel) => sel.value));
+      context.emit(
+        "input",
+        selected.value.map((sel) => sel.value),
+      );
     }
     // Call immediately to set defaults
     onChange();

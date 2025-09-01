@@ -1,4 +1,5 @@
 import { verbose } from "./logger/logger";
+import { getConfigItemAsBoolean } from "../config/sources/source";
 
 /**
  * Maps features to environment variable names.
@@ -38,7 +39,7 @@ export const listActiveFeatures = (): FeatureConfig => {
  * Determines if the feature with the given name is enabled.
  * @param featureName
  */
-const checkFeature = (featureName: string): boolean => process.env[featureName] === "true";
+const checkFeature = (featureName: string): boolean => getConfigItemAsBoolean(featureName);
 
 /**
  * Executes the `block` if the specified feature is active.

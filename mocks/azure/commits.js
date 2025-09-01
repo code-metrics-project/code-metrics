@@ -1,4 +1,3 @@
-const UUID = Java.type("java.util.UUID");
 const MILLIS_PER_DAY = 1000 * 3600 * 24;
 
 const now = new Date();
@@ -37,7 +36,7 @@ respond().withHeader("Content-Type", "application/json").withData(JSON.stringify
 function generateCommits(commitCount) {
   const commits = [];
   for (let i = 0; i < commitCount; i++) {
-    const gCommitId = UUID.randomUUID().toString();
+    const gCommitId = random.uuid();
     const changeCount = Math.round(Math.random() * 30) - 1;
 
     // Random time between 7am and 7pm

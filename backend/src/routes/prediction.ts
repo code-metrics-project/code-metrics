@@ -32,7 +32,7 @@ export async function predictLinear(req: Request, res: Response<NamedQueryResult
       inputQuery
         .execute(q.args)
         .then((results) => {
-          return groupBy(q, results)
+          return groupBy(q, results);
         })
         .then((results) => {
           return applyTransforms(q, results);
@@ -48,7 +48,7 @@ export async function predictLinear(req: Request, res: Response<NamedQueryResult
     labelQuery
       .execute(p.labelQuery.args)
       .then((results) => {
-        return groupBy(p.labelQuery, results)
+        return groupBy(p.labelQuery, results);
       })
       .then((results) => {
         return applyTransforms(p.labelQuery, results);

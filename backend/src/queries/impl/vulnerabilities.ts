@@ -7,9 +7,7 @@ import { DatedMetrics, DateStamp, MetricItemDimensions } from "../../model/metri
 import { isMatch } from "lodash";
 import { lookupRepoGroupForRepoName } from "../../utils/repos";
 
-export const groupVulnerabilities = (
-  vulns: Record<string, Vulnerability[]>,
-): Map<DateStamp, DatedMetrics> => {
+export const groupVulnerabilities = (vulns: Record<string, Vulnerability[]>): Map<DateStamp, DatedMetrics> => {
   const workloads = Object.keys(vulns);
   logger(`Processing vulnerabilities for ${workloads.length} workloads`);
   if (workloads.length === 0) {
@@ -42,7 +40,7 @@ export const groupVulnerabilities = (
           break;
       }
 
-      const datedMetrics = grouped.get(current) ?? { [axisName]: [] }
+      const datedMetrics = grouped.get(current) ?? { [axisName]: [] };
       const repoGroup = lookupRepoGroupForRepoName(workloadId, v.repoName);
 
       const dimensions: MetricItemDimensions = {

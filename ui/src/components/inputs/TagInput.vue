@@ -24,13 +24,7 @@
       :placeholder="key"
       hide-details
     />
-    <v-btn
-      class="ml-1 pt-2"
-      @click="deleteTag(index)"
-      :disabled="busy"
-      icon="mdi-delete-forever"
-      variant="flat"
-    />
+    <v-btn class="ml-1 pt-2" @click="deleteTag(index)" :disabled="busy" icon="mdi-delete-forever" variant="flat" />
   </div>
 </template>
 
@@ -46,8 +40,7 @@ type TProps = CommonInputProps<{ key: string; value: string }[]> & {
 };
 
 const props = withDefaults(defineProps<TProps>(), {
-  defaults: () =>
-    getDefaultValue<{ key: string; value: string }[]>(InputType.TAGS),
+  defaults: () => getDefaultValue<{ key: string; value: string }[]>(InputType.TAGS),
 
   operationState: OperationState.Idle,
 });

@@ -4,11 +4,7 @@
       <v-col class="pb-0 mb-2">
         <v-menu v-model="addFilterOpen">
           <template v-slot:activator="{ props }">
-            <v-btn
-              name="add-filter"
-              class="mb-3"
-              v-bind="props"
-              :disabled="busy"
+            <v-btn name="add-filter" class="mb-3" v-bind="props" :disabled="busy"
               >Add filter
               <v-icon>mdi-filter-outline</v-icon>
             </v-btn>
@@ -16,9 +12,7 @@
 
           <v-list v-if="availableInputs.length !== selectedInputs.length">
             <v-list-item
-              v-for="input in availableInputs.filter(
-                (input) => !selectedInputs.includes(input.inputType),
-              )"
+              v-for="input in availableInputs.filter((input) => !selectedInputs.includes(input.inputType))"
               :key="input.inputType"
               @click="addInput(input)"
             >
@@ -28,8 +22,8 @@
           <v-list v-else>
             <v-list-item disabled>
               <v-list-item-title
-                ><v-icon icon="mdi-information" /> You've already added all the
-                filters for these queries.</v-list-item-title
+                ><v-icon icon="mdi-information" /> You've already added all the filters for these
+                queries.</v-list-item-title
               >
             </v-list-item>
           </v-list>
@@ -38,21 +32,13 @@
     </v-row>
 
     <v-row class="my-1" v-for="(input, index) in inputs" :key="index">
-      <v-col
-        cols="11"
-        sm="10"
-        md="8"
-        lg="6"
-        class="border-dotted border-thin ms-3"
-      >
+      <v-col cols="11" sm="10" md="8" lg="6" class="border-dotted border-thin ms-3">
         <Component
           :is="input.component"
           v-bind="input.props"
           :operationState="operationState"
           @input="(value) => onSetInputValue(input.inputType, value)"
-          @update:modelValue="
-            (value) => onSetInputValue(input.inputType, value)
-          "
+          @update:modelValue="(value) => onSetInputValue(input.inputType, value)"
         />
       </v-col>
       <v-col cols="1">
@@ -84,12 +70,7 @@
 
     <v-row>
       <v-col sm="6">
-        <v-btn
-          name="runQuery"
-          color="primary"
-          @click.prevent="execute"
-          :disabled="busy || !queryTypes?.length"
-        >
+        <v-btn name="runQuery" color="primary" @click.prevent="execute" :disabled="busy || !queryTypes?.length">
           {{ runLabel }}
         </v-btn>
         <slot name="buttons" />
@@ -125,11 +106,7 @@ import { getInputTypes } from "@/queries/config";
 import IssueFilter from "@/components/inputs/IssueFilter.vue";
 import WorkloadNames from "@/components/inputs/WorkloadNames.vue";
 import { logger } from "@/utils/logger";
-import {
-  getDefaultValue,
-  InputType,
-  isPopulatedInputValue,
-} from "@/queries/inputs";
+import { getDefaultValue, InputType, isPopulatedInputValue } from "@/queries/inputs";
 import PipelineOptions from "@/components/inputs/PipelineOptions.vue";
 import PipelineActors from "@/components/inputs/PipelineActors.vue";
 import RepoGroups from "@/components/inputs/RepoGroups.vue";
@@ -172,15 +149,9 @@ const { t } = useI18n();
 
 const InputMap = new Map<InputType, ComponentAndProps>([
   [InputType.BRANCH_NAMES, { component: BranchNames }],
-  [
-    InputType.END_DATE,
-    { component: DateInput, props: { label: "End date", argName: "endDate" } },
-  ],
+  [InputType.END_DATE, { component: DateInput, props: { label: "End date", argName: "endDate" } }],
   [InputType.ISSUE_FILTER, { component: IssueFilter }],
-  [
-    InputType.INCIDENT_FILTER,
-    { component: IssueFilter, props: { filters: ["priority"] } },
-  ],
+  [InputType.INCIDENT_FILTER, { component: IssueFilter, props: { filters: ["priority"] } }],
   [InputType.PIPELINE_OPTIONS, { component: PipelineOptions }],
   [InputType.PIPELINE_ACTOR_TYPE, { component: PipelineActors }],
   [InputType.PIPELINE_STAGE, { component: PipelineStage }],
@@ -228,19 +199,16 @@ const determineSelectedInputsFromDefaults = () => {
 const selectedInputs = ref<InputType[]>(determineSelectedInputsFromDefaults());
 
 const inputs = computed<InputAndDefaults[]>(() =>
-  getInputComponents(
-    props.queryTypes.length ? selectedInputs.value : [],
-    props.defaultInputs || {},
-  ),
+  getInputComponents(props.queryTypes.length ? selectedInputs.value : [], props.defaultInputs || {}),
 );
 
 const runLabel = computed(() => {
   switch (props.operationState) {
     case OperationState.Idle:
+    case OperationState.Error:
       return `Run query`;
     case OperationState.Busy:
       return `Running query...`;
-    case OperationState.Error:
     default:
       return "Error";
   }
@@ -259,10 +227,7 @@ const deleteInput = (index: number) => {
   });
 };
 
-function getInputComponents(
-  inputTypes: InputType[],
-  defaultInputs: Record<string, any>,
-) {
+function getInputComponents(inputTypes: InputType[], defaultInputs: Record<string, any>) {
   const components: InputAndDefaults[] = [];
   for (const inputType of inputTypes) {
     const componentAndProps = InputMap.get(inputType) as ComponentAndProps;

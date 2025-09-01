@@ -55,11 +55,10 @@ export const calculateTimeToRestore = async (
         datedEntries["time-to-restore"].push(metric);
 
         metrics.set(resolvedDay, datedEntries);
-
       } catch (e) {
         warn(`Failed to calculate duration for issue: ${issue.key} for workload: ${workloadId}: ${e}`);
       }
     }
   }
   return metrics;
-}
+};

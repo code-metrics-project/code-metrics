@@ -21,8 +21,6 @@ const checkNextToast = () => {
   console.log("checkNextToast");
   const nextToast = toastStore.toasts.pop();
   if (nextToast) {
-    nextToast.timeout = nextToast.timeout ?? 2000;
-
     toast.value = nextToast;
     active.value = true;
   }

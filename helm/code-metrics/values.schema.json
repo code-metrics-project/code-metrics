@@ -138,7 +138,7 @@
                                             },
                                             "type": "object"
                                         },
-                                        "bitbucket": {
+                                        "bitbucketCloud": {
                                             "properties": {
                                                 "servers": {
                                                     "type": "array"
@@ -283,9 +283,14 @@
                                                         "properties": {
                                                             "backend": {
                                                                 "properties": {
-                                                                    "repoNames": {
+                                                                    "components": {
                                                                         "items": {
-                                                                            "type": "string"
+                                                                            "properties": {
+                                                                                "repo": {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            },
+                                                                            "type": "object"
                                                                         },
                                                                         "type": "array"
                                                                     }
@@ -305,9 +310,14 @@
                                                             },
                                                             "platform": {
                                                                 "properties": {
-                                                                    "repoNames": {
+                                                                    "components": {
                                                                         "items": {
-                                                                            "type": "string"
+                                                                            "properties": {
+                                                                                "repo": {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            },
+                                                                            "type": "object"
                                                                         },
                                                                         "type": "array"
                                                                     }
@@ -455,6 +465,104 @@
             "type": "object"
         },
         "code-metrics-docs": {
+            "properties": {
+                "application": {
+                    "properties": {
+                        "envVars": {
+                            "properties": {
+                                "keyValues": {
+                                    "properties": {},
+                                    "type": "object"
+                                },
+                                "secrets": {
+                                    "properties": {},
+                                    "type": "object"
+                                },
+                                "templates": {
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "fullnameOverride": {
+                            "type": "string"
+                        },
+                        "image": {
+                            "properties": {
+                                "tag": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "nameOverride": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "ingress": {
+                    "properties": {
+                        "annotations": {
+                            "properties": {
+                                "traefik.ingress.kubernetes.io/router.entrypoints": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "className": {
+                            "type": "string"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "hosts": {
+                            "items": {
+                                "properties": {
+                                    "host": {
+                                        "type": "string"
+                                    },
+                                    "paths": {
+                                        "items": {
+                                            "properties": {
+                                                "path": {
+                                                    "type": "string"
+                                                },
+                                                "pathType": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "tls": {
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
+        "code-metrics-mlapi": {
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            },
+            "type": "object"
+        },
+        "code-metrics-promosite": {
             "properties": {
                 "application": {
                     "properties": {

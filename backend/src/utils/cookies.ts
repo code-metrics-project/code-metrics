@@ -1,9 +1,10 @@
 import { CookieOptions, Request, Response } from "express";
 import { verbose } from "./logger/logger";
 import { decrypt, encrypt } from "./cryptoutil";
-import { getAccessTokenSecret } from "../auth/auth";
+import { getTokenSecret } from "../auth/tokens";
+import { getConfigItem } from "../config/sources/source";
 
-const COOKIE_SAME_SITE = process.env.COOKIE_SAME_SITE ?? undefined;
+const COOKIE_SAME_SITE = getConfigItem("COOKIE_SAME_SITE");
 
 /**
  * Writes an encrypted cookie to the response.
@@ -18,10 +19,10 @@ export const writeEncryptedCookie = <C>(
   name: string,
   cleartextCookieValue: C,
   salt: string,
-  options: CookieOptions = {}
+  options: CookieOptions = {},
 ): void => {
   verbose(`Setting cookie: ${name}`);
-  const encrypted = encrypt(getAccessTokenSecret(), salt, JSON.stringify(cleartextCookieValue));
+  const encrypted = encrypt(getTokenSecret(), salt, JSON.stringify(cleartextCookieValue));
   const allOptions = {
     httpOnly: true,
     sameSite: COOKIE_SAME_SITE as any,
@@ -36,17 +37,13 @@ export const writeEncryptedCookie = <C>(
  * @param name
  * @param salt
  */
-export const readEncryptedCookie = <C>(
-  req: Request,
-  name: string,
-  salt: string
-): C | null => {
+export const readEncryptedCookie = <C>(req: Request, name: string, salt: string): C | null => {
   verbose(`Reading cookie: ${name}`);
   const encryptedCookie = req.cookies[name];
   if (!encryptedCookie) {
     verbose(`No cookie found named ${name}`);
     return null;
   }
-  const decrypted = decrypt(getAccessTokenSecret(), salt, encryptedCookie);
+  const decrypted = decrypt(getTokenSecret(), salt, encryptedCookie);
   return JSON.parse(decrypted);
 };

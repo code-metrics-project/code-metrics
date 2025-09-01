@@ -13,14 +13,7 @@
         />
       </v-col>
       <v-col v-if="showTagInput" cols="6">
-        <v-select
-          v-model="tagName"
-          :items="tags"
-          :disabled="busy"
-          label="Tag name"
-          persistent-hint
-          single-line
-        />
+        <v-select v-model="tagName" :items="tags" :disabled="busy" label="Tag name" persistent-hint single-line />
       </v-col>
     </v-row>
   </v-container>

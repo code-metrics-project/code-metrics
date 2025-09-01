@@ -22,7 +22,14 @@ nav:
     - Workload summary: 'workloads.md'
     - CI/CD pipelines: 'pipelines.md'
     - Tags: 'tags.md'
+  - Quality Gates:
+    - User guide: 'quality_gates_user.md'
+    - Administration guide: 'quality_gates_admin.md'
   - Feature support: 'features.md'
+
+  - Integrating with the CodeMetrics API:
+    - API Integration Overview: 'integration_api.md'
+    - Authenticating to the CodeMetrics API: 'integration_api_authentication.md'
 
   - Queries and filters:
     - Introduction: 'queries.md'
