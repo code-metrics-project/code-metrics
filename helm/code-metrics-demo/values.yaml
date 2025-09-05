@@ -1,0 +1,11 @@
+mock-api:
+  enabled: true
+
+jenkins:
+  enabled: false
+
+keycloak:
+  enabled: false
+
+openldap:
+  enabled: false

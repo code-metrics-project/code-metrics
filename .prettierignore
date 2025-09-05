@@ -1,0 +1,5 @@
+dist
+node_modules
+
+# Minified files
+*.min.js

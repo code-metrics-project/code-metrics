@@ -1,0 +1,8 @@
+# Add sync replication on config
+dn: olcDatabase={0}config,cn=config
+changetype: modify
+add: olcSyncRepl
+olcSyncRepl: rid=001 provider=ldap://openldap:1389 binddn="cn=admin,cn=config" bindmethod=simple credentials=admin searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1 starttls=critical tls_reqcert=never
+-
+add: olcMirrorMode
+olcMirrorMode: TRUE

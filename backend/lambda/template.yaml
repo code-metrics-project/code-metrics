@@ -1,0 +1,139 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: CodeMetrics Lambda Function
+
+Parameters:
+  AccessTokenSecret:
+    Type: String
+    Description: Symmetric key for access token
+    NoEcho: true
+  CORSAllowedOrigin:
+    Type: String
+    Description: CORS allowed origin
+    Default: "https://code-metrics.localhost:3001"
+  CognitoClientId:
+    Type: String
+    Description: Cognito Client ID
+  CognitoUserPoolId:
+    Type: String
+    Description: Cognito User Pool ID
+
+Resources:
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: CloudwatchLogsCreateGroupStreamEvents
+          PolicyDocument:
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "logs:CreateLogGroup",
+                  "Resource": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
+                  ]
+                }
+              ]
+            }
+        - PolicyName: DynamoDBReadWriteManage
+          PolicyDocument:
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "Stmt1688577177960",
+                  "Action": [
+                    "dynamodb:CreateTable",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:DescribeTable",
+                    "dynamodb:DescribeTimeToLive",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:Scan",
+                    "dynamodb:UpdateTimeToLive"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/CodeMetrics_*"
+                }
+              ]
+            }
+        - PolicyName: SecretsManagerRead
+          PolicyDocument:
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Action": [
+                    "secretsmanager:GetSecretValue"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:codemetrics/*"
+                }
+              ]
+            }
+
+  CodeMetricsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist
+      Handler: index.handler
+      MemorySize: 1024
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 180
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowCredentials: true
+          AllowHeaders: [ "*" ]
+          AllowMethods: [ "DELETE", "GET", "PATCH", "POST", "PUT" ]
+          AllowOrigins:
+            - !Ref CORSAllowedOrigin
+          ExposeHeaders: [ "*" ]
+          MaxAge: 60
+        InvokeMode: BUFFERED
+      Environment:
+        Variables:
+          ACCESS_TOKEN_SECRET: !Ref AccessTokenSecret
+          AUTHENTICATOR_IMPL: "cognito"
+          COGNITO_CLIENT_ID: !Ref CognitoClientId
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+          LOOKUP_CACHE_ENABLED: "true"
+          DATASTORE_IMPL: "dynamodb"
+          SECRET_RESOLVER_IMPL: "secretsmanager"
+          INVOCATION_MODE: "serve-api"
+
+Outputs:
+  LambdaFunctionUrlEndpoint:
+    Description: "CodeMetrics Function URL Endpoint"
+    Value:
+      Fn::GetAtt: CodeMetricsFunctionUrl.FunctionUrl
+
+  LambdaFunctionConsoleUrl:
+    Description: Console URL for the CodeMetrics Lambda Function.
+    Value: !Sub https://${AWS::Region}.console.aws.amazon.com/lambda/home?region=${AWS::Region}#/functions/${CodeMetricsFunction}
+
+  LambdaFunctionName:
+    Description: Name of the CodeMetrics Lambda Function
+    Value: !Ref CodeMetricsFunction

@@ -1,0 +1,18 @@
+{
+  "pipelineExecution": {
+    "artifactRevisions": [
+      {
+        "created": 1427298837.7689769,
+        "name": "MyApp",
+        "revisionChangeIdentifier": "1427298921.3976923",
+        "revisionId": "7636d59f3c461cEXAMPLE8417dbc6371",
+        "revisionSummary": "Updating the application for feature 12-4820",
+        "revisionUrl": "https://api.github.com/repos/anycompany/MyApp/git/commits/7636d59f3c461cEXAMPLE8417dbc6371"
+      }
+    ],
+    "pipelineExecutionId": "3137f7cb-7cf7-039j-s83l-d7eu3EXAMPLE",
+    "pipelineName": "FirstPipeline",
+    "pipelineVersion": 2,
+    "status": "Succeeded"
+  }
+}

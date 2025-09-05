@@ -1,0 +1,20 @@
+version: '3.3'
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.0
+    command: ["start-dev", "--import-realm"]
+    restart: unless-stopped
+    environment:
+      KC_DB: dev-mem
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      KC_METRICS_ENABLED: false
+      KC_LOG_LEVEL: INFO
+      KC_REALM_NAME: codemetrics
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - 8086:8080
+    volumes:
+      - ./examples/keycloak/realm.json:/opt/keycloak/data/import/realm.json:ro

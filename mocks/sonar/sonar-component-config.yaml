@@ -1,0 +1,7 @@
+plugin: rest
+resources:
+- method: GET
+  path: /api/measures/component
+  response:
+    scriptFile: sonarComponent.js
+    statusCode: 200

@@ -1,0 +1,530 @@
+name: Validate
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+      coverageRetention:
+        required: true
+        type: string
+      machinelearningComponents:
+        required: true
+        type: string
+      helmComponents:
+        required: true
+        type: string
+      uiComponents:
+        required: true
+        type: string
+      backendComponents:
+        required: true
+        type: string
+      threatmodelComponents:
+        required: true
+        type: string
+      examplesComponents:
+        required: true
+        type: string
+      githubComponents:
+        required: true
+        type: string
+      desktopComponents:
+        required: true
+        type: string
+env:
+  # prefer ipv4 stack (see https://nodejs.org/api/cli.html#--dns-result-orderorder)
+  NODE_OPTIONS: "--dns-result-order=ipv4first"
+
+jobs:
+  validate-machinelearning:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    if: ${{ inputs.machinelearningComponents != 0 || inputs.githubComponents != 0 }}
+    permissions:
+      contents: read
+    env:
+      python-upload-version: "3.12"
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          # Install a specific version of uv.
+          version: "0.6.16"
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the project
+        working-directory: machinelearning
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run tests
+        working-directory: machinelearning
+        run: uv run -m pytest
+
+      - name: Lint with Ruff
+        working-directory: machinelearning
+        run: |
+          uv tool install ruff
+          uv tool run ruff check --output-format=github .
+        continue-on-error: true
+      - name: Build package
+        working-directory: machinelearning
+        run: uv build
+      - name: Upload UI artifact
+        if: matrix.python-version == env.python-upload-version
+        uses: actions/upload-artifact@v4
+        with:
+          name: machinelearning
+          path: machinelearning/dist
+          retention-days: 1
+
+  build-desktop-linux:
+    if: ${{ inputs.desktopComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "/desktop/.nvmrc"
+      - name: Restore backend NPM cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ github.run_id }}
+          restore-keys: |
+            npm-
+      - name: Install desktop dependencies
+        run: npm ci
+
+      - name: Install Linux packaging deps (Linux only)
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libnss3 libxss1 libasound2t64 fakeroot rpm
+
+      - name: Build full app (backend, ui, electron)
+        run: |
+          npm run install:ext
+          npm run dist:prod
+
+      - name: Build Electron App
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:linux
+
+      - name: Upload Desktop artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-linux
+          path: |
+            desktop/dist-build/*.AppImage
+            desktop/dist-build/*.tar.gz
+          retention-days: 1
+
+  build-desktop-mac-win:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+        include:
+          # This is 10:1min cost
+          - os: macos-latest
+            platform: mac
+            buildScript: dist:mac
+            artifactName: mac-build
+          # This is 2:1min cost
+          - os: windows-latest
+            platform: win
+            buildScript: dist:win
+            artifactName: win-build
+
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "/desktop/.nvmrc"
+      - name: Restore backend NPM cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ github.run_id }}
+          restore-keys: |
+            npm-
+      - name: Install desktop dependencies
+        run: npm ci
+
+      - name: Build full app (backend, ui, electron)
+        run: |
+          npm run install:ext
+          npm run dist:prod
+
+      - name: Build Electron App
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run ${{ matrix.buildScript }}
+
+      - name: Upload Desktop artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.platform }}
+          path: |
+            desktop/dist-build/**
+          retention-days: 1
+
+  build-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    if: ${{ inputs.backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "/backend/.nvmrc"
+      - name: Restore backend NPM cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ github.run_id }}
+          restore-keys: |
+            npm-
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm config get cache && npm ci --prefer-offline --verbose
+      - name: Install Imposter
+        uses: imposter-project/imposter-github-action/setup@v0.6.1
+      - name: Copy dummy config for testing
+        working-directory: backend
+        run: |
+          cp .env.template .env
+          cp remote-config.yaml.example remote-config.yaml
+          cp users.json.example users.json
+          cp workload-config.yaml.example workload-config.yaml
+      - name: Unit test backend + output coverage
+        working-directory: backend
+        run: npm test
+      - name: Build backend
+        working-directory: backend
+        run: npm run release
+      - name: Copy dummy config for release
+        working-directory: backend
+        run: |
+          cp .env.template dist/.env
+          mkdir -p dist/config
+          cp dashboard-config.json.example dist/config/dashboard-config.json
+          cp queries-example.json dist/config/queries-example.json
+          cp remote-config.yaml.example dist/config/remote-config.yaml
+          cp users.json.example dist/config/users.json
+          cp workload-config.yaml.example dist/config/workload-config.yaml
+      - name: Upload built backend app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend
+          path: backend/dist
+          retention-days: 1
+      - name: Upload Backend unit test coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-be--unit
+          path: backend/coverage-be--unit
+          retention-days: ${{ inputs.coverageRetention }}
+
+  run-backend-slowtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    if: ${{ inputs.backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "/backend/.nvmrc"
+      - name: Restore backend NPM cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ github.run_id }}
+          restore-keys: |
+            npm-
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm config get cache && npm ci --prefer-offline --verbose
+      - name: Install Imposter
+        uses: imposter-project/imposter-github-action/setup@v0.6.1
+      - name: Copy dummy config for testing
+        working-directory: backend
+        run: |
+          cp .env.template .env
+          cp remote-config.yaml.example remote-config.yaml
+          cp users.json.example users.json
+          cp workload-config.yaml.example workload-config.yaml
+      - name: Run slow backend tests + output coverage
+        working-directory: backend
+        run: "npm run test:slow"
+      - name: Upload Backend 'slow' Coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-be--slow
+          path: backend/coverage-be--slow
+          retention-days: ${{ inputs.coverageRetention }}
+
+  backend-integration-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    if: ${{ inputs.backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "/backend/.nvmrc"
+      - name: Restore backend NPM cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ github.run_id }}
+          restore-keys: |
+            npm-
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm config get cache && npm ci --prefer-offline --verbose
+      - name: Install Imposter
+        uses: imposter-project/imposter-github-action/setup@v0.6.1
+      - name: Copy dummy config for testing
+        working-directory: backend
+        run: |
+          cp .env.template .env
+          cp remote-config.yaml.example remote-config.yaml
+          cp users.json.example users.json
+          cp workload-config.yaml.example workload-config.yaml
+      - name: Integration test backend + output coverage
+        working-directory: backend
+        env:
+          MOCKS_PRINT_LOG_ON_CRASH: "true"
+          MOCKS_VERBOSE: "false"
+        run: "npm run test:integration"
+      - name: Upload Backend integration test coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-be--integration
+          path: backend/coverage-be--integration
+          retention-days: ${{ inputs.coverageRetention }}
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    if: ${{ inputs.uiComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "/ui/.nvmrc"
+      - name: NPM cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ github.run_id }}
+          restore-keys: |
+            npm-
+      - name: Install UI dependencies
+        working-directory: ui
+        run: npm config get cache && npm ci --prefer-offline --verbose
+      - name: Unit test UI
+        working-directory: ui
+        run: npm run test:unit
+      - name: Build UI
+        working-directory: ui
+        run: npm run build
+      - name: Upload UI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui
+          path: ui/dist
+          retention-days: 1
+      - name: Upload UI unit test coverage report files
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-ui--unit
+          path: ui/coverage-ui--unit
+          retention-days: ${{ inputs.coverageRetention }}
+
+  build-helm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    if: ${{ inputs.helmComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Lint Helm Chart
+        working-directory: helm/code-metrics
+        run: |
+          helm lint .
+      - name: Render Helm Chart
+        working-directory: helm/code-metrics
+        run: |
+          helm dependency update
+          helm template .
+      - name: Lint Demo Helm Chart
+        working-directory: helm/code-metrics-demo
+        run: |
+          helm lint .
+      - name: Render Demo Helm Chart
+        working-directory: helm/code-metrics-demo
+        run: |
+          helm dependency update
+          helm template .
+      - name: Package Helm Chart
+        working-directory: scripts
+        run: ./package-helm-chart.sh "${{ inputs.tag }}"
+      - name: Upload Chart artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm
+          path: helm/dist
+          retention-days: 1
+
+  build-threatmodel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    if: ${{ inputs.threatmodelComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Markdown to PDF Deps
+        run: |
+          sudo apt update
+          sudo apt install pandoc wkhtmltopdf
+      - name: Generate PDF
+        run: |
+          make threatmodel
+      - name: Upload ThreatModel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: threatmodel
+          path: threatmodel/dist
+          retention-days: 1
+
+  run-e2e:
+    # This job has high resource requirements and should be run on a larger instance.
+    # Large instances are more expensive, so we use them sparingly.
+    runs-on: ubuntu-latest-l
+    needs: [build-backend, run-backend-slowtest, backend-integration-test, build-frontend]
+    if: ${{ always() && !failure() && !cancelled() && (((needs.build-frontend.result == 'success' || (needs.build-backend.result == 'success' && needs.run-backend-slowtest.result == 'success' && needs.backend-integration-test.result == 'success'))) || inputs.githubComponents != 0) }}
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: "/backend/.nvmrc"
+      - name: NPM cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ github.run_id }}
+          restore-keys: |
+            npm-
+      - name: Install Imposter
+        uses: imposter-project/imposter-github-action/setup@v0.6.1
+      - name: E2E test UI with mock backend
+        env:
+          MOCKS_PRINT_LOG_ON_CRASH: "true"
+          MOCKS_VERBOSE: "false"
+        working-directory: scripts
+        run: ./validate-test_e2e_mocks.sh
+      - name: Upload E2E test run generated media
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-media
+          path: ui/__tests__/output
+          retention-days: ${{ inputs.coverageRetention }}
+      - name: Upload E2E test coverage report files
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-ui--e2e
+          path: ui/coverage-ui--e2e
+          retention-days: ${{ inputs.coverageRetention }}
+
+  merge-test-reports:
+    runs-on: ubuntu-latest
+    needs: [build-backend, run-backend-slowtest, backend-integration-test, build-frontend, run-e2e]
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: "/tools/mergecoverage/.nvmrc"
+      - name: Install tool dependencies
+        working-directory: tools/mergecoverage
+        run: npm ci
+      - name: Download coverage artifacts from all previous test steps
+        uses: actions/download-artifact@v4
+        with:
+          path: tools/mergecoverage/jsoncov
+          pattern: coverage-*
+      # Debug
+      - run: ls -R ./tools/mergecoverage/jsoncov
+      - name: Merge test results script and produce full coverage report
+        working-directory: tools/mergecoverage
+        run: "npm run merge-coverage-json -- ./jsoncov"
+      - name: Upload merged report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-full-report
+          path: tools/mergecoverage/coverage-json-merged
+
+  on-failure:
+    runs-on: ubuntu-latest
+    needs:
+      [
+        validate-machinelearning,
+        build-backend,
+        run-backend-slowtest,
+        backend-integration-test,
+        build-frontend,
+        build-helm,
+        build-threatmodel,
+        run-e2e,
+        merge-test-reports,
+        build-desktop-linux,
+        build-desktop-mac-win,
+      ]
+    if: ${{ always() && startsWith(github.ref, 'refs/tags/') && failure() && !cancelled() }}
+    steps:
+      - name: Slack Failure Notification
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL }}
+          slack-message: "Release Build Failure (Validate): ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}

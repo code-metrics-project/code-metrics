@@ -1,0 +1,21 @@
+dependencies:
+- name: mongodb
+  repository: ""
+  version: '*.*.*'
+- name: code-metrics-api
+  repository: ""
+  version: '*.*.*'
+- name: code-metrics-ui
+  repository: ""
+  version: '*.*.*'
+- name: code-metrics-docs
+  repository: ""
+  version: '*.*.*'
+- name: code-metrics-promosite
+  repository: ""
+  version: '*.*.*'
+- name: code-metrics-mlapi
+  repository: ""
+  version: '*.*.*'
+digest: sha256:bd3a47c8384475d042d180ffdd9ebe16584991f23abe93816a592d1af5e0e85a
+generated: "2025-06-03T09:36:39.478194+01:00"

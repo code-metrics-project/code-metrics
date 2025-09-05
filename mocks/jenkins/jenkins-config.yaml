@@ -1,0 +1,37 @@
+plugin: rest
+
+resources:
+  - method: get
+    path: /api/json
+    response:
+      file: jobList.json
+
+  - method: get
+    path: /job/{folder}/api/json
+    response:
+      file: jobGet.json
+
+  - method: get
+    path: /job/{folder}/job/{folder2}/api/json
+    response:
+      file: jobGet.json
+
+  - method: get
+    path: /job/{folder}/job/{folder2}/job/{folder3}/api/json
+    response:
+      file: jobGet.json
+
+  - method: get
+    path: /job/{folder}/{number}/api/json
+    response:
+      file: buildGet.json
+
+  - method: get
+    path: /job/{folder}/job/{folder2}/{number}/api/json
+    response:
+      file: buildGet.json
+
+  - method: get
+    path: /job/{folder}/job/{folder2}/job/{folder3}/{number}/api/json
+    response:
+      file: buildGet.json

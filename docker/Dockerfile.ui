@@ -1,0 +1,24 @@
+ARG IMGREPO=""
+FROM ${IMGREPO}node:20 AS build
+
+# INSTALL; separate from build to benefit from Docker cache
+WORKDIR /usr/src/app/ui
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# BUILD
+COPY . ./
+RUN npm run build
+
+
+FROM ${IMGREPO}nginx AS run
+
+LABEL org.opencontainers.image.source=https://github.com/code-metrics-project/releases
+
+ENV API_BASE_URL "http://localhost:3000"
+
+# Copy built files
+COPY --from=build /usr/src/app/ui/dist /usr/share/nginx/html
+COPY ./files/nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./files/write-config.sh /docker-entrypoint.d/write-config.sh
+RUN chmod +x /docker-entrypoint.d/write-config.sh

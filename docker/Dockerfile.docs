@@ -1,0 +1,16 @@
+ARG IMGREPO=""
+FROM ${IMGREPO}squidfunk/mkdocs-material:9.5
+
+ARG DOCSDIR
+
+RUN pip install \
+    mkdocs-mermaid2-plugin
+
+# Copy docs config
+COPY mkdocs.yml /docs
+
+# Copy docs contents
+COPY ${DOCSDIR} /docs/docs
+
+# DEV: bind-mount docs dir at runtime to override contents
+# COPY ./docs /docs/docs

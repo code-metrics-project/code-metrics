@@ -1,0 +1,69 @@
+{
+  "bespoke": [
+    {
+      "name": "My Team Code quality summary",
+      "description": "Retrieve aggregated summaries of My Team SonarQube tags, and My Team FE in particular.",
+      "component": "code-analysis-metric-summary",
+      "props": {
+        "repoGroups": [
+          "backend",
+          "frontend"
+        ],
+        "individualRepos": [
+          "athena:fe-component-a",
+          "athena:fe-component-b",
+          "athena:fe-component-c",
+          "athena:fe-component-d"
+        ]
+      }
+    },
+    {
+      "name": "My Team FE Breakdown",
+      "description": "View coverage and LoC breakdown for files within web_portal.",
+      "component": "file-metric-breakdown",
+      "props": {
+        "workload": "athena",
+        "repo": "web_portal",
+        "metrics": [
+          "coverage",
+          "complexity",
+          "ncloc"
+        ],
+        "paths": [
+          "src/components",
+          "src/models",
+          "src/router",
+          "src/services",
+          "src/store",
+          "src/views",
+          "src/utils",
+          "src/modules",
+          "src/modules/account"
+        ]
+      }
+    },
+    {
+      "name": "My Team Bugs vs. Coverage",
+      "description": "Correlates bugs vs. coverage for My Team repositories.",
+      "component": "dynamic-input",
+      "props": {
+        "queryTypes": [
+          "bugs-new",
+          "code-coverage"
+        ],
+        "defaultInputs": {
+          "workloads": [
+            "athena"
+          ],
+          "repoGroups": [
+            "backend",
+            "frontend"
+          ],
+          "issueFilter": {
+            "priority": "Medium"
+          }
+        }
+      }
+    }
+  ]
+}

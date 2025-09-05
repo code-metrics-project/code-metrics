@@ -1,0 +1,15 @@
+# This file is additive to the main docker-compose.yaml
+#
+# To start Code Metrics using an example instances, run 
+# Compose from the root directory of the project as follows:
+#
+# docker-compose -f compose/docker-compose.yaml -f compose/docker-compose-mocks.yaml -f compose/docker-compose-examples.yaml --project-directory . up --build
+
+services:
+  jenkins:
+    image: example/jenkins
+    build:
+      dockerfile: ../../docker/Dockerfile.jenkins
+      context: examples/jenkins
+    ports:
+      - 32769:8080

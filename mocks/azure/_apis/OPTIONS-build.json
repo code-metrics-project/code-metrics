@@ -1,0 +1,585 @@
+{
+  "value": [
+    {
+      "id": "5a21f5d2-5642-47e4-a0bd-1356e6731bee",
+      "area": "build",
+      "resourceName": "workitems",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/{resource}",
+      "resourceVersion": 2,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "54481611-01f4-47f3-998f-160da0f0c229",
+      "area": "build",
+      "resourceName": "latest",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{*definition}",
+      "resourceVersion": 1,
+      "minVersion": "5.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "7985e151-1f22-4344-9173-1a663ee1eb4d",
+      "area": "Build",
+      "resourceName": "Deployments",
+      "routeTemplate": "_apis/build/azure/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "d84ac5c6-edc7-43d5-adc9-1b34be5dea09",
+      "area": "build",
+      "resourceName": "tags",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{*tag}",
+      "resourceVersion": 3,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "0cd358e1-9217-4d94-8269-1c1ee6f93dcf",
+      "area": "Build",
+      "resourceName": "Builds",
+      "routeTemplate": "{project}/_apis/build/{resource}/{buildId}",
+      "resourceVersion": 7,
+      "minVersion": "1.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "f10f0ea5-18a1-43ec-a8fb-2042c7be9b43",
+      "area": "build",
+      "resourceName": "changes",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 3,
+      "minVersion": "2.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "e05d4403-9b81-4244-8763-20fde28d1976",
+      "area": "build",
+      "resourceName": "branches",
+      "routeTemplate": "{project}/_apis/sourceProviders/{providerName}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "4.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "54572c7b-bbd3-45d4-80dc-28be08941620",
+      "area": "build",
+      "resourceName": "changes",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/{resource}",
+      "resourceVersion": 2,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "3da19a6a-f088-45c4-83ce-2ad3a87be6c4",
+      "area": "build",
+      "resourceName": "buildleases",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/leases",
+      "resourceVersion": 1,
+      "minVersion": "6.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "af5122d3-3438-485e-a25a-2dbbfde84ee6",
+      "area": "build",
+      "resourceName": "attachments",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/{timelineId}/{recordId}/{resource}/{type}/{name}",
+      "resourceVersion": 2,
+      "minVersion": "4.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "b8aac6c9-744b-46e1-88fc-3550969f9313",
+      "area": "build",
+      "resourceName": "stages",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/{resource}/{stageRefName}",
+      "resourceVersion": 5,
+      "minVersion": "5.2",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "de6a4df8-22cd-44ee-af2d-39f6aa7a4261",
+      "area": "build",
+      "resourceName": "badge",
+      "routeTemplate": "_apis/public/{area}/definitions/{project}/{definitionId}/{resource}",
+      "resourceVersion": 2,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "e884571e-7f92-4d6a-9274-3f5649900835",
+      "area": "build",
+      "resourceName": "templates",
+      "routeTemplate": "{project}/_apis/{area}/definitions/{resource}/{templateId}",
+      "resourceVersion": 3,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "7c3df3a1-7e51-4150-8cf7-540347f8697f",
+      "area": "build",
+      "resourceName": "yaml",
+      "routeTemplate": "{project}/_apis/{area}/definitions/{definitionId}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "6.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "45bcaa88-67e1-4042-a035-56d3b4a7d44c",
+      "area": "build",
+      "resourceName": "report",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/{resource}",
+      "resourceVersion": 2,
+      "minVersion": "2.2",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "9f094d42-b41c-4920-95aa-597581a79821",
+      "area": "Build",
+      "resourceName": "Details",
+      "routeTemplate": "{project}/_apis/build/Builds/{buildId}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "591cb5a4-2d46-4f3a-a697-5cd42b6bd332",
+      "area": "build",
+      "resourceName": "options",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 2,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "32696366-f57b-4529-aec4-61673d4c23c6",
+      "area": "Build",
+      "resourceName": "DeploymentEnvironments",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{serviceName}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "3813d06c-9e36-4ea1-aac3-61a485d60e3d",
+      "area": "build",
+      "resourceName": "ResourceUsage",
+      "routeTemplate": "_apis/build/{resource}",
+      "resourceVersion": 2,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "d9826ad7-2a68-46a9-a6e9-677698777895",
+      "area": "build",
+      "resourceName": "properties",
+      "routeTemplate": "{project}/_apis/{area}/definitions/{definitionId}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "3.2",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "82fba9f8-4198-4ab6-b719-6a363880c19e",
+      "area": "Build",
+      "resourceName": "Qualities",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{quality}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "35a80daf-7f30-45fc-86e8-6b813d9c90df",
+      "area": "build",
+      "resourceName": "logs",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/{resource}/{logId}",
+      "resourceVersion": 2,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "29d12225-b1d9-425f-b668-6c594a981313",
+      "area": "build",
+      "resourceName": "fileContents",
+      "routeTemplate": "{project}/_apis/sourceProviders/{providerName}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "4.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "aa8c1c9c-ef8b-474a-b8c4-785c7b191d0d",
+      "area": "build",
+      "resourceName": "settings",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "7944d6fb-df01-4709-920a-7a189aa34037",
+      "area": "build",
+      "resourceName": "pathContents",
+      "routeTemplate": "{project}/_apis/sourceProviders/{providerName}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "4.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "0a6312e9-0627-49b7-8083-7d74a64849c9",
+      "area": "build",
+      "resourceName": "properties",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "3.2",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "fcac1932-2ee1-437f-9b6f-7f696be858f6",
+      "area": "build",
+      "resourceName": "Controllers",
+      "routeTemplate": "_apis/build/{resource}/{controllerId}",
+      "resourceVersion": 2,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "21b3b9ce-fad5-4567-9ad0-80679794e003",
+      "area": "build",
+      "resourceName": "buildbadge",
+      "routeTemplate": "{project}/_apis/{area}/repos/{repoType}/badge",
+      "resourceVersion": 2,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "cb894432-134a-4d31-a839-83beceaace4b",
+      "area": "build",
+      "resourceName": "tags",
+      "routeTemplate": "{project}/_apis/{area}/definitions/{DefinitionId}/{resource}/{*tag}",
+      "resourceVersion": 3,
+      "minVersion": "3.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "d44d1680-f978-4834-9b93-8c6e132329c9",
+      "area": "build",
+      "resourceName": "repositories",
+      "routeTemplate": "{project}/_apis/sourceProviders/{providerName}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "4.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "272051e4-9af1-45b5-ae22-8d960a5539d4",
+      "area": "build",
+      "resourceName": "leases",
+      "routeTemplate": "{project}/_apis/{area}/retention/{resource}/{*leaseId}",
+      "resourceVersion": 2,
+      "minVersion": "6.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "f2192269-89fa-4f94-baf6-8fb128c55159",
+      "area": "build",
+      "resourceName": "attachments",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/{resource}/{type}",
+      "resourceVersion": 2,
+      "minVersion": "4.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "1db06c96-014e-44e1-ac91-90b2d4b3e984",
+      "area": "build",
+      "resourceName": "artifacts",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/{resource}/{artifactName}",
+      "resourceVersion": 5,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "7c116775-52e5-453e-8c5d-914d9762d8c4",
+      "area": "build",
+      "resourceName": "revisions",
+      "routeTemplate": "{project}/_apis/{area}/definitions/{definitionId}/{resource}",
+      "resourceVersion": 3,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "8f20ff82-9498-4812-9f6e-9c01bdc50e99",
+      "area": "build",
+      "resourceName": "webhooks",
+      "routeTemplate": "{project}/_apis/sourceProviders/{providerName}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "4.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "d8763ec7-9ff0-4fb4-b2b2-9d757906ff14",
+      "area": "build",
+      "resourceName": "pullRequests",
+      "routeTemplate": "{project}/_apis/sourceProviders/{providerName}/{resource}/{pullRequestId}",
+      "resourceVersion": 1,
+      "minVersion": "5.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "3ce81729-954f-423d-a581-9fea01d25186",
+      "area": "build",
+      "resourceName": "sourceProviders",
+      "routeTemplate": "{project}/_apis/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "4.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "398c85bc-81aa-4822-947c-a194a05f0fef",
+      "area": "build",
+      "resourceName": "authorizedresources",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "5.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "c4aefd19-30ff-405b-80ad-aca021e7242a",
+      "area": "build",
+      "resourceName": "generalSettings",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "6.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "dadb46e7-5851-4c72-820e-ae8abb82f59f",
+      "area": "build",
+      "resourceName": "retention",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "5.2",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "52ba8915-5518-42e3-a4bb-b0182d159e2d",
+      "area": "build",
+      "resourceName": "workitems",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 2,
+      "minVersion": "2.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "0524c91b-a145-413c-89eb-b3342b6826a4",
+      "area": "Build",
+      "resourceName": "AzureSubscriptions",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "6e6114b2-8161-44c8-8f6c-c5505782427f",
+      "area": "build",
+      "resourceName": "tags",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/{resource}/{*tag}",
+      "resourceVersion": 3,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "dbeaf647-6167-421a-bda9-c9327b25e2e6",
+      "area": "Build",
+      "resourceName": "Definitions",
+      "routeTemplate": "{project}/_apis/build/{resource}/{definitionId}",
+      "resourceVersion": 7,
+      "minVersion": "1.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "56efdcdc-cf90-4028-9d2f-d41000682202",
+      "area": "build",
+      "resourceName": "sources",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/{resource}/{sourceVersion}",
+      "resourceVersion": 2,
+      "minVersion": "3.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "09f2a4b8-08c9-4991-85c3-d698937568be",
+      "area": "Build",
+      "resourceName": "Queues",
+      "routeTemplate": "_apis/build/{resource}/{controllerId}",
+      "resourceVersion": 2,
+      "minVersion": "1.0",
+      "maxVersion": "2.3",
+      "releasedVersion": "2.3"
+    },
+    {
+      "id": "d973b939-0ce0-4fec-91d8-da3940fa1827",
+      "area": "build",
+      "resourceName": "Metrics",
+      "routeTemplate": "{project}/_apis/{area}/definitions/{definitionId}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "3.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "8baac422-4c6e-4de5-8532-db96d92acffa",
+      "area": "build",
+      "resourceName": "Timeline",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/{resource}/{timelineId}",
+      "resourceVersion": 2,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "07acfdce-4757-4439-b422-ddd13a2fcc10",
+      "area": "build",
+      "resourceName": "status",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{*definition}",
+      "resourceVersion": 1,
+      "minVersion": "5.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "ea623316-1967-45eb-89ab-e9e6110cf2d6",
+      "area": "build",
+      "resourceName": "resources",
+      "routeTemplate": "{project}/_apis/{area}/definitions/{definitionId}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "5.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "2182a7f0-b363-4b2d-b89e-ed0a0b721e95",
+      "area": "build",
+      "resourceName": "InputValuesQuery",
+      "routeTemplate": "{project}/_apis/{area}/{resource}",
+      "resourceVersion": 2,
+      "minVersion": "2.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "7433fae7-a6bc-41dc-a6e2-eef9005ce41a",
+      "area": "build",
+      "resourceName": "Metrics",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{metricAggregationType}",
+      "resourceVersion": 1,
+      "minVersion": "3.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "1a9c48be-0ef5-4ec2-b94f-f053bdd2d3bf",
+      "area": "build",
+      "resourceName": "history",
+      "routeTemplate": "_apis/{area}/retention/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "6.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "a906531b-d2da-4f55-bda7-f3e676cc50d9",
+      "area": "build",
+      "resourceName": "folders",
+      "routeTemplate": "{project}/_apis/{area}/{resource}/{*path}",
+      "resourceVersion": 2,
+      "minVersion": "3.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "de3e9770-c7ef-4697-983e-f4b5bab3c016",
+      "area": "Build",
+      "resourceName": "Requests",
+      "routeTemplate": "{project}/_apis/build/{resource}/{requestId}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    },
+    {
+      "id": "2f00bd4f-422d-417c-b429-f588ded6486f",
+      "area": "Build",
+      "resourceName": "DeploymentDefinitions",
+      "routeTemplate": "_apis/build/azure/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "1.0",
+      "maxVersion": "7.1",
+      "releasedVersion": "0.0"
+    },
+    {
+      "id": "f275be9a-556a-4ee9-b72f-f9c8370ccaee",
+      "area": "build",
+      "resourceName": "deployments",
+      "routeTemplate": "{project}/_apis/{area}/builds/{buildId}/{resource}",
+      "resourceVersion": 2,
+      "minVersion": "2.0",
+      "maxVersion": "2.2",
+      "releasedVersion": "2.2"
+    },
+    {
+      "id": "793bceb8-9736-4030-bd2f-fb3ce6d6b478",
+      "area": "build",
+      "resourceName": "webhooks",
+      "routeTemplate": "{project}/_apis/sourceProviders/{providerName}/{resource}",
+      "resourceVersion": 1,
+      "minVersion": "4.1",
+      "maxVersion": "7.1",
+      "releasedVersion": "7.0"
+    }
+  ],
+  "count": 58
+}

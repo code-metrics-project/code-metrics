@@ -1,0 +1,14 @@
+{
+  "name": "config-validator",
+  "version": "1.0.0",
+  "description": "A script to validate configuration files against JSON schemas",
+  "main": "validate-config.js",
+  "scripts": {
+    "start": "node validate-config.js"
+  },
+  "dependencies": {
+    "ajv": "^8.0.0",
+    "ajv-formats": "^2.0.0",
+    "js-yaml": "^4.0.0"
+  }
+}

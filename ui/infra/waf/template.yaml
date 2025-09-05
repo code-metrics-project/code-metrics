@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: SAM template for deploying CodeMetrics static web assets
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: Domain name
+  AllowedIPs:
+    Type: CommaDelimitedList
+    Description: IP allowlist for CloudFront distribution
+
+Resources:
+  IPAllowlist:
+    Type: AWS::WAFv2::IPSet
+    Properties:
+      Addresses: !Ref AllowedIPs
+      Name: "CloudFrontAllowlist"
+      IPAddressVersion: "IPV4"
+      Description: !Sub 'IP allowlist for ${DomainName}'
+      Scope: "CLOUDFRONT"
+
+  CloudFrontWebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: cloudfront-acl
+      Scope: "CLOUDFRONT"
+      Description: !Sub 'Web ACL for ${DomainName}.'
+      DefaultAction:
+        Block:
+          CustomResponse:
+            ResponseCode: 401
+      VisibilityConfig:
+        SampledRequestsEnabled: false
+        CloudWatchMetricsEnabled: false
+        MetricName: cloudfront-acl
+      Rules:
+        - Name: Allow-Only-IPs
+          Priority: 0
+          Statement:
+            IPSetReferenceStatement:
+              ARN: !GetAtt IPAllowlist.Arn
+          Action:
+            Allow: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: false
+            CloudWatchMetricsEnabled: false
+            MetricName: Allow-Only-IPs
+
+Outputs:
+  WebAclArn:
+    Description: The ARN of the WebACL
+    Value: !GetAtt CloudFrontWebACL.Arn

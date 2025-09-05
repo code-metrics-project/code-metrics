@@ -1,0 +1,94 @@
+version: '3.3'
+
+volumes:
+  init-config:
+  init-certs:
+
+services:
+  api:
+    environment:
+      AUTHENTICATOR_IMPL: "ldap"
+      LDAP_URI: 'ldap://localhost:1389'
+      LDAP_ADMIN_AUTH: true
+      LDAP_BIND_DN: 'cn=admin,dc=example,dc=org'
+      LDAP_BIND_PASSWORD: 'admin'
+      LDAP_USER_SEARCH_BASE: 'ou=users,dc=example,dc=org'
+      LDAP_ROOT_DN: 'dc=example,dc=org'
+      LDAP_USERNAME_ATTRIBUTE: 'uid'
+      LDAP_TLS: false
+
+  ltb-passwd:
+    image: tiredofit/self-service-password:5.2.3
+    ports:
+      - "8081:80"
+    environment:
+      LDAP_SERVER: ldaps://openldap:1636
+      LDAP_BINDDN: cn=admin,dc=example,dc=org
+      LDAP_BINDPASS: "admin"
+      LDAP_BASE_SEARCH: "dc=example,dc=org"
+      SECRETKEY: password
+      LDAP_LOGIN_ATTRIBUTE: cn
+      LDAP_STARTTLS: "false"
+      CHANGE_SSHKEY: "true"
+    volumes:
+      - type: bind
+        source: examples/ldap/ldap.conf
+        target: /etc/openldap/ldap.conf
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:0.9.0
+    ports:
+      - "8085:80"
+      - "8443:443"
+    environment:
+      PHPLDAPADMIN_HTTPS: "false"
+      PHPLDAPADMIN_LDAP_CLIENT_TLS_REQCERT: "never"
+      PHPLDAPADMIN_TRUST_PROXY_SSL: "true"
+      PHPLDAPADMIN_LDAP_HOSTS: "#PYTHON2BASH:[{ 'openldap'  : [{'server': [{'tls': False},{'port':1389}]},{'login': [{'bind_id': 'cn=admin,dc=example,dc=org'  }]}]}]"
+
+  init-tls-secret:
+    image: docker.io/alpine/openssl:latest
+    entrypoint: sh
+    command: >
+      -c "mkdir -p /tmp-certs/ && openssl req -x509 -newkey rsa:4096 -nodes -subj '/CN=example.org' -keyout /tmp-certs/tls.key -out /tmp-certs/tls.crt -days 365 &&
+      chmod 777 /tmp-certs/* &&
+      cp -Lr /tmp-certs/* /certs &&
+      [ -e /certs/ca.crt ] || cp -a /certs/tls.crt /certs/ca.crt"
+    volumes:
+      - init-certs:/certs
+
+  openldap:
+    image: bitnami/openldap:2.6.6
+    depends_on:
+      init-tls-secret:
+        condition: service_completed_successfully
+    ports:
+      - "1389:1389"
+      - "1636:1636"
+    volumes:
+      - init-certs:/opt/bitnami/openldap/certs
+      - type: bind
+        source: examples/ldap/ldif/replication/acls.ldif
+        target: /opt/bitnami/openldap/etc/schema/acls.ldif
+    environment:
+      LDAP_ROOT: "dc=example,dc=org"
+      LDAP_EXTRA_SCHEMAS: "cosine,inetorgperson,nis,acls"
+      LDAP_TLS_CERT_FILE: "/opt/bitnami/openldap/certs/tls.crt"
+      LDAP_TLS_KEY_FILE: "/opt/bitnami/openldap/certs/tls.key"
+      LDAP_TLS_CA_FILE: "/opt/bitnami/openldap/certs/ca.crt"
+      LDAP_CONFIG_ADMIN_ENABLED: "yes"
+      LDAP_CONFIG_ADMIN_USERNAME: "admin"
+      BITNAMI_DEBUG: "true"
+      LDAP_ENABLE_TLS: "yes"
+      LDAP_LOGLEVEL: "256"
+      LDAP_SKIP_DEFAULT_TREE: "no"
+      LDAP_TLS_ENFORCE: "false"
+      LDAPTLS_REQCERT: "never"
+      LDAP_ADMIN_USERNAME: "admin"
+      LDAP_ADMIN_PASSWORD: "admin"
+      LDAP_CONFIG_ADMIN_PASSWORD: "admin"
+
+
+
+
+

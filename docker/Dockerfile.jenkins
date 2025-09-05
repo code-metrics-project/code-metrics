@@ -1,0 +1,23 @@
+ARG IMGREPO=""
+FROM ${IMGREPO}jenkins/jenkins:lts
+
+LABEL org.opencontainers.image.source=https://github.com/code-metrics-project/releases
+
+USER root
+RUN mkdir /usr/share/jenkins/ref/plugins && \
+    chown -R jenkins:jenkins /usr/share/jenkins/ref/plugins
+
+# Add plugin dependencies
+COPY --chown=jenkins:jenkins files/jenkins_home/plugins.txt /etc/files/plugins.txt
+
+USER jenkins
+RUN jenkins-plugin-cli -f /etc/files/plugins.txt
+
+# Init scripts
+COPY --chown=jenkins:jenkins files/jenkins_home/init.groovy.d/* /usr/share/jenkins/ref/init.groovy.d/
+
+# Copy sample config
+COPY --chown=jenkins:jenkins files/jenkins_home/jobs /var/jenkins_home/jobs
+COPY --chown=jenkins:jenkins files/jenkins_home /var/jenkins_home
+
+USER jenkins

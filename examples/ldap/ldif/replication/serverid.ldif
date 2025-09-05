@@ -1,0 +1,5 @@
+# Set server ID
+dn: cn=config
+changeType: modify
+add: olcServerID
+olcServerID: 1 ldap://openldap:1389

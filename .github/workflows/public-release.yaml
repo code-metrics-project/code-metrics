@@ -1,0 +1,106 @@
+name: Create a public release
+run-name: "Public release for ${{ github.event.inputs.release_name }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_name:
+        description: "The release name (tag) to release"
+        required: true
+
+jobs:
+  create-public-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Copy release from private repo to public repo
+        uses: DeloitteDigitalUK/github-release-copier@e0ff52c80a47f1bd1c49e183f5f966b8c726e2af
+        with:
+          release-name: "${{ github.event.inputs.release_name }}"
+          source-api-key: "${{ secrets.GITHUB_TOKEN }}"
+          source-owner: "DeloitteDigitalUK"
+          source-repo: "code-metrics"
+          dest-api-key: "${{ secrets.RELEASE_REPO_TOKEN }}"
+          dest-owner: "code-metrics-project"
+          dest-repo: "releases"
+          temp-dir: "./files"
+          body-replace-regex: |
+            \*\((commit|PR #[0-9]+?) by @.+?\)\*
+          body-replace-with: "\n"
+          # Include only the assets that should be copied to the public release.
+          # **Note** this should not include internal documentation, such as the threat model
+          # or internal tools.
+          include-assets: |
+            codemetrics-api.zip
+            codemetrics-ui.zip
+            config.zip
+            helm-code-metrics-[0-9]+.[0-9]+.[0-9]+.tgz
+            helm-code-metrics-demo-[0-9]+.[0-9]+.[0-9]+.tgz
+
+  copy-docker-images:
+    needs: create-public-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        image:
+          - code-metrics-api
+          - code-metrics-ui
+          - code-metrics-mocks
+          - demo-jenkins
+    steps:
+      - name: Login to private GHCR (for pulling)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Pull images from private registry
+        run: |
+          docker pull ghcr.io/deloittedigitaluk/${{ matrix.image }}:${{ github.event.inputs.release_name }}
+          docker pull ghcr.io/deloittedigitaluk/${{ matrix.image }}:latest
+      
+      - name: Logout from private GHCR
+        run: docker logout ghcr.io
+      
+      - name: Login to public GHCR (for pushing)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+      
+      - name: Tag and push images to public registry
+        run: |
+          # Tag for public registry
+          docker tag ghcr.io/deloittedigitaluk/${{ matrix.image }}:${{ github.event.inputs.release_name }} ghcr.io/code-metrics-project/${{ matrix.image }}:${{ github.event.inputs.release_name }}
+          docker tag ghcr.io/deloittedigitaluk/${{ matrix.image }}:latest ghcr.io/code-metrics-project/${{ matrix.image }}:latest
+          
+          # Push to public registry
+          docker push ghcr.io/code-metrics-project/${{ matrix.image }}:${{ github.event.inputs.release_name }}
+          docker push ghcr.io/code-metrics-project/${{ matrix.image }}:latest
+
+  notify:
+    needs: copy-docker-images
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Notify
+        id: slack
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL }}
+          slack-message: |
+            CodeMetrics Release ${{ github.event.inputs.release_name }}: https://github.com/code-metrics-project/releases/releases
+            Docker images: https://github.com/orgs/code-metrics-project/packages?repo_name=releases
+            RSS: https://github.com/code-metrics-project/releases/releases.atom
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}
+
+  update-public-docs:
+    needs: copy-docker-images
+    uses: ./.github/workflows/docs-site.yaml
+    with:
+      push_changes: "true"
+      push_promosite: "true"

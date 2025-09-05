@@ -1,0 +1,47 @@
+plugin: rest
+
+interceptors:
+- path: /api/now/*
+  requestHeaders:
+    x-sn-apikey: { operator: NotExists }
+  response:
+    statusCode: 401
+    content: Missing x-sn-apikey header
+
+- path: /api/now/*
+  requestHeaders:
+    Accept: { operator: NotEqualTo, value: "application/json" }
+  response:
+    statusCode: 415
+    content: Invalid Media Type
+
+resources:
+- method: GET
+  path: /api/now/table/incident
+  queryParams:
+    # first page of data
+    sysparm_offset: "0"
+    sysparm_limit: { operator: NotEqualTo, value: "1" }
+  response:
+    statusCode: 200
+    file: incidents.json
+
+- method: GET
+  path: /api/now/table/incident
+  queryParams:
+    # single item
+    sysparm_offset: "0"
+    sysparm_limit: "1"
+  response:
+    statusCode: 200
+    file: incident.json
+
+- method: GET
+  path: /api/now/table/incident
+  queryParams:
+    # only return one page of data
+    sysparm_offset: { operator: NotEqualTo, value: "0" }
+  response:
+    statusCode: 200
+    content: |
+      { "result": [] }

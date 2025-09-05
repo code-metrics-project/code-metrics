@@ -1,0 +1,21 @@
+diff --git src://package.json dst://package.json
+new file mode 100644
+index 0000000..e3bea32
+--- src://package.json
++++ dst://package.json
+@@ -0,0 +1,15 @@
++{
++  "name": "spring-petclinic",
++  "version": "0.0.1",
++  "description": "",
++  "main": "index.js",
++  "scripts": {
++    "test": "echo \"Error: no test specified\" && exit 1"
++  },
++  "repository": {
++    "type": "git",
++    "url": "http://localhost:7990/scm/all/spring-petclinic.git"
++  },
++  "author": "Nick Heal",
++  "license": "ISC"
++}

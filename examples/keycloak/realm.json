@@ -1,0 +1,53 @@
+{
+  "id": "CodeMetrics",
+  "realm": "codemetrics",
+  "sslRequired": "none",
+  "enabled": true,
+  "eventsEnabled": true,
+  "eventsExpiration": 900,
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
+  "attributes": {
+    "adminEventsExpiration": "900"
+  },
+  "clients": [
+    {
+      "id": "codemetrics",
+      "clientId": "codemetrics",
+      "name": "codemetrics",
+      "enabled": true,
+      "publicClient": true,
+      "frontchannelLogout": true,
+      "protocol": "openid-connect",
+      "directAccessGrantsEnabled": true,
+      "rootUrl": "http://localhost",
+      "adminUrl": "http://localhost",
+      "baseUrl": "http://localhost",
+      "redirectUris": [
+        "http://localhost/*",
+        "http://localhost:3001/*",
+        "http://code-metrics.localhost:3001/*"
+      ],
+      "webOrigins": [
+        "http://localhost",
+        "http://localhost:3001"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "admin",
+      "email": "admin@example.org",
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "temporary": false,
+          "type": "password",
+          "value": "admin"
+        }
+      ]
+    }
+  ]
+}

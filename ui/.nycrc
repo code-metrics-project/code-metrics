@@ -1,0 +1,5 @@
+{
+  "report-dir": "./coverage-ui--e2e",
+  "temp-dir": ".nyc_output",
+  "reporter": ["json", "html", "lcov", "text"]
+}

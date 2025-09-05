@@ -1,0 +1,289 @@
+{
+  "count": 2,
+  "value": [
+    {
+      "_links": {
+        "self": {
+          "href": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/Builds/2"
+        },
+        "web": {
+          "href": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_build/results?buildId=2"
+        },
+        "sourceVersionDisplayUri": {
+          "href": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/builds/2/sources"
+        },
+        "timeline": {
+          "href": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/builds/2/Timeline"
+        },
+        "badge": {
+          "href": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/status/1"
+        }
+      },
+      "properties": {},
+      "tags": [],
+      "validationResults": [],
+      "plans": [
+        {
+          "planId": "4b75690e-a79e-4631-8497-b78342921066"
+        }
+      ],
+      "triggerInfo": {},
+      "id": 2,
+      "buildNumber": "20220915.2",
+      "status": "completed",
+      "result": "succeeded",
+      "queueTime": "2022-09-15T16:38:39.399674Z",
+      "startTime": "${stores.request.startTime}",
+      "finishTime": "${stores.request.finishTime}",
+      "url": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/Builds/2",
+      "definition": {
+        "drafts": [],
+        "id": 1,
+        "name": "spring-petclinic",
+        "url": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/Definitions/1?revision=1",
+        "uri": "vstfs:///Build/Definition/1",
+        "path": "\\",
+        "type": "build",
+        "queueStatus": "enabled",
+        "revision": 1,
+        "project": {
+          "id": "311002d1-3082-44f0-b213-97c6c295660e",
+          "name": "${context.request.pathParams.projectName}",
+          "url": "${system.server.url}/_apis/projects/311002d1-3082-44f0-b213-97c6c295660e",
+          "state": "wellFormed",
+          "revision": 11,
+          "visibility": "private",
+          "lastUpdateTime": "2022-09-15T13:03:09.04Z"
+        }
+      },
+      "buildNumberRevision": 2,
+      "project": {
+        "id": "311002d1-3082-44f0-b213-97c6c295660e",
+        "name": "${context.request.pathParams.projectName}",
+        "url": "${system.server.url}/_apis/projects/311002d1-3082-44f0-b213-97c6c295660e",
+        "state": "wellFormed",
+        "revision": 11,
+        "visibility": "private",
+        "lastUpdateTime": "2022-09-15T13:03:09.04Z"
+      },
+      "uri": "vstfs:///Build/Build/2",
+      "sourceBranch": "refs/heads/main",
+      "sourceVersion": "80e98688993227435b416ae57aaa2625a30573c3",
+      "queue": {
+        "id": 9,
+        "name": "Azure Pipelines",
+        "pool": {
+          "id": 9,
+          "name": "Azure Pipelines",
+          "isHosted": true
+        }
+      },
+      "priority": "normal",
+      "reason": "manual",
+      "requestedFor": {
+        "displayName": "Ada Lovelace",
+        "url": "${system.server.url}/_apis/Identities/89b9d73e-0e54-6790-8b03-3b3ce8009007",
+        "_links": {
+          "avatar": {
+            "href": "${system.server.url}/_apis/GraphProfile/MemberAvatars/aad.ODliOWQ3M2UtMGU1NC03NzkwLThiMDMtM2IzY2U4MDA5MDA3"
+          }
+        },
+        "id": "89b9d73e-0e54-6790-8b03-3b3ce8009007",
+        "uniqueName": "user@example.com",
+        "imageUrl": "${system.server.url}/_apis/GraphProfile/MemberAvatars/aad.ODliOWQ3M2UtMGU1NC03NzkwLThiMDMtM2IzY2U4MDA5MDA3",
+        "descriptor": "aad.ODliOWQ3M2UtMGU1NC03NzkwLThiMDMtM2IzY2U4MDA5MDA3"
+      },
+      "requestedBy": {
+        "displayName": "Ada Lovelace",
+        "url": "${system.server.url}/_apis/Identities/89b9d73e-0e54-6790-8b03-3b3ce8009007",
+        "_links": {
+          "avatar": {
+            "href": "${system.server.url}/_apis/GraphProfile/MemberAvatars/aad.ODliOWQ3M2UtMGU1NC03NzkwLThiMDMtM2IzY2U4MDA5MDA3"
+          }
+        },
+        "id": "89b9d73e-0e54-6790-8b03-3b3ce8009007",
+        "uniqueName": "user@example.com",
+        "imageUrl": "${system.server.url}/_apis/GraphProfile/MemberAvatars/aad.ODliOWQ3M2UtMGU1NC03NzkwLThiMDMtM2IzY2U4MDA5MDA3",
+        "descriptor": "aad.ODliOWQ3M2UtMGU1NC03NzkwLThiMDMtM2IzY2U4MDA5MDA3"
+      },
+      "lastChangedDate": "2022-09-15T16:42:25.06Z",
+      "lastChangedBy": {
+        "displayName": "Microsoft.VisualStudio.Services.TFS",
+        "url": "${system.server.url}/_apis/Identities/00000002-0000-8888-8000-000000000000",
+        "_links": {
+          "avatar": {
+            "href": "${system.server.url}/_apis/GraphProfile/MemberAvatars/s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+          }
+        },
+        "id": "00000002-0000-8888-8000-000000000000",
+        "uniqueName": "00000002-0000-8888-8000-000000000000@2c895908-04e0-4952-89fd-54b0046d6288",
+        "imageUrl": "${system.server.url}/_apis/GraphProfile/MemberAvatars/s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA",
+        "descriptor": "s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+      },
+      "orchestrationPlan": {
+        "planId": "4b75690e-a79e-4631-8497-b78342921066"
+      },
+      "logs": {
+        "id": 0,
+        "type": "Container",
+        "url": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/builds/2/logs"
+      },
+      "repository": {
+        "id": "7b4091ee-129f-454a-a4b0-2165b37a7196",
+        "type": "TfsGit",
+        "name": "spring-petclinic",
+        "url": "${system.server.url}/${context.request.pathParams.projectName}/_git/spring-petclinic",
+        "clean": null,
+        "checkoutSubmodules": false
+      },
+      "retainedByRelease": false,
+      "triggeredByBuild": null,
+      "appendCommitMessageToRunName": true
+    },
+    {
+      "_links": {
+        "self": {
+          "href": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/Builds/1"
+        },
+        "web": {
+          "href": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_build/results?buildId=1"
+        },
+        "sourceVersionDisplayUri": {
+          "href": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/builds/1/sources"
+        },
+        "timeline": {
+          "href": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/builds/1/Timeline"
+        },
+        "badge": {
+          "href": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/status/1"
+        }
+      },
+      "properties": {},
+      "tags": [],
+      "validationResults": [],
+      "plans": [
+        {
+          "planId": "36606a4f-8509-445d-af71-3c535b3367c4"
+        }
+      ],
+      "triggerInfo": {
+        "pr.sourceBranch": "azure-pipelines",
+        "pr.sourceSha": "80e98688993227435b416ae57aaa2625a30573c3",
+        "pr.title": "Set up CI with Azure Pipelines",
+        "pr.number": "1",
+        "pr.isFork": "False"
+      },
+      "id": 1,
+      "buildNumber": "20220915.1",
+      "status": "completed",
+      "result": "succeeded",
+      "queueTime": "2022-09-15T16:24:52.2006228Z",
+      "startTime": "${stores.request.startTime}",
+      "finishTime": "${stores.request.finishTime}",
+      "url": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/Builds/1",
+      "definition": {
+        "drafts": [],
+        "id": 1,
+        "name": "spring-petclinic",
+        "url": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/Definitions/1?revision=1",
+        "uri": "vstfs:///Build/Definition/1",
+        "path": "\\",
+        "type": "build",
+        "queueStatus": "enabled",
+        "revision": 1,
+        "project": {
+          "id": "311002d1-3082-44f0-b213-97c6c295660e",
+          "name": "${context.request.pathParams.projectName}",
+          "url": "${system.server.url}/_apis/projects/311002d1-3082-44f0-b213-97c6c295660e",
+          "state": "wellFormed",
+          "revision": 11,
+          "visibility": "private",
+          "lastUpdateTime": "2022-09-15T13:03:09.04Z"
+        }
+      },
+      "buildNumberRevision": 1,
+      "project": {
+        "id": "311002d1-3082-44f0-b213-97c6c295660e",
+        "name": "${context.request.pathParams.projectName}",
+        "url": "${system.server.url}/_apis/projects/311002d1-3082-44f0-b213-97c6c295660e",
+        "state": "wellFormed",
+        "revision": 11,
+        "visibility": "private",
+        "lastUpdateTime": "2022-09-15T13:03:09.04Z"
+      },
+      "uri": "vstfs:///Build/Build/1",
+      "sourceBranch": "refs/heads/azure-pipelines",
+      "sourceVersion": "80e98688993227435b416ae57aaa2625a30573c3",
+      "queue": {
+        "id": 9,
+        "name": "Azure Pipelines",
+        "pool": {
+          "id": 9,
+          "name": "Azure Pipelines",
+          "isHosted": true
+        }
+      },
+      "priority": "normal",
+      "reason": "pullRequest",
+      "requestedFor": {
+        "displayName": "Ada Lovelace",
+        "url": "${system.server.url}/_apis/Identities/89b9d73e-0e54-6790-8b03-3b3ce8009007",
+        "_links": {
+          "avatar": {
+            "href": "${system.server.url}/_apis/GraphProfile/MemberAvatars/aad.ODliOWQ3M2UtMGU1NC03NzkwLThiMDMtM2IzY2U4MDA5MDA3"
+          }
+        },
+        "id": "89b9d73e-0e54-6790-8b03-3b3ce8009007",
+        "uniqueName": "user@example.com",
+        "imageUrl": "${system.server.url}/_apis/GraphProfile/MemberAvatars/aad.ODliOWQ3M2UtMGU1NC03NzkwLThiMDMtM2IzY2U4MDA5MDA3",
+        "descriptor": "aad.ODliOWQ3M2UtMGU1NC03NzkwLThiMDMtM2IzY2U4MDA5MDA3"
+      },
+      "requestedBy": {
+        "displayName": "Ada Lovelace",
+        "url": "${system.server.url}/_apis/Identities/89b9d73e-0e54-6790-8b03-3b3ce8009007",
+        "_links": {
+          "avatar": {
+            "href": "${system.server.url}/_apis/GraphProfile/MemberAvatars/aad.ODliOWQ3M2UtMGU1NC03NzkwLThiMDMtM2IzY2U4MDA5MDA3"
+          }
+        },
+        "id": "89b9d73e-0e54-6790-8b03-3b3ce8009007",
+        "uniqueName": "user@example.com",
+        "imageUrl": "${system.server.url}/_apis/GraphProfile/MemberAvatars/aad.ODliOWQ3M2UtMGU1NC03NzkwLThiMDMtM2IzY2U4MDA5MDA3",
+        "descriptor": "aad.ODliOWQ3M2UtMGU1NC03NzkwLThiMDMtM2IzY2U4MDA5MDA3"
+      },
+      "lastChangedDate": "2022-09-15T16:28:46.187Z",
+      "lastChangedBy": {
+        "displayName": "Microsoft.VisualStudio.Services.TFS",
+        "url": "${system.server.url}/_apis/Identities/00000002-0000-8888-8000-000000000000",
+        "_links": {
+          "avatar": {
+            "href": "${system.server.url}/_apis/GraphProfile/MemberAvatars/s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+          }
+        },
+        "id": "00000002-0000-8888-8000-000000000000",
+        "uniqueName": "00000002-0000-8888-8000-000000000000@2c895908-04e0-4952-89fd-54b0046d6288",
+        "imageUrl": "${system.server.url}/_apis/GraphProfile/MemberAvatars/s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA",
+        "descriptor": "s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+      },
+      "orchestrationPlan": {
+        "planId": "36606a4f-8509-445d-af71-3c535b3367c4"
+      },
+      "logs": {
+        "id": 0,
+        "type": "Container",
+        "url": "${system.server.url}/311002d1-3082-44f0-b213-97c6c295660e/_apis/build/builds/1/logs"
+      },
+      "repository": {
+        "id": "7b4091ee-129f-454a-a4b0-2165b37a7196",
+        "type": "TfsGit",
+        "name": "spring-petclinic",
+        "url": "${system.server.url}/${context.request.pathParams.projectName}/_git/spring-petclinic",
+        "clean": null,
+        "checkoutSubmodules": false
+      },
+      "retainedByRelease": false,
+      "triggeredByBuild": null,
+      "appendCommitMessageToRunName": true
+    }
+  ]
+}

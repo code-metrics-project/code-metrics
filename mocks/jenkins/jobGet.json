@@ -1,0 +1,137 @@
+{
+  "_class": "org.jenkinsci.plugins.workflow.job.WorkflowJob",
+  "actions": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {
+      "_class": "org.jenkinsci.plugins.displayurlapi.actions.JobDisplayAction"
+    },
+    {},
+    {},
+    {
+      "_class": "com.cloudbees.plugins.credentials.ViewCredentialsAction"
+    }
+  ],
+  "description": "",
+  "displayName": "Athena_infrastructure_components",
+  "displayNameOrNull": null,
+  "fullDisplayName": "Athena_infrastructure_components",
+  "fullName": "Athena_infrastructure_components",
+  "name": "Athena_infrastructure_components",
+  "url": "http://localhost:32769/job/Athena_infrastructure_components/",
+  "buildable": true,
+  "builds": [
+    {
+      "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+      "number": 7,
+      "url": "http://localhost:32769/job/Athena_infrastructure_components/7/"
+    },
+    {
+      "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+      "number": 6,
+      "url": "http://localhost:32769/job/Athena_infrastructure_components/6/"
+    },
+    {
+      "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+      "number": 5,
+      "url": "http://localhost:32769/job/Athena_infrastructure_components/5/"
+    },
+    {
+      "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+      "number": 4,
+      "url": "http://localhost:32769/job/Athena_infrastructure_components/4/"
+    },
+    {
+      "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+      "number": 3,
+      "url": "http://localhost:32769/job/Athena_infrastructure_components/3/"
+    },
+    {
+      "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+      "number": 2,
+      "url": "http://localhost:32769/job/Athena_infrastructure_components/2/"
+    },
+    {
+      "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+      "number": 1,
+      "url": "http://localhost:32769/job/Athena_infrastructure_components/1/"
+    }
+  ],
+  "color": "blue",
+  "firstBuild": {
+    "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+    "number": 1,
+    "url": "http://localhost:32769/job/Athena_infrastructure_components/1/"
+  },
+  "healthReport": [
+    {
+      "description": "Build stability: 1 out of the last 5 builds failed.",
+      "iconClassName": "icon-health-60to79",
+      "iconUrl": "health-60to79.png",
+      "score": 80
+    }
+  ],
+  "inQueue": false,
+  "keepDependencies": false,
+  "lastBuild": {
+    "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+    "number": 7,
+    "url": "http://localhost:32769/job/Athena_infrastructure_components/7/"
+  },
+  "lastCompletedBuild": {
+    "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+    "number": 7,
+    "url": "http://localhost:32769/job/Athena_infrastructure_components/7/"
+  },
+  "lastFailedBuild": {
+    "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+    "number": 5,
+    "url": "http://localhost:32769/job/Athena_infrastructure_components/5/"
+  },
+  "lastStableBuild": {
+    "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+    "number": 7,
+    "url": "http://localhost:32769/job/Athena_infrastructure_components/7/"
+  },
+  "lastSuccessfulBuild": {
+    "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+    "number": 7,
+    "url": "http://localhost:32769/job/Athena_infrastructure_components/7/"
+  },
+  "lastUnstableBuild": null,
+  "lastUnsuccessfulBuild": {
+    "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+    "number": 5,
+    "url": "http://localhost:32769/job/Athena_infrastructure_components/5/"
+  },
+  "nextBuildNumber": 8,
+  "property": [
+    {
+      "_class": "com.coravy.hudson.plugins.github.GithubProjectProperty"
+    },
+    {
+      "_class": "hudson.model.ParametersDefinitionProperty",
+      "parameterDefinitions": [
+        {
+          "_class": "hudson.model.StringParameterDefinition",
+          "defaultParameterValue": {
+            "_class": "hudson.model.StringParameterValue",
+            "name": "BRANCH_NAME",
+            "value": "main"
+          },
+          "description": null,
+          "name": "BRANCH_NAME",
+          "type": "StringParameterDefinition"
+        }
+      ]
+    }
+  ],
+  "queueItem": null,
+  "concurrentBuild": true,
+  "resumeBlocked": false
+}

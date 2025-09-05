@@ -1,0 +1,9 @@
+stages:
+  - id: deployment-stage
+    description: deployment stage
+    type: github
+    serverId: example-github
+    projectName: "octo-org"
+    #jobNameMapping: "repo-name"
+    commitMapping:
+      runProperty: "$.data.head_sha"

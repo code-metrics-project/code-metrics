@@ -1,0 +1,93 @@
+---
+workloads:
+- id: athena
+  name: "Athena team"
+  codeManagement:
+    type: azure
+    serverId: mock-azure
+    projectName: athena
+    repoGroups:
+      backend:
+        repoNames:
+        - /spring-.*/
+      frontend:
+        sonarTags:
+        - fe
+      platform:
+        repoNames:
+        - /.*_platform/
+        - /.*_infrastructure/
+  pipelines:
+    type: azure
+    serverId: mock-azure
+    projectName: athena
+    jobGroups:
+      backend:
+        jobNames:
+        - /spring-.*/
+      frontend:
+        jobNames:
+        - fe
+      platform:
+        jobNames:
+        - /.*_platform/
+        - /.*_infrastructure/
+  codeAnalysis:
+    type: sonar
+    serverId: mock-sonar
+  projectManagement:
+    type: jira
+    serverId: mock-jira
+    project: DEV
+    bugs:
+      teamFilterJql: '"Team name[Dropdown]" in ("Athena")'
+      prodFilterJql: '"Project Environment[Dropdown]" = PROD'
+    incidents:
+      teamFilterJql: '"Team name[Dropdown]" in ("Athena")'
+
+- id: gaia
+  codeManagement:
+    type: github
+    serverId: mock-github
+    projectName: gaia
+    repoGroups:
+      backend:
+        components:
+          - repo: /octocat.*/
+      frontend:
+        sonarTags:
+          - fe
+      platform:
+        components:
+          - repo: /.*_platform/
+          - repo: /.*_infrastructure/
+  codeAnalysis:
+    type: sonar
+    serverId: mock-sonar
+  pipelines:
+    type: github
+    serverId: mock-github
+    projectName: gaia
+    jobGroups:
+      backend:
+        jobNames:
+          - /.*/
+      frontend:
+        jobNames:
+          - fe
+      platform:
+        jobNames:
+          - /.*_platform/
+          - /.*_infrastructure/
+  projectManagement:
+    type: jira
+    serverId: mock-jira
+    teamFilterJql: '"Team name[Dropdown]" in ("Gaia")'
+    project: DEV
+    prodFilterJql: '"Project Environment[Dropdown]" = PROD'
+  deployment:
+    deploymentId: github-deployment-pipeline
+
+repoMappings:
+- sonarProjectKey: petclinic
+  vcsRepoName: spring-petclinic

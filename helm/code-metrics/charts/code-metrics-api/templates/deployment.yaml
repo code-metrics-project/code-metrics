@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "code-metrics-api.fullname" . }}
+  labels:
+    {{- include "code-metrics-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "code-metrics-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "code-metrics-api.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "code-metrics-api.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      {{- include "code-metrics-api.application" . | nindent 6 }}
+      {{- if .Values.mocks.enabled }}
+      {{- include "code-metrics-api.mocks" . | nindent 6 }}
+      {{- end }}
+      volumes:
+      - name: config-volume
+        projected:
+          sources:
+            - configMap:
+                name: {{ include "code-metrics-api.fullname" . }}
+            {{- if .Values.auth.fromFile }}
+            - secret:
+                name: {{ .Values.secrets.userSecretRef | default (printf "%s-users" (include "code-metrics-api.fullname" .)) }}
+            {{- end }}
+

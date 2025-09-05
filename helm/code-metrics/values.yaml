@@ -1,0 +1,325 @@
+code-metrics-ui:
+  enabled: true
+  application:
+    image:
+      tag: "latest"
+    fullnameOverride: "ui"
+    nameOverride: "ui"
+    envVars:
+      templates: []
+      secrets: {}
+      keyValues:
+        API_BASE_URL: "http://code-metrics-api.127.0.0.1.sslip.io:3000"
+
+  ingress:
+    enabled: true
+    className: ""
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: code-metrics.127.0.0.1.sslip.io
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+
+code-metrics-mlapi:
+  enabled: false
+
+code-metrics-api:
+  enabled: true
+  mocks:
+    enabled: true
+    image:
+      tag: "latest"
+
+  application:
+    image:
+      tag: "latest"
+    fullnameOverride: "api"
+    nameOverride: "api"
+    envVars:
+      templates: []
+      secrets: {}
+      keyValues:
+        CORS_ORIGIN: http://code-metrics.127.0.0.1.sslip.io
+        AUTHENTICATOR_IMPL: file
+        ACCESS_TOKEN_SECRET: changeme
+        LOOKUP_CACHE_ENABLED: true
+        DATASTORE_IMPL: inmem
+        LOG_RESPONSE_BODY: false
+        LOG_LEVEL: 1
+        CONFIG_DIR: "/backend/.config"
+        STRICT_CONFIG_LOAD: false
+        #COGNITO_USER_POOL_ID: changeme
+        #COGNITO_CLIENT_ID: changeme
+        #API_RETRY_LIMIT: 5
+        #CONFIG_AUTO_RELOAD: false
+        #CONFIG_REFRESH_MS: 5000
+        #AWS_REGION: eu-west-1
+        #DATABASE_NAME: code-metrics
+        #DATABASE_URI: mongodb://code-metrics:changeme@mycm-mongodb.default.svc.cluster.local:27017
+        #SECRET_RESOLVER_IMPL: file
+        ### for mongodb
+
+  ingress:
+    enabled: false
+    className: ""
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: code-metrics-api.127.0.0.1.sslip.io
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+
+  config:
+    remoteConfig:
+      codeAnalysis:
+        sonar:
+          servers:
+            - id: mock-sonar
+              url: http://localhost:8080
+              apiKey: ""
+          tagKeyTypes:
+            - backend
+            - frontend
+            - mobile
+            - workload
+
+      codeManagement:
+        azure:
+          servers:
+            - id: mock-azure
+              url: http://localhost:8080
+              apiKey: ""
+              branches:
+                - main
+        bitbucketCloud:
+          servers: []
+        github:
+          servers:
+            - id: mock-github
+              url: http://localhost:8080
+              apiKey: ""
+              branches:
+                - main
+        gitlab:
+          servers: [ ]
+      
+      #pipelines:
+      #  servers:
+      #    - id: example-jenkins
+      #      url: "http://admin:admin@localhost:32769"
+      #      branches:
+      #        - main
+
+      projectManagement:
+        jira:
+          defaults:
+            bugTypes:
+              - Bug
+            ticketPriorities:
+              - Lowest
+              - Low
+              - Medium
+              - High
+              - Highest
+          servers:
+            - id: mock-jira
+              url: http://localhost:8080
+              email: user@example.com
+              apiKey: ""
+              authMethod: BASIC_AUTH
+              bugTypes:
+                - Bug
+                - DevBug
+                - StaticBug
+                - OpsBug
+
+    workloadConfig:
+      workloads:
+        - id: athena
+          codeManagement:
+            type: azure
+            serverId: mock-azure
+            projectName: athena
+            repoGroups:
+              backend:
+                components:
+                  - repo: "/spring-.*/"
+              frontend:
+                sonarTags:
+                  - fe
+              platform:
+                components:
+                  - repo: "/.*_platform/"
+                  - repo: "/.*_infrastructure/"
+          codeAnalysis:
+            type: sonar
+            serverId: mock-sonar
+          projectManagement:
+            type: jira
+            serverId: mock-jira
+            teamFilterJql: '"Team name[Dropdown]" in ("Athena")'
+            project: DEV
+            prodFilterJql: '"Project Environment[Dropdown]" = PROD'
+          
+          #pipelines:
+          #  type: jenkins
+          #  serverId: example-jenkins
+          #  jobGroups:
+          #    backend:
+          #      jobNames:
+          #        - pipeline
+
+        - id: gaia
+          codeManagement:
+            type: azure
+            serverId: mock-azure
+            projectName: gaia
+            repoGroups:
+              backend:
+                components:
+                  - repo: "/spring-.*/"
+              frontend:
+                sonarTags:
+                  - fe
+              platform:
+                components:
+                  - repo: "/.*_platform/"
+                  - repo: "/.*_infrastructure/"
+          codeAnalysis:
+            type: sonar
+            serverId: mock-sonar
+          projectManagement:
+            type: jira
+            serverId: mock-jira
+            teamFilterJql: '"Team name[Dropdown]" in ("Gaia")'
+            project: DEV
+            prodFilterJql: '"Project Environment[Dropdown]" = PROD'
+
+        - id: icarus
+          codeManagement:
+            type: azure
+            serverId: mock-azure
+            projectName: icarus
+            repoGroups:
+              backend:
+                components:
+                  - repo: "/spring-.*/"
+              frontend:
+                sonarTags:
+                  - fe
+              platform:
+                components:
+                  - repo: "/.*_platform/"
+                  - repo: "/.*_infrastructure/"
+          codeAnalysis:
+            type: sonar
+            serverId: mock-sonar
+          projectManagement:
+            type: jira
+            serverId: mock-jira
+            teamFilterJql: '"Team name[Dropdown]" in ("Icarus")'
+            project: DEV
+            prodFilterJql: '"Project Environment[Dropdown]" = PROD'
+
+      repoMappings:
+        - sonarProjectKey: petclinic
+          vcsRepoName: spring-petclinic
+
+  auth:
+    fromFile: true
+
+  secrets:
+    # Users / usersSecretRef requires 'auth.fromFile' set to true
+    # Use and existing secret
+    userSecretRef: ""
+    users:
+      - name: "devuser"
+        password: "e83b78fbaa00b6d4453f80cacdfe73eedcf4b88f27af1c88bbbe554473d7b2a5f9e94152595a76bf6eea4ac81154dc66789163967dde50a2a986adf880e67b3a"
+        salt: "0c62b823eb5b9699ff48c1d0c93816d0"
+      - name: "admin"
+        password: "1253509b718dbbeafa4e028afc9a5f667fe17881fdd222e31559ae452029c3a0fe24075565673a9d9ccfd4564bf1a2b9374243ee19b9846256a9b0e260ea0bc0"
+        salt: "0c62b823eb5b9699ff48c1d0c93816d0"
+
+mongodb:
+  enabled: false
+
+  databaseSecret:
+    user: "code-metrics"
+    password: "changeme"
+
+  application:
+    image:
+      pullPolicy: IfNotPresent
+      tag: "5"
+    fullnameOverride: "db"
+    nameOverride: "db"
+    envVars:
+      templates: []
+      secrets:
+        MONGO_INITDB_ROOT_USERNAME:
+          name: ""
+          key: username
+        MONGO_INITDB_ROOT_PASSWORD:
+          name: ""
+          key: password
+      keyValues:
+        MONGO_INITDB_DATABASE: "code-metrics"
+
+code-metrics-docs:
+  enabled: true
+  application:
+    image:
+      tag: "latest"
+    fullnameOverride: "docs"
+    nameOverride: "docs"
+    envVars:
+      templates: []
+      secrets: {}
+      keyValues: {}
+
+  ingress:
+    enabled: true
+    className: ""
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: docs.code-metrics.127.0.0.1.sslip.io
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: [ ]
+
+code-metrics-promosite:
+  enabled: true
+  application:
+    image:
+      tag: "latest"
+    fullnameOverride: "promo"
+    nameOverride: "promo"
+    envVars:
+      templates: []
+      secrets: {}
+      keyValues: {}
+
+  ingress:
+    enabled: true
+    className: ""
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    hosts:
+      - host: promo.code-metrics.127.0.0.1.sslip.io
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []

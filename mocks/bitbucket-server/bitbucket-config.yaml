@@ -1,0 +1,43 @@
+#https://developer.atlassian.com/server/bitbucket/rest/v817/intro/#about
+# /rest/api/latest/ or /rest/api/1.0/
+
+plugin: rest
+resources:
+  - method: get
+    path: /rest/api/latest/projects/{workload}/repos
+    response:
+      file: repos.json
+
+  - method: get
+    path: /rest/api/latest/projects/{workload}/repos/{repo}/pull-requests
+    queryParams:
+      limit: "100"
+      start: "0"
+      state: "MERGED"
+    response:
+      file: pullrequests.json
+
+  - method: get
+    path: /rest/api/latest/projects/{workload}/repos/{repo}/pull-requests/{pullrequestid}.diff
+    response:
+      file: diff.txt
+
+  - method: get
+    path: /rest/api/latest/projects/{workload}/repos/{repo}/pull-requests/1234.diff
+    response:
+      file: diff_rename.txt
+
+  - method: get
+    path: /rest/api/latest/projects/{workload}/repos/{repo}/pull-requests/{pullrequestid}
+    response:
+      file: pullrequest.json
+
+  - method: get
+    path: /rest/api/latest/projects/{workload}/repos/{repo}/commits/{commitid}/pull-requests
+    response:
+      file: pullrequestsforcommit.json
+
+  - method: get
+    path: /rest/branch-utils/latest/projects/${workload}/repos/${repo}/branches/info/${commitid}
+    response:
+      file: branchfromcommit.json

@@ -1,0 +1,13 @@
+ARG IMGREPO=""
+FROM ${IMGREPO}outofcoffee/imposter:4.0.5
+
+LABEL org.opencontainers.image.source=https://github.com/code-metrics-project/releases
+
+ENV IMPOSTER_CONFIG_SCAN_RECURSIVE "true"
+ENV IMPOSTER_LOG_LEVEL "debug"
+
+HEALTHCHECK --interval=5s --timeout=5s CMD ["imposter", "ls", "-qx"]
+
+EXPOSE 8080
+
+COPY --chown=imposter:imposter . /opt/imposter/config

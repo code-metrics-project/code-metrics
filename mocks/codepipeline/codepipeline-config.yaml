@@ -1,0 +1,40 @@
+plugin: rest
+
+interceptors:
+  - path: /*
+    continue: true
+    steps:
+      - type: script
+        code: |
+          console.log(`Request: ${JSON.stringify(context.request)}`);
+
+resources:
+  # see https://docs.aws.amazon.com/codepipeline/latest/APIReference/API_ListPipelines.html
+  - path: /
+    method: POST
+    requestHeaders:
+      X-Amz-Target: CodePipeline_20150709.ListPipelines
+    response:
+      headers:
+        Content-Type: application/x-amz-json-1.1
+      file: list-pipelines.json
+
+  # see https://docs.aws.amazon.com/codepipeline/latest/APIReference/API_ListPipelineExecutions.html
+  - path: /
+    method: POST
+    requestHeaders:
+      X-Amz-Target: CodePipeline_20150709.ListPipelineExecutions
+    response:
+      headers:
+        Content-Type: application/x-amz-json-1.1
+      file: list-pipeline-executions.json
+
+  # see https://docs.aws.amazon.com/codepipeline/latest/APIReference/API_GetPipelineExecution.html
+  - path: /
+    method: POST
+    requestHeaders:
+      X-Amz-Target: CodePipeline_20150709.GetPipelineExecution
+    response:
+      headers:
+        Content-Type: application/x-amz-json-1.1
+      file: get-pipeline-execution.json

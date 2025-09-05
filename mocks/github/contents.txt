@@ -1,0 +1,89 @@
+{
+  "$schema": "https://github.com/octocat/quality-gates/tree/v0.1.0/schemas/schema.json",
+  "services": [
+    {
+      "service-tag": "athena_ui_subject_portal",
+      "quality-gates": [
+        {
+          "check-types": ["code style and linting"],
+          "provider": "GitHub",
+          "phase": "pre-merge",
+          "config": {
+            "file": ".github/workflows/pre-commit.yml",
+            "path": "jobs.pre-commit",
+            "name": "Run pre-commit"
+          }
+        },
+        {
+          "check-types": ["unit"],
+          "provider": "GitHub",
+          "phase": "pre-merge",
+          "config": {
+            "file": ".github/workflows/pre-merge-checks.yml",
+            "path": "jobs.run-unit-tests"
+          }
+        },
+        {
+          "check-types": ["integration"],
+          "provider": "GitHub",
+          "phase": "pre-merge",
+          "config": {
+            "file": ".github/workflows/pre-merge-checks.yml",
+            "path": "jobs.run-integration-tests"
+          }
+        },
+        {
+          "check-types": ["code quality"],
+          "provider": "GitHub",
+          "phase": "pre-merge",
+          "config": {
+            "file": ".github/workflows/pre-merge-checks.yml",
+            "path": "jobs.run-sonar-analysis"
+          }
+        },
+        {
+          "check-types": ["integration"],
+          "provider": "GitHub",
+          "phase": "build",
+          "config": {
+            "file": ".github/workflows/pre-merge-checks.yml",
+            "path": "jobs.integration-step"
+          }
+        }
+      ]
+    },
+    {
+      "service-tag": "beta_ui_subject_portal",
+      "quality-gates": [
+        {
+          "check-types": ["code style and linting"],
+          "provider": "GitHub",
+          "phase": "pre-merge",
+          "config": {
+            "file": ".github/workflows/pre-commit.yml",
+            "path": "jobs.pre-commit",
+            "name": "Run pre-commit"
+          }
+        },
+        {
+          "check-types": ["unit"],
+          "provider": "GitHub",
+          "phase": "pre-merge",
+          "config": {
+            "file": ".github/workflows/pre-merge-checks.yml",
+            "path": "jobs.run-unit-tests"
+          }
+        },
+        {
+          "check-types": ["code quality"],
+          "provider": "GitHub",
+          "phase": "pre-merge",
+          "config": {
+            "file": ".github/workflows/pre-merge-checks.yml",
+            "path": "jobs.run-sonar-analysis"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+export enum Paths {
+  Home = "/",
+  Login = "/login",
+  LoginCallback = "/login/callback",
+  Logout = "/logout",
+  LicenseMissing = "/license/error",
+  ConfigMissing = "/config/error",
+
+  Program = "/program",
+  ProgramMetrics = "/program/metrics",
+  ProgramNarratives = "/program/changes",
+  ProgramPipelineHealth = "/program/pipeline-health",
+  ProgramSecurity = "/program/security",
+  ProgramQualityGates = "/program/quality-gates",
+
+  Workloads = "/workload",
+  WorkloadChanges = "/workload/changes",
+  WorkloadCodeQuality = "/workload/code-quality",
+  WorkloadHealth = "/workload/:workloadId",
+  WorkloadAnalysis = "/workload/analysis",
+  WorkloadPipelineRuns = "/workload/pipeline-runs",
+  WorkloadPipelineRun = "/workload/pipeline-run",
+  WorkloadPipelineHealth = "/workload/pipeline-health",
+  WorkloadQualityGates = "/workload/:workloadId/quality-gates",
+  ProgramTickets = "/workload/tickets",
+  DORA = "/workload/dora",
+
+  Explore = "/explore",
+  SavedDashboards = "/explore/dashboard/saved",
+  NewQuery = "/explore/query/new",
+  SavedQueries = "/explore/query",
+  SavedQuery = "/explore/query/:collectionId",
+}

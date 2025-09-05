@@ -1,0 +1,8 @@
+plugin: rest
+
+resources:
+  - path: /api/v2/metrics/query
+    method: GET
+    response:
+      statusCode: 200
+      file: getMetrics.json

@@ -1,0 +1,34 @@
+# This file is additive to the main docker-compose.yaml
+#
+# To start Code Metrics using mocked services, run Compose from the
+# root directory of the project as follows:
+#
+# docker-compose -f compose/docker-compose.yaml -f compose/docker-compose-mocks.yaml --project-directory . up --build
+
+version: '3.3'
+
+services:
+  api:
+    depends_on:
+      mocks:
+        condition: service_healthy
+    environment:
+      AUTHENTICATOR_IMPL: "file"
+    volumes:
+      - "./mocks/config/.mockenv:/backend/.env"
+      - "./mocks/config:/backend/config"
+
+  mocks:
+    image: ghcr.io/code-metrics-project/code-metrics-mocks
+    build:
+      dockerfile: ../docker/Dockerfile.mocks
+      context: mocks
+    command:
+      - "--plugin=openapi"
+      - "--plugin=rest"
+      - "--configDir=/opt/imposter/config"
+      - "--serverUrl=http://mocks:8080"
+    volumes:
+      - "./mocks:/opt/imposter/config"
+    ports:
+      - "8080:8080"

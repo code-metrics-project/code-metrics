@@ -1,0 +1,21 @@
+actions:
+  - name: actions/checkout
+    version: v4
+  - name: actions/setup-node
+    version: v4
+  - name: actions/setup-python
+    version: v5
+  - name: actions/download-artifact
+    version: v4
+  - name: actions/upload-artifact
+    version: v4
+  - name: actions/github-script
+    version: v7
+  - name: docker/build-push-action
+    version: v5
+  - name: docker/setup-qemu-action
+    version: v3
+  - name: docker/setup-buildx-action
+    version: v3
+  - name: docker/login-action
+    version: v3

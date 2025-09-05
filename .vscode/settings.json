@@ -1,0 +1,22 @@
+{
+  "css.customData": ["./promosite/vscode.tailwind.json"],
+  "editor.formatOnSave": true,
+  "eslint.useFlatConfig": true,
+  "eslint.validate": ["javascript", "javascriptreact", "astro", "typescript", "typescriptreact"],
+  "files.associations": {
+    "*.mdx": "markdown"
+  },
+  "prettier.documentSelectors": ["**/*.astro"],
+  "typescript.inlayHints.parameterTypes.enabled": true,
+  "volar.takeOverMode.enabled": false,
+  "yaml.schemas": {
+    "./.vscode/astrowind/config-schema.json": "/src/config.yaml"
+  },
+  "[promosite]": {
+    "editor.defaultFormatter": "astro-build.astro-vscode"
+  },
+  "[ui]": {
+    "volar.takeOverMode.enabled": true,
+    "volar.configFile": "ui/volar.config.js"
+  }
+}
