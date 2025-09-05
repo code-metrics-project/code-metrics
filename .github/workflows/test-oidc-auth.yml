@@ -5,7 +5,7 @@ jobs:
   test-oidc-auth:
     # This job has high resource requirements and should be run on a larger instance.
     # Large instances are more expensive, so we use them sparingly.
-    runs-on: ubuntu-latest-l
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -105,4 +105,4 @@ jobs:
         if: always()
         uses: imposter-project/imposter-github-action/stop-mocks@v0.6.1
         with:
-          engine-type: 'golang'
+          engine-type: "golang"

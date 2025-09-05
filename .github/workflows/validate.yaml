@@ -433,7 +433,7 @@ jobs:
   run-e2e:
     # This job has high resource requirements and should be run on a larger instance.
     # Large instances are more expensive, so we use them sparingly.
-    runs-on: ubuntu-latest-l
+    runs-on: ubuntu-latest
     needs: [build-backend, run-backend-slowtest, backend-integration-test, build-frontend]
     if: ${{ always() && !failure() && !cancelled() && (((needs.build-frontend.result == 'success' || (needs.build-backend.result == 'success' && needs.run-backend-slowtest.result == 'success' && needs.backend-integration-test.result == 'success'))) || inputs.githubComponents != 0) }}
     timeout-minutes: 12
