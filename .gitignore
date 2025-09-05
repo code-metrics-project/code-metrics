@@ -1,0 +1,45 @@
+.DS_Store
+dist
+
+# Editor directories and files
+.idea
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+secrets.yml
+secrets.yaml
+
+# Diagrams
+docs/*.bkp
+
+# Deployment
+samconfig.toml
+
+# Artefacts
+*.tgz
+
+*.map
+!*.config.js
+
+# Python
+venv/
+__pycache__/
+*.egg-info/
+.ruff_cache/
+
+# Tooling
+/.tool-versions
+
+# Node
+node_modules/
