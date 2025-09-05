@@ -2,34 +2,7 @@ name: CD
 on:
   workflow_call:
     inputs:
-      tag:
-        required: true
-        type: string
-      push:
-        required: true
-        type: string
-      machinelearningComponents:
-        required: true
-        type: string
-      helmComponents:
-        required: true
-        type: string
-      uiComponents:
-        required: true
-        type: string
-      backendComponents:
-        required: true
-        type: string
-      threatmodelComponents:
-        required: true
-        type: string
-      examplesComponents:
-        required: true
-        type: string
-      githubComponents:
-        required: true
-        type: string
-      desktopComponents:
+      vars:
         required: true
         type: string
     secrets:
@@ -41,7 +14,7 @@ jobs:
   docker-api:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: ${{ inputs.backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -78,9 +51,9 @@ jobs:
           file: ${{ github.workspace }}/docker/Dockerfile.backend
           context: "./backend"
           platforms: linux/amd64,linux/arm64
-          push: ${{ inputs.push }}
+          push: ${{ fromJSON(inputs.vars).push }}
           tags: |
-            ghcr.io/deloittedigitaluk/code-metrics-api:${{ inputs.tag }}
+            ghcr.io/deloittedigitaluk/code-metrics-api:${{ fromJSON(inputs.vars).tag }}
             ghcr.io/deloittedigitaluk/code-metrics-api:latest
           build-args: |
             RELEASE_TASK=release
@@ -91,7 +64,7 @@ jobs:
   docker-ui:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: ${{ inputs.uiComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).uiComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -128,9 +101,9 @@ jobs:
           file: ${{ github.workspace }}/docker/Dockerfile.ui
           context: "./ui"
           platforms: linux/amd64,linux/arm64
-          push: ${{ inputs.push }}
+          push: ${{ fromJSON(inputs.vars).push }}
           tags: |
-            ghcr.io/deloittedigitaluk/code-metrics-ui:${{ inputs.tag }}
+            ghcr.io/deloittedigitaluk/code-metrics-ui:${{ fromJSON(inputs.vars).tag }}
             ghcr.io/deloittedigitaluk/code-metrics-ui:latest
           build-args: |
             IMGREPO=ghcr.io/${{ env.REPO }}/
@@ -140,7 +113,7 @@ jobs:
   docker-mocks:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: ${{ inputs.backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -177,9 +150,9 @@ jobs:
           file: ${{ github.workspace }}/docker/Dockerfile.mocks
           context: "./mocks"
           platforms: linux/amd64,linux/arm64
-          push: ${{ inputs.push }}
+          push: ${{ fromJSON(inputs.vars).push }}
           tags: |
-            ghcr.io/deloittedigitaluk/code-metrics-mocks:${{ inputs.tag }}
+            ghcr.io/deloittedigitaluk/code-metrics-mocks:${{ fromJSON(inputs.vars).tag }}
             ghcr.io/deloittedigitaluk/code-metrics-mocks:latest
           build-args: |
             IMGREPO=ghcr.io/${{ env.REPO }}/
@@ -189,7 +162,7 @@ jobs:
   docker-jenkins:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: ${{ inputs.examplesComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).examplesComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -226,11 +199,11 @@ jobs:
           file: ${{ github.workspace }}/docker/Dockerfile.jenkins
           context: "./examples/jenkins"
           platforms: linux/amd64,linux/arm64
-          push: ${{ inputs.push }}
+          push: ${{ fromJSON(inputs.vars).push }}
           tags: |
-            deloittedigitaluk/demo-jenkins:${{ inputs.tag }}
+            deloittedigitaluk/demo-jenkins:${{ fromJSON(inputs.vars).tag }}
             deloittedigitaluk/demo-jenkins:latest
-            ghcr.io/deloittedigitaluk/demo-jenkins:${{ inputs.tag }}
+            ghcr.io/deloittedigitaluk/demo-jenkins:${{ fromJSON(inputs.vars).tag }}
             ghcr.io/deloittedigitaluk/demo-jenkins:latest
           build-args: |
             IMGREPO=ghcr.io/${{ env.REPO }}/

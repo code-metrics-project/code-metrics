@@ -2,36 +2,10 @@ name: Validate
 on:
   workflow_call:
     inputs:
-      tag:
+      vars:
         required: true
         type: string
-      coverageRetention:
-        required: true
-        type: string
-      machinelearningComponents:
-        required: true
-        type: string
-      helmComponents:
-        required: true
-        type: string
-      uiComponents:
-        required: true
-        type: string
-      backendComponents:
-        required: true
-        type: string
-      threatmodelComponents:
-        required: true
-        type: string
-      examplesComponents:
-        required: true
-        type: string
-      githubComponents:
-        required: true
-        type: string
-      desktopComponents:
-        required: true
-        type: string
+
 env:
   # prefer ipv4 stack (see https://nodejs.org/api/cli.html#--dns-result-orderorder)
   NODE_OPTIONS: "--dns-result-order=ipv4first"
@@ -40,7 +14,7 @@ jobs:
   validate-machinelearning:
     runs-on: ubuntu-latest
     timeout-minutes: 12
-    if: ${{ inputs.machinelearningComponents != 0 || inputs.githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).machinelearningComponents != 0 || fromJSON(inputs.vars).githubComponents != 0 }}
     permissions:
       contents: read
     env:
@@ -83,7 +57,7 @@ jobs:
           retention-days: 1
 
   build-desktop-linux:
-    if: ${{ inputs.desktopComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
+    if: ${{ fromJSON(inputs.vars).desktopComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -186,7 +160,7 @@ jobs:
     timeout-minutes: 12
     permissions:
       contents: read
-    if: ${{ inputs.backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -240,14 +214,14 @@ jobs:
         with:
           name: coverage-be--unit
           path: backend/coverage-be--unit
-          retention-days: ${{ inputs.coverageRetention }}
+          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
 
   run-backend-slowtest:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     permissions:
       contents: read
-    if: ${{ inputs.backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -282,14 +256,14 @@ jobs:
         with:
           name: coverage-be--slow
           path: backend/coverage-be--slow
-          retention-days: ${{ inputs.coverageRetention }}
+          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
 
   backend-integration-test:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     permissions:
       contents: read
-    if: ${{ inputs.backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -327,14 +301,14 @@ jobs:
         with:
           name: coverage-be--integration
           path: backend/coverage-be--integration
-          retention-days: ${{ inputs.coverageRetention }}
+          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
 
   build-frontend:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     permissions:
       contents: read
-    if: ${{ inputs.uiComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).uiComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -369,14 +343,14 @@ jobs:
         with:
           name: coverage-ui--unit
           path: ui/coverage-ui--unit
-          retention-days: ${{ inputs.coverageRetention }}
+          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
 
   build-helm:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     permissions:
       contents: read
-    if: ${{ inputs.helmComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).helmComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -400,7 +374,7 @@ jobs:
           helm template .
       - name: Package Helm Chart
         working-directory: scripts
-        run: ./package-helm-chart.sh "${{ inputs.tag }}"
+        run: ./package-helm-chart.sh "${{ fromJSON(inputs.vars).tag }}"
       - name: Upload Chart artifact
         uses: actions/upload-artifact@v4
         with:
@@ -413,7 +387,7 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
-    if: ${{ inputs.threatmodelComponents != 0 || startsWith(github.ref, 'refs/tags/') || inputs.githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).threatmodelComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
     steps:
       - uses: actions/checkout@v4
       - name: Install Markdown to PDF Deps
@@ -435,7 +409,7 @@ jobs:
     # Large instances are more expensive, so we use them sparingly.
     runs-on: ubuntu-latest-l
     needs: [build-backend, run-backend-slowtest, backend-integration-test, build-frontend]
-    if: ${{ always() && !failure() && !cancelled() && (((needs.build-frontend.result == 'success' || (needs.build-backend.result == 'success' && needs.run-backend-slowtest.result == 'success' && needs.backend-integration-test.result == 'success'))) || inputs.githubComponents != 0) }}
+    if: ${{ always() && !failure() && !cancelled() && (((needs.build-frontend.result == 'success' || (needs.build-backend.result == 'success' && needs.run-backend-slowtest.result == 'success' && needs.backend-integration-test.result == 'success'))) || fromJSON(inputs.vars).githubComponents != 0) }}
     timeout-minutes: 12
     permissions:
       contents: read
@@ -465,13 +439,13 @@ jobs:
         with:
           name: e2e-test-media
           path: ui/__tests__/output
-          retention-days: ${{ inputs.coverageRetention }}
+          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
       - name: Upload E2E test coverage report files
         uses: actions/upload-artifact@v4
         with:
           name: coverage-ui--e2e
           path: ui/coverage-ui--e2e
-          retention-days: ${{ inputs.coverageRetention }}
+          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
 
   merge-test-reports:
     runs-on: ubuntu-latest
