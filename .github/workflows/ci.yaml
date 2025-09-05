@@ -4,54 +4,14 @@ jobs:
   setvars:
     runs-on: ubuntu-latest
     outputs:
-      push: ${{ steps.vars.outputs.push }}
-      tag: ${{ steps.vars.outputs.tag }}
-      coverageRetention: ${{ steps.vars.outputs.coverageRetention }}
-      machinelearningComponents: ${{ steps.vars.outputs.machinelearningComponents }}
-      helmComponents: ${{ steps.vars.outputs.helmComponents }}
-      uiComponents: ${{ steps.vars.outputs.uiComponents }}
-      backendComponents: ${{ steps.vars.outputs.backendComponents }}
-      threatmodelComponents: ${{ steps.vars.outputs.threatmodelComponents }}
-      examplesComponents: ${{ steps.vars.outputs.examplesComponents }}
-      githubComponents: ${{ steps.vars.outputs.githubComponents }}
-      desktopComponents: ${{ steps.vars.outputs.desktopComponents }}
+      vars: ${{ steps.vars.outputs.vars }}
     steps:
-      - name: Git checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: '0'
-      - name: Set release vars
-        id: vars
-        run: |
-          if [[ "${{ github.ref }}" == 'refs/tags/'* ]]; then
-            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-            echo "push=true" >> $GITHUB_OUTPUT
-            echo "coverageRetention=90" >> $GITHUB_OUTPUT
-          else
-            echo "tag=dev" >> $GITHUB_OUTPUT
-            echo "push=false" >> $GITHUB_OUTPUT
-            echo "coverageRetention=1" >> $GITHUB_OUTPUT
-          fi
-
-          TRIGGER_DIRS=(
-            ".github"
-            "machinelearning"
-            "helm"
-            "ui"
-            "backend"
-            "threatmodel"
-            "examples"
-            "mocks"
-            "desktop"
-          )
-          for i in "${TRIGGER_DIRS[@]}"; do
-            count=$(git diff --name-only $(git describe --tags --abbrev=0) HEAD -- ${i} | cut -d/ -f1 | grep -v ' ' | sort | uniq | wc -l)
-            # Ensure that the count is a proper integer
-            if [[ -z "$count" ]]; then count=0; fi
-            if [[ "${i:0:1}" == "."  ]]; then i=${i:1}; fi
-            if [[ "${i}" == "mocks" && $( grep 'backendComponents=0' $GITHUB_OUTPUT | wc -l ) -ne 0 ]]; then component="backend"; else component="${i}"; fi
-            echo "${component}Components=${count}" >> $GITHUB_OUTPUT
-          done;
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Set vars (Python)
+      id: vars
+      run: python3 ./scripts/set_vars.py
 
   validate-config:
     runs-on: ubuntu-latest
@@ -74,28 +34,11 @@ jobs:
     needs: [setvars, validate-config]
     uses: ./.github/workflows/validate.yaml
     with:
-      tag: ${{ needs.setvars.outputs.tag }}
-      coverageRetention: ${{ needs.setvars.outputs.coverageRetention }}
-      machinelearningComponents: ${{ needs.setvars.outputs.machinelearningComponents }}
-      helmComponents: ${{ needs.setvars.outputs.helmComponents }}
-      uiComponents: ${{ needs.setvars.outputs.uiComponents }}
-      backendComponents: ${{ needs.setvars.outputs.backendComponents }}
-      threatmodelComponents: ${{ needs.setvars.outputs.threatmodelComponents }}
-      examplesComponents: ${{  needs.setvars.outputs.examplesComponents }}
-      githubComponents: ${{ needs.setvars.outputs.githubComponents }}
-      desktopComponents: ${{ needs.setvars.outputs.desktopComponents }}
+      vars: ${{ needs.setvars.outputs.vars }}
+
   cd:
     needs: [setvars, validate-config, validate]
     uses: ./.github/workflows/cd.yaml
     with:
-      tag: ${{ needs.setvars.outputs.tag }}
-      push: ${{ needs.setvars.outputs.push }}
-      machinelearningComponents: ${{ needs.setvars.outputs.machinelearningComponents }}
-      helmComponents: ${{ needs.setvars.outputs.helmComponents }}
-      uiComponents: ${{ needs.setvars.outputs.uiComponents }}
-      backendComponents: ${{ needs.setvars.outputs.backendComponents }}
-      threatmodelComponents: ${{ needs.setvars.outputs.threatmodelComponents }}
-      examplesComponents: ${{  needs.setvars.outputs.examplesComponents }}
-      githubComponents: ${{ needs.setvars.outputs.githubComponents }}
-      desktopComponents: ${{ needs.setvars.outputs.desktopComponents }}
+      vars: ${{ needs.setvars.outputs.vars }}
     secrets: inherit
