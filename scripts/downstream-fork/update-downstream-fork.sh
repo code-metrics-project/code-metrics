@@ -162,6 +162,10 @@ echo "machinelearning/" >> "$TEMP_EXCLUDE_FILE"
 echo "promosite/" >> "$TEMP_EXCLUDE_FILE"
 echo "desktop/" >> "$TEMP_EXCLUDE_FILE"
 echo "mcp/" >> "$TEMP_EXCLUDE_FILE"
+echo ".github/workflows/docs-site.yaml" >> "$TEMP_EXCLUDE_FILE"
+echo ".github/workflows/labeler.yml" >> "$TEMP_EXCLUDE_FILE"
+echo ".github/workflows/public-release.yaml" >> "$TEMP_EXCLUDE_FILE"
+echo ".github/workflows/update-github-container-reg.yaml" >> "$TEMP_EXCLUDE_FILE"
 
 # Use rsync to copy everything except .git directory
 rsync -av --exclude-from="$TEMP_EXCLUDE_FILE" . "${DOWNSTREAM_REPO_PATH}/"
