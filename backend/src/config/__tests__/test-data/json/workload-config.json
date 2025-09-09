@@ -1,0 +1,49 @@
+{
+  "workloads": [
+    {
+      "id": "athena",
+      "codeManagement": {
+        "type": "azure",
+        "serverId": "example-azure",
+        "projectName": "athena",
+        "repoGroups": {
+          "backend": {
+            "components": [
+              {
+                "repo": "/spring-.*/"
+              }
+            ]
+          },
+          "frontend": {
+            "sonarTags": ["fe"]
+          },
+          "platform": {
+            "components": [
+              {
+                "repo": "/.*_platform/"
+              },
+              {
+                "repo": "/.*_infrastructure/"
+              }
+            ]
+          }
+        }
+      },
+      "codeAnalysis": {
+        "type": "sonar",
+        "serverId": "example-sonar",
+        "mappings": [
+          {
+            "key": "petclinic",
+            "vcsRepoName": "spring-petclinic"
+          }
+        ]
+      },
+      "projectManagement": {
+        "type": "jira",
+        "serverId": "example-jira",
+        "teamFilterJql": "\"Team name[Dropdown]\" in (\"Athena\")"
+      }
+    }
+  ]
+}

@@ -12,18 +12,7 @@ lcov-backend-merged.info
 
 # config files
 .config/*
-queries-*.json
-dashboard-config.json
 metadata.json
-remote-config.json
-remote-config.yaml
-remote-config.yml
-workload-config.json
-workload-config.yaml
-workload-config.yml
-users.json
-users.yaml
-users.yml
 
 # Log files
 npm-debug.log*

@@ -1,0 +1,51 @@
+---
+codeAnalysis:
+  sonar:
+    servers:
+      - id: example-sonar
+        url: https://sonar.example.com
+        apiKey: changeme
+      - id: example-sonar
+        url: http://localhost:8080
+        apiKey: ""
+    tagKeyTypes:
+      - backend
+      - frontend
+      - mobile
+      - workload
+
+codeManagement:
+  azure:
+    servers:
+      - id: example-azure
+        url: http://localhost:8080
+        apiKey: ""
+        branches:
+          - main
+  github:
+    servers:
+      - id: example-github
+        url: ""
+        apiKey: ""
+        branches:
+          - main
+  gitlab: {}
+  bitbucketCloud: {}
+  bitbucketServer: {}
+
+projectManagement:
+  jira:
+    defaults:
+      bugTypes:
+        - Bug
+      ticketPriorities:
+        - Lowest
+        - Low
+        - Medium
+        - High
+        - Highest
+    servers:
+      - id: example-jira
+        url: http://localhost:8080
+        apiKey: ""
+        authMethod: BEARER_TOKEN

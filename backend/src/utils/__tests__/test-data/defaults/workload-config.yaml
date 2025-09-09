@@ -1,0 +1,23 @@
+---
+workloads:
+  - id: athena
+    codeManagement:
+      type: github
+      serverId: example-github
+      projectName: athena
+      repoGroups:
+        frontend:
+          components:
+            - repo: web
+        backend:
+          components:
+            - repo: /.*-api/
+            - repo: private-api
+              exclude: true
+    codeAnalysis:
+      type: sonar
+      serverId: example-sonar
+    projectManagement:
+      type: jira
+      serverId: example-jira
+      teamFilterJql: '"Team name[Dropdown]" in ("Athena")'

@@ -1,0 +1,40 @@
+---
+codeAnalysis:
+  sonar:
+    servers:
+    - id: example-sonar
+      url: https://sonar.example.com
+      apiKey: changeme
+    tagKeyTypes:
+    - backend
+    - frontend
+    - mobile
+    - workload
+
+codeManagement:
+  azure: {}
+  github:
+    servers:
+    - id: example-github
+      apiKey: ''
+      branches:
+      - main
+  gitlab: {}
+  bitbucket: {}
+
+projectManagement:
+  jira:
+    defaults:
+      bugTypes:
+      - Bug
+      ticketPriorities:
+      - Lowest
+      - Low
+      - Medium
+      - High
+      - Highest
+    servers:
+    - id: example-jira
+      url: https://jira.example.com
+      apiKey: ''
+      authMethod: BEARER_TOKEN

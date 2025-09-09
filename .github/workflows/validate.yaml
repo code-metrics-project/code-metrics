@@ -184,9 +184,9 @@ jobs:
         working-directory: backend
         run: |
           cp .env.template .env
-          cp remote-config.yaml.example remote-config.yaml
-          cp users.json.example users.json
-          cp workload-config.yaml.example workload-config.yaml
+          cp config/examples/remote-config.yaml.example remote-config.yaml
+          cp config/examples/users.json.example users.json
+          cp config/examples/workload-config.yaml.example workload-config.yaml
       - name: Unit test backend + output coverage
         working-directory: backend
         run: npm test
@@ -198,11 +198,11 @@ jobs:
         run: |
           cp .env.template dist/.env
           mkdir -p dist/config
-          cp dashboard-config.json.example dist/config/dashboard-config.json
-          cp queries-example.json dist/config/queries-example.json
-          cp remote-config.yaml.example dist/config/remote-config.yaml
-          cp users.json.example dist/config/users.json
-          cp workload-config.yaml.example dist/config/workload-config.yaml
+          cp config/examples/dashboard-config.json.example dist/config/dashboard-config.json
+          cp config/examples/queries-example.json dist/config/queries-example.json
+          cp config/examples/remote-config.yaml.example dist/config/remote-config.yaml
+          cp config/examples/users.json.example dist/config/users.json
+          cp config/examples/workload-config.yaml.example dist/config/workload-config.yaml
       - name: Upload built backend app artifact
         uses: actions/upload-artifact@v4
         with:
@@ -407,7 +407,7 @@ jobs:
   run-e2e:
     # This job has high resource requirements and should be run on a larger instance.
     # Large instances are more expensive, so we use them sparingly.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-l
     needs: [build-backend, run-backend-slowtest, backend-integration-test, build-frontend]
     if: ${{ always() && !failure() && !cancelled() && (((needs.build-frontend.result == 'success' || (needs.build-backend.result == 'success' && needs.run-backend-slowtest.result == 'success' && needs.backend-integration-test.result == 'success'))) || fromJSON(inputs.vars).githubComponents != 0) }}
     timeout-minutes: 12
