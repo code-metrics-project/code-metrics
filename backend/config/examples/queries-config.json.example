@@ -1,14 +1,13 @@
 {
-  "bespoke": [
+  "id": "my-team-query-collection",
+  "title": "My Team query collection",
+  "queries": [
     {
-      "name": "My Team Code quality summary",
-      "description": "Retrieve aggregated summaries of My Team SonarQube tags, and My Team FE in particular.",
+      "name": "My Team code quality metric summary",
+      "description": "Retrieve aggregated summaries of My Team repo groups, and My Team FE in particular.",
       "component": "code-analysis-metric-summary",
       "props": {
-        "repoGroups": [
-          "backend",
-          "frontend"
-        ],
+        "repoGroups": ["backend", "frontend"],
         "individualRepos": [
           "athena:fe-component-a",
           "athena:fe-component-b",
@@ -24,11 +23,7 @@
       "props": {
         "workload": "athena",
         "repo": "web_portal",
-        "metrics": [
-          "coverage",
-          "complexity",
-          "ncloc"
-        ],
+        "metrics": ["coverage", "complexity", "ncloc"],
         "paths": [
           "src/components",
           "src/models",
@@ -47,18 +42,10 @@
       "description": "Correlates bugs vs. coverage for My Team repositories.",
       "component": "dynamic-input",
       "props": {
-        "queryTypes": [
-          "bugs-new",
-          "code-coverage"
-        ],
+        "queryTypes": ["bugs-new", "code-coverage"],
         "defaultInputs": {
-          "workloads": [
-            "athena"
-          ],
-          "repoGroups": [
-            "backend",
-            "frontend"
-          ],
+          "workloads": ["athena"],
+          "repoGroups": ["backend", "frontend"],
           "issueFilter": {
             "priority": "Medium"
           }

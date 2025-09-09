@@ -199,7 +199,7 @@ jobs:
           cp .env.template dist/.env
           mkdir -p dist/config
           cp config/examples/dashboard-config.json.example dist/config/dashboard-config.json
-          cp config/examples/queries-example.json dist/config/queries-example.json
+          cp config/examples/queries-config.json.example dist/config/queries-config.json
           cp config/examples/remote-config.yaml.example dist/config/remote-config.yaml
           cp config/examples/users.json.example dist/config/users.json
           cp config/examples/workload-config.yaml.example dist/config/workload-config.yaml
