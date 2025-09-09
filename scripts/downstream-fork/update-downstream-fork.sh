@@ -167,8 +167,21 @@ echo ".github/workflows/labeler.yml" >> "$TEMP_EXCLUDE_FILE"
 echo ".github/workflows/public-release.yaml" >> "$TEMP_EXCLUDE_FILE"
 echo ".github/workflows/update-github-container-reg.yaml" >> "$TEMP_EXCLUDE_FILE"
 
+
 # Use rsync to copy everything except .git directory
 rsync -av --exclude-from="$TEMP_EXCLUDE_FILE" . "${DOWNSTREAM_REPO_PATH}/"
+
+# After copying, update 'ubuntu-latest-l' typo in GitHub workflow files
+echo -e "${BLUE}🔧 Updating 'ubuntu-latest-l' typos in GitHub workflow files${NC}"
+WORKFLOWS_DIR="${DOWNSTREAM_REPO_PATH}/.github/workflows"
+if [ -d "$WORKFLOWS_DIR" ]; then
+    find "$WORKFLOWS_DIR" -type f -name "*.yml" -o -name "*.yaml" | while read -r wf; do
+        if grep -q 'ubuntu-latest-l' "$wf"; then
+            sed -i '' 's/ubuntu-latest-l/ubuntu-latest/g' "$wf"
+            echo -e "${GREEN}  ✓ Updated in $wf${NC}"
+        fi
+    done
+fi
 
 # Copy license files from scripts directory to downstream root
 echo -e "${BLUE}📄 Copying license files to downstream root${NC}"
