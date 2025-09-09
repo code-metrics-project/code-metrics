@@ -22,8 +22,6 @@ yarn-error.log*
 server.crt
 server.key
 
-license.yaml
-
 lambda/codemetrics-lambda.zip
 
 # database files
