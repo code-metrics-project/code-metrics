@@ -245,9 +245,9 @@ jobs:
         working-directory: backend
         run: |
           cp .env.template .env
-          cp remote-config.yaml.example remote-config.yaml
-          cp users.json.example users.json
-          cp workload-config.yaml.example workload-config.yaml
+          cp config/examples/remote-config.yaml.example remote-config.yaml
+          cp config/examples/users.json.example users.json
+          cp config/examples/workload-config.yaml.example workload-config.yaml
       - name: Run slow backend tests + output coverage
         working-directory: backend
         run: "npm run test:slow"
@@ -287,9 +287,9 @@ jobs:
         working-directory: backend
         run: |
           cp .env.template .env
-          cp remote-config.yaml.example remote-config.yaml
-          cp users.json.example users.json
-          cp workload-config.yaml.example workload-config.yaml
+          cp config/examples/remote-config.yaml.example remote-config.yaml
+          cp config/examples/users.json.example users.json
+          cp config/examples/workload-config.yaml.example workload-config.yaml
       - name: Integration test backend + output coverage
         working-directory: backend
         env:
