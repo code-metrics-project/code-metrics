@@ -5,11 +5,28 @@ from typing import Dict, List
 
 # ---- Config ----
 SERVICE_DIRS: List[str] = [
-    ".github", "machinelearning", "helm", "ui", "backend", "threatmodel", "examples", "mocks", "desktop"
+    ".github",
+    "backend",
+    "desktop",
+    "docker",
+    "examples",
+    "helm",
+    "machinelearning",
+    "mocks",
+    "threatmodel",
+    "ui"
 ]
 FOLD_RULES: List[str] = [
-    "mocks:backend",                                         # if mocks changes, trigger backend
-    "github:machinelearning:backend:ui:helm:threatmodel",    # if .github changes, trigger many components
+    # if .github changes, trigger many components (note component name is github not .github)
+    "github:docker:machinelearning:backend:ui:helm:threatmodel:examples",
+    
+    # if backend changes, trigger mocks
+    "backend:mocks",
+
+    # if mocks changes, trigger backend
+    "mocks:backend",
+
+    # Add more rules as needed, e.g.:
     # "someSource:backend:somethingElse",
 ]
 EMIT_SOURCES = False  # if False, sources that only serve folding (e.g. 'mocks') aren’t emitted

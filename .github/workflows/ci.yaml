@@ -19,7 +19,8 @@ jobs:
               --set helm=false \
               --set machinelearning=false \
               --set threatmodel=false \
-              --set desktop=false
+              --set desktop=false \
+              --set docker=false
           fi
 
   validate-config:
