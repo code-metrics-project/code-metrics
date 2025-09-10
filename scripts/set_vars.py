@@ -8,7 +8,8 @@ SERVICE_DIRS: List[str] = [
     ".github", "machinelearning", "helm", "ui", "backend", "threatmodel", "examples", "mocks", "desktop"
 ]
 FOLD_RULES: List[str] = [
-    "mocks:backend",            # example: if mocks changes, OR into backend
+    "mocks:backend",                                         # if mocks changes, trigger backend
+    "github:machinelearning:backend:ui:helm:threatmodel",    # if .github changes, trigger many components
     # "someSource:backend:somethingElse",
 ]
 EMIT_SOURCES = False  # if False, sources that only serve folding (e.g. 'mocks') aren’t emitted

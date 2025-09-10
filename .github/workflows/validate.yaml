@@ -14,7 +14,7 @@ jobs:
   validate-machinelearning:
     runs-on: ubuntu-latest
     timeout-minutes: 12
-    if: ${{ fromJSON(inputs.vars).machinelearningComponents != 0 || fromJSON(inputs.vars).githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).machinelearningComponents }}
     permissions:
       contents: read
     env:
@@ -160,7 +160,7 @@ jobs:
     timeout-minutes: 12
     permissions:
       contents: read
-    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -221,7 +221,7 @@ jobs:
     timeout-minutes: 12
     permissions:
       contents: read
-    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -263,7 +263,7 @@ jobs:
     timeout-minutes: 12
     permissions:
       contents: read
-    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -308,7 +308,7 @@ jobs:
     timeout-minutes: 12
     permissions:
       contents: read
-    if: ${{ fromJSON(inputs.vars).uiComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).uiComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -350,7 +350,7 @@ jobs:
     timeout-minutes: 12
     permissions:
       contents: read
-    if: ${{ fromJSON(inputs.vars).helmComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).helmComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -387,7 +387,7 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
-    if: ${{ fromJSON(inputs.vars).threatmodelComponents != 0 || startsWith(github.ref, 'refs/tags/') || fromJSON(inputs.vars).githubComponents != 0 }}
+    if: ${{ fromJSON(inputs.vars).threatmodelComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - uses: actions/checkout@v4
       - name: Install Markdown to PDF Deps
