@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import json, os, subprocess
+
+import json, os, subprocess, argparse, sys
 from typing import Dict, List
 
 # ---- Config ----
@@ -31,7 +32,33 @@ def norm(key: str) -> str:
     return key[1:] if key.startswith(".") else key
 
 # ---- Compute ----
-def main() -> None:
+
+def parse_set_args(argv=None):
+    parser = argparse.ArgumentParser(description="Set override values for components.")
+    parser.add_argument('--set', action='append', default=[], metavar='KEY=VALUE',
+                        help='Override a component value, e.g. --set helm=true')
+    args, _ = parser.parse_known_args(argv)
+    overrides = {}
+    for item in args.set:
+        if '=' not in item:
+            print(f"Invalid --set argument: {item}", file=sys.stderr)
+            continue
+        key, value = item.split('=', 1)
+        key = key.strip()
+        value = value.strip().lower()
+        if value in ('1', 'true', 'yes', 'on'):
+            overrides[key] = 1
+        elif value in ('0', 'false', 'no', 'off'):
+            overrides[key] = 0
+        else:
+            try:
+                overrides[key] = int(value)
+            except Exception:
+                print(f"Invalid value for --set {key}: {value}", file=sys.stderr)
+    return overrides
+
+def main(argv=None) -> None:
+    overrides = parse_set_args(argv)
     base = git_base_ref()
 
     # Build the set of "sources" to examine: all service dirs + every lhs in FOLD_RULES
@@ -73,6 +100,10 @@ def main() -> None:
     out = {"tag": tag, "push": push, "coverageRetention": coverage}
     for k in sorted(emit_keys):
         out[f"{k}Components"] = int(values.get(k, 0))
+
+    # Apply overrides from --set
+    for k, v in overrides.items():
+        out[f"{k}Components"] = int(v)
 
     out_path = os.environ.get("GITHUB_OUTPUT")
     if not out_path:

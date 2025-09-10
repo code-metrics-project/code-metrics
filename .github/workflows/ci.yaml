@@ -6,12 +6,21 @@ jobs:
     outputs:
       vars: ${{ steps.vars.outputs.vars }}
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Set vars (Python)
-      id: vars
-      run: python3 ./scripts/set_vars.py
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set vars (Python)
+        id: vars
+        run: |
+          if [ "$GITHUB_REPOSITORY" = "DeloitteDigitalUK/code-metrics" ]; then
+            python3 ./scripts/set_vars.py
+          else
+            python3 ./scripts/set_vars.py \
+              --set helm=false \
+              --set machinelearning=false \
+              --set threatmodel=false \
+              --set desktop=false
+          fi
 
   validate-config:
     runs-on: ubuntu-latest
@@ -23,7 +32,7 @@ jobs:
       - name: Setup Node (backend)
         uses: actions/setup-node@v4
         with:
-          node-version-file: '/backend/.nvmrc'
+          node-version-file: "/backend/.nvmrc"
       - name: Install backend config dependencies
         working-directory: backend/config
         run: npm install
