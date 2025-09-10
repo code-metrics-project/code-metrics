@@ -13,9 +13,9 @@ jobs:
         id: vars
         run: |
           if [ "$GITHUB_REPOSITORY" = "DeloitteDigitalUK/code-metrics" ]; then
-            python3 ./scripts/set_vars.py
+            python3 ./scripts/set_vars.py --verbose
           else
-            python3 ./scripts/set_vars.py \
+            python3 ./scripts/set_vars.py --verbose \
               --set helm=false \
               --set machinelearning=false \
               --set threatmodel=false \

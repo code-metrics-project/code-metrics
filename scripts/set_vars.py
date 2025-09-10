@@ -20,11 +20,16 @@ FOLD_RULES: List[str] = [
     # if .github changes, trigger many components (note component name is github not .github)
     "github:docker:machinelearning:backend:ui:helm:threatmodel:examples",
     
-    # if backend changes, trigger mocks
-    "backend:mocks",
+    # if backend changes, trigger docker and mocks
+    "backend:docker:mocks",
 
     # if mocks changes, trigger backend
     "mocks:backend",
+
+    # if ui, mocks, or examples changes, trigger docker
+    "ui:docker",
+    "mocks:docker",
+    "examples:docker",
 
     # Add more rules as needed, e.g.:
     # "someSource:backend:somethingElse",
@@ -55,6 +60,7 @@ def parse_set_args(argv=None):
     parser = argparse.ArgumentParser(description="Set override values for components.")
     parser.add_argument('--set', action='append', default=[], metavar='KEY=VALUE',
                         help='Override a component value, e.g. --set helm=true')
+    parser.add_argument('--verbose', action='store_true', help='Print output JSON to stdout')
     args, _ = parser.parse_known_args(argv)
     overrides = {}
     for item in args.set:
@@ -73,10 +79,10 @@ def parse_set_args(argv=None):
                 overrides[key] = int(value)
             except Exception:
                 print(f"Invalid value for --set {key}: {value}", file=sys.stderr)
-    return overrides
+    return overrides, args.verbose
 
 def main(argv=None) -> None:
-    overrides = parse_set_args(argv)
+    overrides, verbose = parse_set_args(argv)
     base = git_base_ref()
 
     # Build the set of "sources" to examine: all service dirs + every lhs in FOLD_RULES
@@ -122,6 +128,9 @@ def main(argv=None) -> None:
     # Apply overrides from --set
     for k, v in overrides.items():
         out[f"{k}Components"] = int(v)
+
+    if verbose:
+        print(json.dumps(out, indent=2, sort_keys=True))
 
     out_path = os.environ.get("GITHUB_OUTPUT")
     if not out_path:
