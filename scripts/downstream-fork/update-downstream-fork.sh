@@ -21,6 +21,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Parse command line arguments
 DRY_RUN=false
 FORCE=false
+COMMIT=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -32,10 +33,15 @@ while [[ $# -gt 0 ]]; do
             FORCE=true
             shift
             ;;
+        --commit)
+            COMMIT=true
+            shift
+            ;;
         -h|--help)
-            echo "Usage: $0 [--dry-run] [--force]"
+            echo "Usage: $0 [--dry-run] [--force] [--commit]"
             echo "  --dry-run    Show what would be done without making changes"
-            echo "  --force      Force update even if downstream has uncommitted changes"
+            echo "  --force      Force update even if downstream has uncommitted changes (does not auto-commit)"
+            echo "  --commit     Commit the staged changes in downstream (required to commit)"
             echo "  --help       Show this help message"
             exit 0
             ;;
@@ -135,12 +141,12 @@ if [ "$DRY_RUN" = true ]; then
     
     # Show what files would be affected
     echo -e "${CYAN}📁 Files that would be removed:${NC}"
-    find . -mindepth 1 -maxdepth 1 \( -name ".git" -o -name ".gitignore" \) -prune -o -type f -print | head -20
-    
+    find . -mindepth 1 -maxdepth 1 \( -name ".git" -o -name ".gitignore" \) -prune -o -type f -print | head -20 || true
+
     echo -e "${CYAN}📁 Files that would be copied from upstream:${NC}"
     cd "${UPSTREAM_REPO_PATH}"
-    find . -mindepth 1 \( -name ".git" -o -name ".git/*" \) -prune -o -type f -print | head -20
-    
+    find . -mindepth 1 \( -name ".git" -o -name ".git/*" \) -prune -o -type f -print | head -20 || true
+
     exit 0
 fi
 
@@ -175,9 +181,14 @@ rsync -av --exclude-from="$TEMP_EXCLUDE_FILE" . "${DOWNSTREAM_REPO_PATH}/"
 echo -e "${BLUE}🔧 Updating 'ubuntu-latest-l' typos in GitHub workflow files${NC}"
 WORKFLOWS_DIR="${DOWNSTREAM_REPO_PATH}/.github/workflows"
 if [ -d "$WORKFLOWS_DIR" ]; then
-    find "$WORKFLOWS_DIR" -type f -name "*.yml" -o -name "*.yaml" | while read -r wf; do
+    find "$WORKFLOWS_DIR" \( -name "*.yml" -o -name "*.yaml" \) -type f | while read -r wf; do
         if grep -q 'ubuntu-latest-l' "$wf"; then
-            sed -i '' 's/ubuntu-latest-l/ubuntu-latest/g' "$wf"
+            # Use portable sed for in-place editing (Linux and macOS)
+            if sed --version >/dev/null 2>&1; then
+                sed -i 's/ubuntu-latest-l/ubuntu-latest/g' "$wf"
+            else
+                sed -i '' 's/ubuntu-latest-l/ubuntu-latest/g' "$wf"
+            fi
             echo -e "${GREEN}  ✓ Updated in $wf${NC}"
         fi
     done
@@ -224,33 +235,28 @@ echo -e "${GREEN}  📄 Added files: ${ADDED_FILES}${NC}"
 echo -e "${YELLOW}  📝 Modified files: ${MODIFIED_FILES}${NC}"
 echo -e "${RED}  🗑️  Deleted files: ${DELETED_FILES}${NC}"
 
-# Ask for confirmation unless forced
-if [ "$FORCE" = false ]; then
-    echo
-    read -p "Proceed with commit? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo -e "${YELLOW}🛑 Aborted by user${NC}"
-        git reset HEAD
-        exit 0
-    fi
+if [ "$COMMIT" = true ]; then
+    # Commit the changes
+    COMMIT_MESSAGE="build: updated to ${CURRENT_COMMIT_SHA}"
+    echo -e "${BLUE}💾 Committing changes with message: '${COMMIT_MESSAGE}'${NC}"
+    git commit -m "${COMMIT_MESSAGE}"
+
+    NEW_COMMIT_SHA=$(git rev-parse HEAD)
+
+    echo -e "${GREEN}✅ Successfully updated downstream fork!${NC}"
+    echo -e "${GREEN}   New commit SHA: ${NEW_COMMIT_SHA}${NC}"
+    echo -e "${GREEN}   Updated to upstream commit: ${CURRENT_COMMIT_SHORT}${NC}"
+
+    # Optional: Show the commit that was just created
+    echo -e "${BLUE}📋 Commit details:${NC}"
+    git show --stat HEAD || true
+
+    echo -e "${CYAN}💡 Next steps:${NC}"
+    echo -e "${CYAN}   - Review the changes: git show HEAD${NC}"
+    echo -e "${CYAN}   - Push to remote: git push origin main${NC}"
+else
+    echo -e "${YELLOW}ℹ️  Changes staged but not committed. Run the script with --commit to create the commit.${NC}"
+    echo -e "${CYAN}💡 Next steps:${NC}"
+    echo -e "${CYAN}   - To commit: re-run with --commit (CI workflow passes this automatically)${NC}"
+    exit 0
 fi
-
-# Commit the changes
-COMMIT_MESSAGE="build: updated to ${CURRENT_COMMIT_SHA}"
-echo -e "${BLUE}💾 Committing changes with message: '${COMMIT_MESSAGE}'${NC}"
-git commit -m "${COMMIT_MESSAGE}"
-
-NEW_COMMIT_SHA=$(git rev-parse HEAD)
-
-echo -e "${GREEN}✅ Successfully updated downstream fork!${NC}"
-echo -e "${GREEN}   New commit SHA: ${NEW_COMMIT_SHA}${NC}"
-echo -e "${GREEN}   Updated to upstream commit: ${CURRENT_COMMIT_SHORT}${NC}"
-
-# Optional: Show the commit that was just created
-echo -e "${BLUE}📋 Commit details:${NC}"
-git show --stat HEAD
-
-echo -e "${CYAN}💡 Next steps:${NC}"
-echo -e "${CYAN}   - Review the changes: git show HEAD${NC}"
-echo -e "${CYAN}   - Push to remote: git push origin main${NC}"

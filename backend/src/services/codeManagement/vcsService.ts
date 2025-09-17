@@ -6,7 +6,7 @@ import { provideDatastore } from "../../db/factory";
 import { PRECACHE_REPO_LIST, precacheRepoList } from "./precache";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { CodeManagementTypes } from "../../model/config/common";
-import { TMergeRules, TQualityGateManifest } from "../repos/qualityGates";
+import { TMergeRules } from "../repos/qualityGates";
 import { getConfigItem, getConfigItemAsNumber } from "../../config/sources/source";
 
 type RepoList = {
@@ -18,6 +18,7 @@ export const CACHE_REPO_LIST = getConfigItem("CACHE_REPO_LIST") !== "false";
 const COLLECTION_NAME_COMMIT_PRS = "commit-prs";
 const COLLECTION_NAME_EARLIEST_COMMIT = "earliest-commits";
 const COLLECTION_NAME_VCS_CACHE = "vcs-cache";
+const COLLECTION_NAME_FETCH_FILE = "fetch-file";
 
 /**
  * Cache for 6 hours by default.
@@ -318,7 +319,9 @@ export class CachingVcsServiceImpl implements VcsService {
    * @param repoName
    */
   fetchFile = (workloadId: WorkloadId, vcsProjectName: string, repoName: string, path: string): Promise<string> => {
-    return this.delegate.fetchFile(workloadId, vcsProjectName, repoName, path);
+    return findOrInsert(workloadId, `${vcsProjectName}.${repoName}.${path}`, COLLECTION_NAME_FETCH_FILE, 3600, () =>
+      this.delegate.fetchFile(workloadId, vcsProjectName, repoName, path),
+    );
   };
 
   /**

@@ -1,7 +1,9 @@
-import { getWorkloadById, listWorkloadIds } from "../../config/configMapping";
-import { verbose } from "../../utils/logger/logger";
+import { getQualityGatesByWorkloadId, getWorkloadById, listWorkloadIds } from "../../config/configMapping";
+import { QualityGatesConfig } from "../../model/config/quality-gates-config";
+import { error, verbose, warn } from "../../utils/logger/logger";
 import { getReposForWorkloadId } from "../../utils/repos";
 import { getVcsForWorkload } from "../codeManagement/vcsService";
+import { Workload } from "../../model/config/workload-config";
 
 type TQualityGate = {
   "check-types": string[];
@@ -25,6 +27,25 @@ export type TQualityGateManifest = {
   }[];
 };
 
+export type TPhase = {
+  phase: string;
+  gates: TQualityGate[];
+};
+
+export type TGate = {
+  [key: string]: TPhase[];
+};
+
+export type TQualityGateOutput = {
+  $schema?: string;
+  repo?: string;
+  repoLink?: string;
+  services?: {
+    "service-tag": string;
+    "quality-gates": TGate;
+  }[];
+};
+
 export type TMergeRules = {
   id: number;
   name: string;
@@ -34,17 +55,41 @@ function parseManifest(file: string) {
   try {
     return JSON.parse(file as unknown as string) as TQualityGateManifest;
   } catch (parseError) {
-    console.error("Error parsing JSON:", parseError);
+    error("Error parsing JSON:", parseError);
     return null;
   }
 }
 
-function enrichManifest(
+const fillMissingQualityGates = (checks: string[], qualityGates: TQualityGate[]): { [key: string]: TQualityGate[] } => {
+  const reshaped = checks.reduce((acc, value) => {
+    acc[value] = qualityGates.filter((gate) => gate["check-types"].includes(value));
+    return acc;
+  }, {});
+
+  return reshaped;
+};
+
+const fillMissingPhases = (environments: string[], qualityGates: { [key: string]: TQualityGate[] }): TGate => {
+  const reshaped = Object.entries(qualityGates).reduce((acc, [key, value]) => {
+    acc[key] = environments.map((phase) => {
+      return {
+        phase,
+        gates: value.filter((gate) => gate.phase === phase)
+      };
+    });
+    return acc;
+  }, {});
+
+  return reshaped;
+};
+
+export function enrichManifest(
   repo: string,
   repoLink: string,
   manifest: TQualityGateManifest,
   rules: TMergeRules[],
-): TQualityGateManifest {
+  qualityGatesConfig: QualityGatesConfig
+): TQualityGateOutput {
   if (!manifest) return { repo, repoLink };
   /**
    * Github uses the job name as the only connection point between a workflow and a required status check
@@ -64,12 +109,66 @@ function enrichManifest(
       }
     });
   });
-  return { repo, repoLink, ...manifest };
+
+  const services = manifest.services.map((service) => {
+    return {
+      ...service,
+      ["quality-gates"]: fillMissingPhases(
+        qualityGatesConfig.environments,
+        fillMissingQualityGates(qualityGatesConfig.gates, service["quality-gates"])
+      )
+    };
+  });
+
+  return {
+    repo,
+    repoLink,
+    services
+  };
 }
+
+/**
+ * Fetch and construct a quality gate object for a given repo in a workload.
+ * @param workload
+ * @param repoName
+ */
+const getQualityGate = async (
+  workload: Workload,
+  repoName: string
+): Promise<TQualityGateOutput> => {
+  const vcs = getVcsForWorkload(workload);
+  const workloadId = workload.id;
+  try {
+    const [manifest, rules] = await Promise.all([
+      parseManifest(
+        await vcs.fetchFile(workloadId, workload.codeManagement.projectName, repoName, "quality-gate.manifest.json")
+      ),
+      vcs.fetchMergeRules(workloadId, workload.codeManagement.projectName, repoName)
+    ]);
+    const qualityGate = enrichManifest(
+      repoName,
+      vcs.buildRepoLink(workloadId, repoName),
+      manifest,
+      rules,
+      getQualityGatesByWorkloadId(workloadId)
+    );
+
+    verbose(`Fetched quality gate manifest for repo ${repoName} in workload ${workloadId}:`, qualityGate);
+    return qualityGate;
+
+  } catch (error) {
+    warn(`Failed to fetch quality gate manifest for repo ${repoName} in workload ${workloadId}:`, error);
+    // Return a basic quality gate object for repos that fail to fetch
+    return {
+      repo: repoName,
+      services: [],
+    };
+  }
+};
 
 export const getQualityGates = async (
   requestWorkloadIds: string[],
-  repoGroups: string[],
+  repoGroups: string[]
 ): Promise<TQualityGateManifest[]> => {
   const qualityGateQueue = [];
 
@@ -78,29 +177,13 @@ export const getQualityGates = async (
   for (const workloadId of workloadIds) {
     const workload = getWorkloadById(workloadId);
     if (!workload) {
-      console.warn(`Could not find workload with team ID: ${workloadId}`);
+      warn(`Could not find workload with team ID: ${workloadId}`);
       continue;
     }
-    const vcs = getVcsForWorkload(workload);
-
     const repoNames = await getReposForWorkloadId(repoGroups, workloadId);
 
     qualityGateQueue.push(
-      ...repoNames.map(async (repoName) => {
-        const [manifest, rules] = await Promise.all([
-          parseManifest(
-            await vcs.fetchFile(
-              workloadId,
-              workload.codeManagement.projectName,
-              repoName,
-              "quality-gate.manifest.json",
-            ),
-          ),
-          vcs.fetchMergeRules(workloadId, workload.codeManagement.projectName, repoName),
-        ]);
-        const qualityGate = enrichManifest(repoName, vcs.buildRepoLink(workloadId, repoName), manifest, rules);
-        return qualityGate;
-      }),
+      ...repoNames.map((repoName) => getQualityGate(workload, repoName))
     );
   }
 

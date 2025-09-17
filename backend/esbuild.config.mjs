@@ -1,4 +1,5 @@
 import * as esbuild from "esbuild";
+import { copy } from "esbuild-plugin-copy";
 import { spawn } from "child_process";
 import commandLineArgs from "command-line-args";
 
@@ -25,20 +26,6 @@ const runProject = () => {
   });
 };
 
-const plugins = [
-  {
-    name: "rebuild",
-    setup(build) {
-      let count = 0;
-      build.onEnd((result) => {
-        if (count++ === 0) console.log("Initial build:", result);
-        else console.log("Rebuild:", result);
-        runProject();
-      });
-    },
-  },
-];
-
 const buildOptions = {
   bundle: true,
   entryPoints: ["./src/index.ts"],
@@ -47,13 +34,35 @@ const buildOptions = {
   sourcemap: true,
   treeShaking: true,
   platform: "node",
+  plugins: [
+    copy({
+      resolveFrom: "cwd",
+      assets: {
+        from: ["./src/openapi/**/*"],
+        to: ["./dist/openapi"],
+      },
+      watch: options.watch,
+    }),
+    ...(options.watch
+      ? [
+          {
+            name: "rebuild",
+            setup(build) {
+              let count = 0;
+              build.onEnd((result) => {
+                if (count++ === 0) console.log("Initial build:", result);
+                else console.log("Rebuild:", result);
+                runProject();
+              });
+            },
+          },
+        ]
+      : []),
+  ],
 };
 
 if (options.watch) {
-  const ctx = await esbuild.context({
-    ...buildOptions,
-    plugins,
-  });
+  const ctx = await esbuild.context(buildOptions);
   console.log("Watching...");
   await ctx.watch();
 } else {

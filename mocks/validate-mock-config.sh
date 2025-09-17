@@ -6,7 +6,7 @@ set -e
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 MOCK_CONFIG_DIR="$SCRIPT_DIR/config"
-CONFIG_VALIDATOR_DIR="$SCRIPT_DIR/../backend/config"
+CONFIG_VALIDATOR_DIR="$SCRIPT_DIR/../backend/config/validator"
 
 cd "${CONFIG_VALIDATOR_DIR}"
 ./validate-config.sh "${MOCK_CONFIG_DIR}"

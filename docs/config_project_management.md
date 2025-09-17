@@ -120,6 +120,9 @@ ticketManagement:
 > **Note**
 > Set the `JIRA_API_TOKEN` secret in your [secrets configuration](./secret_management.md).
 
+> **Note**
+> Jira integration uses the V3 REST API by default. This can be changed using the `JIRA_CLIENT` environment variable. See [Environment Variables](./env_vars.md) for configuration options.
+
 Extract from the `workload-config.yaml` file:
 
 ```yaml

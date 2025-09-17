@@ -1,0 +1,59 @@
+post:
+  summary: Returns a list files changed in association with bugs.
+  description: ...
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - workload
+            - range
+          properties:
+            workload:
+              type: string
+            range:
+              type: integer
+              minimum: 1
+              maximum: 366
+
+  responses:
+    "200":
+      description: A list of bug culprit files
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                workloadId:
+                  type: string
+                componentName:
+                  type: string
+                repoName:
+                  type: string
+                pathData:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                      coverage:
+                        type: string
+                      issueIds:
+                        type: array
+                        items:
+                          type: string
+                      path:
+                        type: string
+
+    "400":
+      description: A bad request for bug culprit files
+      content:
+        application/json:
+          schema:
+            $ref: "../../../components/schemas/Error.yaml"

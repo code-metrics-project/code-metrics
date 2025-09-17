@@ -151,6 +151,10 @@ export type Workload = {
   incidents: WorkloadTicketConfig;
   pipelines: WorkloadPipelinesConfig;
   projectManagement: WorkloadTicketConfig;
+  qualityGates: {
+    id: string;
+    version: string;
+  };
 };
 
 export type SoftwareComponent = {

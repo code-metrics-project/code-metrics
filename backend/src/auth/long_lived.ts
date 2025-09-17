@@ -145,11 +145,11 @@ export const revokeLongLivedAccessToken = async (tokenId: string): Promise<boole
       return await collection.deleteOne({ tokenId });
     });
     if (deleted) {
-      warn(`No long-lived access token found with ID: ${tokenId}`);
-      return false;
-    } else {
       logger(`Long-lived access token with ID ${tokenId} revoked successfully`);
       return true;
+    } else {
+      warn(`No long-lived access token found with ID: ${tokenId}`);
+      return false;
     }
   } catch (e) {
     throw new Error(`Failed to revoke long-lived access token with ID: ${tokenId}: ${e.message}`);

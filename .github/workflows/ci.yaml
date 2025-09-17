@@ -35,7 +35,7 @@ jobs:
         with:
           node-version-file: "/backend/.nvmrc"
       - name: Install backend config dependencies
-        working-directory: backend/config
+        working-directory: backend/config/validator
         run: npm install
       - name: Validate mock config
         run: ./mocks/validate-mock-config.sh

@@ -1,33 +1,25 @@
-import fetch from "node-fetch";
-import { limitConcurrency } from "../../utils/retry";
-import { logResponseBody } from "../../utils/responses";
-import { getAllIssueManagementUrls, getWorkloadById } from "../../config/configMapping";
-import { JiraTicketOptions, TicketManagementTypes } from "../../model/config/common";
-import { logger, verbose, warn } from "../../utils/logger/logger";
-import { TicketConfigManager, TicketService, TimeRangeMode } from "./ticketService";
-import { LightweightIssue } from "../../model/tickets";
-import { provideDatastore } from "../../db/factory";
-import { Datastore, DatastoreCollection } from "../../db/api";
-import { truncateDateOnly } from "../../utils/date";
-import { AuthMethod, TicketManagementServer } from "../../model/config/remote-config";
-import { Workload, WorkloadId, WorkloadTicketConfigJira } from "../../model/config/workload-config";
-import Bottleneck from "bottleneck";
-import { getConfigItemAsNumber } from "../../config/sources/source";
+import { getAllIssueManagementUrls, getWorkloadById } from "../../../config/configMapping";
+import { JiraTicketOptions } from "../../../model/config/common";
+import { logger, verbose, warn } from "../../../utils/logger/logger";
+import { TicketConfigManager, TicketService, TimeRangeMode } from "../ticketService";
+import { LightweightIssue } from "../../../model/tickets";
+import { provideDatastore } from "../../../db/factory";
+import { Datastore, DatastoreCollection } from "../../../db/api";
+import { truncateDateOnly } from "../../../utils/date";
+import { Workload, WorkloadId, WorkloadTicketConfigJira } from "../../../model/config/workload-config";
+import { getConfigItem, getConfigItemAsNumber } from "../../../config/sources/source";
+import { createJiraClient, JiraClient, JiraClientType } from "./client";
 
-const MAX_RESULTS_PER_QUERY = 100;
 const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600);
 const COLLECTION_NAME_ISSUES = "issues";
 const ISSUE_PATTERN = /([A-Z][A-Z0-9]{1,4}-\d{1,6})/;
 
-const limiter = new Bottleneck({
-  maxConcurrent: 4,
-});
-
-type JiraConfigManager = TicketConfigManager<WorkloadTicketConfigJira, JiraTicketOptions>;
+export type JiraConfigManager = TicketConfigManager<WorkloadTicketConfigJira, JiraTicketOptions>;
 
 export class JiraTicketService implements TicketService {
-  private configManager: JiraConfigManager;
-  private cache: Datastore<{ workload: string; key: string }, DatastoreCollection>;
+  private readonly configManager: JiraConfigManager;
+  private jiraClient: JiraClient = null;
+  private readonly cache: Datastore<{ workload: string; key: string }, DatastoreCollection>;
 
   constructor(configManager: JiraConfigManager) {
     this.configManager = configManager;
@@ -128,57 +120,12 @@ export class JiraTicketService implements TicketService {
    * @param workloadId
    * @param fields - limit to improve performance
    */
-  // https://<Jira base URL>/rest/api/2/search?jql=project%20%3D%20TEST%20AND%20issuetype%20in%20(Bug)
   private fetchAllIssuesViaAPI = async (rawJql: string, workloadId: WorkloadId, fields: string[] = []) => {
-    const jiraServer = this.configManager.getServerConfig(TicketManagementTypes.JIRA, workloadId);
-    const jql = jiraServer.filter ? `(${rawJql}) AND ${jiraServer.filter}` : rawJql;
-    logger(`Querying Jira ${jiraServer.id} with JQL: ${jql}`);
-
-    const options = this.getRequestOptions(jiraServer);
-    let allIssues = [];
-    let resultTotal = -1;
-
-    while (resultTotal === -1 || allIssues.length < resultTotal) {
-      const url = `${jiraServer.url}/rest/api/2/search?maxResults=${MAX_RESULTS_PER_QUERY}&startAt=${
-        allIssues.length
-      }&fields=${fields.join(",")}&jql=${jql}`;
-      const response: any = await limitConcurrency(limiter, async () =>
-        fetch(url, options)
-          .then((res) => res.json())
-          .then((response) => logResponseBody(url, response)),
-      );
-      if (response.errorMessages) {
-        throw new Error(`Failed to query Jira with JQL: ${jql} - error: ${response.errorMessages.join()}`);
-      }
-      resultTotal = response.total;
-      allIssues = [...allIssues, ...response.issues];
-      logger(`${allIssues.length} of ${resultTotal} Jira issues retrieved`);
+    if (!this.jiraClient) {
+      const clientVersion = getConfigItem("JIRA_CLIENT", JiraClientType.REST_API_V3_SEARCH_JQL) as JiraClientType;
+      this.jiraClient = createJiraClient(this.configManager, clientVersion);
     }
-
-    return allIssues;
-  };
-
-  private getRequestOptions = (server: TicketManagementServer) => {
-    const options = {
-      headers: {},
-    };
-
-    switch (server.authMethod) {
-      case AuthMethod.BASIC_AUTH: {
-        const encodedAuth = Buffer.from(`${server.email}:${server.apiKey}`).toString("base64");
-        options.headers["Authorization"] = `Basic ${encodedAuth}`;
-        break;
-      }
-      case AuthMethod.BEARER_TOKEN: {
-        options.headers["Authorization"] = `Bearer ${server.apiKey}`;
-        break;
-      }
-      default: {
-        throw new Error(`Unsupported auth method: ${server.authMethod}`);
-      }
-    }
-
-    return options;
+    return this.jiraClient.fetchAllIssuesViaAPI(rawJql, workloadId, fields);
   };
 
   private getAllKeys = async (

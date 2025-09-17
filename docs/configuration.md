@@ -12,7 +12,7 @@ These files model how your teams are organised, and contain settings to interact
 
 The `remote-config.yaml` file controls how you connect to your external systems.
 
-Start by copying the file `remote-config.yaml.example` and name it `remote-config.yaml`, then set the configuration relevant for your team's tooling setup.
+Start by copying the file `examples/remote-config.yaml` and name it `remote-config.yaml`, then set the configuration relevant for your team's tooling setup.
 
 This file has a section for each type of external system:
 
@@ -29,7 +29,7 @@ This file has a section for each type of external system:
 
 The `workload-config.yaml` file models how you represent your teams/repositories.
 
-Start by copying the file `workload-config.yaml.example` and name it `workload-config.yaml`.
+Start by copying the file `examples/workload-config.yaml` and name it `workload-config.yaml`.
 
 This file contains the structure and hooks used to organise and map the data produced within the remote systems to each team. The information gathered can be aggregated and filtered based on the options provided.
 
@@ -102,7 +102,7 @@ Configuration files can be in JSON or YAML format. For example, `remote-config.y
 
 In the documentation we refer to the YAML filenames, but the same structure applies to JSON format files in line with JSON syntax.
 
-Examples of all configuration files are provided by the project, e.g. `remote-config.yaml.example`.
+Examples of all configuration files are provided by the project, e.g. `examples/remote-config.yaml`.
 
 #### CORS
 

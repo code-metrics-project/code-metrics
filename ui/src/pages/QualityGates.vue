@@ -68,11 +68,13 @@
           <template v-slot:item.qualityGates="{ item }">
             <v-chip
               v-if="item.qualityGates"
-              v-for="qualityGateName in allQualityGates"
+              v-for="qualityGateName in Object.keys(item.qualityGates)"
               :append-icon="
-                !!item.qualityGates[qualityGateName] ? 'mdi-clipboard-check' : 'mdi-clipboard-text-off-outline'
+                hasQualityGate(item.qualityGates[qualityGateName])
+                  ? 'mdi-clipboard-check'
+                  : 'mdi-clipboard-text-off-outline'
               "
-              :color="!!item.qualityGates[qualityGateName] ? 'green' : 'red'"
+              :color="hasQualityGate(item.qualityGates[qualityGateName]) ? 'green' : 'red'"
               class="ma-1"
               variant="outlined"
               >{{ capitalize(qualityGateName) }}</v-chip
@@ -83,37 +85,37 @@
             <tr>
               <td :colspan="columns.length" class="py-2">
                 <v-sheet rounded="lg" border>
-                  <v-table density="compact">
+                  <v-table v-if="item.qualityGates" density="compact">
                     <tbody class="bg-surface-light">
                       <tr>
-                        <th v-for="qualityGateName in allQualityGates">{{ capitalize(qualityGateName) }}</th>
+                        <th />
+                        <th v-for="qualityGateName in Object.values(item.qualityGates)[0].map((qg) => qg.phase)">
+                          {{ capitalize(qualityGateName) }}
+                        </th>
                       </tr>
                     </tbody>
 
                     <tbody>
-                      <tr>
-                        <td class="quality-gate-details-cell" v-for="qualityGateName in allQualityGates">
-                          <dl class="quality-gate-details" v-for="job in item.qualityGates?.[qualityGateName]">
+                      <tr v-for="[qualityGateName, qualityGatePhases] in Object.entries(item.qualityGates)">
+                        <td>{{ capitalize(qualityGateName) }}</td>
+                        <td v-for="phase in qualityGatePhases" class="quality-gate-details-cell">
+                          <dl class="quality-gate-details" v-for="job in phase.gates">
                             <div>
                               <dt>Provider:</dt>
                               <dd>{{ job.provider }}</dd>
                             </div>
                             <div>
-                              <dt>Phase:</dt>
-                              <dd>{{ job.phase }}</dd>
-                            </div>
-                            <div>
                               <dt>File:</dt>
                               <dd>
-                                <a :href="item.repoLink + '/' + job.file">{{ job.file }}</a>
+                                <a :href="item.repoLink + '/' + job.config.file">{{ job.config.file }}</a>
                               </dd>
                             </div>
                             <div>
                               <dt>Path:</dt>
-                              <dd>{{ job.path }}</dd>
+                              <dd>{{ job.config.path }}</dd>
                             </div>
                             <div>
-                              <dt>Required:</dt>
+                              <dt>Enforced:</dt>
                               <dd>
                                 <v-icon
                                   color="primary"
@@ -126,6 +128,7 @@
                       </tr>
                     </tbody>
                   </v-table>
+                  <div v-else>No manifest found.</div>
                 </v-sheet>
               </td>
             </tr>
@@ -142,7 +145,7 @@ import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import { capitalize } from "lodash";
 import { Paths } from "@/router/paths";
-import { useQualityGates } from "@/vue-queries/qualityGates";
+import { useQualityGates, type TGate, type TPhase } from "@/vue-queries/qualityGates";
 
 const route = useRoute();
 const { t } = useI18n();
@@ -185,23 +188,13 @@ const { data, error, isError, isLoading } = useQualityGates({
   workloads: workloadId.value ? [workloadId.value] : [],
 });
 
-type TQualityGates = {
-  [key: string]: {
-    file: string;
-    path: string;
-    phase: string;
-    provider: string;
-    isRequiredStatusCheck?: boolean;
-  }[];
-};
-
 type FormattedData = {
   id: string;
   schema?: string;
   service?: string;
   repo: string;
   repoLink: string;
-  qualityGates?: TQualityGates;
+  qualityGates?: TGate;
 }[];
 
 const formattedData = computed(() => {
@@ -218,31 +211,17 @@ const formattedData = computed(() => {
     }
 
     manifest.services.forEach((manifestService) => {
-      const qualityGates: TQualityGates = {};
-
-      manifestService["quality-gates"].forEach((qualityGate) => {
-        qualityGate["check-types"].forEach((checkType) => {
-          qualityGates[checkType] = qualityGates[checkType] || [];
-          qualityGates[checkType].push({
-            file: qualityGate.config.file,
-            path: qualityGate.config.path,
-            phase: qualityGate.phase,
-            provider: qualityGate.provider,
-            isRequiredStatusCheck: qualityGate.isRequiredStatusCheck,
-          });
-        });
-      });
-
       fd.push({
         id: `${manifestService["service-tag"]}-${manifest.repo}`,
         schema: manifest.$schema,
         service: manifestService["service-tag"],
         repo: manifest.repo || "",
         repoLink: manifest.repoLink || "",
-        qualityGates,
+        qualityGates: manifestService["quality-gates"],
       });
     });
   });
+
   return fd;
 });
 
@@ -280,6 +259,10 @@ function getRequiredStatusCheckIcon(isRequiredStatusCheck?: boolean) {
   if (isRequiredStatusCheck === true) return "mdi-shield-check";
   if (isRequiredStatusCheck === false) return "mdi-shield-off-outline";
   return "mdi-shield-alert-outline";
+}
+
+function hasQualityGate(qualityGate: TPhase[]) {
+  return !!qualityGate.find((qg) => qg.gates.length);
 }
 </script>
 

@@ -184,9 +184,9 @@ jobs:
         working-directory: backend
         run: |
           cp .env.template .env
-          cp config/examples/remote-config.yaml.example remote-config.yaml
-          cp config/examples/users.json.example users.json
-          cp config/examples/workload-config.yaml.example workload-config.yaml
+          cp config/examples/remote-config.yaml remote-config.yaml
+          cp config/examples/users.json users.json
+          cp config/examples/workload-config.yaml workload-config.yaml
       - name: Unit test backend + output coverage
         working-directory: backend
         run: npm test
@@ -198,11 +198,11 @@ jobs:
         run: |
           cp .env.template dist/.env
           mkdir -p dist/config
-          cp config/examples/dashboard-config.json.example dist/config/dashboard-config.json
-          cp config/examples/queries-config.json.example dist/config/queries-config.json
-          cp config/examples/remote-config.yaml.example dist/config/remote-config.yaml
-          cp config/examples/users.json.example dist/config/users.json
-          cp config/examples/workload-config.yaml.example dist/config/workload-config.yaml
+          cp config/examples/dashboard-config.json dist/config/dashboard-config.json
+          cp config/examples/queries-config.json dist/config/queries-config.json
+          cp config/examples/remote-config.yaml dist/config/remote-config.yaml
+          cp config/examples/users.json dist/config/users.json
+          cp config/examples/workload-config.yaml dist/config/workload-config.yaml
       - name: Upload built backend app artifact
         uses: actions/upload-artifact@v4
         with:
@@ -245,9 +245,9 @@ jobs:
         working-directory: backend
         run: |
           cp .env.template .env
-          cp config/examples/remote-config.yaml.example remote-config.yaml
-          cp config/examples/users.json.example users.json
-          cp config/examples/workload-config.yaml.example workload-config.yaml
+          cp config/examples/remote-config.yaml remote-config.yaml
+          cp config/examples/users.json users.json
+          cp config/examples/workload-config.yaml workload-config.yaml
       - name: Run slow backend tests + output coverage
         working-directory: backend
         run: "npm run test:slow"
@@ -287,9 +287,9 @@ jobs:
         working-directory: backend
         run: |
           cp .env.template .env
-          cp config/examples/remote-config.yaml.example remote-config.yaml
-          cp config/examples/users.json.example users.json
-          cp config/examples/workload-config.yaml.example workload-config.yaml
+          cp config/examples/remote-config.yaml remote-config.yaml
+          cp config/examples/users.json users.json
+          cp config/examples/workload-config.yaml workload-config.yaml
       - name: Integration test backend + output coverage
         working-directory: backend
         env:

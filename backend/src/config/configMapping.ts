@@ -14,6 +14,7 @@ import {
   TicketManagementConfigWrapper,
 } from "../model/config/remote-config";
 import { JobNameMapping, Workload, WorkloadConfigWrapper, WorkloadId } from "../model/config/workload-config";
+import { QualityGatesConfig } from "../model/config/quality-gates-config";
 
 const DEFAULT_TICKET_PRIORITIES = ["Lowest", "Low", "Medium", "High", "Highest"];
 
@@ -30,6 +31,25 @@ export const getWorkloadById = (id: WorkloadId): Workload | null =>
  */
 export const getWorkloadsWithRepoGroup = (repoGroup: string): Workload[] =>
   getConfig().workloadConfigs.workloads.filter((w) => Object.keys(w.codeManagement.repoGroups).includes(repoGroup));
+
+export const getQualityGatesByIdAndVersion = (id: string, version: string) => {
+  const qualityGatesConfigs = getConfig().qualityGatesConfigs["quality-gates"];
+  const matchingQualityGatesConfig = qualityGatesConfigs.find((qgc) => qgc.id === id && qgc.version === version);
+  if (!matchingQualityGatesConfig) {
+    throw new Error(
+      `Attempted to load quality gate with ID "${id}" and version "${version}", but this could not be found in the quality gates config.`,
+    );
+  }
+  return matchingQualityGatesConfig;
+};
+
+export const getQualityGatesByWorkloadId = (id: WorkloadId): QualityGatesConfig => {
+  const config = getConfig();
+  const qualityGatesMapping = config.workloadConfigs.workloads.find((workload) => workload.id === id).qualityGates;
+  if (!qualityGatesMapping) throw new Error(`No quality gates mapping defined for workload "${id}"`);
+  const matchingQualityGatesConfig = getQualityGatesByIdAndVersion(qualityGatesMapping.id, qualityGatesMapping.version);
+  return matchingQualityGatesConfig;
+};
 
 /**
  * List all workloads in the configuration.

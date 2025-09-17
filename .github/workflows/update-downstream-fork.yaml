@@ -1,0 +1,51 @@
+name: Update downstream fork
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run - show what would be done without making changes"
+        required: false
+        default: "true"
+
+jobs:
+  update-downstream-fork:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout upstream repo (code-metrics)
+        uses: actions/checkout@v4
+        with:
+          path: code-metrics
+
+      - name: Checkout downstream repo (code-metrics/external-collab)
+        uses: actions/checkout@v4
+        with:
+          repository: code-metrics-project/external-collab
+          ssh-key: ${{ secrets.EXT_COLLAB_REPO_SSH_KEY }}
+          ref: main
+          path: code-metrics-external-collab
+
+      - name: Install rsync
+        run: sudo apt-get update && sudo apt-get install -y rsync
+
+      - name: Configure git
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        working-directory: code-metrics-external-collab
+        run: |
+          git config --global user.name 'CodeMetrics upstream bot'
+          git config --global user.email 'code-metrics-project@users.noreply.github.com'
+
+      - name: Run update-downstream-fork.sh
+        working-directory: code-metrics/scripts/downstream-fork
+        env:
+          UPSTREAM_REPO_PATH: ${{ github.workspace }}/code-metrics
+          DOWNSTREAM_REPO_PATH: ${{ github.workspace }}/code-metrics-external-collab
+        run: |
+          chmod +x update-downstream-fork.sh
+          ./update-downstream-fork.sh ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }} ${{ github.event.inputs.dry_run == 'true' && '' || '--commit' }}
+
+      - name: Push changes to downstream repo
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        working-directory: code-metrics-external-collab
+        run: git push origin main

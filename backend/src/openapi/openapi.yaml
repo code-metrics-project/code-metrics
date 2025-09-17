@@ -1,0 +1,14 @@
+openapi: 3.0.4
+info:
+  title: Codemetrics API
+  description: Backend for the Codemetrics Service.
+  version: 2.40.2
+
+paths:
+  /api/analysis/bug-culprit-files:
+    $ref: "./paths/api/analysis/bug-culprit-files.yaml"
+
+components:
+  schemas:
+    Error:
+      $ref: "./components/schemas/Error.yaml"

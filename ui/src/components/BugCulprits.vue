@@ -4,7 +4,7 @@
     <v-card-subtitle>Identify files that are potential bug culprits.</v-card-subtitle>
 
     <v-card-text v-if="!!isError">
-      <v-alert type="error">Failed to analyse {{ workload }}: {{ error }}</v-alert>
+      <v-alert type="error">{{ error?.message }}</v-alert>
     </v-card-text>
 
     <v-card-text v-if="data?.length === 0">
@@ -112,7 +112,7 @@ const headers = [
 ];
 
 const { data, error, isError, isFetching, refetch } = useBugCulprit({
-  daysBack: range,
+  range,
   workload,
 });
 

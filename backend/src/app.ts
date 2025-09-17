@@ -44,11 +44,11 @@ import {
 import { getAuthenticator } from "./auth/auth";
 import { getCorsOrigin } from "./utils/server";
 import {
-  refreshSession,
-  logout,
   generateServiceToken,
+  listServiceTokenIds,
+  logout,
+  refreshSession,
   revokeServiceToken,
-  listServiceTokenIds
 } from "./routes/authentication";
 import { initCodePipelinePipelines } from "./services/pipelines/codepipeline";
 import { initDynatracePipelines } from "./services/pipelines/dynatrace";
@@ -61,7 +61,8 @@ import { initNoOpIncidents } from "./services/incidentManagement/noop";
 import { initNoOpIssues } from "./services/projectManangement/noop";
 import { InvocationMode } from "./model/global";
 import { fetchQualityGates } from "./routes/qualityGates";
-import { getConfigItemAsNumber, getConfigItemAsBoolean, getConfigItem } from "./config/sources/source";
+import { getConfigItem, getConfigItemAsBoolean, getConfigItemAsNumber } from "./config/sources/source";
+import { buildOpenAPIValidator, openAPIErrorHandler } from "./middleware/openAPIValidator";
 
 const CONFIG_REFRESH_MS = getConfigItemAsNumber("CONFIG_REFRESH_MS", 30000);
 const configReloadFlag = getConfigItemAsBoolean("CONFIG_AUTO_RELOAD");
@@ -143,6 +144,8 @@ const initApi = async (): Promise<Express> => {
   }
 
   app.use(express.json());
+  app.use(buildOpenAPIValidator(__dirname));
+  app.use(openAPIErrorHandler);
   addRoutes(new SecureRouter(app));
   return app;
 };

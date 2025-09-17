@@ -6,7 +6,14 @@ system:
       preloadFile: "historic/bugs.json"
 
 resources:
+# Deprecated endpoint
 - path: /rest/api/2/search
+  method: get
+  response:
+    scriptFile: search.js
+
+# Currently supported endpoint
+- path: /rest/api/3/search/jql
   method: get
   response:
     scriptFile: search.js

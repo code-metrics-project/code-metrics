@@ -89,6 +89,10 @@ This documentation is intended for people deploying and configuring Code Metrics
 - [Kubernetes](./helm.md)
 - [Local Node.js](./run_local_node.md)
 
+### Administration Portal
+
+- [Administration Portal](./admin_portal.md)
+
 ## Feature support
 
 See a list of [supported features](./features.md) for third party tools.

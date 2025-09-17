@@ -30,4 +30,7 @@ export enum Paths {
   NewQuery = "/explore/query/new",
   SavedQueries = "/explore/query",
   SavedQuery = "/explore/query/:collectionId",
+
+  AdminHome = "/admin",
+  AdminTokens = "/admin/tokens",
 }

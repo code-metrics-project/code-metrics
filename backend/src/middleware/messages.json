@@ -1,0 +1,18 @@
+{
+  "enum.openapi.validation": "The value you entered is not one of the allowed options.",
+  "exclusiveMaximum.openapi.validation": "The value must be less than the allowed maximum.",
+  "exclusiveMinimum.openapi.validation": "The value must be greater than the allowed minimum.",
+  "maximum.openapi.validation": "The value is too large.",
+  "maxItems.openapi.validation": "Too many items provided.",
+  "maxLength.openapi.validation": "The text is too long.",
+  "maxProperties.openapi.validation": "Too many fields provided.",
+  "minimum.openapi.validation": "The value is too small.",
+  "minItems.openapi.validation": "Not enough items provided.",
+  "minLength.openapi.validation": "The text is too short.",
+  "minProperties.openapi.validation": "Not enough fields provided.",
+  "multipleOf.openapi.validation": "The value must be a multiple of the required number.",
+  "pattern.openapi.validation": "The value does not match the required format.",
+  "required.openapi.validation": "This field is required.",
+  "type.openapi.validation": "The value is the wrong type (e.g. text instead of number).",
+  "uniqueItems.openapi.validation": "Duplicate items are not allowed. Please ensure all items are unique."
+}

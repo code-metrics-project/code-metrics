@@ -1,0 +1,15 @@
+type: object
+properties:
+  errors:
+    type: array
+    items:
+      type: object
+      properties:
+        status:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+        console:
+          type: string

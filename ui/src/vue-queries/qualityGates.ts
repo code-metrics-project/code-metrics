@@ -4,6 +4,15 @@ import axios from "@/utils/axios";
 import type { Ref } from "vue";
 import { KEYS } from "./keys";
 
+export type TPhase = {
+  phase: string;
+  gates: TQualityGate[];
+};
+
+export type TGate = {
+  [key: string]: TPhase[];
+};
+
 export type TQualityGate = {
   "check-types": string[];
   provider: string;
@@ -22,7 +31,7 @@ export type TQualityGateManifest = {
   repoLink?: string;
   services: {
     "service-tag": string;
-    "quality-gates": TQualityGate[];
+    "quality-gates": TGate;
   }[];
 };
 

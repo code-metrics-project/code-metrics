@@ -70,12 +70,8 @@ jobs:
           popd
           pushd backend/config
           zip -r ../../dist/config.zip \
-            *.schema.json \
-            validate-config.js \
-            validate-config.sh \
-            package.json \
-            package-lock.json \
-            README.md
+            examples \
+            validator
           popd
           pushd dist
           ls -l

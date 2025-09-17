@@ -1,0 +1,40 @@
+quality-gates:
+  - id: default
+    version: 0.1.0
+    environments:
+      - pre-merge
+      - pre-upload
+      - build
+      - staging
+      - production
+      - integration
+    gates:
+      - accessibility
+      - canary
+      - code style and linting
+      - contract
+      - cross service integration
+      - integration
+      - new feature
+      - regression
+      - secret scanning
+      - sensitive data scanning
+      - smoke
+      - stack
+      - system
+      - unit
+      - unit
+      - unit test coverage
+      - vulnerability detection
+
+  - id: alternative
+    version: 0.1.0
+    environments:
+      - pre-merge
+      - production
+    gates:
+      - accessibility
+      - canary
+      - code style and linting
+      - unit
+      - vulnerability detection

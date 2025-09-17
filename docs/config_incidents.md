@@ -42,6 +42,9 @@ ticketManagement:
 > **Note**
 > Set the `JIRA_API_KEY` secret in your [secrets configuration](./secret_management.md).
 
+> **Note**
+> Jira integration uses the V3 REST API by default. This can be changed using the `JIRA_CLIENT` environment variable. See [Environment Variables](./env_vars.md) for configuration options.
+
 If you need to further limit the incidents to be returned, you can add a `filter` to the server configuration:
 
 ```yaml

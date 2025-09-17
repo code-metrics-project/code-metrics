@@ -6,9 +6,7 @@ import { RepoData } from "../model/vcs";
 import { processAllIssues } from "../services/bugCulprits/process";
 
 export const findBugCulprits = async (req: Request, res: Response<RepoData[] | string>): Promise<void> => {
-  const { daysBack, workload: workloadId } = req.body;
-  if (!workloadId) throw new Error("workload is required");
-  if (!daysBack) throw new Error("daysBack is required");
+  const { range: daysBack, workload: workloadId } = req.body;
 
   const workload = getWorkloadById(workloadId);
   logger(`Finding bug culprits for ${workloadId} over last ${daysBack} days`);

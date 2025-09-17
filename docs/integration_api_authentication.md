@@ -13,11 +13,42 @@ Service Tokens are long-lived authentication credentials that allow applications
 
 ## Generating a Service Token
 
+There are two ways to generate a Service Token for your CodeMetrics instance:
+
+1. **Admin UI Method** (Recommended for most users)
+2. **API Method** (For programmatic token generation)
+
 ### Prerequisites
 
 - Access to a CodeMetrics instance
 - Valid user account with appropriate permissions
 - Ability to authenticate to the CodeMetrics web interface
+
+## Method 1: Using the Admin UI (Recommended)
+
+The easiest way to generate a Service Token is through the Administration Portal:
+
+### Step 1: Access the Admin Portal
+
+1. Log in to your CodeMetrics instance using your regular user credentials
+2. Navigate to the Administration section
+3. Click on "Manage Service Tokens" from the Service Tokens card
+
+### Step 2: Create the Token
+
+1. Click the "Create Token" button
+2. Enter the subject name for the service or application that will use this token
+3. Click "Create Token"
+
+### Step 3: Copy Your Token
+
+After creation, the token value is displayed only once. Copy and store it securely, as it cannot be retrieved again for security reasons.
+
+For detailed instructions with screenshots, see the [Administration Portal documentation](./admin_portal.md#creating-a-new-service-token).
+
+## Method 2: Using the API Directly
+
+For programmatic token generation or when integrating token creation into automated workflows:
 
 ### Step 1: Authenticate to CodeMetrics
 
@@ -50,6 +81,8 @@ The API response will contain your new Service Token:
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
+
+## Security Considerations for Both Methods
 
 **Important Security Considerations:**
 

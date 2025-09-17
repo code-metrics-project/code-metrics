@@ -146,6 +146,16 @@ const routes = [
     component: () => import(/* webpackChunkName: "configmissing" */ "@/pages/ConfigMissing.vue"), //dynamic import of component and dependency
   },
   {
+    path: Paths.AdminHome,
+    name: "Admin Home",
+    component: () => import(/* webpackChunkName: "adminhome" */ "@/pages/admin/Admin.vue"), //dynamic import of component and dependency
+  },
+  {
+    path: Paths.AdminTokens,
+    name: "Admin Tokens",
+    component: () => import(/* webpackChunkName: "admintokens" */ "@/pages/admin/Tokens.vue"), //dynamic import of component and dependency
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "404",
     component: () => import(/* webpackChunkName: "error404" */ "@/pages/404.vue"), //dynamic import of component and dependency },

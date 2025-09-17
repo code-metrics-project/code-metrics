@@ -26,7 +26,7 @@ The file is a simple key/value map.
 ]
 ```
 
-Copy the example file `users.json.example` to get started.
+Copy the example file `examples/users.json` to get started.
 
 ### The `userconfig` tool
 

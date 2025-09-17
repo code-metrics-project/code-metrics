@@ -1,7 +1,8 @@
 import {
   generateLongLivedAccessToken,
   validateLongLivedAccessToken,
-  revokeLongLivedAccessToken
+  revokeLongLivedAccessToken,
+  listLongLivedAccessTokenIds
 } from "../long_lived";
 import { IN_MEMORY_DATASTORE, registerDatastore } from "../../db/factory";
 import { InMemoryDatastore } from "../../db/inmem/db";
@@ -85,12 +86,8 @@ describe("long_lived", () => {
 
       await generateLongLivedAccessToken("some-external-tool", user);
 
-      // The token should be stored in the datastore and we can verify it exists
-      // by trying to revoke it. Based on the current implementation logic (which appears inverted),
-      // revokeLongLivedAccessToken returns false when token is found and deleted
-      const revokeResult = await revokeLongLivedAccessToken("test-token-store-check");
-      // Current implementation returns false when token is successfully deleted
-      expect(revokeResult).toBe(false);
+      const tokenIds = await listLongLivedAccessTokenIds();
+      expect(tokenIds).toContainEqual(expect.objectContaining({ tokenId: "test-token-store-check" }));
     });
   });
 
@@ -154,7 +151,7 @@ describe("long_lived", () => {
       );
     });
 
-    it("should return false when token is successfully revoked (current implementation)", async () => {
+    it("should return true when token is successfully revoked", async () => {
       // First generate a token to revoke
       const user = { name: "testuser" };
       mockGenerateToken.mockReturnValue({
@@ -167,20 +164,14 @@ describe("long_lived", () => {
       await generateLongLivedAccessToken("some-external-tool", user);
 
       const result = await revokeLongLivedAccessToken("test-token-id-revoke-success");
-
-      // Note: Current implementation returns false when token is successfully deleted
-      // This appears to be incorrect logic and should probably return true
-      expect(result).toBe(false);
+      expect(result).toBe(true);
     });
 
-    it("should return true when token is not found (current implementation)", async () => {
+    it("should return false when token is not found", async () => {
       const tokenId = "non-existent-token";
 
       const result = await revokeLongLivedAccessToken(tokenId);
-
-      // Note: Current implementation returns true when no token is found to delete
-      // This appears to be incorrect logic and should probably return false
-      expect(result).toBe(true);
+      expect(result).toBe(false);
     });
 
     it("should not be able to validate a revoked token", async () => {
@@ -202,9 +193,8 @@ describe("long_lived", () => {
       await new Promise(resolve => setTimeout(resolve, 50));
       expect(callback1).toHaveBeenCalledWith(true, "testuser");
 
-      // Revoke the token (returns false in current implementation when successful)
       const revokeResult = await revokeLongLivedAccessToken("test-token-id-revoke-validate");
-      expect(revokeResult).toBe(false);
+      expect(revokeResult).toBe(true);
 
       // Try to validate again - should fail
       const callback2 = jest.fn();

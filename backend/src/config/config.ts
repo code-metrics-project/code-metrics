@@ -13,6 +13,7 @@ import { StageConfigWrapper } from "../model/config/pipeline-config";
 import { redactAndRenderAsJson } from "../utils/logger/redact";
 import { isStrictMode } from "../utils/strict";
 import { getConfigItem } from "./sources/source";
+import { QualityGatesConfigWrapper } from "../model/config/quality-gates-config";
 
 let cachedConfig: ConfigHolder;
 
@@ -32,6 +33,7 @@ export const loadConfig = async (overrides?: {
   remoteConfig?: RemoteConfigWrapper;
   workloadConfig?: WorkloadConfigWrapper;
   pipelineConfig?: StageConfigWrapper;
+  qualityGatesConfig?: QualityGatesConfigWrapper;
 }) => {
   const configDirs = getConfigDirs(overrides?.dir);
   logger(`Loading from configuration dir: ${configDirs}`);
@@ -58,6 +60,15 @@ export const loadConfig = async (overrides?: {
       pipelineConfigs:
         overrides?.pipelineConfig ??
         (await readConfig(configDirs, "pipeline-config", { required: false, resolveSecrets: true }, { stages: [] })),
+
+      qualityGatesConfigs:
+        overrides?.qualityGatesConfig ??
+        (await readConfig(
+          configDirs,
+          "quality-gates-config",
+          { required: false, resolveSecrets: true },
+          { stages: [] },
+        )),
     };
     cachedConfig = applyDefaults(polyfillLegacyConfig(loadedConfig));
     configLoaded = true;

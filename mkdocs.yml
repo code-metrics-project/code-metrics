@@ -1,7 +1,7 @@
 site_name: Code Metrics
 
 theme:
-  name: 'material'
+  name: "material"
   logo: img/codemetrics_logo_plain_transparent.png
   favicon: img/favicon.png
   palette:
@@ -15,74 +15,77 @@ markdown_extensions:
   - attr_list
 
 nav:
-  - Introduction: 'README.md'
-  - Getting started: 'getting_started.md'
-  - Configuration guide: 'configuration.md'
+  - Introduction: "README.md"
+  - Getting started: "getting_started.md"
+  - Configuration guide: "configuration.md"
   - Workloads:
-    - Workload summary: 'workloads.md'
-    - CI/CD pipelines: 'pipelines.md'
-    - Tags: 'tags.md'
-  - Feature support: 'features.md'
+      - Workload summary: "workloads.md"
+      - CI/CD pipelines: "pipelines.md"
+      - Tags: "tags.md"
+  - Feature support: "features.md"
 
   - Queries and filters:
-    - Introduction: 'queries.md'
-    - Query types:
-      - Overview: 'query_types.md'
-      - Bugs: 'query_bugs.md'
-      - Bug culprits: 'query_bug_culprits.md'
-      - DORA metrics: 'dora.md'
-      - CI/CD pipelines: 'query_pipelines.md'
-      - Repository churn: 'query_repo_churn.md'
-      - Source code metrics: 'query_source_code.md'
-      - Outside working pattern: 'query_working_pattern.md'
-      - Production incidents: 'query_incidents.md'
-      - Vulnerabilities: 'query_vulnerabilities.md'
-      - Change types: 'query_change_types.md'
-    - Chart types: 'charts.md'
+      - Introduction: "queries.md"
+      - Query types:
+          - Overview: "query_types.md"
+          - Bugs: "query_bugs.md"
+          - Bug culprits: "query_bug_culprits.md"
+          - DORA metrics: "dora.md"
+          - CI/CD pipelines: "query_pipelines.md"
+          - Repository churn: "query_repo_churn.md"
+          - Source code metrics: "query_source_code.md"
+          - Outside working pattern: "query_working_pattern.md"
+          - Production incidents: "query_incidents.md"
+          - Vulnerabilities: "query_vulnerabilities.md"
+          - Change types: "query_change_types.md"
+      - Chart types: "charts.md"
 
   - Quality Gates:
-    - User guide: 'quality_gates_user.md'
-    - Administration guide: 'quality_gates_admin.md'
+      - User guide: "quality_gates_user.md"
+      - Administration guide: "quality_gates_admin.md"
 
   - Configuration:
-    - Overview: 'configuration.md'
-    - Datastores: 'datastores.md'
-    - Secrets management: 'secret_management.md'
+      - Overview: "configuration.md"
+      - Datastores: "datastores.md"
+      - Secrets management: "secret_management.md"
 
-    - Authentication:
-      - Overview: 'authentication.md'
-      - Azure Authentication: 'authentication_azure.md'
-      - Cognito Authentication: 'authentication_cognito.md'
-      - File Authentication: 'authentication_file.md'
-      - Keycloak Authentication: 'authentication_keycloak.md'
-      - LDAP Authentication: 'authentication_ldap.md'
-      - OpenID Connect (OIDC) Authentication: 'authentication_oidc.md'
+      - Authentication:
+          - Overview: "authentication.md"
+          - Azure Authentication: "authentication_azure.md"
+          - Cognito Authentication: "authentication_cognito.md"
+          - File Authentication: "authentication_file.md"
+          - Keycloak Authentication: "authentication_keycloak.md"
+          - LDAP Authentication: "authentication_ldap.md"
+          - OpenID Connect (OIDC) Authentication: "authentication_oidc.md"
 
-    - Configuration files:
-      - Code analysis: 'config_code_quality.md'
-      - Code management: 'config_code_management.md'
-      - Deployment: 'config_deployments.md'
-      - Pipelines: 'config_pipelines.md'
-      - Project management (bugs): 'config_project_management.md'
-      - Production incidents: 'config_incidents.md'
-      - Workloads: 'config_workloads.md'
+      - Configuration files:
+          - Code analysis: "config_code_quality.md"
+          - Code management: "config_code_management.md"
+          - Deployment: "config_deployments.md"
+          - Pipelines: "config_pipelines.md"
+          - Project management (bugs): "config_project_management.md"
+          - Production incidents: "config_incidents.md"
+          - Workloads: "config_workloads.md"
+          - Quality gates: "config_quality_gates.md"
 
-    - Custom queries: 'custom_queries.md'
-    - Environment variables: 'env_vars.md'
+      - Custom queries: "custom_queries.md"
+      - Environment variables: "env_vars.md"
 
-  - Architecture: 'architecture.md'
+  - Architecture: "architecture.md"
 
   - Deployment:
-    - Deployment overview: 'deployment.md'
-    - Docker: 'deployment_docker.md'
-    - AWS Lambda: 'deployment_lambda.md'
-    - Kubernetes: 'helm.md'
-    - "Local Node.js": 'run_local_node.md'
+      - Deployment overview: "deployment.md"
+      - Docker: "deployment_docker.md"
+      - AWS Lambda: "deployment_lambda.md"
+      - Kubernetes: "helm.md"
+      - "Local Node.js": "run_local_node.md"
 
   - Other:
-    - Prediction: 'prediction.md'
-    - Vulnerability report upload: 'vulnerability_report_upload.md'
+      - Prediction: "prediction.md"
+      - Vulnerability report upload: "vulnerability_report_upload.md"
 
-  - Integrating with the CodeMetrics API:
-    - API Integration Overview: 'integration_api.md'
-    - Authenticating to the CodeMetrics API: 'integration_api_authentication.md'
+  - Administration Portal: "admin_portal.md"
+
+  - Integrate with the CodeMetrics API:
+      - API Integration Overview: "integration_api.md"
+      - Authenticating to the CodeMetrics API: "integration_api_authentication.md"
