@@ -1,5 +1,6 @@
 .DS_Store
 dist
+.env
 
 # Editor directories and files
 .idea

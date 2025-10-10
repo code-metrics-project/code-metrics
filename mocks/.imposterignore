@@ -1,3 +1,4 @@
 pipeline-config.yaml
+quality-gates-config.yaml
 remote-config.yaml
 workload-config.yaml

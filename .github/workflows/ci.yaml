@@ -13,14 +13,15 @@ jobs:
         id: vars
         run: |
           if [ "$GITHUB_REPOSITORY" = "DeloitteDigitalUK/code-metrics" ]; then
-            python3 ./scripts/set_vars.py --verbose
+            python3 ./.github/set_vars.py --verbose
           else
-            python3 ./scripts/set_vars.py --verbose \
+            python3 ./.github/set_vars.py --verbose \
+              --set desktop=false \
+              --set docker=false \
               --set helm=false \
               --set machinelearning=false \
-              --set threatmodel=false \
-              --set desktop=false \
-              --set docker=false
+              --set mcp=false \
+              --set threatmodel=false
           fi
 
   validate-config:
@@ -38,7 +39,11 @@ jobs:
         working-directory: backend/config/validator
         run: npm install
       - name: Validate mock config
-        run: ./mocks/validate-mock-config.sh
+        working-directory: mocks
+        run: ./validate-mock-config.sh
+      - name: Validate example config
+        working-directory: backend/config/validator
+        run: ./validate-config.sh ../examples
 
   validate:
     needs: [setvars, validate-config]

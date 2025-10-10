@@ -11,6 +11,7 @@ const schemas = {
   workload: require("./workload-config.schema.json"),
   remote: require("./remote-config.schema.json"),
   pipeline: require("./pipeline-config.schema.json"),
+  "quality-gates": require("./quality-gates-config.schema.json"),
 };
 
 function loadConfig(filePath) {
@@ -39,6 +40,8 @@ function inferConfigType(fileName) {
     return "remote";
   } else if (fileName.startsWith("pipeline")) {
     return "pipeline";
+  } else if (fileName.startsWith("quality-gates")) {
+    return "quality-gates";
   } else {
     throw new Error(`Unknown config type for file: ${fileName}`);
   }

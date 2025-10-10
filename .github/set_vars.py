@@ -17,8 +17,8 @@ SERVICE_DIRS: List[str] = [
     "ui"
 ]
 FOLD_RULES: List[str] = [
-    # if .github changes, trigger many components (note component name is github not .github)
-    "github:docker:machinelearning:backend:ui:helm:threatmodel:examples",
+    # if .github changes, trigger many components
+    "github:docker:machinelearning:backend:ui:helm:threatmodel:examples:desktop",
     
     # if backend changes, trigger docker and mocks
     "backend:docker:mocks",
@@ -85,16 +85,25 @@ def main(argv=None) -> None:
     overrides, verbose = parse_set_args(argv)
     base = git_base_ref()
 
-    # Build the set of "sources" to examine: all service dirs + every lhs in FOLD_RULES
-    sources = set(SERVICE_DIRS)
+    # Build mapping from normalized names to actual directory paths
+    norm_to_dir = {}
+    for d in SERVICE_DIRS:
+        norm_to_dir[norm(d)] = d
+
+    # Build the set of "sources" to examine (using normalized names)
+    sources = set()
+    for d in SERVICE_DIRS:
+        sources.add(norm(d))
     for rule in FOLD_RULES:
-        src = rule.split(":")[0]
+        src = norm(rule.split(":")[0])
         sources.add(src)
 
     # Raw changes per normalized key
     values: Dict[str, int] = {}
-    for d in sorted(sources):
-        values[norm(d)] = dir_changed(base, d)
+    for normalized in sorted(sources):
+        # Use the actual directory path if it exists, otherwise use normalized name
+        actual_path = norm_to_dir.get(normalized, normalized)
+        values[normalized] = dir_changed(base, actual_path)
 
     # Apply folding rules (OR logic)
     emit_keys = {norm(d) for d in SERVICE_DIRS}         # always emit these

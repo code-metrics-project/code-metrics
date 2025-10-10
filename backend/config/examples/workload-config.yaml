@@ -1,4 +1,6 @@
 ---
+version: "2.0"
+
 workloads:
 - id: athena
   name: "Athena team"
@@ -8,15 +10,15 @@ workloads:
     projectName: athena
     repoGroups:
       backend:
-        repoNames:
-        - /spring-.*/
+        components:
+        - repo: /spring-.*/
       frontend:
         sonarTags:
         - fe
       platform:
-        repoNames:
-        - /.*_platform/
-        - /.*_infrastructure/
+        components:
+        - repo: /.*_platform/
+        - repo: /.*_infrastructure/
   pipelines:
     type: azure
     serverId: mock-azure
@@ -32,18 +34,24 @@ workloads:
         jobNames:
         - /.*_platform/
         - /.*_infrastructure/
+    stages:
+      - stageId: azure-deployment-pipeline
   codeAnalysis:
     type: sonar
     serverId: mock-sonar
+    mappings:
+      - key: petclinic
+        vcsRepoName: spring-petclinic
   projectManagement:
     type: jira
     serverId: mock-jira
-    project: DEV
-    bugs:
-      teamFilterJql: '"Team name[Dropdown]" in ("Athena")'
-      prodFilterJql: '"Project Environment[Dropdown]" = PROD'
-    incidents:
-      teamFilterJql: '"Team name[Dropdown]" in ("Athena")'
+    projectName: DEV
+    teamFilterJql: '"Team name[Dropdown]" in ("Athena")'
+  incidents:
+    type: jira
+    serverId: mock-jira
+    projectName: INCIDENT
+    teamFilterJql: '"Team name[Dropdown]" in ("Athena")'
 
 - id: gaia
   codeManagement:
@@ -79,15 +87,18 @@ workloads:
         jobNames:
           - /.*_platform/
           - /.*_infrastructure/
+    stages:
+      - stageId: azure-deployment-pipeline
   projectManagement:
     type: jira
     serverId: mock-jira
     teamFilterJql: '"Team name[Dropdown]" in ("Gaia")'
-    project: DEV
+    projectName: DEV
     prodFilterJql: '"Project Environment[Dropdown]" = PROD'
-  deployment:
-    deploymentId: github-deployment-pipeline
-
-repoMappings:
-- sonarProjectKey: petclinic
-  vcsRepoName: spring-petclinic
+  incidents:
+    type: servicenow
+    serverId: mock-servicenow
+    tableName: incident
+  qualityGates:
+    id: default
+    version: 0.1.0

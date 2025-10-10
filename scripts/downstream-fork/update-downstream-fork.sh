@@ -178,7 +178,7 @@ echo ".github/workflows/update-github-container-reg.yaml" >> "$TEMP_EXCLUDE_FILE
 rsync -av --exclude-from="$TEMP_EXCLUDE_FILE" . "${DOWNSTREAM_REPO_PATH}/"
 
 # After copying, update 'ubuntu-latest-l' typo in GitHub workflow files
-echo -e "${BLUE}🔧 Updating 'ubuntu-latest-l' typos in GitHub workflow files${NC}"
+echo -e "${BLUE}🔧 Updating 'ubuntu-latest-l' in GitHub workflow files${NC}"
 WORKFLOWS_DIR="${DOWNSTREAM_REPO_PATH}/.github/workflows"
 if [ -d "$WORKFLOWS_DIR" ]; then
     find "$WORKFLOWS_DIR" \( -name "*.yml" -o -name "*.yaml" \) -type f | while read -r wf; do

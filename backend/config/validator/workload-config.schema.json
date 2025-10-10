@@ -232,7 +232,16 @@
         "codeAnalysis": { "$ref": "#/definitions/WorkloadCodeAnalysisConfig" },
         "incidents": { "$ref": "#/definitions/WorkloadTicketConfig" },
         "pipelines": { "$ref": "#/definitions/WorkloadPipelinesConfig" },
-        "projectManagement": { "$ref": "#/definitions/WorkloadTicketConfig" }
+        "projectManagement": { "$ref": "#/definitions/WorkloadTicketConfig" },
+        "qualityGates": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": { "type": "string" },
+            "version": { "type": "string" }
+          },
+          "required": ["id", "version"]
+        }
       },
       "required": ["id", "codeManagement", "codeAnalysis", "incidents", "pipelines", "projectManagement"]
     }

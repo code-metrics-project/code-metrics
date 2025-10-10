@@ -1,0 +1,111 @@
+name: Validate
+on:
+  workflow_call:
+    inputs:
+      vars:
+        required: true
+        type: string
+
+env:
+  # prefer ipv4 stack (see https://nodejs.org/api/cli.html#--dns-result-orderorder)
+  NODE_OPTIONS: "--dns-result-order=ipv4first"
+
+jobs:
+  build-desktop-linux:
+    if: ${{ fromJSON(inputs.vars).desktopComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "/desktop/.nvmrc"
+      - name: Restore backend NPM cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ github.run_id }}
+          restore-keys: |
+            npm-
+      - name: Install desktop dependencies
+        run: npm ci
+
+      - name: Install Linux packaging deps (Linux only)
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libnss3 libxss1 libasound2t64 fakeroot rpm
+
+      - name: Build full app (backend, ui, electron)
+        run: |
+          npm run install:ext
+          npm run dist:prod
+
+      - name: Build Electron App
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:linux
+
+      - name: Upload Desktop artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-linux
+          path: |
+            desktop/dist-build/*.AppImage
+            desktop/dist-build/*.tar.gz
+          retention-days: 1
+
+  build-desktop-mac-win:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+        include:
+          # This is 10:1min cost
+          - os: macos-latest
+            platform: mac
+            buildScript: dist:mac
+            artifactName: mac-build
+          # This is 2:1min cost
+          - os: windows-latest
+            platform: win
+            buildScript: dist:win
+            artifactName: win-build
+
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "/desktop/.nvmrc"
+      - name: Restore backend NPM cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ github.run_id }}
+          restore-keys: |
+            npm-
+      - name: Install desktop dependencies
+        run: npm ci
+
+      - name: Build full app (backend, ui, electron)
+        run: |
+          npm run install:ext
+          npm run dist:prod
+
+      - name: Build Electron App
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run ${{ matrix.buildScript }}
+
+      - name: Upload Desktop artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.platform }}
+          path: |
+            desktop/dist-build/**
+          retention-days: 1

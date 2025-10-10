@@ -1,4 +1,6 @@
 ---
+version: "2.0"
+
 codeAnalysis:
   sonar:
     servers:
@@ -45,7 +47,8 @@ codeManagement:
         apiKey: ''
         branches:
           - main
-  gitlab: {}
+  gitlab:
+    servers: []
 
 pipelines:
   azure:
@@ -69,45 +72,70 @@ pipelines:
       branches:
       - main
 
-projectManagement:
+ticketManagement:
   azure:
-    defaults:
-      bugs:
-        issueTypes:
-        - Bug
-      incidents:
-        issueTypes:
-        - Issue
     servers:
       - id: example-azure
         url: https://dev.azure.com/example-azure-org
-        apiKey: ''
+        apiKey: ""
+        authMethod: BEARER_TOKEN
         project: Project Name
+        defaults:
+          ticketTypes:
+            - Issue
+
   jira:
-    defaults:
-      bugs:
-        issueTypes:
-        - Bug
-      incidents:
-        issueTypes:
-        - Incident
-      ticketPriorities:
-      - Lowest
-      - Low
-      - Medium
-      - High
-      - Highest
     servers:
     - id: example-jira-1
       url: https://example-jira-1.atlassian.net
       email: user@example.co.uk
       apiKey: changeme
       authMethod: BASIC_AUTH
+      defaults:
+        ticketTypes:
+          - Bug
+        ticketPriorities:
+          - Lowest
+          - Low
+          - Medium
+          - High
+          - Highest
+
     - id: example-jira-2
       url: https://example-jira-2.atlassian.net
       apiKey: changeme
       authMethod: BEARER_TOKEN
+      defaults:
+        ticketTypes:
+          - Bug
+        ticketPriorities:
+          - Lowest
+          - Low
+          - Medium
+          - High
+          - Highest
+
     - id: mock-jira
       url: http://localhost:8080
       apiKey: ''
       authMethod: BEARER_TOKEN
+      defaults:
+        ticketTypes:
+          - Bug
+        ticketPriorities:
+          - Lowest
+          - Low
+          - Medium
+          - High
+          - Highest
+
+  servicenow:
+    servers:
+      - id: mock-servicenow
+        url: http://mocks:8080
+        apiKey: ""
+        authMethod: CUSTOM
+        defaults:
+          ticketPriorities: ["1", "2", "3"]
+          tableName: "incident"
+          projectName: "ATHENA"

@@ -110,6 +110,9 @@ workloads:
       serverId: mock-jira
       teamFilterJql: '"Team name[Dropdown]" in ("Gaia")'
       projectName: INCIDENT
+    qualityGates:
+      id: default
+      version: 0.1.0
 
   - id: icarus
     tags:

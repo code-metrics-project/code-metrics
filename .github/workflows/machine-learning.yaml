@@ -1,0 +1,53 @@
+name: Validate
+on:
+  workflow_call:
+    inputs:
+      vars:
+        required: true
+        type: string
+
+jobs:
+  validate-machine-learning:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    if: ${{ fromJSON(inputs.vars).machinelearningComponents }}
+    permissions:
+      contents: read
+    env:
+      python-upload-version: "3.12"
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          # Install a specific version of uv.
+          version: "0.6.16"
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the project
+        working-directory: machinelearning
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run tests
+        working-directory: machinelearning
+        run: uv run -m pytest
+
+      - name: Lint with Ruff
+        working-directory: machinelearning
+        run: |
+          uv tool install ruff
+          uv tool run ruff check --output-format=github .
+        continue-on-error: true
+      - name: Build package
+        working-directory: machinelearning
+        run: uv build
+      - name: Upload UI artifact
+        if: matrix.python-version == env.python-upload-version
+        uses: actions/upload-artifact@v4
+        with:
+          name: machinelearning
+          path: machinelearning/dist
+          retention-days: 1
