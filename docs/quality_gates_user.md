@@ -4,12 +4,20 @@ Quality Gates are automated checks ensuring code meets quality standards before 
 
 ## Overview
 
-Quality Gates provide visibility into your development process by showing which automated checks are configured for each repository and service. This helps engineering teams understand:
+Quality Gates provide visibility into your development process by showing which automated checks are configured for each repository and service, organized by repository groups. This helps engineering teams understand:
 
 - What quality checks are in place across their codebase
 - Which checks are required before code can be merged
 - How consistent quality standards are across different repositories
 - Where gaps in quality automation might exist
+- Overall quality gate coverage across repository groups
+
+The dashboard displays quality gate information organized by repository groups, with each group showing an overall implementation score. This score indicates how many quality gate types have been implemented compared to the total number defined in your quality gates configuration. Color-coded indicators provide at-a-glance visibility into coverage levels:
+
+- **Green**: High coverage (80% or above of defined quality gates implemented)
+- **Orange**: Moderate coverage (30-79% of defined quality gates implemented)
+- **Red**: Low coverage (below 30% of defined quality gates implemented)
+- **Grey**: No data available (missing manifests or no matching services)
 
 ## Accessing Quality Gates
 
@@ -17,31 +25,42 @@ Quality Gates can be viewed at two levels:
 
 ### Programme Level
 
-Navigate to **Programme** → **Quality Gates** to see quality gates across all workloads and repositories.
+Navigate to **Programme** → **Quality Gates** to see quality gates across all workloads and repositories, organized by repository groups.
 
 ![Programme Quality Gates](img/programme_quality_gates.png)
 
 ### Workload Level
 
-Navigate to **Workloads** → _[Select Workload]_ → **Quality Gates** to see quality gates for a specific workload.
-
-![Workload Quality Gates](img/workload_quality_gates.png)
+Navigate to **Workloads** → _[Select Workload]_ → **Quality Gates** to see quality gates for a specific workload, organized by repository groups.
 
 ## Understanding the Quality Gates Dashboard
 
-The Quality Gates dashboard displays information in a table format with the following columns:
+The Quality Gates dashboard displays information as cards, with each card representing a repository group within a workload.
 
-### Service
+### Repository Group Cards
 
-The name of the service as defined in the quality gate manifest file.
+Each card shows:
 
-### Repo
+**Header**: Color-coded to indicate the overall quality gate coverage level (green, orange, red, or grey)
 
-The repository name, which links directly to the repository in your version control system.
+**Title**: Shows the workload and repository group name
 
-### Quality Gates
+**Headline Metrics**:
 
-Visual indicators showing which types of quality checks are configured:
+- Implementation status (e.g., "5 of 8 implemented" shows that 5 quality gate types are implemented out of 8 defined in your configuration)
+- Missing data count (if applicable, shows how many repositories lack quality gate manifests or matching service definitions)
+
+**Summary Information**:
+
+- Total number of repositories in the group
+
+### Quality Gate Details
+
+Expand a card to see detailed information for each repository:
+
+**Repository Name**: Links directly to the repository in your version control system
+
+**Quality Gate Badges**: Visual indicators showing which types of quality checks are configured:
 
 - **Green badges**: Quality checks that are configured and enabled
 - **Red badges**: Quality check types that are not configured
@@ -56,7 +75,7 @@ Common quality gate types include:
 
 ## Viewing Detailed Information
 
-Click the **More info** button next to any service to expand detailed information about each quality gate:
+Click the **Details** button on any repository group card to expand and view detailed information about each repository's quality gates. Within the expanded view, click **More info** next to any repository to see comprehensive details about each configured quality gate:
 
 ### Provider
 
@@ -84,13 +103,13 @@ Shows whether the check is required for merging (indicated by a shield icon):
 - **Shield with check**: Required status check - code cannot be merged without this passing
 - **Shield with outline**: Optional check - failure won't block merging
 
-## Searching and Filtering
+## Navigating Repository Groups
 
-Use the search box at the top of the dashboard to quickly find specific:
+Quality gates are organized by repository groups, with each group displayed as a separate card. To find specific repositories or services:
 
-- Service names
-- Repository names
-- Quality gate types
+- Browse the cards by workload and repository group
+- Expand individual cards to view the repositories within each group
+- Use the browser's find function (Ctrl+F or Cmd+F) to search for specific repository or service names within expanded cards
 
 ## Benefits for Development Teams
 
@@ -98,7 +117,7 @@ Quality Gates provide several benefits:
 
 ### Consistency
 
-See at a glance which repositories have comprehensive quality checks and which might need additional automation.
+See at a glance which repository groups and repositories have comprehensive quality checks and which might need additional automation. The color-coded cards provide immediate visibility into coverage levels across your organization.
 
 ### Transparency
 
@@ -125,11 +144,13 @@ Well-configured services typically have quality gates for:
 
 ### Risk Indicators
 
-Services with missing quality gates may indicate:
+Repository groups or individual repositories with missing quality gates may indicate:
 
 - Newer repositories that haven't yet implemented full automation
 - Legacy services that might benefit from additional quality checks
 - Opportunities to standardise development practices
+
+Red or orange cards highlight areas that may need attention to improve quality gate coverage.
 
 ## Next Steps
 

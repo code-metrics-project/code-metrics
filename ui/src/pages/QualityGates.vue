@@ -23,118 +23,194 @@
     </v-row>
   </v-container>
 
-  <v-container>
-    <v-row>
-      <v-col>
-        <v-text-field
-          v-model="search"
-          label="Search"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          hide-details
-          single-line
-        ></v-text-field>
+  <v-container fluid v-if="isLoading">
+    <v-row :cols="12" :sm="6" :md="4" :lg="3" :xl="2">
+      <v-col :cols="12" :sm="6" :xl="4">
+        <v-skeleton-loader class="mx-auto border" type="image, article"></v-skeleton-loader>
+      </v-col>
+      <v-col :cols="12" :sm="6" :xl="4">
+        <v-skeleton-loader class="mx-auto border" type="image, article"></v-skeleton-loader>
+      </v-col>
+      <v-col :cols="12" :sm="6" :xl="4">
+        <v-skeleton-loader class="mx-auto border" type="image, article"></v-skeleton-loader>
+      </v-col>
+      <v-col :cols="12" :sm="6" :xl="4">
+        <v-skeleton-loader class="mx-auto border" type="image, article"></v-skeleton-loader>
+      </v-col>
+      <v-col :cols="12" :sm="6" :xl="4">
+        <v-skeleton-loader class="mx-auto border" type="image, article"></v-skeleton-loader>
+      </v-col>
+      <v-col :cols="12" :sm="6" :xl="4">
+        <v-skeleton-loader class="mx-auto border" type="image, article"></v-skeleton-loader>
+      </v-col>
+    </v-row>
+  </v-container>
 
-        <v-data-table
-          :headers="columnHeaders"
-          :items="formattedData"
-          :items-per-page="100"
-          :loading="isLoading"
-          item-value="id"
-          :search="search"
-          show-expand
+  <v-container fluid v-if="data?.length">
+    <v-row :cols="12" :sm="6" :md="4" :lg="3" :xl="2">
+      <template v-for="(workload, workloadIndex) in data" :key="workloadIndex">
+        <v-col
+          v-for="(repoGroup, repoGroupIndex) in workload.repoGroups"
+          :key="repoGroupIndex"
+          :cols="12"
+          :sm="6"
+          :xl="4"
         >
-          <template v-slot:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
-            <v-btn
-              v-if="internalItem.raw.service"
-              :append-icon="isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-              :text="isExpanded(internalItem) ? 'Collapse' : 'More info'"
-              class="text-none"
-              color="medium-emphasis"
-              size="small"
-              variant="text"
-              width="105"
-              border
-              slim
-              @click="toggleExpand(internalItem)"
-            ></v-btn>
-            <p v-else>No manifest found.</p>
-          </template>
+          <v-card>
+            <v-sheet :color="convertVariantToColour(repoGroup.headline.variant)">
+              <v-card-title class="white--text">{{ workload.workloadId }} / {{ repoGroup.repoGroup }}</v-card-title>
+            </v-sheet>
 
-          <template v-slot:item.repo="{ item }">
-            <a :href="item.repoLink" target="_BLANK">{{ item.repo }}</a>
-          </template>
+            <div>
+              <v-card-title class="text-h4">
+                <template v-if="repoGroup.headline.denominator > 0"
+                  >{{ repoGroup.headline.numerator }} of {{ repoGroup.headline.denominator }} implemented</template
+                >
+                <template v-else>No data</template>
+              </v-card-title>
 
-          <template v-slot:item.qualityGates="{ item }">
-            <v-chip
-              v-if="item.qualityGates"
-              v-for="qualityGateName in Object.keys(item.qualityGates)"
-              :append-icon="
-                hasQualityGate(item.qualityGates[qualityGateName])
-                  ? 'mdi-clipboard-check'
-                  : 'mdi-clipboard-text-off-outline'
-              "
-              :color="hasQualityGate(item.qualityGates[qualityGateName]) ? 'green' : 'red'"
-              class="ma-1"
-              variant="outlined"
-              >{{ capitalize(qualityGateName) }}</v-chip
-            >
-          </template>
+              <div v-if="repoGroup.headline.missing > 0">
+                <v-card-subtitle>{{ repoGroup.headline.missing }} repo(s) missing data</v-card-subtitle>
+              </div>
+            </div>
 
-          <template v-slot:expanded-row="{ columns, item }">
-            <tr>
-              <td :colspan="columns.length" class="py-2">
-                <v-sheet rounded="lg" border>
-                  <v-table v-if="item.qualityGates" density="compact">
-                    <tbody class="bg-surface-light">
+            <v-card-text>
+              <span class="text--secondary">Number of repos: </span>
+              <strong>{{ repoGroup.repos.length }}</strong>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-btn text="Details"></v-btn>
+
+              <v-spacer></v-spacer>
+
+              <v-btn
+                :icon="
+                  openDetails.has(`${workload.workloadId}-${repoGroup.repoGroup}`)
+                    ? 'mdi-chevron-up'
+                    : 'mdi-chevron-down'
+                "
+                @click="
+                  openDetails.has(`${workload.workloadId}-${repoGroup.repoGroup}`)
+                    ? openDetails.delete(`${workload.workloadId}-${repoGroup.repoGroup}`)
+                    : openDetails.add(`${workload.workloadId}-${repoGroup.repoGroup}`)
+                "
+              ></v-btn>
+            </v-card-actions>
+
+            <v-expand-transition>
+              <div v-show="openDetails.has(`${workload.workloadId}-${repoGroup.repoGroup}`)">
+                <v-divider></v-divider>
+
+                <v-card-text>
+                  <v-data-table
+                    :headers="REPO_COLUMN_HEADERS"
+                    :items="getQualityGateSummaries(repoGroup.repos)"
+                    :items-per-page="-1"
+                    :loading="isLoading"
+                    hide-default-footer
+                    item-value="id"
+                    show-expand
+                  >
+                    <template v-slot:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
+                      <v-btn
+                        v-if="internalItem.raw.service"
+                        :append-icon="isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                        :text="isExpanded(internalItem) ? 'Collapse' : 'More info'"
+                        class="text-none"
+                        color="medium-emphasis"
+                        size="small"
+                        variant="text"
+                        width="105"
+                        border
+                        slim
+                        @click="toggleExpand(internalItem)"
+                      ></v-btn>
+                      <p v-else>{{ internalItem.raw.message }}</p>
+                    </template>
+
+                    <template v-slot:item.repo="{ item }">
+                      <a :href="item.repoLink" target="_BLANK">{{ item.repo }}</a>
+                    </template>
+
+                    <template v-slot:item.qualityGates="{ item }">
+                      <v-chip
+                        v-if="item.qualityGates"
+                        v-for="qualityGateName in Object.keys(item.qualityGates)"
+                        :append-icon="
+                          hasQualityGate(item.qualityGates[qualityGateName])
+                            ? 'mdi-clipboard-check'
+                            : 'mdi-clipboard-text-off-outline'
+                        "
+                        :color="hasQualityGate(item.qualityGates[qualityGateName]) ? 'green' : 'red'"
+                        class="ma-1"
+                        size="x-small"
+                        variant="outlined"
+                        >{{ capitalize(qualityGateName) }}</v-chip
+                      >
+                    </template>
+
+                    <template v-slot:expanded-row="{ columns, item }">
                       <tr>
-                        <th />
-                        <th v-for="qualityGateName in Object.values(item.qualityGates)[0].map((qg) => qg.phase)">
-                          {{ capitalize(qualityGateName) }}
-                        </th>
-                      </tr>
-                    </tbody>
+                        <td :colspan="columns.length" class="py-2">
+                          <v-sheet rounded="lg" border>
+                            <v-table v-if="item.qualityGates" density="compact">
+                              <tbody class="bg-surface-light">
+                                <tr>
+                                  <th />
+                                  <th
+                                    v-for="qualityGateName in Object.values(item.qualityGates)[0].map((qg) => qg.phase)"
+                                  >
+                                    {{ capitalize(qualityGateName) }}
+                                  </th>
+                                </tr>
+                              </tbody>
 
-                    <tbody>
-                      <tr v-for="[qualityGateName, qualityGatePhases] in Object.entries(item.qualityGates)">
-                        <td>{{ capitalize(qualityGateName) }}</td>
-                        <td v-for="phase in qualityGatePhases" class="quality-gate-details-cell">
-                          <dl class="quality-gate-details" v-for="job in phase.gates">
-                            <div>
-                              <dt>Provider:</dt>
-                              <dd>{{ job.provider }}</dd>
-                            </div>
-                            <div>
-                              <dt>File:</dt>
-                              <dd>
-                                <a :href="item.repoLink + '/' + job.config.file">{{ job.config.file }}</a>
-                              </dd>
-                            </div>
-                            <div>
-                              <dt>Path:</dt>
-                              <dd>{{ job.config.path }}</dd>
-                            </div>
-                            <div>
-                              <dt>Enforced:</dt>
-                              <dd>
-                                <v-icon
-                                  color="primary"
-                                  :icon="getRequiredStatusCheckIcon(job.isRequiredStatusCheck)"
-                                ></v-icon>
-                              </dd>
-                            </div>
-                          </dl>
+                              <tbody>
+                                <tr v-for="[qualityGateName, qualityGatePhases] in Object.entries(item.qualityGates)">
+                                  <td>{{ capitalize(qualityGateName) }}</td>
+                                  <td v-for="phase in qualityGatePhases" class="quality-gate-details-cell">
+                                    <dl class="quality-gate-details" v-for="job in phase.gates">
+                                      <div>
+                                        <dt>Provider:</dt>
+                                        <dd>{{ job.provider }}</dd>
+                                      </div>
+                                      <div>
+                                        <dt>File:</dt>
+                                        <dd>
+                                          <a :href="item.repoLink + '/' + job.config.file">{{ job.config.file }}</a>
+                                        </dd>
+                                      </div>
+                                      <div>
+                                        <dt>Path:</dt>
+                                        <dd>{{ job.config.path }}</dd>
+                                      </div>
+                                      <div>
+                                        <dt>Enforced:</dt>
+                                        <dd>
+                                          <v-icon
+                                            color="primary"
+                                            :icon="getRequiredStatusCheckIcon(job.isRequiredStatusCheck)"
+                                          ></v-icon>
+                                        </dd>
+                                      </div>
+                                    </dl>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </v-table>
+                            <div v-else>{{ item.message }}</div>
+                          </v-sheet>
                         </td>
                       </tr>
-                    </tbody>
-                  </v-table>
-                  <div v-else>No manifest found.</div>
-                </v-sheet>
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
-      </v-col>
+                    </template>
+                  </v-data-table>
+                </v-card-text>
+              </div>
+            </v-expand-transition>
+          </v-card>
+        </v-col>
+      </template>
     </v-row>
   </v-container>
 </template>
@@ -143,9 +219,10 @@
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
-import { capitalize } from "lodash";
+import { capitalize, remove } from "lodash";
 import { Paths } from "@/router/paths";
-import { useQualityGates, type TGate, type TPhase } from "@/vue-queries/qualityGates";
+import { useQualityGates, type TGate, type TPhase, type TRepo } from "@/vue-queries/qualityGates";
+import { convertVariantToColour } from "@/utils/colours";
 
 const route = useRoute();
 const { t } = useI18n();
@@ -182,7 +259,7 @@ const items = workloadId.value
       },
     ];
 
-const search = ref("");
+const openDetails = ref(new Set());
 
 const { data, error, isError, isLoading } = useQualityGates({
   workloads: workloadId.value ? [workloadId.value] : [],
@@ -190,20 +267,23 @@ const { data, error, isError, isLoading } = useQualityGates({
 
 type FormattedData = {
   id: string;
-  schema?: string;
+  message: string;
   service?: string;
   repo: string;
   repoLink: string;
   qualityGates?: TGate;
 }[];
 
-const formattedData = computed(() => {
-  if (!data.value) return undefined;
+const getQualityGateSummaries = (repos: TRepo[]) => {
+  if (!repos) return undefined;
   const fd: FormattedData = [];
-  data.value.forEach((manifest) => {
-    if (!manifest.services) {
+  repos.forEach((manifest) => {
+    if (!manifest.services || !manifest.services.length) {
       fd.push({
         id: manifest.repo || "",
+        message: !manifest.services
+          ? "No manifest found in this repo."
+          : "No service in the manifest matches this repo group.",
         repo: manifest.repo || "",
         repoLink: manifest.repoLink || "",
       });
@@ -213,7 +293,7 @@ const formattedData = computed(() => {
     manifest.services.forEach((manifestService) => {
       fd.push({
         id: `${manifestService["service-tag"]}-${manifest.repo}`,
-        schema: manifest.$schema,
+        message: "Success",
         service: manifestService["service-tag"],
         repo: manifest.repo || "",
         repoLink: manifest.repoLink || "",
@@ -223,13 +303,9 @@ const formattedData = computed(() => {
   });
 
   return fd;
-});
+};
 
-const columnHeaders = [
-  {
-    title: "Service",
-    key: "service",
-  },
+const REPO_COLUMN_HEADERS = [
   {
     title: "Repo",
     key: "repo",
@@ -239,21 +315,6 @@ const columnHeaders = [
     key: "qualityGates",
   },
 ];
-
-const allQualityGates = computed(() => {
-  if (!formattedData.value) return undefined;
-
-  return [
-    ...formattedData.value.reduce((headers, fd) => {
-      if (!fd.qualityGates) return headers;
-
-      Object.keys(fd.qualityGates).forEach((key) => {
-        headers.add(key);
-      });
-      return headers;
-    }, new Set<string>()),
-  ].sort((a, b) => (a > b ? 1 : -1));
-});
 
 function getRequiredStatusCheckIcon(isRequiredStatusCheck?: boolean) {
   if (isRequiredStatusCheck === true) return "mdi-shield-check";

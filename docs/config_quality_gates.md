@@ -56,7 +56,7 @@ A quality gates configuration file contains a top-level key `quality-gates` whic
 - `id` (string): Identifier for the quality gates definition.
 - `version` (string): Semantic version of the definition. Used to allow safe evolution over time.
 - `environments` (string[]): List of environments where gates are assessed (e.g. `pre-merge`, `staging`, `production`).
-- `gates` (string[]): List of gate names relevant to your organisation (e.g. `unit`, `smoke`, `vulnerability detection`).
+- `gates` (string[]): List of gate names relevant to your organisation (e.g. `unit`, `smoke`, `vulnerability detection`). The number of gates defined here determines the denominator used in calculating quality gate coverage percentages for repository groups.
 
 ## Referencing from a workload
 
@@ -80,4 +80,15 @@ The referenced item must exist in `quality-gates-config.yaml`. If the `id` and `
 
 ## UI
 
-The Quality Gates page uses the selected workload's mapped quality gates to render the environments and gates. Update your workload mapping to change what is shown.
+The Quality Gates page uses the selected workload's mapped quality gates to organize and display quality gate information:
+
+- **Environments**: Used to group quality gates by phase in the detailed repository view
+- **Gates**: Used to determine the total number of quality gate types, which forms the denominator in coverage percentage calculations
+
+The Quality Gates dashboard displays repositories organized by repository groups, with each group showing:
+
+- An implementation score comparing implemented quality gates to the total defined gates
+- Color-coded indicators based on the percentage of gates implemented
+- Detailed breakdown of which specific gate types are configured for each repository
+
+Update your workload's quality gates mapping to change the environments and gates used for assessment. Adding more gates to the configuration will increase the denominator, potentially lowering coverage percentages until teams implement the additional quality checks.

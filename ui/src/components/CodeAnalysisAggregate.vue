@@ -129,25 +129,11 @@ import type {
   CoverageSummary,
   CodeAnalysisAggregateResponse,
   VariantGroupCoverage,
-  VariantType,
   WorkloadRepoGroupCoverage,
 } from "@/model/codeAnalysis";
 import { formatDecimal, formatInteger } from "@/utils/metricDisplay";
 import RepoLink from "@/components/info/RepoLink.vue";
-
-function convertVariantToColor(variant: VariantType) {
-  switch (variant) {
-    case "no_data":
-      return "#CCCCCC";
-    case "success":
-      return "#4CAF50";
-    case "warning":
-      return "#FF9800";
-    case "danger":
-    default:
-      return "#F44336";
-  }
-}
+import { convertVariantToColour } from "@/utils/colours";
 
 type Data = {
   aggregate: boolean;
@@ -269,7 +255,7 @@ export default {
               ...current,
               previous,
               delta: deltaDesc,
-              variant: convertVariantToColor(current.variant),
+              variant: convertVariantToColour(current.variant),
               links,
             };
           });

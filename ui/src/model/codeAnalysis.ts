@@ -1,3 +1,5 @@
+import type { VariantType } from "@/utils/colours";
+
 export type CoverageSummary = {
   coverage: number;
   totalLinesToCover: number;
@@ -16,8 +18,6 @@ export type WorkloadRepoGroupCoverage = {
   numProjects: number;
   summary: CoverageSummary | undefined;
 };
-
-export type VariantType = "success" | "warning" | "danger" | "no_data";
 
 export type VariantGroupCoverage = WorkloadRepoGroupCoverage & {
   variant: VariantType;

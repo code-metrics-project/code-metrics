@@ -44,3 +44,6 @@ __pycache__/
 
 # Node
 node_modules/
+
+# Testing
+.playwright-mcp/

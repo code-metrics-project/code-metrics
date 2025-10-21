@@ -1,9 +1,15 @@
-import { getQualityGatesByWorkloadId, getWorkloadById, listWorkloadIds } from "../../config/configMapping";
+import {
+  getQualityGatesByWorkloadId,
+  getWorkloadById,
+  listRepoGroups,
+  listWorkloadIds,
+} from "../../config/configMapping";
 import { QualityGatesConfig } from "../../model/config/quality-gates-config";
 import { error, verbose, warn } from "../../utils/logger/logger";
 import { getReposForWorkloadId } from "../../utils/repos";
 import { getVcsForWorkload } from "../codeManagement/vcsService";
 import { Workload } from "../../model/config/workload-config";
+import { getConfigItemAsNumber } from "../../config/sources/source";
 
 type TQualityGate = {
   "check-types": string[];
@@ -39,16 +45,35 @@ export type TGate = {
 export type TQualityGateOutput = {
   $schema?: string;
   repo?: string;
+  repoGroup?: string;
   repoLink?: string;
   services?: {
     "service-tag": string;
     "quality-gates": TGate;
   }[];
+  workloadId?: string;
 };
 
 export type TMergeRules = {
   id: number;
   name: string;
+};
+
+export type TRepoGroupQualityGates = {
+  headline: {
+    denominator: number;
+    missing: number;
+    numerator: number;
+    variant: "success" | "warning" | "danger" | "no_data";
+  };
+  repos: TQualityGateOutput[];
+  repoGroup: string;
+  workloadId: string;
+};
+
+export type TWorkloadQualityGates = {
+  workloadId: string;
+  repoGroups: TRepoGroupQualityGates[];
 };
 
 function parseManifest(file: string) {
@@ -74,7 +99,7 @@ const fillMissingPhases = (environments: string[], qualityGates: { [key: string]
     acc[key] = environments.map((phase) => {
       return {
         phase,
-        gates: value.filter((gate) => gate.phase === phase)
+        gates: value.filter((gate) => gate.phase === phase),
       };
     });
     return acc;
@@ -88,7 +113,7 @@ export function enrichManifest(
   repoLink: string,
   manifest: TQualityGateManifest,
   rules: TMergeRules[],
-  qualityGatesConfig: QualityGatesConfig
+  qualityGatesConfig: QualityGatesConfig,
 ): TQualityGateOutput {
   if (!manifest) return { repo, repoLink };
   /**
@@ -115,15 +140,15 @@ export function enrichManifest(
       ...service,
       ["quality-gates"]: fillMissingPhases(
         qualityGatesConfig.environments,
-        fillMissingQualityGates(qualityGatesConfig.gates, service["quality-gates"])
-      )
+        fillMissingQualityGates(qualityGatesConfig.gates, service["quality-gates"]),
+      ),
     };
   });
 
   return {
     repo,
     repoLink,
-    services
+    services,
   };
 }
 
@@ -132,30 +157,26 @@ export function enrichManifest(
  * @param workload
  * @param repoName
  */
-const getQualityGate = async (
-  workload: Workload,
-  repoName: string
-): Promise<TQualityGateOutput> => {
+const getQualityGate = async (workload: Workload, repoName: string): Promise<TQualityGateOutput> => {
   const vcs = getVcsForWorkload(workload);
   const workloadId = workload.id;
   try {
     const [manifest, rules] = await Promise.all([
       parseManifest(
-        await vcs.fetchFile(workloadId, workload.codeManagement.projectName, repoName, "quality-gate.manifest.json")
+        await vcs.fetchFile(workloadId, workload.codeManagement.projectName, repoName, "quality-gate.manifest.json"),
       ),
-      vcs.fetchMergeRules(workloadId, workload.codeManagement.projectName, repoName)
+      vcs.fetchMergeRules(workloadId, workload.codeManagement.projectName, repoName),
     ]);
     const qualityGate = enrichManifest(
       repoName,
       vcs.buildRepoLink(workloadId, repoName),
       manifest,
       rules,
-      getQualityGatesByWorkloadId(workloadId)
+      getQualityGatesByWorkloadId(workloadId),
     );
 
     verbose(`Fetched quality gate manifest for repo ${repoName} in workload ${workloadId}:`, qualityGate);
     return qualityGate;
-
   } catch (error) {
     warn(`Failed to fetch quality gate manifest for repo ${repoName} in workload ${workloadId}:`, error);
     // Return a basic quality gate object for repos that fail to fetch
@@ -166,29 +187,143 @@ const getQualityGate = async (
   }
 };
 
-export const getQualityGates = async (
-  requestWorkloadIds: string[],
-  repoGroups: string[]
-): Promise<TQualityGateManifest[]> => {
-  const qualityGateQueue = [];
+const qualityGateDangerThreshold = getConfigItemAsNumber("QUALITY_GATE_THRESHOLD_DANGER", 30);
+const qualityGateWarningThreshold = getConfigItemAsNumber("GUALITY_GATE_THRESHOLD_WARNING", 80);
 
-  const workloadIds = requestWorkloadIds.length ? requestWorkloadIds : listWorkloadIds();
+const getVariant = (numerator?: number, denominator?: number): "success" | "warning" | "danger" | "no_data" => {
+  if (typeof numerator !== "number" || typeof denominator !== "number" || denominator === 0) return "no_data";
 
-  for (const workloadId of workloadIds) {
-    const workload = getWorkloadById(workloadId);
-    if (!workload) {
-      warn(`Could not find workload with team ID: ${workloadId}`);
-      continue;
+  const percentage = (numerator / denominator) * 100;
+
+  if (percentage >= qualityGateWarningThreshold) {
+    return "success";
+  } else if (percentage >= qualityGateDangerThreshold) {
+    return "warning";
+  } else {
+    return "danger";
+  }
+};
+
+const getWorstNumeratorAndDenominator = (repoGroup: string, repos: TQualityGateOutput[]) => {
+  const repoScores = repos.map((repo) => {
+    if (!repo.services) return { missing: 1 };
+
+    const service = repo.services[0];
+
+    if (!service) {
+      console.warn("Multiple services found in this repo but none match the repoGroup");
+      return { missing: 1 };
     }
-    const repoNames = await getReposForWorkloadId(repoGroups, workloadId);
 
-    qualityGateQueue.push(
-      ...repoNames.map((repoName) => getQualityGate(workload, repoName))
-    );
+    const denominator = Object.keys(service["quality-gates"]).length;
+
+    const numerator = Object.values(service["quality-gates"]).reduce((acc, gates) => {
+      const change = gates.find((gate) => gate.gates.length > 0) ? 1 : 0;
+      return acc + change;
+    }, 0);
+
+    return { missing: 0, numerator, denominator };
+  });
+
+  return repoScores.reduce(
+    (acc, repoScore) => {
+      if (repoScore.missing) {
+        return {
+          ...acc,
+          missing: acc.missing + repoScore.missing,
+        };
+      }
+
+      if (!acc.denominator) {
+        return {
+          ...repoScore,
+          missing: acc.missing + repoScore.missing,
+        };
+      }
+
+      const existingScore = acc.numerator / acc.denominator;
+      const currentScore = repoScore?.numerator / repoScore?.denominator;
+      if (currentScore > existingScore || (currentScore === existingScore && repoScore.denominator > acc.denominator)) {
+        return {
+          ...repoScore,
+          missing: acc.missing + repoScore.missing,
+        };
+      }
+      return {
+        ...acc,
+        missing: acc.missing + repoScore.missing,
+      };
+    },
+    { missing: 0, numerator: 0, denominator: 0 },
+  );
+};
+
+const stripExternalServices = (repoGroup: string, repos: TQualityGateOutput[]) => {
+  return repos.map((repo) => {
+    return {
+      ...repo,
+      services:
+        repo.services.length === 1
+          ? repo.services
+          : repo.services.filter((service) => service["service-tag"] === repoGroup),
+    };
+  });
+};
+
+const getRepoGroupQualityGates = async (workload: Workload, repoGroup: string): Promise<TRepoGroupQualityGates> => {
+  const groupRepoNames = await getReposForWorkloadId([repoGroup], workload.id);
+
+  const repos = await Promise.all(groupRepoNames.map(async (repoName) => getQualityGate(workload, repoName)));
+
+  const reposWithRelevantServices = stripExternalServices(repoGroup, repos);
+
+  const headlineResult = getWorstNumeratorAndDenominator(repoGroup, reposWithRelevantServices);
+
+  const variant = getVariant(headlineResult.numerator, headlineResult.denominator);
+
+  return {
+    headline: {
+      denominator: headlineResult.denominator,
+      missing: headlineResult.missing,
+      numerator: headlineResult.numerator,
+      variant,
+    },
+    repos: reposWithRelevantServices,
+    repoGroup,
+    workloadId: workload.id,
+  };
+};
+
+const getWorkloadQualityGates = async (workloadId: string, repoGroups?: string[]): Promise<TWorkloadQualityGates | undefined> => {
+  const workload = getWorkloadById(workloadId);
+  if (!workload) {
+    warn(`Could not find workload with team ID: ${workload.id}`);
+    return;
   }
 
-  const qualityGates = await Promise.all(qualityGateQueue);
+  const localRepoGroups = repoGroups?.length ? repoGroups : listRepoGroups(workload);
 
-  verbose(`Quality gate report:`, qualityGates);
-  return qualityGates;
+  return {
+    workloadId,
+    repoGroups: await Promise.all(
+      localRepoGroups.map(async (repoGroup) => getRepoGroupQualityGates(workload, repoGroup)),
+    ),
+  };
+};
+
+export const getQualityGates = async (
+  requestWorkloadIds: string[],
+  repoGroups?: string[],
+): Promise<TWorkloadQualityGates[]> => {
+  const workloadIds = requestWorkloadIds.length ? requestWorkloadIds : listWorkloadIds();
+
+  const qualityGates = await Promise.all(
+    workloadIds.map((workloadId) => getWorkloadQualityGates(workloadId, repoGroups)),
+  );
+
+  // Filter out undefined results (when workload is not found)
+  const validQualityGates = qualityGates.filter((qg): qg is TWorkloadQualityGates => qg !== undefined);
+
+  verbose(`Quality gate report:`, validQualityGates);
+  return validQualityGates;
 };

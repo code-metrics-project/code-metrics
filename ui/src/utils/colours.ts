@@ -89,3 +89,19 @@ export function getColourForKey(key: string, index: number) {
 function pickColour(category: string[], index: number): string {
   return category[index % category.length];
 }
+
+export type VariantType = "success" | "warning" | "danger" | "no_data";
+
+export function convertVariantToColour(variant: VariantType) {
+  switch (variant) {
+    case "no_data":
+      return "#CCCCCC";
+    case "success":
+      return "#4CAF50";
+    case "warning":
+      return "#FF9800";
+    case "danger":
+    default:
+      return "#F44336";
+  }
+}

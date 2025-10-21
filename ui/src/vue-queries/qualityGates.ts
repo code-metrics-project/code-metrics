@@ -3,6 +3,7 @@ import { QUALITY_GATES } from "@/utils/urls";
 import axios from "@/utils/axios";
 import type { Ref } from "vue";
 import { KEYS } from "./keys";
+import type { VariantType } from "@/utils/colours";
 
 export type TPhase = {
   phase: string;
@@ -25,14 +26,28 @@ export type TQualityGate = {
   isRequiredStatusCheck?: boolean;
 };
 
-export type TQualityGateManifest = {
-  $schema: string;
-  repo?: string;
-  repoLink?: string;
+export type TRepo = {
+  repo: string;
+  repoLink: string;
   services: {
     "service-tag": string;
     "quality-gates": TGate;
   }[];
+};
+
+export type TQualityGateManifest = {
+  repoGroups: {
+    headline: {
+      denominator: number;
+      missing: number;
+      numerator: number;
+      variant: VariantType;
+    };
+    repoGroup: string;
+    workloadId: string;
+    repos: TRepo[];
+  }[];
+  workloadId: string;
 };
 
 type QualityGatesRequest = {
