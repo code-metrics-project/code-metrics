@@ -82,3 +82,8 @@ resources:
     path: /repos/{owner}/{repo}/branches/{branch}/protection
     response:
       file: branch.json
+
+  - method: get
+    path: /repos/{owner}/{repo}/dependabot/alerts
+    response:
+      file: dependabotAlerts.json

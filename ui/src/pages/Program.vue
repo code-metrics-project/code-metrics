@@ -83,6 +83,18 @@
           </v-card-actions>
         </v-card>
       </v-col>
+      <v-col cols="12" sm="6" lg="4">
+        <v-card title="Dependency Alerts" class="d-flex flex-column fill-height">
+          <template v-slot:prepend>
+            <v-icon color="primary" icon="mdi-shield-alert"></v-icon>
+          </template>
+          <v-card-item>Programme dependency vulnerability alerts.</v-card-item>
+          <v-divider />
+          <v-card-actions>
+            <v-btn color="primary" plain :to="Paths.ProgramDependencyAlerts">Dependency Alerts</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
     </v-row>
   </v-container>
 </template>

@@ -22,6 +22,8 @@ export enum Paths {
   WorkloadPipelineRun = "/workload/pipeline-run",
   WorkloadPipelineHealth = "/workload/pipeline-health",
   WorkloadQualityGates = "/workload/:workloadId/quality-gates",
+  WorkloadDependencyAlerts = "/workload/dependency-alerts",
+  ProgramDependencyAlerts = "/program/dependency-alerts",
   ProgramTickets = "/workload/tickets",
   DORA = "/workload/dora",
 

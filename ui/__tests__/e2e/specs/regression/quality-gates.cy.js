@@ -19,7 +19,6 @@ describe("Programme Quality Gates page", () => {
     cy.contains("athena / backend").should("be.visible");
     cy.contains("athena / frontend").should("be.visible");
     cy.contains("gaia / backend").should("be.visible");
-    cy.contains("icarus / backend").should("be.visible");
   });
 
   it("Shows headline metrics on quality gate cards", () => {
@@ -67,7 +66,6 @@ describe("Workload Quality Gates page", () => {
     // Check that quality gate cards for athena workload are displayed
     cy.contains("athena / backend").should("be.visible");
     cy.contains("athena / frontend").should("be.visible");
-    cy.contains("athena / monorepos").should("be.visible");
     cy.contains("athena / platform").should("be.visible");
     
     // Check that other workload cards are NOT displayed

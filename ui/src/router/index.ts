@@ -76,6 +76,16 @@ const routes = [
     component: () => import(/* webpackChunkName: "analysis" */ "@/pages/Analysis.vue"), //dynamic import of component and dependency
   },
   {
+    path: Paths.WorkloadDependencyAlerts,
+    name: "Workload Dependency Alerts",
+    component: () => import(/* webpackChunkName: "dependencyalerts" */ "@/pages/DependencyAlerts.vue"),
+  },
+  {
+    path: Paths.ProgramDependencyAlerts,
+    name: "Program Dependency Alerts",
+    component: () => import(/* webpackChunkName: "dependencyalerts" */ "@/pages/DependencyAlerts.vue"),
+  },
+  {
     path: Paths.Explore,
     name: "Explore",
     component: () => import(/* webpackChunkName: "explore" */ "@/pages/Explore.vue"), //dynamic import of component and dependency

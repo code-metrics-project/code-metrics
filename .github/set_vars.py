@@ -60,6 +60,8 @@ def parse_set_args(argv=None):
     parser = argparse.ArgumentParser(description="Set override values for components.")
     parser.add_argument('--set', action='append', default=[], metavar='KEY=VALUE',
                         help='Override a component value, e.g. --set helm=true')
+    parser.add_argument('--all', action='store_true',
+                        help='Set all components to true')
     parser.add_argument('--verbose', action='store_true', help='Print output JSON to stdout')
     args, _ = parser.parse_known_args(argv)
     overrides = {}
@@ -79,10 +81,10 @@ def parse_set_args(argv=None):
                 overrides[key] = int(value)
             except Exception:
                 print(f"Invalid value for --set {key}: {value}", file=sys.stderr)
-    return overrides, args.verbose
+    return overrides, args.verbose, args.all
 
 def main(argv=None) -> None:
-    overrides, verbose = parse_set_args(argv)
+    overrides, verbose, all_components = parse_set_args(argv)
     base = git_base_ref()
 
     # Build mapping from normalized names to actual directory paths
@@ -133,6 +135,11 @@ def main(argv=None) -> None:
     out = {"tag": tag, "push": push, "coverageRetention": coverage}
     for k in sorted(emit_keys):
         out[f"{k}Components"] = int(values.get(k, 0))
+
+    # Apply --all flag to set all components to true
+    if all_components:
+        for d in SERVICE_DIRS:
+            out[f"{norm(d)}Components"] = 1
 
     # Apply overrides from --set
     for k, v in overrides.items():

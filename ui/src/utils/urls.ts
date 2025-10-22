@@ -15,7 +15,7 @@ export const QUERY = "/api/query";
 export const CODE_ANALYSIS_AGGREGATE = "/api/codebase/aggregate";
 export const SAVED_QUERY_COLLECTIONS = "/api/queries";
 export const STORED_QUERY = (collection: string) => `/api/queries/${collection}`;
-export const VULNERABILITIES = "/api/vulnerabilities";
+export const VULNERABILITIES = "/api/security/vulnerabilities";
 export const DASHBOARDS = "/api/dashboards";
 export const DASHBOARD = (id: string) => `/api/dashboards/${id}`;
 export const PIPELINE_RUNS = "/api/pipeline/runs";

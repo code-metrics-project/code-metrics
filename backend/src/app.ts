@@ -12,6 +12,7 @@ import { codeAnalysisAggregate } from "./routes/codeAnalysisAggregate";
 import { vcsPROpenTime, vcsRepoChanges, vcsRepoChurn } from "./routes/vcs";
 import { logger } from "./utils/logger/logger";
 import { getPipelineDeployments, getPipelineRun, getPipelineRunRedirect, getPipelineRuns } from "./routes/pipelines";
+import { getDependencyAlerts } from "./routes/dependencyAlerts";
 import { fetchBootstrap, fetchConfig } from "./routes/config";
 import { loadConfig } from "./config/config";
 import { initAdoPipelines } from "./services/pipelines/azure";
@@ -216,7 +217,9 @@ const addRoutes = (router: SecureRouter) => {
     router.addRoute("post", "/api/prediction/linear", predictLinear);
   });
 
-  router.addRoute("post", "/api/vulnerabilities", persistVulnerabilities);
+  // security
+  router.addRoute("post", "/api/security/vulnerabilities", persistVulnerabilities);
+  router.addRoute("get", "/api/security/dependency-alerts", getDependencyAlerts);
 };
 
 export const bootstrap = async () => {

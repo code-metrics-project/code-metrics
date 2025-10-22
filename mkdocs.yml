@@ -44,6 +44,11 @@ nav:
       - User guide: "quality_gates_user.md"
       - Administration guide: "quality_gates_admin.md"
 
+  - Security:
+      - Dependency Alerts: "dependency_alerts.md"
+      - Vulnerabilities: "query_vulnerabilities.md"
+      - Vulnerability Report Upload: "vulnerability_report_upload.md"
+
   - Configuration:
       - Overview: "configuration.md"
       - Datastores: "datastores.md"
@@ -82,7 +87,6 @@ nav:
 
   - Other:
       - Prediction: "prediction.md"
-      - Vulnerability report upload: "vulnerability_report_upload.md"
 
   - Administration Portal: "admin_portal.md"
 

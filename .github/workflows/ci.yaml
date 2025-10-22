@@ -12,7 +12,9 @@ jobs:
       - name: Set vars (Python)
         id: vars
         run: |
-          if [ "$GITHUB_REPOSITORY" = "DeloitteDigitalUK/code-metrics" ]; then
+          if [ "$GITHUB_REF_NAME" = "main" ] || [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            python3 ./.github/set_vars.py --verbose --all
+          elif [ "$GITHUB_REPOSITORY" = "DeloitteDigitalUK/code-metrics" ]; then
             python3 ./.github/set_vars.py --verbose
           else
             python3 ./.github/set_vars.py --verbose \

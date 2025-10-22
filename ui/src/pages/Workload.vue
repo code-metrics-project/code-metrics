@@ -88,6 +88,14 @@
               class="mb-2 mr-2"
               >Analyse</v-btn
             >
+            <v-btn
+              :to="{
+                name: 'Workload Dependency Alerts',
+                query: { workloadId, executeImmediately: true },
+              }"
+              class="mb-2 mr-2"
+              >Dependency Alerts</v-btn
+            >
           </v-col>
         </v-row>
       </v-container>

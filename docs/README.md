@@ -58,8 +58,13 @@ This documentation is intended for users of Code Metrics, such as engineers, QA 
 ### Other features
 
 - [Quality gates user guide](./quality_gates_user.md)
-- [Vulnerability report upload](./vulnerability_report_upload.md)
 - [Prediction](./prediction.md)
+
+### Security
+
+- [Dependency Alerts](./dependency_alerts.md)
+- [Vulnerabilities](./query_vulnerabilities.md)
+- [Vulnerability Report Upload](./vulnerability_report_upload.md)
 
 ## Administration and configuration
 
