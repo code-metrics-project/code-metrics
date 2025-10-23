@@ -148,6 +148,7 @@ export class DependencyAlertsService {
       total: alerts.length,
       byState: {},
       bySeverity: {},
+      byPackage: {},
       slaViolations: [],
       compliant: [],
       summary: {
@@ -162,12 +163,50 @@ export class DependencyAlertsService {
       const severity = alert.security_advisory?.severity?.toLowerCase() as DependencySeverity;
       const age = this.calculateAlertAge(alert.created_at);
       const slaCheck = this.checkSLAViolation(alert, age);
+      const packageName = alert.dependency?.package?.name || 'Unknown';
       
       // Count by state
       analysis.byState[state] = (analysis.byState[state] || 0) + 1;
       
       // Count by severity
       analysis.bySeverity[severity] = (analysis.bySeverity[severity] || 0) + 1;
+      
+      // Count by package
+      if (!analysis.byPackage[packageName]) {
+        analysis.byPackage[packageName] = {
+          package: packageName,
+          totalAlerts: 0,
+          openAlerts: 0,
+          criticalCount: 0,
+          highCount: 0,
+          mediumCount: 0,
+          lowCount: 0,
+          violations: 0,
+          repositories: [],
+        };
+      }
+      
+      const pkgSummary = analysis.byPackage[packageName];
+      pkgSummary.totalAlerts++;
+      
+      if (state === DependencyAlertState.Open) {
+        pkgSummary.openAlerts++;
+      }
+      
+      // Count by severity for this package
+      if (severity === DependencySeverity.Critical) pkgSummary.criticalCount++;
+      else if (severity === DependencySeverity.High) pkgSummary.highCount++;
+      else if (severity === DependencySeverity.Medium) pkgSummary.mediumCount++;
+      else if (severity === DependencySeverity.Low) pkgSummary.lowCount++;
+      
+      if (slaCheck.violation && state === DependencyAlertState.Open) {
+        pkgSummary.violations++;
+      }
+      
+      // Add repository if not already present
+      if (!pkgSummary.repositories.includes(repo)) {
+        pkgSummary.repositories.push(repo);
+      }
       
       // Build alert info
       const alertInfo: DependencyAlert = {
@@ -178,7 +217,7 @@ export class DependencyAlertsService {
         slaLimit: slaCheck.slaLimit,
         daysOverdue: slaCheck.daysOverdue,
         title: alert.security_advisory?.summary || 'No title',
-        package: alert.dependency?.package?.name || 'Unknown',
+        package: packageName,
         createdAt: alert.created_at,
         updatedAt: alert.updated_at,
         htmlUrl: alert.html_url,
@@ -210,6 +249,7 @@ export class DependencyAlertsService {
       total: 0,
       byState: {},
       bySeverity: {},
+      byPackage: {},
       slaViolations: [],
       compliant: [],
       summary: {

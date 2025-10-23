@@ -63,6 +63,12 @@ Once data is loaded, the dashboard displays an overall summary showing:
 
 The summary provides an at-a-glance view of your security posture and highlights areas requiring immediate attention.
 
+#### Alerts grouped by package
+
+Alerts are also grouped by package, helping you discover clusters of dependency alerts. Expand the "Alerts by Package" section by clicking on it.
+
+![Dependency Alerts by Package](img/dependency_alerts_by_package.png)
+
 ### Workload-Specific Analysis
 
 Below the overall summary, each workload displays its own analysis card containing:

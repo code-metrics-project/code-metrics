@@ -24,27 +24,11 @@ There are two ways to generate a Service Token for your CodeMetrics instance:
 - Valid user account with appropriate permissions
 - Ability to authenticate to the CodeMetrics web interface
 
-## Method 1: Using the Admin UI (Recommended)
+## Method 1: Using the Admin UI
 
-The easiest way to generate a Service Token is through the Administration Portal:
+The easiest way to generate a Service Token is through the Administration Portal.
 
-### Step 1: Access the Admin Portal
-
-1. Log in to your CodeMetrics instance using your regular user credentials
-2. Navigate to the Administration section
-3. Click on "Manage Service Tokens" from the Service Tokens card
-
-### Step 2: Create the Token
-
-1. Click the "Create Token" button
-2. Enter the subject name for the service or application that will use this token
-3. Click "Create Token"
-
-### Step 3: Copy Your Token
-
-After creation, the token value is displayed only once. Copy and store it securely, as it cannot be retrieved again for security reasons.
-
-For detailed instructions with screenshots, see the [Administration Portal documentation](./admin_portal.md#creating-a-new-service-token).
+For detailed step-by-step instructions with screenshots, see [Creating a New Service Token](./admin_portal.md#creating-a-new-service-token) in the Administration Portal documentation.
 
 ## Method 2: Using the API Directly
 
@@ -103,12 +87,14 @@ curl -H "Authorization: Bearer YOUR_Service Token" \
 ### Example API Calls
 
 #### Get System Configuration
+
 ```bash
 curl -H "Authorization: Bearer YOUR_Service Token" \
   https://your-codemetrics-instance/api/system/config
 ```
 
 #### Execute a Query
+
 ```bash
 curl -X POST \
   -H "Authorization: Bearer YOUR_Service Token" \
@@ -125,6 +111,7 @@ curl -X POST \
 ```
 
 #### Get Pipeline Runs
+
 ```bash
 curl -H "Authorization: Bearer YOUR_Service Token" \
   "https://your-codemetrics-instance/api/pipeline/runs?workload=my-team&limit=50"
@@ -182,7 +169,7 @@ This will return an array of token metadata objects, each containing information
     "createdBy": "admin@example.com"
   },
   {
-    "tokenId": "token-id-2", 
+    "tokenId": "token-id-2",
     "created": "2024-02-01T14:20:00.000Z",
     "expires": "2025-02-01T14:20:00.000Z",
     "sub": "service@example.com",
@@ -192,6 +179,7 @@ This will return an array of token metadata objects, each containing information
 ```
 
 **Token Metadata Fields:**
+
 - `tokenId` - The unique JWT ID (jti) of the token
 - `created` - When the token was created
 - `expires` - When the token will expire

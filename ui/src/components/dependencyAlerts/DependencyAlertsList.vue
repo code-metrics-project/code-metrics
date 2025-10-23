@@ -28,12 +28,14 @@
               />
             </v-col>
             <v-col cols="6">
-              <v-text-field
+              <v-combobox
                 v-model="repoNameInput"
                 label="Repository Name"
                 :disabled="busy || repoGroupsInput.length > 0"
-                hint="Enter a single repository name"
+                hint="Select a single repository name"
                 persistent-hint
+                :items="repoNames"
+                :multiple="false"
               />
             </v-col>
           </v-row>
@@ -68,6 +70,12 @@
       </v-card-text>
     </v-sheet>
 
+    <package-alerts-table
+      v-if="aggregatedPackages.length > 0"
+      :package-summaries="aggregatedPackages"
+      title="Alerts by Package (All Repositories)"
+    />
+
     <div v-for="analysis in analyses" :key="`${analysis.workloadId}-${analysis.repo}`">
       <v-card-title class="mt-4">
         {{ analysis.workloadId }} - {{ analysis.repo }}
@@ -100,13 +108,19 @@
             </v-col>
             <v-col cols="12" md="4">
               <div class="text-subtitle-2">SLA Compliance</div>
-              <div>
+              <div v-if="analysis.warningMessage">
+                <v-icon color="grey" class="mr-1">
+                  mdi-help-circle
+                </v-icon>
+                Unknown
+              </div>
+              <div v-else>
                 <v-icon :color="analysis.summary.openViolations > 0 ? 'red' : 'green'" class="mr-1">
                   {{ analysis.summary.openViolations > 0 ? "mdi-alert-circle" : "mdi-check-circle" }}
                 </v-icon>
                 {{ analysis.summary.complianceRate }}% compliant
               </div>
-              <div v-if="analysis.summary.openViolations > 0">
+              <div v-if="!analysis.warningMessage && analysis.summary.openViolations > 0">
                 <v-chip size="small" color="red" class="mt-1">
                   {{ analysis.summary.openViolations }} open violations
                 </v-chip>
@@ -143,6 +157,12 @@
           <v-btn variant="text" size="small" :href="item.htmlUrl" target="_blank" icon="mdi-open-in-new" />
         </template>
       </v-data-table>
+
+      <package-alerts-table
+        v-if="Object.keys(analysis.byPackage).length > 0"
+        :package-summaries="Object.values(analysis.byPackage)"
+        :title="`Alerts by Package (${analysis.repo})`"
+      />
     </div>
   </v-card>
 </template>
@@ -151,9 +171,11 @@
 import { ref, computed, onMounted, watch } from "vue";
 import WorkloadNames from "@/components/inputs/WorkloadNames.vue";
 import RepoGroups from "@/components/inputs/RepoGroups.vue";
+import PackageAlertsTable from "@/components/dependencyAlerts/PackageAlertsTable.vue";
 import { OperationState } from "@/utils/ui";
 import { logger } from "@/utils/logger";
-import { fetchDependencyAlerts, type DependencyAlertsAnalysis } from "@/services/dependencyAlerts";
+import { fetchDependencyAlerts, aggregatePackageAlerts, type DependencyAlertsAnalysis } from "@/services/dependencyAlerts";
+import { getReposForWorkloadId, listWorkloadIds } from "@/utils/config";
 
 const violationHeaders = [
   { title: "Alert #", key: "number", sortable: true },
@@ -181,6 +203,7 @@ const analyses = ref<DependencyAlertsAnalysis[]>([]);
 const busy = ref(false);
 const progress = ref(0);
 const operationState = ref(OperationState.Idle);
+const repoNames = ref<string[]>([]);
 
 // Severity order
 const orderedSeverities = ["critical", "high", "medium", "low"];
@@ -204,6 +227,11 @@ const totalSummary = computed(() => {
     openViolations,
     complianceRate,
   };
+});
+
+const aggregatedPackages = computed(() => {
+  if (analyses.value.length === 0) return [];
+  return aggregatePackageAlerts(analyses.value);
 });
 
 const getSeverityColor = (severity: string): string => {
@@ -249,6 +277,33 @@ const fetchAlerts = async () => {
   }
 };
 
+const updateRepoNames = () => {
+  if (workloads.value.length === 0) {
+    repoNames.value = [];
+    return;
+  }
+
+  const allRepos = new Set<string>();
+  const workloadIdsToProcess =
+    workloads.value.includes("all") || workloads.value[0] === "all"
+      ? listWorkloadIds()
+      : workloads.value;
+
+  workloadIdsToProcess.forEach((workloadId) => {
+    const repos = getReposForWorkloadId(workloadId);
+    repos.forEach((repo) => allRepos.add(repo));
+  });
+
+  repoNames.value = Array.from(allRepos).sort();
+};
+
+watch(workloads, () => {
+  updateRepoNames();
+  if (repoNameInput.value && !repoNames.value.includes(repoNameInput.value)) {
+    repoNameInput.value = "";
+  }
+});
+
 watch(
   () => props.workloadIds,
   (newVal) => {
@@ -277,6 +332,7 @@ watch(
 );
 
 onMounted(() => {
+  updateRepoNames();
   if (props.executeOnMount && workloads.value.length > 0 && (repoNameInput.value || repoGroupsInput.value.length > 0)) {
     fetchAlerts();
   }

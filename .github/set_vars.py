@@ -12,13 +12,14 @@ SERVICE_DIRS: List[str] = [
     "examples",
     "helm",
     "machinelearning",
+    "mcp",
     "mocks",
     "threatmodel",
     "ui"
 ]
 FOLD_RULES: List[str] = [
     # if .github changes, trigger many components
-    "github:docker:machinelearning:backend:ui:helm:threatmodel:examples:desktop",
+    "github:docker:machinelearning:backend:ui:helm:threatmodel:examples:desktop:mcp",
     
     # if backend changes, trigger docker and mocks
     "backend:docker:mocks",

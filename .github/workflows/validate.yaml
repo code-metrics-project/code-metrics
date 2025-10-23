@@ -250,6 +250,12 @@ jobs:
       vars: ${{ inputs.vars }}
     secrets: inherit
 
+  build-mcp:
+    uses: ./.github/workflows/mcp.yaml
+    with:
+      vars: ${{ inputs.vars }}
+    secrets: inherit
+
   build-threatmodel:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -357,6 +363,7 @@ jobs:
         build-desktop,
         build-helm,
         build-threatmodel,
+        build-mcp,
         test-e2e,
         merge-test-reports,
       ]

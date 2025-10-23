@@ -210,7 +210,7 @@ router.beforeEach(async (to, _from, next) => {
     }
 
     // system config required for authenticated routes
-    await fetchSystemConfig(authStore.tokens?.accessToken!!);
+    await fetchSystemConfig(authStore.tokens?.accessToken!);
   }
 
   next();

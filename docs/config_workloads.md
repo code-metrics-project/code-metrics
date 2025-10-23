@@ -71,6 +71,11 @@ workloads:
     codeAnalysis:
       type: sonar
       serverId: example-sonar
+      mappings:
+        - key: ml
+          componentName: machinelearning
+        - key: code-metrics-ui
+          componentName: ui
     pipelines:
       type: github
       serverId: CodeMetrics
@@ -85,12 +90,6 @@ workloads:
       teamFilterJql: '"Team name[Dropdown]" in ("Gaia")'
       project: DEV
       prodFilterJql: '"Project Environment[Dropdown]" = PROD'
-
-repoMappings:
-  - sonarProjectKey: ml
-    componentName: machinelearning
-  - sonarProjectKey: code-metrics-ui
-    componentName: ui
 ```
 
 > **Note**
@@ -189,17 +188,36 @@ workloads:
 
 ## Repository and Sonar mappings
 
-When Code Metrics looks up quality metrics about a repository, the query to Sonar uses the repository name as the component ‘key’ parameter.
+When Code Metrics looks up quality metrics about a repository, the query to Sonar uses the repository name as the component 'key' parameter by default.
 
-It is possible to specify a different key for a given repository using the `repoMappings` section of the workload configuration file.
+It is possible to specify a different key for a given repository using the `mappings` property within the `codeAnalysis` section of a workload.
 
 ```yaml
-repoMappings:
-  - sonarProjectKey: petclinic
-    componentName: spring-petclinic
+workloads:
+  - id: example-workload
+    # ... other config ...
+    codeAnalysis:
+      type: sonar
+      serverId: example-sonar
+      mappings:
+        - key: petclinic
+          componentName: spring-petclinic
 ```
 
-In this example, the Code Metrics would use the Sonar component key `petclinic` for the repository named `spring-petclinic`.
+In this example, Code Metrics would use the Sonar component key `petclinic` for the repository named `spring-petclinic`.
+
+You can also map by VCS repository name:
+
+```yaml
+workloads:
+  - id: example-workload
+    codeAnalysis:
+      type: sonar
+      serverId: example-sonar
+      mappings:
+        - key: my-sonar-project
+          vcsRepoName: my-repo
+```
 
 ## Deployment configuration
 

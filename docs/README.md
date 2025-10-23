@@ -107,6 +107,10 @@ See a list of [supported features](./features.md) for third party tools.
 - [API Integration Overview](./integration_api.md)
 - [Authenticating to the CodeMetrics API](./integration_api_authentication.md)
 
+## CodeMetrics and AI
+
+- [MCP Server Setup](./mcp_server.md)
+
 ---
 
 ## Design and build

@@ -42,7 +42,8 @@
               </template>
 
               <template v-slot:item.actions="{ item }">
-                <v-btn icon="mdi-delete" size="small" color="error" variant="text" @click="confirmRevoke(item)"> </v-btn>
+                <v-btn icon="mdi-delete" size="small" color="error" variant="text" @click="confirmRevoke(item)">
+                </v-btn>
               </template>
 
               <template v-slot:no-data>

@@ -93,3 +93,6 @@ nav:
   - Integrate with the CodeMetrics API:
       - API Integration Overview: "integration_api.md"
       - Authenticating to the CodeMetrics API: "integration_api_authentication.md"
+
+  - CodeMetrics and AI:
+      - MCP Server Setup: "mcp_server.md"

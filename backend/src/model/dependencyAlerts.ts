@@ -25,6 +25,18 @@ export type DependencyAlert = {
   htmlUrl: string;
 };
 
+export type PackageAlertSummary = {
+  package: string;
+  totalAlerts: number;
+  openAlerts: number;
+  criticalCount: number;
+  highCount: number;
+  mediumCount: number;
+  lowCount: number;
+  violations: number;
+  repositories: string[];
+};
+
 export type DependencyAlertsAnalysis = {
   workloadId: string;
   repo: string;
@@ -32,6 +44,7 @@ export type DependencyAlertsAnalysis = {
   total: number;
   byState: Record<string, number>;
   bySeverity: Record<string, number>;
+  byPackage: Record<string, PackageAlertSummary>;
   slaViolations: DependencyAlert[];
   compliant: DependencyAlert[];
   summary: {

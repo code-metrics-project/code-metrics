@@ -14,7 +14,7 @@ describe("Programme Quality Gates page", () => {
 
   it("Displays quality gate cards with repository groups", () => {
     cy.visit(Paths.ProgramQualityGates);
-    
+
     // Check that quality gate cards are displayed
     cy.contains("athena / backend").should("be.visible");
     cy.contains("athena / frontend").should("be.visible");
@@ -36,13 +36,13 @@ describe("Programme Quality Gates page", () => {
 
   it("Expands and collapses quality gate card details", () => {
     cy.visit(Paths.ProgramQualityGates);
-    
+
     // Find the first Details button and click it
     cy.contains("button", "Details").first().click();
-    
+
     // The button should now be in active state (we can verify by checking it's still visible)
     cy.contains("button", "Details").first().should("be.visible");
-    
+
     // Click again to collapse
     cy.contains("button", "Details").first().click();
   });
@@ -62,12 +62,12 @@ describe("Workload Quality Gates page", () => {
 
   it("Displays quality gate cards for specific workload", () => {
     cy.visit("/workload/athena/quality-gates");
-    
+
     // Check that quality gate cards for athena workload are displayed
     cy.contains("athena / backend").should("be.visible");
     cy.contains("athena / frontend").should("be.visible");
     cy.contains("athena / platform").should("be.visible");
-    
+
     // Check that other workload cards are NOT displayed
     cy.contains("gaia / backend").should("not.exist");
     cy.contains("icarus / backend").should("not.exist");
@@ -75,7 +75,7 @@ describe("Workload Quality Gates page", () => {
 
   it("Shows correct breadcrumb navigation", () => {
     cy.visit("/workload/athena/quality-gates");
-    
+
     // Check breadcrumbs
     cy.contains("a", "Workloads").should("have.attr", "href", "/workload");
     cy.contains("a", "Athena").should("have.attr", "href", "/workload/athena");
@@ -104,7 +104,7 @@ describe("Workload Quality Gates page", () => {
 
   it("Expands quality gate card to show repository details", () => {
     cy.visit("/workload/athena/quality-gates");
-    
+
     // Find and click the Details button for athena/backend
     cy.contains("athena / backend")
       .parent()
@@ -113,7 +113,7 @@ describe("Workload Quality Gates page", () => {
       .within(() => {
         cy.contains("button", "Details").click();
       });
-    
+
     // Verify the button is still visible after expansion
     cy.contains("athena / backend")
       .parent()
@@ -128,12 +128,12 @@ describe("Workload Quality Gates page", () => {
     // Visit first workload
     cy.visit("/workload/athena/quality-gates");
     cy.contains("athena / backend").should("be.visible");
-    
+
     // Visit second workload
     cy.visit("/workload/gaia/quality-gates");
     cy.contains("gaia / backend").should("be.visible");
     cy.contains("gaia / frontend").should("be.visible");
-    
+
     // Athena cards should not be visible
     cy.contains("athena / backend").should("not.exist");
   });
