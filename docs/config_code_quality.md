@@ -1,4 +1,4 @@
-# Configuration: Code Quality
+# Remote Configuration: Code Quality
 
 This section is part of the `remote-config.yaml` configuration file. See the [configuration overview](./configuration.md) for further information.
 
@@ -6,11 +6,11 @@ This section is part of the `remote-config.yaml` configuration file. See the [co
 
 Code Metrics supports both SonarQube and SonarCloud as code quality providers. The configuration is similar for both.
 
-### SonarCloud
+### SonarQube Cloud
 
 For SonarCloud, set the `url` to `https://sonarcloud.io` and use a SonarCloud token generated from the `Account > Security` page.
 
-### SonarQube
+### SonarQube (self-hosted)
 
 For SonarQube, set the `url` to the server URL, and use a token with appropriate API permissions generated from the instance, as follows:
 

@@ -1,4 +1,4 @@
-# Configuration: Project Management
+# Remote Configuration: Project Management
 
 This section is part of the `remote-config.yaml` configuration file. See the [configuration overview](./configuration.md) for further information.
 

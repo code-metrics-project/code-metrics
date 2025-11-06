@@ -21,9 +21,11 @@ It also provides links to drill down into:
 
 - [DORA metrics](./dora.md)
 - recent changes (commits, merged PRs etc.)
-- bugs and incidents
-- build health
+- [bugs](./query_bugs.md) and [incidents](./query_incidents.md)
+- [recent CI/CD runs and build health](./pipelines.md) 
 - bug analysis
+- [quality gates](./quality_gates_user.md)
+- [dependency alerts](./dependency_alerts.md)
 
 ![Summary of workload](./img/workload_dashboard.png)
 

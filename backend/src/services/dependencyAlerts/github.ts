@@ -1,21 +1,48 @@
 import { Octokit } from "@octokit/rest";
-import { DependencyAlert, DependencyAlertState, DependencyAlertsAnalysis, DependencySeverity } from "../../model/dependencyAlerts";
+import {
+  DependencyAlert,
+  DependencyAlertsAnalysis,
+  DependencyAlertState,
+  DependencySeverity,
+} from "../../model/dependencyAlerts";
 import { getAllCodeManagementConfig, getWorkloadById } from "../../config/configMapping";
 import { error, logger, warn } from "../../utils/logger/logger";
 import { WorkloadId } from "../../model/config/workload-config";
-import { CodeManagementTypes } from "../../model/config/common";
+import { CodeManagementTypes, DependencyAlertsTypes } from "../../model/config/common";
 import { getReposForWorkloadId } from "../../utils/repos";
 import { getConfigItemAsNumber } from "../../config/sources/source";
+import { Datastore, DatastoreCollection } from "../../db/api";
+import { provideDatastore } from "../../db/factory";
+import {
+  DEPENDENCY_ALERTS_SLA_CONFIG,
+  DependencyAlertsService,
+  registerDependencyAlerts,
+} from "./dependencyAlertsService";
 
-const SLA_CONFIG: Record<DependencySeverity, number> = {
-  [DependencySeverity.Critical]: getConfigItemAsNumber("DEPENDENCY_ALERT_CRITICAL", 7),
-  [DependencySeverity.High]: getConfigItemAsNumber("DEPENDENCY_ALERT_HIGH", 14),
-  [DependencySeverity.Medium]: getConfigItemAsNumber("DEPENDENCY_ALERT_MEDIUM", 30),
-  [DependencySeverity.Low]: getConfigItemAsNumber("DEPENDENCY_ALERT_LOW", 60),
+const EXPIRY_SECONDS: number = getConfigItemAsNumber("DEPENDENCY_CACHE_EXPIRY_SECONDS", 60 * 60 * 6);
+
+const COLLECTION_NAME = "alerts";
+
+type RepoDependencyAlertsFilter = {
+  workloadId: WorkloadId;
+  repo: string;
+}
+
+type RepoDependencyAlerts = RepoDependencyAlertsFilter & {
+  alerts: any[];
 };
 
-export class DependencyAlertsService {
+export const initGithubDependencyAlerts = () => {
+  registerDependencyAlerts(DependencyAlertsTypes.GITHUB, () => new GithubDependencyAlertsService());
+};
+
+export class GithubDependencyAlertsService implements DependencyAlertsService {
   private connections = new Map<WorkloadId, Octokit>();
+  private datastore: Datastore<RepoDependencyAlertsFilter, DatastoreCollection>;
+
+  constructor() {
+    this.datastore = provideDatastore("dependency-alerts", { expireAfterSeconds: EXPIRY_SECONDS });
+  }
 
   private getConnection(workloadId: WorkloadId): Octokit {
     let connection = this.connections.get(workloadId);
@@ -45,11 +72,11 @@ export class DependencyAlertsService {
 
   private checkSLAViolation(alert: any, age: number) {
     const severity = alert.security_advisory?.severity?.toLowerCase() as DependencySeverity;
-    const slaLimit = SLA_CONFIG[severity] || 0;
-    
+    const slaLimit = DEPENDENCY_ALERTS_SLA_CONFIG[severity] || 0;
+
     const violation = age > slaLimit;
     const daysOverdue = violation ? age - slaLimit : 0;
-    
+
     return {
       violation,
       age,
@@ -62,18 +89,18 @@ export class DependencyAlertsService {
   async fetchDependencyAlerts(
     workloadId: WorkloadId,
     repo?: string,
-    repoGroups?: string[]
+    repoGroups?: string[],
   ): Promise<DependencyAlertsAnalysis[]> {
     try {
       const workload = getWorkloadById(workloadId);
-      
+
       if (workload.codeManagement.type !== CodeManagementTypes.GITHUB) {
         warn(`Workload ${workloadId} does not use GitHub - dependency alerts not supported`);
         return [];
       }
-      
+
       const owner = workload.codeManagement.projectName;
-      
+
       // Determine which repos to fetch alerts for
       let repos: string[] = [];
       if (repo) {
@@ -82,66 +109,81 @@ export class DependencyAlertsService {
         repos = await getReposForWorkloadId(repoGroups, workloadId);
         logger(`Resolved repo groups [${repoGroups.join(", ")}] to repos: ${repos.join(", ")}`);
       }
-      
+
       if (repos.length === 0) {
         warn(`No repositories found for workload ${workloadId}`);
         return [];
       }
-      
+
       const connection = this.getConnection(workloadId);
       const analyses: DependencyAlertsAnalysis[] = [];
-      
-      // Fetch alerts for each repo
+
       for (const repoName of repos) {
-        logger(`Fetching dependency alerts for ${owner}/${repoName}`);
-        
         try {
-          const { data: alerts } = await connection.request('GET /repos/{owner}/{repo}/dependabot/alerts', {
-            owner,
-            repo: repoName,
-            headers: {
-              'X-GitHub-Api-Version': '2022-11-28'
-            }
-          });
-          
-          logger(`Found ${alerts.length} dependency alerts for ${repoName}`);
-          analyses.push(this.analyzeAlerts(workloadId, repoName, alerts));
+          const repoAlerts = await this.fetchAlerts(owner, repoName, connection, workloadId);
+          logger(`Found ${repoAlerts.alerts.length} dependency alerts for ${repoName}`);
+          analyses.push(this.analyseAlerts(workloadId, repoName, repoAlerts.alerts));
         } catch (err: any) {
-          if (err.status === 404) {
-            warn(`Repository ${owner}/${repoName} not found or Dependabot alerts not accessible`);
-            analyses.push(this.emptyAnalysis(workloadId, repoName, "Repository not found or accessible"));
-          } else if (err.message && err.message.includes('archived repositories')) {
-            warn(`Repository ${owner}/${repoName} is archived - Dependabot alerts not available`);
-            analyses.push(this.emptyAnalysis(workloadId, repoName, "Repository archived - alerts not available"));
-          } else {
-            error(`Error fetching alerts for repository ${owner}/${repoName} - Dependabot alerts not available`);
-            analyses.push(this.emptyAnalysis(workloadId, repoName, "Error fetching alerts"));
-          }
+          error(`Error fetching alerts for repository ${owner}/${repoName} - Dependabot alerts not available`, err);
+          analyses.push(this.emptyAnalysis(workloadId, repoName, "Error fetching alerts"));
         }
       }
-      
+
       return analyses;
     } catch (error: any) {
       throw new Error(`Error fetching dependency alerts: ${error.message}`);
     }
   }
 
-  async fetchDependencyAlertsForWorkloads(
-    workloadIds: WorkloadId[],
-    repo?: string,
-    repoGroups?: string[]
-  ): Promise<DependencyAlertsAnalysis[]> {
-    const results: DependencyAlertsAnalysis[] = [];
-    
-    for (const workloadId of workloadIds) {
-      const analyses = await this.fetchDependencyAlerts(workloadId, repo, repoGroups);
-      results.push(...analyses);
-    }
-    
-    return results;
+  /**
+   * Fetch dependency alerts for the given owner and repo, using cached values if available.
+   * @param owner
+   * @param repoName
+   * @param connection
+   * @param workloadId
+   * @private
+   */
+  private async fetchAlerts(
+    owner: string,
+    repoName: string,
+    connection: Octokit,
+    workloadId: string,
+  ): Promise<RepoDependencyAlerts> {
+    const filter: RepoDependencyAlertsFilter = { workloadId, repo: repoName };
+
+    return this.datastore.findOrInsertOne(COLLECTION_NAME, filter, async () => {
+      logger(`Fetching dependency alerts for ${owner}/${repoName}`);
+
+      const cacheItem = <RepoDependencyAlerts>{ workloadId, repo: repoName };
+      try {
+        const { data: alerts } = await connection.request("GET /repos/{owner}/{repo}/dependabot/alerts", {
+          owner,
+          repo: repoName,
+          headers: {
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+        });
+
+        logger(`Found ${alerts.length} dependency alerts for ${repoName}`);
+        cacheItem.alerts = alerts;
+      } catch (err: any) {
+        if (err.status === 404) {
+          warn(`Repository ${owner}/${repoName} not found or Dependabot alerts not accessible`);
+          cacheItem.alerts = [this.emptyAnalysis(workloadId, repoName, "Repository not found or accessible")];
+        } else if (err.message && err.message.includes("archived repositories")) {
+          warn(`Repository ${owner}/${repoName} is archived - Dependabot alerts not available`);
+          cacheItem.alerts = [this.emptyAnalysis(workloadId, repoName, "Repository archived - alerts not available")];
+        } else {
+          throw new Error(
+            `Error fetching alerts for repository ${owner}/${repoName} - Dependabot alerts not available: ${err}`,
+          );
+        }
+      }
+      return cacheItem;
+    });
   }
 
-  private analyzeAlerts(workloadId: string, repo: string, alerts: any[]): DependencyAlertsAnalysis {
+  private analyseAlerts(workloadId: string, repo: string, alerts: any[]): DependencyAlertsAnalysis {
     const analysis: DependencyAlertsAnalysis = {
       workloadId,
       repo,
@@ -163,14 +205,14 @@ export class DependencyAlertsService {
       const severity = alert.security_advisory?.severity?.toLowerCase() as DependencySeverity;
       const age = this.calculateAlertAge(alert.created_at);
       const slaCheck = this.checkSLAViolation(alert, age);
-      const packageName = alert.dependency?.package?.name || 'Unknown';
-      
+      const packageName = alert.dependency?.package?.name || "Unknown";
+
       // Count by state
       analysis.byState[state] = (analysis.byState[state] || 0) + 1;
-      
+
       // Count by severity
       analysis.bySeverity[severity] = (analysis.bySeverity[severity] || 0) + 1;
-      
+
       // Count by package
       if (!analysis.byPackage[packageName]) {
         analysis.byPackage[packageName] = {
@@ -185,29 +227,29 @@ export class DependencyAlertsService {
           repositories: [],
         };
       }
-      
+
       const pkgSummary = analysis.byPackage[packageName];
       pkgSummary.totalAlerts++;
-      
+
       if (state === DependencyAlertState.Open) {
         pkgSummary.openAlerts++;
       }
-      
+
       // Count by severity for this package
       if (severity === DependencySeverity.Critical) pkgSummary.criticalCount++;
       else if (severity === DependencySeverity.High) pkgSummary.highCount++;
       else if (severity === DependencySeverity.Medium) pkgSummary.mediumCount++;
       else if (severity === DependencySeverity.Low) pkgSummary.lowCount++;
-      
+
       if (slaCheck.violation && state === DependencyAlertState.Open) {
         pkgSummary.violations++;
       }
-      
+
       // Add repository if not already present
       if (!pkgSummary.repositories.includes(repo)) {
         pkgSummary.repositories.push(repo);
       }
-      
+
       // Build alert info
       const alertInfo: DependencyAlert = {
         number: alert.number,
@@ -216,13 +258,13 @@ export class DependencyAlertsService {
         age: slaCheck.age,
         slaLimit: slaCheck.slaLimit,
         daysOverdue: slaCheck.daysOverdue,
-        title: alert.security_advisory?.summary || 'No title',
+        title: alert.security_advisory?.summary || "No title",
         package: packageName,
         createdAt: alert.created_at,
         updatedAt: alert.updated_at,
         htmlUrl: alert.html_url,
       };
-      
+
       if (slaCheck.violation && state === DependencyAlertState.Open) {
         analysis.slaViolations.push(alertInfo);
       } else {
@@ -231,7 +273,9 @@ export class DependencyAlertsService {
     });
 
     // Calculate summary statistics
-    const compliantCount = analysis.compliant.length + analysis.slaViolations.filter((a) => a.state !== DependencyAlertState.Open).length;
+    const compliantCount =
+      analysis.compliant.length + analysis.slaViolations.filter((a) => a.state !== DependencyAlertState.Open).length;
+
     analysis.summary = {
       totalViolations: analysis.slaViolations.length,
       complianceRate: analysis.total > 0 ? ((compliantCount / analysis.total) * 100).toFixed(1) : "100",
@@ -260,5 +304,3 @@ export class DependencyAlertsService {
     };
   }
 }
-
-export const dependencyAlertsService = new DependencyAlertsService();

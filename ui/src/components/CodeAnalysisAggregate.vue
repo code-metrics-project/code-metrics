@@ -45,10 +45,20 @@
 
     <v-container fluid v-if="formattedResultData?.length">
       <v-row>
-        <v-col v-for="(result, index) in formattedResultData" :key="index" :cols="12" :sm="6" :md="4" :lg="3" :xl="2">
-          <v-card>
+        <v-col
+          v-for="(result, index) in formattedResultData"
+          :key="index"
+          :cols="12"
+          :sm="6"
+          :md="4"
+          :lg="3"
+          :xl="2"
+          class="d-flex"
+          style="flex-direction: column"
+        >
+          <v-card class="flex-grow-1 d-flex" style="flex-direction: column">
             <v-sheet :color="result.variant">
-              <v-card-title class="white--text">{{ result.name }}</v-card-title>
+              <v-card-title class="white--text tile-title">{{ result.name }}</v-card-title>
             </v-sheet>
 
             <div v-if="result.hasMetrics">
@@ -68,7 +78,7 @@
               >
             </div>
 
-            <v-card-text>
+            <v-card-text class="flex-grow-1">
               <span class="text--secondary">Number of projects: </span>
               <strong>{{ formatInteger(result.numProjects) }}</strong>
 
@@ -282,3 +292,16 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.tile-title {
+  font-size: clamp(0.75rem, 2vw, 1.25rem) !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  hyphens: auto !important;
+  line-height: 1.2 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+</style>

@@ -1,5 +1,4 @@
 import { LogQueue } from "./file";
-import { getConfigItem } from "../../config/sources/source";
 
 enum Styles {
   Reset = "\x1b[0m",

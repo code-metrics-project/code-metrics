@@ -91,7 +91,7 @@
             <v-btn
               :to="{
                 name: 'Workload Dependency Alerts',
-                query: { workloadId, executeImmediately: true },
+                query: { workloadId },
               }"
               class="mb-2 mr-2"
               >Dependency Alerts</v-btn

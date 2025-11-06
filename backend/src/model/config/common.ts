@@ -65,3 +65,8 @@ export enum TicketManagementTypes {
   NONE = "none",
   SERVICENOW = "servicenow",
 }
+
+export enum DependencyAlertsTypes {
+  NONE = "none",
+  GITHUB = "github",
+}

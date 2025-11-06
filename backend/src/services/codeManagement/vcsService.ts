@@ -19,6 +19,7 @@ const COLLECTION_NAME_COMMIT_PRS = "commit-prs";
 const COLLECTION_NAME_EARLIEST_COMMIT = "earliest-commits";
 const COLLECTION_NAME_VCS_CACHE = "vcs-cache";
 const COLLECTION_NAME_FETCH_FILE = "fetch-file";
+const COLLECTION_NAME_FETCH_MERGE_RULES = "fetch-merge-rules";
 
 /**
  * Cache for 6 hours by default.
@@ -204,7 +205,7 @@ export type VcsService = {
    * @param vcsProjectName
    * @param repoName
    */
-  fetchFile(workloadId: WorkloadId, vcsProjectName: string, repoName: string, path: string): Promise<string>;
+  fetchFile(workloadId: WorkloadId, vcsProjectName: string, repoName: string, path: string): Promise<string | null>;
 
   /**
    * Fetch the merge rules for a repository.
@@ -318,7 +319,12 @@ export class CachingVcsServiceImpl implements VcsService {
    * @param vcsProjectName
    * @param repoName
    */
-  fetchFile = (workloadId: WorkloadId, vcsProjectName: string, repoName: string, path: string): Promise<string> => {
+  fetchFile = (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repoName: string,
+    path: string,
+  ): Promise<string | null> => {
     return findOrInsert(workloadId, `${vcsProjectName}.${repoName}.${path}`, COLLECTION_NAME_FETCH_FILE, 3600, () =>
       this.delegate.fetchFile(workloadId, vcsProjectName, repoName, path),
     );
@@ -331,7 +337,9 @@ export class CachingVcsServiceImpl implements VcsService {
    * @param repoName
    */
   fetchMergeRules = (workloadId: WorkloadId, vcsProjectName: string, repoName: string): Promise<TMergeRules[]> => {
-    return this.delegate.fetchMergeRules(workloadId, vcsProjectName, repoName);
+    return findOrInsert(workloadId, `${vcsProjectName}.${repoName}`, COLLECTION_NAME_FETCH_MERGE_RULES, 3600, () =>
+      this.delegate.fetchMergeRules(workloadId, vcsProjectName, repoName),
+    );
   };
 }
 

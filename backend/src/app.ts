@@ -64,6 +64,8 @@ import { InvocationMode } from "./model/global";
 import { fetchQualityGates } from "./routes/qualityGates";
 import { getConfigItem, getConfigItemAsBoolean, getConfigItemAsNumber } from "./config/sources/source";
 import { buildOpenAPIValidator, openAPIErrorHandler } from "./middleware/openAPIValidator";
+import { initGithubDependencyAlerts } from "./services/dependencyAlerts/github";
+import { initNoopDependencyAlerts } from "./services/dependencyAlerts/noop";
 
 const CONFIG_REFRESH_MS = getConfigItemAsNumber("CONFIG_REFRESH_MS", 30000);
 const configReloadFlag = getConfigItemAsBoolean("CONFIG_AUTO_RELOAD");
@@ -79,6 +81,7 @@ const initServices = async (): Promise<void> => {
   initPipelineProviders();
   initCodeAnalysisProviders();
   initIncidentMgmtProviders();
+  initDependencyAlertsProviders();
 
   if (configReloadFlag) {
     logger(`Reloading config in ${CONFIG_REFRESH_MS / 1000}s`);
@@ -118,6 +121,11 @@ function initIncidentMgmtProviders() {
   initJiraIncidents();
   initNoOpIncidents();
   initServiceNowIncidents();
+}
+
+function initDependencyAlertsProviders() {
+  initGithubDependencyAlerts();
+  initNoopDependencyAlerts();
 }
 
 const initApi = async (): Promise<Express> => {

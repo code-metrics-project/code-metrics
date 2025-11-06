@@ -12,7 +12,7 @@ import {
 } from "../../model/vcs";
 import { DatedMetricEntry } from "../../model/metrics";
 import { getAllCodeManagementConfig, getAllCodeManagementUrls, getWorkloadById } from "../../config/configMapping";
-import { logger, verbose, warn } from "../../utils/logger/logger";
+import { logger, verbose, warn, error } from "../../utils/logger/logger";
 import { MILLIS_PER_DAY, truncateDateOnly } from "../../utils/date";
 import { provideDatastore } from "../../db/factory";
 import { StorableLike, getDataForDateRange } from "../dateWalker";
@@ -562,7 +562,7 @@ class GithubVcsService implements VcsService {
     vcsProjectName: string,
     repoName: string,
     path: string,
-  ): Promise<string> => {
+  ): Promise<string | null> => {
     try {
       const connection = this.#getConnection(workloadId);
       const response = await connection.rest.repos.getContent({
@@ -577,11 +577,15 @@ class GithubVcsService implements VcsService {
       if (response?.data) {
         return response.data;
       } else {
-        console.error("File not found or content not available.");
+        error("File not found or content not available.");
         return null;
       }
-    } catch (error) {
-      console.error("Error fetching file from GitHub:", error);
+    } catch (e) {
+      if (e.status === 404) {
+        verbose(`No quality gate manifest found for '${repoName}'.`);
+      } else {
+        error("Error fetching file from GitHub:", e);
+      }
       return null;
     }
   };
@@ -601,7 +605,7 @@ class GithubVcsService implements VcsService {
       });
       return result.data;
     } catch (e) {
-      console.error(e);
+      error(e);
       return;
     }
   };
@@ -627,7 +631,7 @@ class GithubVcsService implements VcsService {
       );
       return allRulesets;
     } catch (e) {
-      console.error(e);
+      error(e);
       return [];
     }
   };

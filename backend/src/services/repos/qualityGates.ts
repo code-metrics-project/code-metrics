@@ -23,26 +23,26 @@ type TQualityGate = {
   isRequiredStatusCheck?: boolean;
 };
 
-export type TQualityGateManifest = {
+type TQualityGateManifest = {
   $schema?: string;
   repo?: string;
   repoLink?: string;
-  services?: {
+  services: {
     "service-tag": string;
     "quality-gates": TQualityGate[];
   }[];
 };
 
-export type TPhase = {
+type TPhase = {
   phase: string;
   gates: TQualityGate[];
 };
 
-export type TGate = {
+type TGate = {
   [key: string]: TPhase[];
 };
 
-export type TQualityGateOutput = {
+type TQualityGateOutput = {
   $schema?: string;
   repo?: string;
   repoGroup?: string;
@@ -59,7 +59,7 @@ export type TMergeRules = {
   name: string;
 };
 
-export type TRepoGroupQualityGates = {
+type TRepoGroupQualityGates = {
   headline: {
     denominator: number;
     missing: number;
@@ -71,7 +71,7 @@ export type TRepoGroupQualityGates = {
   workloadId: string;
 };
 
-export type TWorkloadQualityGates = {
+type TWorkloadQualityGates = {
   workloadId: string;
   repoGroups: TRepoGroupQualityGates[];
 };
@@ -115,7 +115,6 @@ export function enrichManifest(
   rules: TMergeRules[],
   qualityGatesConfig: QualityGatesConfig,
 ): TQualityGateOutput {
-  if (!manifest) return { repo, repoLink };
   /**
    * Github uses the job name as the only connection point between a workflow and a required status check
    * which means this is the only tool we can use to check if a job is actually required pre-merge.
@@ -157,32 +156,34 @@ export function enrichManifest(
  * @param workload
  * @param repoName
  */
-const getQualityGate = async (workload: Workload, repoName: string): Promise<TQualityGateOutput> => {
+const getQualityGate = async (workload: Workload, repo: string): Promise<TQualityGateOutput> => {
   const vcs = getVcsForWorkload(workload);
   const workloadId = workload.id;
-  try {
-    const [manifest, rules] = await Promise.all([
-      parseManifest(
-        await vcs.fetchFile(workloadId, workload.codeManagement.projectName, repoName, "quality-gate.manifest.json"),
-      ),
-      vcs.fetchMergeRules(workloadId, workload.codeManagement.projectName, repoName),
-    ]);
-    const qualityGate = enrichManifest(
-      repoName,
-      vcs.buildRepoLink(workloadId, repoName),
-      manifest,
-      rules,
-      getQualityGatesByWorkloadId(workloadId),
-    );
 
-    verbose(`Fetched quality gate manifest for repo ${repoName} in workload ${workloadId}:`, qualityGate);
+  try {
+    const rawManifest = await vcs.fetchFile(
+      workloadId,
+      workload.codeManagement.projectName,
+      repo,
+      "quality-gate.manifest.json",
+    );
+    const manifest = parseManifest(rawManifest);
+    const repoLink = vcs.buildRepoLink(workloadId, repo);
+    if (!manifest) {
+      return { repo, repoLink };
+    }
+
+    const rules = await vcs.fetchMergeRules(workloadId, workload.codeManagement.projectName, repo);
+    const qualityGate = enrichManifest(repo, repoLink, manifest, rules, getQualityGatesByWorkloadId(workloadId));
+
+    verbose(`Fetched quality gate manifest for repo ${repo} in workload ${workloadId}:`, qualityGate);
     return qualityGate;
   } catch (error) {
-    warn(`Failed to fetch quality gate manifest for repo ${repoName} in workload ${workloadId}:`, error);
+    verbose(`Failed to fetch quality gate manifest for repo ${repo} in workload ${workloadId}:`, error);
     // Return a basic quality gate object for repos that fail to fetch
     return {
-      repo: repoName,
-      services: [],
+      repo,
+      services: undefined,
     };
   }
 };
@@ -211,7 +212,7 @@ const getWorstNumeratorAndDenominator = (repoGroup: string, repos: TQualityGateO
     const service = repo.services[0];
 
     if (!service) {
-      console.warn("Multiple services found in this repo but none match the repoGroup");
+      console.warn(`Multiple services found in repo '${repo.repo}' but none match the repoGroup '${repoGroup}'`);
       return { missing: 1 };
     }
 
@@ -263,9 +264,9 @@ const stripExternalServices = (repoGroup: string, repos: TQualityGateOutput[]) =
     return {
       ...repo,
       services:
-        repo.services.length === 1
-          ? repo.services
-          : repo.services.filter((service) => service["service-tag"] === repoGroup),
+        repo.services?.length > 1
+          ? repo.services.filter((service) => service["service-tag"] === repoGroup)
+          : repo.services,
     };
   });
 };
@@ -294,7 +295,10 @@ const getRepoGroupQualityGates = async (workload: Workload, repoGroup: string): 
   };
 };
 
-const getWorkloadQualityGates = async (workloadId: string, repoGroups?: string[]): Promise<TWorkloadQualityGates | undefined> => {
+const getWorkloadQualityGates = async (
+  workloadId: string,
+  repoGroups?: string[],
+): Promise<TWorkloadQualityGates | undefined> => {
   const workload = getWorkloadById(workloadId);
   if (!workload) {
     warn(`Could not find workload with team ID: ${workload.id}`);
@@ -312,10 +316,10 @@ const getWorkloadQualityGates = async (workloadId: string, repoGroups?: string[]
 };
 
 export const getQualityGates = async (
-  requestWorkloadIds: string[],
+  requestWorkloadIds?: string[],
   repoGroups?: string[],
 ): Promise<TWorkloadQualityGates[]> => {
-  const workloadIds = requestWorkloadIds.length ? requestWorkloadIds : listWorkloadIds();
+  const workloadIds = requestWorkloadIds?.length ? requestWorkloadIds : listWorkloadIds();
 
   const qualityGates = await Promise.all(
     workloadIds.map((workloadId) => getWorkloadQualityGates(workloadId, repoGroups)),

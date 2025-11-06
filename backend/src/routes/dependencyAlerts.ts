@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import { DependencyAlertsAnalysis } from "../model/dependencyAlerts";
-import { dependencyAlertsService } from "../services/dependencyAlerts/dependencyAlerts";
 import { ValidationError } from "../utils/validation";
 import { WorkloadId } from "../model/config/workload-config";
 import { listWorkloads } from "../config/configMapping";
+import { getDependencyAlertsForWorkloadId } from "../services/dependencyAlerts/dependencyAlertsService";
 
 type DependencyAlertsQueryParams = {
   workloadIds: string | string[];
@@ -43,12 +43,15 @@ export const getDependencyAlerts = async (
         : (repoGroupsRaw as string).split(",")
       : undefined;
 
-    const results = await dependencyAlertsService.fetchDependencyAlertsForWorkloads(
-      workloadIds,
-      repo,
-      repoGroups
-    );
+    const results: DependencyAlertsAnalysis[] = [];
+
+    for (const workloadId of workloadIds) {
+      const dependencyAlertsService = getDependencyAlertsForWorkloadId(workloadId);
+      const alerts = await dependencyAlertsService.fetchDependencyAlerts(workloadId, repo, repoGroups);
+      results.push(...alerts);
+    }
     res.json(results);
+
   } catch (e) {
     if (e instanceof ValidationError) {
       res.statusCode = 400;

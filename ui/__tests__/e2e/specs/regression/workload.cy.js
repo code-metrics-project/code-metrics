@@ -99,6 +99,26 @@ describe("Workload code quality page", () => {
     cy.contains("Code analysis");
     cy.checkFooter();
   });
+
+  it("Displays code quality tiles with full titles (no ellipsis)", () => {
+    cy.login();
+    cy.visit(buildPath(Paths.WorkloadCodeQuality, { workloadId: "athena" }));
+
+    cy.contains("Code quality metric summary");
+
+    // Click the summarise button to load tiles
+    cy.contains("button", "Summarise metrics").click();
+
+    // Wait for the tiles to load
+    cy.get(".v-card-title.tile-title", { timeout: 10000 }).should("have.length.at.least", 1);
+
+    // Check that titles are not ellipsized (overflow is visible, not hidden)
+    cy.get(".v-card-title.tile-title").first().should("have.css", "overflow", "visible");
+    cy.get(".v-card-title.tile-title").first().should("have.css", "white-space", "normal");
+    cy.get(".v-card-title.tile-title").first().should("have.css", "text-overflow", "clip");
+
+    cy.checkFooter();
+  });
 });
 
 describe("Workload tickets page", () => {

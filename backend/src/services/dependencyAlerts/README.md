@@ -74,7 +74,7 @@ Default SLA periods by severity:
 - **Model**: `/backend/src/model/dependencyAlerts.ts` - Type definitions
 - **Service**: `/backend/src/services/dependencyAlerts/dependencyAlerts.ts` - Business logic
 - **Route**: `/backend/src/routes/dependencyAlerts.ts` - HTTP endpoint handler
-- **Tests**: `/backend/src/services/dependencyAlerts/__tests__/dependencyAlerts.spec.ts`
+- **Tests**: `/backend/src/services/dependencyAlerts/__tests__/github.spec.ts`
 
 ### Key Features
 

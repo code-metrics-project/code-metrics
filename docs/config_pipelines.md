@@ -1,4 +1,4 @@
-# Configuration: CI/CD Pipelines
+# Remote Configuration: CI/CD Pipelines
 
 This section is part of the `remote-config.yaml` configuration file. See the [configuration overview](./configuration.md) for further information.
 

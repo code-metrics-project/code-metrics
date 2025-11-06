@@ -256,6 +256,12 @@ jobs:
       vars: ${{ inputs.vars }}
     secrets: inherit
 
+  build-promosite:
+    uses: ./.github/workflows/promosite.yaml
+    with:
+      vars: ${{ inputs.vars }}
+    secrets: inherit
+
   build-threatmodel:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -364,6 +370,7 @@ jobs:
         build-helm,
         build-threatmodel,
         build-mcp,
+        build-promosite,
         test-e2e,
         merge-test-reports,
       ]

@@ -1,29 +1,85 @@
-import { DependencyAlertsService } from "../dependencyAlerts";
+import { initGithubDependencyAlerts } from "../github";
+import { initDatastore } from "../../../db/factory";
+import { getDependencyAlertsForWorkloadId } from "../dependencyAlertsService";
+import { loadConfig } from "../../../config/config";
+import { ConfigVersion } from "../../../model/config/base";
+import { Workload } from "../../../model/config/workload-config";
+import { CodeManagementTypes, TicketManagementTypes } from "../../../model/config/common";
 
-describe("DependencyAlertsService", () => {
-  describe("analyzeAlerts", () => {
+const workload: Workload = {
+  id: "athena",
+  codeManagement: {
+    type: CodeManagementTypes.GITHUB,
+    serverId: "test-github",
+    projectName: "DeloitteDigitalUK",
+    repoGroups: {},
+  },
+  projectManagement: {
+    type: TicketManagementTypes.JIRA,
+    serverId: "test-jira",
+    tableName: undefined,
+  },
+  incidents: {
+    type: TicketManagementTypes.JIRA,
+    serverId: "test-jira",
+    tableName: undefined,
+  },
+} as any;
+
+beforeAll(async () => {
+  await initDatastore();
+  initGithubDependencyAlerts();
+
+  await loadConfig({
+    remoteConfig: {
+      version: ConfigVersion.V2_0,
+      codeManagement: {
+        github: {
+          servers: [
+            {
+              id: "test-github",
+              url: "http://localhost:8080",
+              branches: ["main"],
+              apiKey: undefined,
+            },
+          ],
+        },
+      },
+      codeAnalysis: {},
+      pipelines: {},
+      ticketManagement: {},
+    },
+    workloadConfig: {
+      version: ConfigVersion.V2_0,
+      workloads: [workload],
+    },
+  });
+});
+
+describe("GithubDependencyAlertsService", () => {
+  describe("analyseAlerts", () => {
     it("should return empty analysis when no alerts exist", () => {
-      const service = new DependencyAlertsService();
-      const result = (service as any).analyzeAlerts("test-workload", "test-repo", []);
-      
+      const service = getDependencyAlertsForWorkloadId("athena");
+      const result = (service as any).analyseAlerts("athena", "test-repo", []);
+
       expect(result.total).toBe(0);
       expect(result.summary.complianceRate).toBe("100");
       expect(Object.keys(result.byPackage)).toHaveLength(0);
     });
 
     it("should calculate alert age correctly", () => {
-      const service = new DependencyAlertsService();
+      const service = getDependencyAlertsForWorkloadId("athena");
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      
+
       const age = (service as any).calculateAlertAge(oneDayAgo);
       expect(age).toBeGreaterThanOrEqual(1);
       expect(age).toBeLessThanOrEqual(2);
     });
 
     it("should identify SLA violations for critical alerts", () => {
-      const service = new DependencyAlertsService();
+      const service = getDependencyAlertsForWorkloadId("athena");
       const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
-      
+
       const mockAlert = {
         number: 1,
         state: "open",
@@ -32,17 +88,17 @@ describe("DependencyAlertsService", () => {
         html_url: "https://github.com/test/repo/security/dependabot/1",
         security_advisory: {
           severity: "critical",
-          summary: "Test vulnerability"
+          summary: "Test vulnerability",
         },
         dependency: {
           package: {
-            name: "test-package"
-          }
-        }
+            name: "test-package",
+          },
+        },
       };
 
-      const result = (service as any).analyzeAlerts("test-workload", "test-repo", [mockAlert]);
-      
+      const result = (service as any).analyseAlerts("athena", "test-repo", [mockAlert]);
+
       expect(result.total).toBe(1);
       expect(result.summary.openViolations).toBe(1);
       expect(result.slaViolations.length).toBe(1);
@@ -51,9 +107,9 @@ describe("DependencyAlertsService", () => {
     });
 
     it("should mark alerts as compliant if within SLA", () => {
-      const service = new DependencyAlertsService();
+      const service = getDependencyAlertsForWorkloadId("athena");
       const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
-      
+
       const mockAlert = {
         number: 1,
         state: "open",
@@ -62,27 +118,27 @@ describe("DependencyAlertsService", () => {
         html_url: "https://github.com/test/repo/security/dependabot/1",
         security_advisory: {
           severity: "critical",
-          summary: "Test vulnerability"
+          summary: "Test vulnerability",
         },
         dependency: {
           package: {
-            name: "test-package"
-          }
-        }
+            name: "test-package",
+          },
+        },
       };
 
-      const result = (service as any).analyzeAlerts("test-workload", "test-repo", [mockAlert]);
-      
+      const result = (service as any).analyseAlerts("athena", "test-repo", [mockAlert]);
+
       expect(result.total).toBe(1);
       expect(result.summary.openViolations).toBe(0);
       expect(result.compliant.length).toBe(1);
     });
 
     it("should aggregate alerts by package", () => {
-      const service = new DependencyAlertsService();
+      const service = getDependencyAlertsForWorkloadId("athena");
       const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
       const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
-      
+
       const mockAlerts = [
         {
           number: 1,
@@ -92,13 +148,13 @@ describe("DependencyAlertsService", () => {
           html_url: "https://github.com/test/repo/security/dependabot/1",
           security_advisory: {
             severity: "critical",
-            summary: "Test vulnerability 1"
+            summary: "Test vulnerability 1",
           },
           dependency: {
             package: {
-              name: "io.netty:netty-codec-http2"
-            }
-          }
+              name: "io.netty:netty-codec-http2",
+            },
+          },
         },
         {
           number: 2,
@@ -108,13 +164,13 @@ describe("DependencyAlertsService", () => {
           html_url: "https://github.com/test/repo/security/dependabot/2",
           security_advisory: {
             severity: "high",
-            summary: "Test vulnerability 2"
+            summary: "Test vulnerability 2",
           },
           dependency: {
             package: {
-              name: "io.netty:netty-codec-http2"
-            }
-          }
+              name: "io.netty:netty-codec-http2",
+            },
+          },
         },
         {
           number: 3,
@@ -124,21 +180,21 @@ describe("DependencyAlertsService", () => {
           html_url: "https://github.com/test/repo/security/dependabot/3",
           security_advisory: {
             severity: "medium",
-            summary: "Test vulnerability 3"
+            summary: "Test vulnerability 3",
           },
           dependency: {
             package: {
-              name: "com.example:another-package"
-            }
-          }
-        }
+              name: "com.example:another-package",
+            },
+          },
+        },
       ];
 
-      const result = (service as any).analyzeAlerts("test-workload", "test-repo", mockAlerts);
-      
+      const result = (service as any).analyseAlerts("athena", "test-repo", mockAlerts);
+
       expect(result.total).toBe(3);
       expect(Object.keys(result.byPackage)).toHaveLength(2);
-      
+
       // Check netty package aggregation
       const nettyPackage = result.byPackage["io.netty:netty-codec-http2"];
       expect(nettyPackage).toBeDefined();
@@ -150,7 +206,7 @@ describe("DependencyAlertsService", () => {
       expect(nettyPackage.lowCount).toBe(0);
       expect(nettyPackage.violations).toBeGreaterThanOrEqual(1);
       expect(nettyPackage.repositories).toContain("test-repo");
-      
+
       // Check another package aggregation
       const anotherPackage = result.byPackage["com.example:another-package"];
       expect(anotherPackage).toBeDefined();

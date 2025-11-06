@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+"""
+Change detection script for GitHub Actions CI/CD.
+
+REQUIREMENTS:
+- Git checkout step must use 'fetch-depth: 0' to fetch full history
+- This script compares the current branch against 'origin/main'
+"""
 
 import json, os, subprocess, argparse, sys
 from typing import Dict, List
@@ -14,38 +21,54 @@ SERVICE_DIRS: List[str] = [
     "machinelearning",
     "mcp",
     "mocks",
+    "promosite",
     "threatmodel",
     "ui"
 ]
-FOLD_RULES: List[str] = [
-    # if .github changes, trigger many components
-    "github:docker:machinelearning:backend:ui:helm:threatmodel:examples:desktop:mcp",
+FOLD_RULES: Dict[str, List[str]] = {
+    # When .github changes, trigger many components
+    ".github": ["backend", "desktop", "docker", "examples", "helm", "machinelearning", "mcp", "promosite", "threatmodel", "ui"],
     
-    # if backend changes, trigger docker and mocks
-    "backend:docker:mocks",
+    # When backend changes, trigger docker and mocks
+    "backend": ["docker", "mocks"],
 
-    # if mocks changes, trigger backend
-    "mocks:backend",
+    # When mocks changes, trigger backend
+    "mocks": ["backend"],
 
-    # if ui, mocks, or examples changes, trigger docker
-    "ui:docker",
-    "mocks:docker",
-    "examples:docker",
-
-    # Add more rules as needed, e.g.:
-    # "someSource:backend:somethingElse",
-]
-EMIT_SOURCES = False  # if False, sources that only serve folding (e.g. 'mocks') aren’t emitted
+    # When ui or examples change, trigger docker
+    "ui": ["docker"],
+    "examples": ["docker"],
+}
+EMIT_SOURCES = False  # if False, sources that only serve folding (e.g. 'mocks') aren't emitted
+BASE_BRANCH = "origin/main"  # Branch to compare against
 
 # ---- Helpers ----
 def sh(*args: str, check=True) -> subprocess.CompletedProcess:
     return subprocess.run(args, text=True, capture_output=True, check=check)
 
 def git_base_ref() -> str:
-    try:
-        return sh("git", "describe", "--tags", "--abbrev=0").stdout.strip()
-    except subprocess.CalledProcessError:
-        return sh("git", "rev-list", "--max-parents=0", "HEAD").stdout.strip().splitlines()[-1]
+    """
+    Returns the base ref to compare against.
+    Uses origin/main if available, falls back to main, then master.
+    """
+    # Check if origin/main exists
+    result = sh("git", "rev-parse", "--verify", BASE_BRANCH, check=False)
+    if result.returncode == 0:
+        return BASE_BRANCH
+
+    # Fallback to main
+    result = sh("git", "rev-parse", "--verify", "main", check=False)
+    if result.returncode == 0:
+        return "main"
+
+    # Fallback to master
+    result = sh("git", "rev-parse", "--verify", "master", check=False)
+    if result.returncode == 0:
+        return "master"
+
+    # If nothing works, use first commit (shouldn't happen with fetch-depth: 0)
+    print('WARNING: could not find base branch - falling back to first commit')
+    return sh("git", "rev-list", "--max-parents=0", "HEAD").stdout.strip().splitlines()[-1]
 
 def dir_changed(base_ref: str, path: str) -> int:
     # 0 = no changes, 1 = changed
@@ -97,9 +120,8 @@ def main(argv=None) -> None:
     sources = set()
     for d in SERVICE_DIRS:
         sources.add(norm(d))
-    for rule in FOLD_RULES:
-        src = norm(rule.split(":")[0])
-        sources.add(src)
+    for src in FOLD_RULES.keys():
+        sources.add(norm(src))
 
     # Raw changes per normalized key
     values: Dict[str, int] = {}
@@ -110,19 +132,22 @@ def main(argv=None) -> None:
 
     # Apply folding rules (OR logic)
     emit_keys = {norm(d) for d in SERVICE_DIRS}         # always emit these
+    service_dirs_normalized = {norm(d) for d in SERVICE_DIRS}
     fold_sources = set()
-    for rule in FOLD_RULES:
-        parts = rule.split(":")
-        src, dests = norm(parts[0]), [norm(p) for p in parts[1:]]
-        fold_sources.add(src)
-        src_val = values.get(src, 0)
+    for src, dests in FOLD_RULES.items():
+        src_normalized = norm(src)
+        fold_sources.add(src_normalized)
+        src_val = values.get(src_normalized, 0)
         for dest in dests:
-            emit_keys.add(dest)
+            dest_normalized = norm(dest)
+            emit_keys.add(dest_normalized)
             if src_val == 1:
-                values[dest] = 1 if values.get(dest, 0) == 1 else 1  # OR
+                values[dest_normalized] = 1 if values.get(dest_normalized, 0) == 1 else 1  # OR
 
+    # Only remove fold sources that are NOT service directories
     if not EMIT_SOURCES:
-        emit_keys -= fold_sources
+        fold_sources_only = fold_sources - service_dirs_normalized
+        emit_keys -= fold_sources_only
 
     # Release vars
     ref = os.getenv("GITHUB_REF", "")

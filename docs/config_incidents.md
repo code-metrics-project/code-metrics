@@ -1,4 +1,4 @@
-# Configuration: Production incidents
+# Remote Configuration: Production incidents
 
 This section is part of the `remote-config.yaml` configuration file. See the [configuration overview](./configuration.md) for further information.
 

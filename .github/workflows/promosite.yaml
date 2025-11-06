@@ -1,0 +1,44 @@
+name: Validate
+on:
+  workflow_call:
+    inputs:
+      vars:
+        required: true
+        type: string
+
+jobs:
+  build-promosite:
+    if: ${{ fromJSON(inputs.vars).promositeComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: promosite
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "/promosite/.nvmrc"
+      - name: Restore NPM cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ github.run_id }}
+          restore-keys: |
+            npm-
+      - name: Install promosite dependencies
+        run: npm ci
+
+      - name: Run checks
+        run: npm run check
+
+      - name: Build promosite
+        run: npm run build
+
+      - name: Upload promosite artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: promosite
+          path: promosite/dist
+          retention-days: 1

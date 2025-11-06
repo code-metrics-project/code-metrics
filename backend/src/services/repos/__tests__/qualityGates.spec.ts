@@ -145,7 +145,7 @@ describe("qualityGates", () => {
       it("should parse valid JSON string indirectly", () => {
         const validJson = JSON.stringify({
           $schema: "https://example.com/schema.json",
-          services: []
+          services: [],
         });
 
         // Since parseManifest is private, we test it indirectly through getQualityGates
@@ -162,66 +162,26 @@ describe("qualityGates", () => {
     });
 
     describe("enrichManifest - edge cases", () => {
-      it("should return basic object when manifest is null", () => {
-        const result = enrichManifest(
-          "test-repo",
-          "https://test.com",
-          null as any,
-          [],
-          {
-            id: "quality-gates",
-            version: "v0.1.0",
-            gates: ["code style and linting"],
-            environments: ["pre-merge"]
-          }
-        );
-
-        expect(result).toEqual({
-          repo: "test-repo",
-          repoLink: "https://test.com"
-        });
-      });
-
-      it("should return basic object when manifest is undefined", () => {
-        const result = enrichManifest(
-          "test-repo",
-          "https://test.com",
-          undefined as any,
-          [],
-          {
-            id: "quality-gates",
-            version: "v0.1.0",
-            gates: ["code style and linting"],
-            environments: ["pre-merge"]
-          }
-        );
-
-        expect(result).toEqual({
-          repo: "test-repo",
-          repoLink: "https://test.com"
-        });
-      });
-
       it("should handle manifest with empty services array", () => {
         const result = enrichManifest(
           "test-repo",
           "https://test.com",
           {
-            services: []
+            services: [],
           },
           [],
           {
             id: "quality-gates",
             version: "v0.1.0",
             gates: ["code style and linting"],
-            environments: ["pre-merge"]
-          }
+            environments: ["pre-merge"],
+          },
         );
 
         expect(result).toEqual({
           repo: "test-repo",
           repoLink: "https://test.com",
-          services: []
+          services: [],
         });
       });
 
@@ -230,30 +190,36 @@ describe("qualityGates", () => {
           "test-repo",
           "https://test.com",
           {
-            services: [{
-              "service-tag": "test-service",
-              "quality-gates": [{
-                "check-types": ["code style and linting"],
-                provider: "GitHub",
-                phase: "pre-merge",
-                config: {
-                  file: ".github/workflows/test.yml",
-                  path: "jobs.test",
-                  name: "Test Job"
-                }
-              }]
-            }]
+            services: [
+              {
+                "service-tag": "test-service",
+                "quality-gates": [
+                  {
+                    "check-types": ["code style and linting"],
+                    provider: "GitHub",
+                    phase: "pre-merge",
+                    config: {
+                      file: ".github/workflows/test.yml",
+                      path: "jobs.test",
+                      name: "Test Job",
+                    },
+                  },
+                ],
+              },
+            ],
           },
           null as any,
           {
             id: "quality-gates",
             version: "v0.1.0",
             gates: ["code style and linting"],
-            environments: ["pre-merge"]
-          }
+            environments: ["pre-merge"],
+          },
         );
 
-        expect(result.services[0]["quality-gates"]["code style and linting"][0].gates[0].isRequiredStatusCheck).toBeUndefined();
+        expect(
+          result.services[0]["quality-gates"]["code style and linting"][0].gates[0].isRequiredStatusCheck,
+        ).toBeUndefined();
       });
 
       it("should handle multiple quality gates with different check-types", () => {
@@ -261,44 +227,48 @@ describe("qualityGates", () => {
           "test-repo",
           "https://test.com",
           {
-            services: [{
-              "service-tag": "test-service",
-              "quality-gates": [
-                {
-                  "check-types": ["code style and linting"],
-                  provider: "GitHub",
-                  phase: "pre-merge",
-                  config: {
-                    file: ".github/workflows/lint.yml",
-                    path: "jobs.lint",
-                    name: "Lint"
-                  }
-                },
-                {
-                  "check-types": ["unit tests"],
-                  provider: "GitHub",
-                  phase: "pre-merge",
-                  config: {
-                    file: ".github/workflows/test.yml",
-                    path: "jobs.test",
-                    name: "Test"
-                  }
-                }
-              ]
-            }]
+            services: [
+              {
+                "service-tag": "test-service",
+                "quality-gates": [
+                  {
+                    "check-types": ["code style and linting"],
+                    provider: "GitHub",
+                    phase: "pre-merge",
+                    config: {
+                      file: ".github/workflows/lint.yml",
+                      path: "jobs.lint",
+                      name: "Lint",
+                    },
+                  },
+                  {
+                    "check-types": ["unit tests"],
+                    provider: "GitHub",
+                    phase: "pre-merge",
+                    config: {
+                      file: ".github/workflows/test.yml",
+                      path: "jobs.test",
+                      name: "Test",
+                    },
+                  },
+                ],
+              },
+            ],
           },
           [{ id: 1, name: "Lint" }],
           {
             id: "quality-gates",
             version: "v0.1.0",
             gates: ["code style and linting", "unit tests"],
-            environments: ["pre-merge"]
-          }
+            environments: ["pre-merge"],
+          },
         );
 
         expect(result.services[0]["quality-gates"]["code style and linting"][0].gates).toHaveLength(1);
         expect(result.services[0]["quality-gates"]["unit tests"][0].gates).toHaveLength(1);
-        expect(result.services[0]["quality-gates"]["code style and linting"][0].gates[0].isRequiredStatusCheck).toBe(true);
+        expect(result.services[0]["quality-gates"]["code style and linting"][0].gates[0].isRequiredStatusCheck).toBe(
+          true,
+        );
         expect(result.services[0]["quality-gates"]["unit tests"][0].gates[0].isRequiredStatusCheck).toBe(false);
       });
     });
@@ -312,18 +282,22 @@ describe("qualityGates", () => {
       it("should fetch and construct quality gate for a repo through getQualityGates", async () => {
         const mockWorkload = {
           id: "test-workload",
-          codeManagement: { projectName: "test-project" }
+          codeManagement: { projectName: "test-project" },
         };
 
         const mockVcs = {
-          fetchFile: jest.fn().mockResolvedValue(JSON.stringify({
-            services: [{
-              "service-tag": "test-service",
-              "quality-gates": []
-            }]
-          })),
+          fetchFile: jest.fn().mockResolvedValue(
+            JSON.stringify({
+              services: [
+                {
+                  "service-tag": "test-service",
+                  "quality-gates": [],
+                },
+              ],
+            }),
+          ),
           fetchMergeRules: jest.fn().mockResolvedValue([]),
-          buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo")
+          buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo"),
         };
 
         jest.spyOn(configMapping, "getWorkloadById").mockReturnValue(mockWorkload as any);
@@ -334,7 +308,7 @@ describe("qualityGates", () => {
           id: "quality-gates",
           version: "v0.1.0",
           gates: ["code style and linting"],
-          environments: ["pre-merge"]
+          environments: ["pre-merge"],
         });
         jest.spyOn(logger, "verbose").mockImplementation();
 
@@ -345,7 +319,7 @@ describe("qualityGates", () => {
           "test-workload",
           "test-project",
           "test-repo",
-          "quality-gate.manifest.json"
+          "quality-gate.manifest.json",
         );
         expect(result).toHaveLength(1);
         expect(result[0].workloadId).toBe("test-workload");
@@ -355,13 +329,13 @@ describe("qualityGates", () => {
       it("should handle errors and return basic quality gate object through getQualityGates", async () => {
         const mockWorkload = {
           id: "test-workload",
-          codeManagement: { projectName: "test-project" }
+          codeManagement: { projectName: "test-project" },
         };
 
         const mockVcs = {
           fetchFile: jest.fn().mockRejectedValue(new Error("Fetch failed")),
           fetchMergeRules: jest.fn().mockRejectedValue(new Error("Fetch failed")),
-          buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo")
+          buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo"),
         };
 
         jest.spyOn(configMapping, "getWorkloadById").mockReturnValue(mockWorkload as any);
@@ -372,22 +346,21 @@ describe("qualityGates", () => {
           id: "quality-gates",
           version: "v0.1.0",
           gates: [],
-          environments: []
+          environments: [],
         });
-        const warnSpy = jest.spyOn(logger, "warn").mockImplementation();
-        jest.spyOn(logger, "verbose").mockImplementation();
+        const verboseSpy = jest.spyOn(logger, "verbose").mockImplementation();
 
         const result = await qualityGatesModule.getQualityGates(["test-workload"], []);
 
         // Test through getQualityGates which calls getQualityGate
-        expect(warnSpy).toHaveBeenCalledWith(
+        expect(verboseSpy).toHaveBeenCalledWith(
           expect.stringContaining("Failed to fetch quality gate manifest"),
-          expect.any(Error)
+          expect.any(Error),
         );
         expect(result).toHaveLength(1);
-        expect(result[0].repoGroups[0].repos[0].services).toEqual([]);
-
-        warnSpy.mockRestore();
+        expect(result[0].repoGroups[0].repos[0].services).toEqual(undefined);
+        // Doesn't attempt to fetch merge rules when there's no manifest file
+        expect(mockVcs.fetchMergeRules).not.toHaveBeenCalled();
       });
     });
 
@@ -400,18 +373,22 @@ describe("qualityGates", () => {
       it("should fetch quality gates for provided workload IDs", async () => {
         const mockWorkload = {
           id: "workload-1",
-          codeManagement: { projectName: "project-1" }
+          codeManagement: { projectName: "project-1" },
         };
 
         const mockVcs = {
-          fetchFile: jest.fn().mockResolvedValue(JSON.stringify({
-            services: [{
-              "service-tag": "service-1",
-              "quality-gates": []
-            }]
-          })),
+          fetchFile: jest.fn().mockResolvedValue(
+            JSON.stringify({
+              services: [
+                {
+                  "service-tag": "service-1",
+                  "quality-gates": [],
+                },
+              ],
+            }),
+          ),
           fetchMergeRules: jest.fn().mockResolvedValue([]),
-          buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo1")
+          buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo1"),
         };
 
         jest.spyOn(configMapping, "getWorkloadById").mockReturnValue(mockWorkload as any);
@@ -422,7 +399,7 @@ describe("qualityGates", () => {
           id: "quality-gates",
           version: "v0.1.0",
           gates: ["code style and linting"],
-          environments: ["pre-merge"]
+          environments: ["pre-merge"],
         });
         jest.spyOn(logger, "verbose").mockImplementation();
 
@@ -436,15 +413,17 @@ describe("qualityGates", () => {
       it("should use listWorkloadIds when no workload IDs provided", async () => {
         const mockWorkload = {
           id: "workload-1",
-          codeManagement: { projectName: "project-1" }
+          codeManagement: { projectName: "project-1" },
         };
 
         const mockVcs = {
-          fetchFile: jest.fn().mockResolvedValue(JSON.stringify({
-            services: []
-          })),
+          fetchFile: jest.fn().mockResolvedValue(
+            JSON.stringify({
+              services: [],
+            }),
+          ),
           fetchMergeRules: jest.fn().mockResolvedValue([]),
-          buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo")
+          buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo"),
         };
 
         jest.spyOn(configMapping, "listWorkloadIds").mockReturnValue(["workload-1"]);
@@ -456,7 +435,7 @@ describe("qualityGates", () => {
           id: "quality-gates",
           version: "v0.1.0",
           gates: [],
-          environments: []
+          environments: [],
         });
         jest.spyOn(logger, "verbose").mockImplementation();
 
@@ -482,17 +461,16 @@ describe("qualityGates", () => {
       it("should handle errors gracefully for individual repos", async () => {
         const mockWorkload = {
           id: "workload-1",
-          codeManagement: { projectName: "project-1" }
+          codeManagement: { projectName: "project-1" },
         };
 
         const mockVcs = {
-          fetchFile: jest.fn()
+          fetchFile: jest
+            .fn()
             .mockResolvedValueOnce(JSON.stringify({ services: [] }))
             .mockRejectedValueOnce(new Error("Failed to fetch")),
-          fetchMergeRules: jest.fn()
-            .mockResolvedValueOnce([])
-            .mockRejectedValueOnce(new Error("Failed to fetch")),
-          buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo")
+          fetchMergeRules: jest.fn().mockResolvedValueOnce([]).mockRejectedValueOnce(new Error("Failed to fetch")),
+          buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo"),
         };
 
         jest.spyOn(configMapping, "getWorkloadById").mockReturnValue(mockWorkload as any);
@@ -503,37 +481,40 @@ describe("qualityGates", () => {
           id: "quality-gates",
           version: "v0.1.0",
           gates: [],
-          environments: []
+          environments: [],
         });
-        const warnSpy = jest.spyOn(logger, "warn").mockImplementation();
-        jest.spyOn(logger, "verbose").mockImplementation();
+        const verboseSpy = jest.spyOn(logger, "verbose").mockImplementation();
 
         const result = await qualityGatesModule.getQualityGates(["workload-1"], []);
 
         expect(result).toHaveLength(1);
         expect(result[0].repoGroups[0].repos).toHaveLength(2);
-        expect(result[0].repoGroups[0].repos[1].services).toEqual([]);
-        expect(warnSpy).toHaveBeenCalledWith(
+        expect(result[0].repoGroups[0].repos[1].services).toEqual(undefined);
+        expect(verboseSpy).toHaveBeenCalledWith(
           expect.stringContaining("Failed to fetch quality gate manifest"),
-          expect.any(Error)
+          expect.any(Error),
         );
       });
 
       it("should use provided repoGroups when specified", async () => {
         const mockWorkload = {
           id: "workload-1",
-          codeManagement: { projectName: "project-1" }
+          codeManagement: { projectName: "project-1" },
         };
 
         const mockVcs = {
-          fetchFile: jest.fn().mockResolvedValue(JSON.stringify({
-            services: [{
-              "service-tag": "custom-group",
-              "quality-gates": []
-            }]
-          })),
+          fetchFile: jest.fn().mockResolvedValue(
+            JSON.stringify({
+              services: [
+                {
+                  "service-tag": "custom-group",
+                  "quality-gates": [],
+                },
+              ],
+            }),
+          ),
           fetchMergeRules: jest.fn().mockResolvedValue([]),
-          buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo")
+          buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo"),
         };
 
         jest.spyOn(configMapping, "getWorkloadById").mockReturnValue(mockWorkload as any);
@@ -544,7 +525,7 @@ describe("qualityGates", () => {
           id: "quality-gates",
           version: "v0.1.0",
           gates: [],
-          environments: []
+          environments: [],
         });
         jest.spyOn(logger, "verbose").mockImplementation();
 

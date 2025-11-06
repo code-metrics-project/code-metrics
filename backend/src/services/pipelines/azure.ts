@@ -5,7 +5,7 @@ import { Run, RunList, RunResult, RunWithMetadata } from "../../model/runs";
 import { Build, BuildResult as ADOBuildResult } from "azure-devops-node-api/interfaces/BuildInterfaces";
 import { IBuildApi } from "azure-devops-node-api/BuildApi";
 import { provideDatastore } from "../../db/factory";
-import { getAllIssueManagementUrls, getAllPipelinesConfig, getWorkloadById } from "../../config/configMapping";
+import { getAllPipelinesConfig, getWorkloadById } from "../../config/configMapping";
 import { Datastore, DatastoreCollection, QueryFilter } from "../../db/api";
 import { AbstractPipelinesService, registerPipelines } from "./pipelinesService";
 import { matchOrEquals } from "../../utils/matchers";

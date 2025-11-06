@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import { getQualityGates } from "../services/repos/qualityGates";
 
 type TRawRequest = {
-  workloads: string[];
-  repoGroups: string[];
+  workloads?: string[];
+  repoGroups?: string[];
 };
 
 export const fetchQualityGates = async (req: Request, res: Response): Promise<void> => {
@@ -12,6 +12,8 @@ export const fetchQualityGates = async (req: Request, res: Response): Promise<vo
     const output = await getQualityGates(raw.workloads, raw.repoGroups);
     res.json(output);
   } catch (e) {
-    throw new Error(`Failed to fetch quality gates for '${raw.workloads}' - '${raw.repoGroups}': ${e}.`);
+    throw new Error(
+      `Failed to fetch quality gates for workloads: '${raw.workloads}' - repoGroups: '${raw.repoGroups}': ${e}.`,
+    );
   }
 };
