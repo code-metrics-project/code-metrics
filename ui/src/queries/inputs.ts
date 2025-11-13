@@ -8,7 +8,6 @@ export enum InputType {
   ISSUE_FILTER = "issueFilter",
   JOB_GROUPS = "jobGroups",
   PIPELINE_ACTOR_TYPE = "actorType",
-  PIPELINE_OPTIONS = "valueFormat",
   PIPELINE_STAGE = "stageId",
   REPO_GROUPS = "repoGroups",
   SEVERITY_OPTIONS = "severityOptions",
@@ -24,7 +23,6 @@ const defaultInputValues = new Map<InputType, () => any>([
   [InputType.ISSUE_FILTER, () => ({})],
   [InputType.JOB_GROUPS, () => []],
   [InputType.PIPELINE_ACTOR_TYPE, () => ActorType.All],
-  [InputType.PIPELINE_OPTIONS, () => ValueFormat.COUNT],
   [InputType.PIPELINE_STAGE, () => getFirstPipelineStage()],
   [InputType.REPO_GROUPS, () => []],
   [
@@ -45,11 +43,6 @@ export type Workloads = {
 export type IssueFilterInputs = {
   priority?: string;
 };
-
-export enum ValueFormat {
-  COUNT = "raw-number",
-  PERCENTAGE = "percentage",
-}
 
 export enum ActorType {
   All = "All",

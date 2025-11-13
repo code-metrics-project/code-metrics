@@ -1,7 +1,6 @@
 import * as pipelines from "../pipelines"; // Import the module
 import { getPipelineRunsWithArgs } from "../../../routes/pipelines";
 import { ActorType, RunResult, RunWithMetadata } from "../../../model/runs";
-import { ValueFormat } from "../../../model/queryInputs";
 
 jest.mock("../../../routes/pipelines", () => ({
   getPipelineRunsWithArgs: jest.fn(),
@@ -78,7 +77,6 @@ describe("fetchPipelineRuns", () => {
     const startDate = "2024-09-19";
     const jobGroups = ["group1"];
     const branchNames = ["main"];
-    const valueFormat = ValueFormat.COUNT;
     const actorType = ActorType.All;
     const stageId = "build-stage";
 
@@ -87,7 +85,6 @@ describe("fetchPipelineRuns", () => {
       startDate,
       jobGroups,
       branchNames,
-      valueFormat,
       actorType,
       stageId,
     });
@@ -143,7 +140,6 @@ describe("fetchPipelineRuns", () => {
     const startDate = "2024-09-19";
     const jobGroups = ["group1"];
     const branchNames = ["main"];
-    const valueFormat = ValueFormat.COUNT;
     const actorType = ActorType.All;
     const stageId = "build-stage";
 
@@ -153,7 +149,6 @@ describe("fetchPipelineRuns", () => {
         startDate,
         jobGroups,
         branchNames,
-        valueFormat,
         actorType,
         stageId,
       }),

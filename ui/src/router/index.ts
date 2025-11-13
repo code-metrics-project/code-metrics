@@ -121,6 +121,16 @@ const routes = [
     component: () => import(/* webpackChunkName: "security" */ "@/pages/Security.vue"), //dynamic import of component and dependency
   },
   {
+    path: Paths.Repositories,
+    name: "Repositories",
+    component: () => import(/* webpackChunkName: "repositories" */ "@/pages/Repositories.vue"),
+  },
+  {
+    path: Paths.WorkloadRepositories,
+    name: "Workload Repositories",
+    component: () => import(/* webpackChunkName: "repositories" */ "@/pages/Repositories.vue"),
+  },
+  {
     path: Paths.Workloads,
     name: "Workloads",
     component: () => import(/* webpackChunkName: "teams" */ "@/pages/Workloads.vue"), //dynamic import of component and dependency

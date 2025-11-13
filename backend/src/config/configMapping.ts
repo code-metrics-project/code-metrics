@@ -15,6 +15,7 @@ import {
 } from "../model/config/remote-config";
 import { JobNameMapping, Workload, WorkloadConfigWrapper, WorkloadId } from "../model/config/workload-config";
 import { QualityGatesConfig } from "../model/config/quality-gates-config";
+import { Tags } from "../model/tags";
 
 const DEFAULT_TICKET_PRIORITIES = ["Lowest", "Low", "Medium", "High", "Highest"];
 
@@ -250,7 +251,7 @@ export const listAllTagPairs = (): Record<string, string[]> => {
  * tags have to be present on a workload for it to be included.
  * @param tags
  */
-export const getWorkloadsWithTags = (tags: { key: string; value: string }[]): WorkloadId[] => {
+export const getWorkloadsWithTags = (tags: Tags): WorkloadId[] => {
   return getConfig()
     .workloadConfigs.workloads.filter((w) => {
       return tags.find(({ key, value }) => w.tags?.[key] === value);

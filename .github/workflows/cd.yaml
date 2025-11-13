@@ -78,6 +78,9 @@ jobs:
           pushd threatmodel/dist
           zip -r ../../dist/threatmodel.zip .
           popd
+          pushd compose
+          zip -r ../dist/compose.zip .
+          popd
           pushd mcp/dist
           zip -r ../../dist/mcp.zip .
           popd

@@ -44,6 +44,11 @@ export const dataSources = {
       queryName: QueryName.PipelineRuns,
       args,
     }),
+  pipelineSuccess: (args) =>
+    useCMQuery({
+      queryName: QueryName.PipelineSuccess,
+      args,
+    }),
   prOpenTime: (args) =>
     useCMQuery({
       queryName: QueryName.PROpenTime,

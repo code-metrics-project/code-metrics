@@ -50,6 +50,10 @@ function getReleaseAssets(releaseVersion) {
             localPath: `dist/threatmodel.zip`,
             assetName: `threatmodel.zip`,
         },
+        {
+            localPath: `dist/compose.zip`,
+            assetName: `codemetrics-docker-compose.zip`,
+        },
     ];
 }
 

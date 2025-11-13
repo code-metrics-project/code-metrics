@@ -13,6 +13,7 @@ export enum Paths {
   ProgramSecurity = "/program/security",
   ProgramQualityGates = "/program/quality-gates",
 
+  Repositories = "/repositories",
   Workloads = "/workload",
   WorkloadChanges = "/workload/changes",
   WorkloadCodeQuality = "/workload/code-quality",
@@ -22,6 +23,7 @@ export enum Paths {
   WorkloadPipelineRun = "/workload/pipeline-run",
   WorkloadPipelineHealth = "/workload/pipeline-health",
   WorkloadQualityGates = "/workload/:workloadId/quality-gates",
+  WorkloadRepositories = "/workload/repositories",
   WorkloadDependencyAlerts = "/workload/dependency-alerts",
   ProgramDependencyAlerts = "/program/dependency-alerts",
   ProgramTickets = "/workload/tickets",

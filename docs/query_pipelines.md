@@ -11,6 +11,10 @@ Metrics include:
 Available dimensions:
 
 - Workloads
+- Job groups
+- Stages
+- Branches
+- Pipeline actor type (user/bot)
 
 ## Pipeline outcomes (successful/failed/aborted)
 

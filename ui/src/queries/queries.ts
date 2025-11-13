@@ -16,6 +16,7 @@ export enum QueryName {
   LinesOfCode = "lines-of-code",
   NonWorkingPattern = "non-working-pattern",
   PipelineRuns = "pipeline-runs",
+  PipelineSuccess = "pipeline-success",
   PipelineDurations = "pipeline-durations",
   ProductionIncidents = "production-incidents",
   RepoChurn = "repo-churn",
@@ -146,17 +147,33 @@ export function registerQueries() {
       InputType.JOB_GROUPS,
       InputType.BRANCH_NAMES,
       InputType.START_DATE,
-      InputType.PIPELINE_OPTIONS,
       InputType.PIPELINE_ACTOR_TYPE,
       InputType.PIPELINE_STAGE,
     ],
     chart: {
       axes: [
-        { axisName: "pipeline-runs" },
         { axisName: "runs-aborted", variant: "warning" },
         { axisName: "runs-failed", variant: "danger" },
         { axisName: "runs-successful", variant: "success" },
       ],
+    },
+  });
+
+  registerQuery({
+    name: QueryName.PipelineSuccess,
+    requires: [
+      InputType.TAGS,
+      InputType.WORKLOAD_NAMES,
+      InputType.JOB_GROUPS,
+      InputType.BRANCH_NAMES,
+      InputType.START_DATE,
+      InputType.PIPELINE_ACTOR_TYPE,
+      InputType.PIPELINE_STAGE,
+    ],
+    chart: {
+      axes: [{ axisName: "run-success" }],
+      valueFormatter: formatValueAsPercentage,
+      yAxisMax: 1,
     },
   });
 

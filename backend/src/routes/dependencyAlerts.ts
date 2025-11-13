@@ -2,11 +2,14 @@ import { Request, Response } from "express";
 import { DependencyAlertsAnalysis } from "../model/dependencyAlerts";
 import { ValidationError } from "../utils/validation";
 import { WorkloadId } from "../model/config/workload-config";
-import { listWorkloads } from "../config/configMapping";
+import { getWorkloadsWithTags, listWorkloads } from "../config/configMapping";
 import { getDependencyAlertsForWorkloadId } from "../services/dependencyAlerts/dependencyAlertsService";
+import { Tags } from "../model/tags";
+import { uniq } from "lodash";
 
 type DependencyAlertsQueryParams = {
   workloadIds: string | string[];
+  tags?: string;
   repo?: string;
   repoGroups?: string | string[];
 };
@@ -18,10 +21,10 @@ export const getDependencyAlerts = async (
   res: Response<DependencyAlertsAnalysis[] | string>
 ): Promise<void> => {
   try {
-    const { workloadIds: workloadIdsRaw, repo, repoGroups: repoGroupsRaw } = req.query;
+    const { workloadIds: workloadIdsRaw, tags: tagsRaw, repo, repoGroups: repoGroupsRaw } = req.query;
 
-    if (!workloadIdsRaw) {
-      throw new ValidationError("Missing workloadIds query parameter");
+    if (!workloadIdsRaw && !tagsRaw) {
+      throw new ValidationError("Missing workloadIds or tags query parameter");
     }
     
     if (!repo && !repoGroupsRaw) {
@@ -30,12 +33,21 @@ export const getDependencyAlerts = async (
 
     let workloadIds: WorkloadId[] = Array.isArray(workloadIdsRaw)
       ? workloadIdsRaw.map((w) => w.toString())
-      : (workloadIdsRaw as string).split(",");
+      : workloadIdsRaw?.length ? (workloadIdsRaw as string).split(",")
+      : [];
 
     // Handle "all" as a special case to select all workloads
     if (workloadIds.includes("all")) {
       workloadIds = listWorkloads().map((w) => w.id);
     }
+
+    const tags: Tags = tagsRaw ? tagsRaw.split(",").map((tag) => {
+      const [key, value] = tag.split("=");
+      return { key, value };
+    }) : [];
+
+    workloadIds.push(...getWorkloadsWithTags(tags));
+    workloadIds = uniq(workloadIds);
 
     const repoGroups: string[] | undefined = repoGroupsRaw
       ? Array.isArray(repoGroupsRaw)

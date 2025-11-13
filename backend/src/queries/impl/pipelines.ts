@@ -1,12 +1,33 @@
 import { interpolateMissing, MissingBehaviour } from "../../utils/metrics";
 import { truncateDateOnly } from "../../utils/date";
 import { logger, verbose } from "../../utils/logger/logger";
-import { ValueFormat } from "../../model/queryInputs";
+import {
+  Branches,
+  JobGroups,
+  PipelineQueryOptions,
+  PipelineStageInput,
+  RollingAverages,
+  StartDate,
+  Workloads,
+} from "../../model/queryInputs";
 import { ActorType, RunResult, RunWithMetadata } from "../../model/runs";
 import { DatedMetrics, DateStamp, MetricItemDimensions } from "../../model/metrics";
 import { getPipelineRunsWithArgs } from "../../routes/pipelines";
 import { isMatch } from "lodash";
-import { PipelineDurationArgs, PipelineRunArgs } from "../queries";
+import { PipelineDurationArgs, PipelineRunArgs, PipelineSuccessArgs } from "../queries";
+
+type PipelineQueryArgs = Workloads &
+  JobGroups &
+  Branches &
+  StartDate &
+  RollingAverages &
+  PipelineQueryOptions &
+  PipelineStageInput;
+
+enum ValueFormat {
+  COUNT = "raw-number",
+  PERCENTAGE = "percentage",
+}
 
 type DailyPipelineSummary = {
   date: Date;
@@ -18,8 +39,29 @@ type DailyPipelineSummary = {
 
 type PipelineDatedMetrics = { dimensions: MetricItemDimensions; summary: DailyPipelineSummary };
 
+/**
+ * Fetch count of pipeline runs.
+ * @param args
+ */
 export const fetchPipelineRuns = async (args: PipelineRunArgs): Promise<Map<DateStamp, DatedMetrics>> => {
-  logger(`Fetching pipeline runs for workloads: ${args.workloads} from: ${args.startDate}`);
+  return fetchPipelineRunsInternal(args, ValueFormat.COUNT);
+};
+
+/**
+ * Fetch pipeline success rates.
+ * @param args
+ */
+export const fetchPipelineSuccess = async (args: PipelineSuccessArgs): Promise<Map<DateStamp, DatedMetrics>> => {
+  return fetchPipelineRunsInternal(args, ValueFormat.PERCENTAGE);
+};
+
+const fetchPipelineRunsInternal = async (
+  args: PipelineQueryArgs,
+  valueFormat: ValueFormat,
+): Promise<Map<DateStamp, DatedMetrics>> => {
+  logger(
+    `Fetching pipeline runs for workloads: ${args.workloads} from: ${args.startDate} with value format: ${valueFormat}`,
+  );
 
   try {
     const result = await getPipelineRunsWithArgs({
@@ -33,8 +75,7 @@ export const fetchPipelineRuns = async (args: PipelineRunArgs): Promise<Map<Date
     const actorType = args.actorType ?? ActorType.All;
     const filtered = actorFilter(actorType, result);
 
-    logger(`Parsing pipeline runs`);
-    const valueFormat = args.valueFormat ?? ValueFormat.COUNT;
+    logger(`Retrieved ${filtered.length} pipeline runs for workloads: ${args.workloads}`);
     return groupRuns(filtered, valueFormat);
   } catch (error) {
     throw new Error(`Failed to fetch pipeline runs: ${error}`);
@@ -102,7 +143,7 @@ const groupRuns = (workloadRuns: RunWithMetadata[], valueFormat: ValueFormat): M
     const datedMetrics: DatedMetrics =
       valueFormat === ValueFormat.COUNT
         ? { "runs-aborted": [], "runs-failed": [], "runs-successful": [] }
-        : { runs: [] };
+        : { "run-success": [] };
 
     for (const { dimensions, summary } of metrics) {
       if (valueFormat === ValueFormat.COUNT) {
@@ -112,7 +153,11 @@ const groupRuns = (workloadRuns: RunWithMetadata[], valueFormat: ValueFormat): M
       } else if (valueFormat === ValueFormat.PERCENTAGE) {
         const total = summary.aborted + summary.failed + summary.successful;
         if (total > 0) {
-          datedMetrics["runs"].push({ dimensions, date: summary.date, value: (summary.successful / total) * 100 });
+          datedMetrics["run-success"].push({
+            dimensions,
+            date: summary.date,
+            value: (summary.successful / total) * 100,
+          });
         }
       } else {
         throw new Error(`Unsupported pipeline value format: ${valueFormat}`);

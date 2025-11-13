@@ -16,7 +16,7 @@ import {
 import { fetchIncidents, fetchNewBugs, fetchOpenBugs } from "./impl/issues";
 import { fetchCodeAnalysis } from "./impl/code-analysis";
 import { fetchRepoChurn } from "./impl/repo-churn";
-import { fetchPipelineDurations, fetchPipelineRuns } from "./impl/pipelines";
+import { fetchPipelineDurations, fetchPipelineRuns, fetchPipelineSuccess } from "./impl/pipelines";
 import { fetchPROpenTime } from "./impl/pr-open-time";
 import { fetchPRSize } from "./impl/pr-size";
 import { fetchVulnerabilities } from "./impl/vulnerabilities";
@@ -41,6 +41,7 @@ export enum QueryName {
   LinesOfCode = "lines-of-code",
   NonWorkingPattern = "non-working-pattern",
   PipelineRuns = "pipeline-runs",
+  PipelineSuccess = "pipeline-success",
   PipelineDurations = "pipeline-durations",
   ProductionIncidents = "production-incidents",
   RepoChurn = "repo-churn",
@@ -65,6 +66,14 @@ export type LeadTimeForChangesArgs = Workloads & JobGroups & StartDate & Rolling
 export type NonWorkingPatternArgs = Workloads & RepoGroups & StartDate & SeverityOptionsInput & RollingAverages;
 
 export type PipelineRunArgs = Workloads &
+  JobGroups &
+  Branches &
+  StartDate &
+  RollingAverages &
+  PipelineQueryOptions &
+  PipelineStageInput;
+
+export type PipelineSuccessArgs = Workloads &
   JobGroups &
   Branches &
   StartDate &
@@ -166,9 +175,16 @@ export const registerQueries = () => {
 
   registerQuery({
     name: QueryName.PipelineRuns,
-    axisNames: ["runs", "runs-aborted", "runs-failed", "runs-successful"],
+    axisNames: ["runs-aborted", "runs-failed", "runs-successful"],
     reduce: ReduceStrategy.SUM,
     execute: async (args: PipelineRunArgs) => await fetchPipelineRuns(args),
+  });
+
+  registerQuery({
+    name: QueryName.PipelineSuccess,
+    axisNames: ["run-success"],
+    reduce: ReduceStrategy.AVERAGE,
+    execute: async (args: PipelineSuccessArgs) => await fetchPipelineSuccess(args),
   });
 
   registerQuery({

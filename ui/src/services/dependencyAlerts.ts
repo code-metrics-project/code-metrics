@@ -1,3 +1,4 @@
+import type { Tags } from "@/model/tags";
 import axios from "@/utils/axios";
 
 export enum DependencySeverity {
@@ -58,11 +59,13 @@ export type DependencyAlertsAnalysis = {
 
 export async function fetchDependencyAlerts(
   workloadIds: string[],
+  tags: Tags,
   repo: string,
   repoGroups: string[],
 ): Promise<DependencyAlertsAnalysis[]> {
   const params: Record<string, string> = {
     workloadIds: workloadIds.join(","),
+    tags: tags.map((t) => `${t.key}=${t.value}`).join(","),
   };
 
   if (repo) {

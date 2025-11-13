@@ -2,7 +2,7 @@
   <v-menu v-model="addMenuOpen">
     <template v-slot:activator="{ props }">
       <v-btn color="accent" class="mb-3" v-bind="props" :disabled="busy"
-        >Add tag
+        >Query by tag
         <v-icon>mdi-menu-down</v-icon>
       </v-btn>
     </template>

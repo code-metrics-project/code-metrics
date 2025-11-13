@@ -95,6 +95,18 @@
           </v-card-actions>
         </v-card>
       </v-col>
+      <v-col cols="12" sm="6" lg="4">
+        <v-card :title="$t('nav.repositories')" class="d-flex flex-column fill-height">
+          <template v-slot:prepend>
+            <v-icon color="primary" icon="mdi-source-repository"></v-icon>
+          </template>
+          <v-card-item>All repositories across the programme.</v-card-item>
+          <v-divider />
+          <v-card-actions>
+            <v-btn color="primary" plain :to="Paths.Repositories">{{ t("nav.repositories") }}</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
     </v-row>
   </v-container>
 </template>

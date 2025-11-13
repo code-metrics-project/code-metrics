@@ -96,6 +96,14 @@
               class="mb-2 mr-2"
               >Dependency Alerts</v-btn
             >
+            <v-btn
+              :to="{
+                name: 'Workload Repositories',
+                query: { workloadId },
+              }"
+              class="mb-2 mr-2"
+              >Repositories</v-btn
+            >
           </v-col>
         </v-row>
       </v-container>
@@ -118,7 +126,6 @@ import { useRoute } from "vue-router";
 import { getWorkloadDetail } from "@/services/workload";
 import Dashboard from "@/components/dashboard/Dashboard.vue";
 import { getRelativeDate } from "@/utils/date";
-import { ValueFormat } from "@/queries/inputs";
 import type { TDashboard } from "@/queries/dashboards";
 import BehindFlag from "@/components/BehindFlag.vue";
 import { Paths } from "@/router/paths";
@@ -195,12 +202,11 @@ const dashboard = computed(() => {
       {
         id: "pipeline-trend",
         dataSource: {
-          name: "pipelineRuns",
+          name: "pipelineSuccess",
           args: {
             startDate: getRelativeDate(new Date(), -SHORT_DAYS_BACK),
             workloads: [workloadIdValue],
             branchNames: ["main"],
-            valueFormat: ValueFormat.PERCENTAGE,
           },
         },
         dataView: {

@@ -11,6 +11,5 @@ export default {
   startDate: "Start date",
   stageId: "Pipeline stage",
   tags: "Tags",
-  valueFormat: "Value format",
   workloads: "Workloads",
 };

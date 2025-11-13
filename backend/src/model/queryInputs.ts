@@ -1,5 +1,6 @@
 import { ChangeMeasure } from "../queries/impl/repo-churn";
 import { ActorType } from "./runs";
+import { Tags } from "./tags";
 
 export type Branches = {
   branchNames: string[];
@@ -37,14 +38,8 @@ export type RollingAverages = {
   rollingAveragesInDays?: number[];
 };
 
-export enum ValueFormat {
-  COUNT = "raw-number",
-  PERCENTAGE = "percentage",
-}
-
 export type PipelineQueryOptions = {
   successfulOnly?: boolean;
-  valueFormat?: ValueFormat;
   actorType?: ActorType;
 };
 
@@ -53,7 +48,7 @@ export type ChangeMeasureArgs = {
 };
 
 export type TagInput = {
-  tags: { key: string; value: string }[];
+  tags: Tags;
 };
 
 export type SeverityOptionsInput = {

@@ -13,6 +13,7 @@ export default {
   programQualityGates: "Programme Quality Gates",
   newQuery: "Query",
   qualityGates: "Quality Gates",
+  repositories: "Repositories",
   security: "Security",
   workload: "Workloads",
 };

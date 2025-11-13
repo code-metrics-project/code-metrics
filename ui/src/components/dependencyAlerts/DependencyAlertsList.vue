@@ -8,10 +8,20 @@
       <v-row>
         <v-col cols="9">
           <v-row>
-            <v-col cols="12">
+            <v-col cols="6">
               <workload-names
                 :defaults="workloads"
                 @input="(w: string[] | string | null) => (workloads = Array.isArray(w) ? w : w ? [w] : [])"
+                :operationState="operationState"
+                :include-all-option="false"
+              />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="6">
+              <tag-input
+                :defaults="tags"
+                @input="(t) => (tags = t)"
                 :operationState="operationState"
               />
             </v-col>
@@ -23,7 +33,7 @@
             <v-col cols="6">
               <repo-groups
                 :defaults="repoGroupsInput"
-                @input="(rg) => (repoGroupsInput = rg)"
+                @input="(rg: string[]) => (repoGroupsInput = rg)"
                 :operationState="repoNameInput ? OperationState.Busy : operationState"
               />
             </v-col>
@@ -170,12 +180,15 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from "vue";
 import WorkloadNames from "@/components/inputs/WorkloadNames.vue";
+import TagInput from "@/components/inputs/TagInput.vue";
 import RepoGroups from "@/components/inputs/RepoGroups.vue";
 import PackageAlertsTable from "@/components/dependencyAlerts/PackageAlertsTable.vue";
 import { OperationState } from "@/utils/ui";
 import { logger } from "@/utils/logger";
 import { fetchDependencyAlerts, aggregatePackageAlerts, type DependencyAlertsAnalysis } from "@/services/dependencyAlerts";
 import { getReposForWorkloadId, listWorkloadIds } from "@/utils/config";
+import type { Tags } from "@/model/tags";
+import { ta } from "date-fns/locale";
 
 const violationHeaders = [
   { title: "Alert #", key: "number", sortable: true },
@@ -197,6 +210,7 @@ const props = defineProps<{
 }>();
 
 const workloads = ref<string[]>(props.workloadIds || []);
+const tags = ref<Tags>([]);
 const repoNameInput = ref<string>((props.repoName as string) || "");
 const repoGroupsInput = ref<string[]>(props.repoGroups || []);
 const analyses = ref<DependencyAlertsAnalysis[]>([]);
@@ -245,8 +259,8 @@ const getSeverityColor = (severity: string): string => {
 };
 
 const fetchAlerts = async () => {
-  if (workloads.value.length === 0) {
-    logger("No workloads selected");
+  if (workloads.value.length === 0 && tags.value.length === 0) {
+    logger("No workloads or tags selected");
     return;
   }
 
@@ -262,7 +276,7 @@ const fetchAlerts = async () => {
   try {
     logger(`Fetching dependency alerts for workloads: ${workloads.value.join(", ")}`);
 
-    const results = await fetchDependencyAlerts(workloads.value, repoNameInput.value, repoGroupsInput.value);
+    const results = await fetchDependencyAlerts(workloads.value, tags.value, repoNameInput.value, repoGroupsInput.value);
     analyses.value = results;
 
     progress.value = 100;

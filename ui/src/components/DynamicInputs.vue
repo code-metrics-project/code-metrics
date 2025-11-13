@@ -107,7 +107,6 @@ import IssueFilter from "@/components/inputs/IssueFilter.vue";
 import WorkloadNames from "@/components/inputs/WorkloadNames.vue";
 import { logger } from "@/utils/logger";
 import { getDefaultValue, InputType, isPopulatedInputValue } from "@/queries/inputs";
-import PipelineOptions from "@/components/inputs/PipelineOptions.vue";
 import PipelineActors from "@/components/inputs/PipelineActors.vue";
 import RepoGroups from "@/components/inputs/RepoGroups.vue";
 import JobGroups from "@/components/inputs/JobGroups.vue";
@@ -152,7 +151,6 @@ const InputMap = new Map<InputType, ComponentAndProps>([
   [InputType.END_DATE, { component: DateInput, props: { label: "End date", argName: "endDate" } }],
   [InputType.ISSUE_FILTER, { component: IssueFilter }],
   [InputType.INCIDENT_FILTER, { component: IssueFilter, props: { filters: ["priority"] } }],
-  [InputType.PIPELINE_OPTIONS, { component: PipelineOptions }],
   [InputType.PIPELINE_ACTOR_TYPE, { component: PipelineActors }],
   [InputType.PIPELINE_STAGE, { component: PipelineStage }],
   [InputType.REPO_GROUPS, { component: RepoGroups }],

@@ -1,6 +1,6 @@
 {
   "name": "code-metrics-backend",
-  "version": "2.46.2",
+  "version": "2.46.3",
   "description": "Backend for the code-metrics service",
   "main": "src/index.js",
   "scripts": {
