@@ -26,6 +26,7 @@ jobs:
               --set helm=false \
               --set machinelearning=false \
               --set mcp=false \
+              --set promosite=false \
               --set threatmodel=false
           fi
 
