@@ -60,6 +60,7 @@ This documentation is intended for users of Code Metrics, such as engineers, QA 
 - [Quality gates user guide](./quality_gates_user.md)
 - [Repositories](./repositories.md)
 - [Prediction](./prediction.md)
+- [Machine learning forecasts](./machine_learning.md)
 
 ### Security
 

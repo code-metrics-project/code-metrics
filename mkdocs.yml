@@ -88,6 +88,7 @@ nav:
 
   - Other:
       - Prediction: "prediction.md"
+      - Machine learning forecasts: "machine_learning.md"
 
   - Administration Portal: "admin_portal.md"
 

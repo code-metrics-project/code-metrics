@@ -41,7 +41,7 @@ export const applyTransforms = async (query: RawQuery, dataset: Map<string, Inte
   if (query.transforms) {
     for (const t of query.transforms) {
       const transform = getTransformByType(t.transform);
-      dataset = await transform.apply(dataset, t.args);
+      dataset = await transform.apply(query, dataset, t.args);
     }
   }
   return dataset;

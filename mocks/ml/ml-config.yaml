@@ -1,0 +1,7 @@
+plugin: rest
+
+resources:
+  - path: /ml
+    method: get
+    response:
+      file: get.json

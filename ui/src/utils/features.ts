@@ -7,6 +7,7 @@ import { getBootstrap } from "@/utils/config";
 export enum Features {
   dora = "FEATURE_DORA_METRICS",
   predictions = "FEATURE_PREDICTIONS",
+  mlForecasts = "FEATURE_ML_FORECASTS",
 }
 
 export type FeatureKey = keyof typeof Features;
@@ -30,9 +31,18 @@ export const listActiveFeatures = (): FeatureConfig => {
  * @param feature
  * @param block
  */
-export const doIfFeatureActive = (feature: Features, block: () => void) => {
+export const isFeatureActive = (feature: Features) => {
   const featureName = lookupName(feature);
-  if (featureName && listActiveFeatures()[featureName]) {
+  return featureName && listActiveFeatures()[featureName];
+};
+
+/**
+ * Executes the `block` if the specified feature is active.
+ * @param feature
+ * @param block
+ */
+export const doIfFeatureActive = (feature: Features, block: () => void) => {
+  if (isFeatureActive(feature)) {
     block();
   }
 };

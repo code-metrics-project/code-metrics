@@ -25,8 +25,15 @@
               <div class="controls">
                 <v-combobox
                   v-model="configuredTransformer.transform"
-                  :items="transformers.map((transformer) => transformer.id)"
+                  :items="
+                    transformers.map(({ disabled, id, subtitle, title }) => ({
+                      props: { disabled, subtitle },
+                      title,
+                      value: id,
+                    }))
+                  "
                   :label="`Choose transformer ${index + 1}`"
+                  :return-object="false"
                   dense
                   outlined
                 />

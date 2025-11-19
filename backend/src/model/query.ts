@@ -33,6 +33,7 @@ export type GroupBy = keyof MetricItemDimensions;
 export type Args = Record<string, any>;
 
 export enum TransformTypes {
+  MLForecast = "ml-forecast",
   RollingAverages = "rolling-averages",
 }
 
