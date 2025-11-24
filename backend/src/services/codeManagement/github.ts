@@ -18,7 +18,7 @@ import { provideDatastore } from "../../db/factory";
 import { StorableLike, getDataForDateRange } from "../dateWalker";
 import { WorkloadId } from "../../model/config/workload-config";
 import { CodeManagementTypes } from "../../model/config/common";
-import { TMergeRules } from "../repos/qualityGates";
+import { TMergeRules } from "../qualityGates/qualityGates";
 import { getConfigItemAsNumber } from "../../config/sources/source";
 
 const COLLECTION_NAME_REPO_COMMITS = "repo-commits";
