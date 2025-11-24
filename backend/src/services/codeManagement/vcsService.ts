@@ -6,8 +6,8 @@ import { provideDatastore } from "../../db/factory";
 import { PRECACHE_REPO_LIST, precacheRepoList } from "./precache";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { CodeManagementTypes } from "../../model/config/common";
-import { TMergeRules } from "../qualityGates/qualityGates";
 import { getConfigItem, getConfigItemAsNumber } from "../../config/sources/source";
+import { TMergeRules } from "../../model/qualityGates";
 
 type RepoList = {
   key: string;

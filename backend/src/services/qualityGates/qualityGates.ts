@@ -2,7 +2,7 @@ import {
   getQualityGatesByWorkloadId,
   getWorkloadById,
   listRepoGroups,
-  listWorkloadIds,
+  listWorkloadIds
 } from "../../config/configMapping";
 import { QualityGatesConfig } from "../../model/config/quality-gates-config";
 import { error, verbose, warn } from "../../utils/logger/logger";
@@ -10,71 +10,15 @@ import { getReposForWorkloadId } from "../../utils/repos";
 import { getVcsForWorkload } from "../codeManagement/vcsService";
 import { Workload } from "../../model/config/workload-config";
 import { getConfigItemAsNumber } from "../../config/sources/source";
-
-type TQualityGate = {
-  "check-types": string[];
-  provider: string;
-  phase: "pre-merge";
-  config: {
-    file: string;
-    path: string;
-    name: string;
-  };
-  isRequiredStatusCheck?: boolean;
-};
-
-type TQualityGateManifest = {
-  $schema?: string;
-  repo?: string;
-  repoLink?: string;
-  services: {
-    "service-tag": string;
-    "quality-gates": TQualityGate[];
-  }[];
-};
-
-type TPhase = {
-  phase: string;
-  gates: TQualityGate[];
-};
-
-type TGate = {
-  [key: string]: TPhase[];
-};
-
-type TQualityGateOutput = {
-  $schema?: string;
-  repo?: string;
-  repoGroup?: string;
-  repoLink?: string;
-  services?: {
-    "service-tag": string;
-    "quality-gates": TGate;
-  }[];
-  workloadId?: string;
-};
-
-export type TMergeRules = {
-  id: number;
-  name: string;
-};
-
-type TRepoGroupQualityGates = {
-  headline: {
-    denominator: number;
-    missing: number;
-    numerator: number;
-    variant: "success" | "warning" | "danger" | "no_data";
-  };
-  repos: TQualityGateOutput[];
-  repoGroup: string;
-  workloadId: string;
-};
-
-type TWorkloadQualityGates = {
-  workloadId: string;
-  repoGroups: TRepoGroupQualityGates[];
-};
+import {
+  TGate,
+  TMergeRules,
+  TQualityGate,
+  TQualityGateManifest,
+  TQualityGateOutput,
+  TRepoGroupQualityGates,
+  TWorkloadQualityGates
+} from "../../model/qualityGates";
 
 function parseManifest(file: string) {
   try {

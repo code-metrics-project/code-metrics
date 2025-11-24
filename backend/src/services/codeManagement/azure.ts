@@ -30,7 +30,8 @@ import { StorableLike, getDataForDateRange } from "../dateWalker";
 import { WorkloadId } from "../../model/config/workload-config";
 import Bottleneck from "bottleneck";
 import { CodeManagementTypes } from "../../model/config/common";
-import { TMergeRules } from "../qualityGates/qualityGates";
+
+import { TMergeRules } from "../../model/qualityGates";
 
 const REFS_HEADS_STR = "refs/heads/";
 
