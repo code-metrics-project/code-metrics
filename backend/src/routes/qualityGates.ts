@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getQualityGates } from "../services/repos/qualityGates";
+import { getQualityGates } from "../services/qualityGates/qualityGates";
 
 type TRawRequest = {
   workloads?: string[];
