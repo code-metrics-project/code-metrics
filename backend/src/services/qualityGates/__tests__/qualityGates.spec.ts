@@ -1,10 +1,10 @@
-import { enrichManifest } from "../qualityGates";
 import * as qualityGatesModule from "../qualityGates";
 import * as configMapping from "../../../config/configMapping";
 import * as vcsService from "../../codeManagement/vcsService";
 import * as logger from "../../../utils/logger/logger";
 import * as repos from "../../../utils/repos";
 import * as source from "../../../config/sources/source";
+import { enrichManifest } from "../manifest";
 
 // Mock dependencies
 jest.mock("../../../config/configMapping");

@@ -4,96 +4,13 @@ import {
   listRepoGroups,
   listWorkloadIds
 } from "../../config/configMapping";
-import { QualityGatesConfig } from "../../model/config/quality-gates-config";
-import { error, verbose, warn } from "../../utils/logger/logger";
+import { verbose, warn } from "../../utils/logger/logger";
 import { getReposForWorkloadId } from "../../utils/repos";
 import { getVcsForWorkload } from "../codeManagement/vcsService";
 import { Workload } from "../../model/config/workload-config";
-import { getConfigItemAsNumber } from "../../config/sources/source";
-import {
-  TGate,
-  TMergeRules,
-  TQualityGate,
-  TQualityGateManifest,
-  TQualityGateOutput,
-  TRepoGroupQualityGates,
-  TWorkloadQualityGates
-} from "../../model/qualityGates";
-
-function parseManifest(file: string) {
-  try {
-    return JSON.parse(file as unknown as string) as TQualityGateManifest;
-  } catch (parseError) {
-    error("Error parsing JSON:", parseError);
-    return null;
-  }
-}
-
-const fillMissingQualityGates = (checks: string[], qualityGates: TQualityGate[]): { [key: string]: TQualityGate[] } => {
-  const reshaped = checks.reduce((acc, value) => {
-    acc[value] = qualityGates.filter((gate) => gate["check-types"].includes(value));
-    return acc;
-  }, {});
-
-  return reshaped;
-};
-
-const fillMissingPhases = (environments: string[], qualityGates: { [key: string]: TQualityGate[] }): TGate => {
-  const reshaped = Object.entries(qualityGates).reduce((acc, [key, value]) => {
-    acc[key] = environments.map((phase) => {
-      return {
-        phase,
-        gates: value.filter((gate) => gate.phase === phase),
-      };
-    });
-    return acc;
-  }, {});
-
-  return reshaped;
-};
-
-export function enrichManifest(
-  repo: string,
-  repoLink: string,
-  manifest: TQualityGateManifest,
-  rules: TMergeRules[],
-  qualityGatesConfig: QualityGatesConfig,
-): TQualityGateOutput {
-  /**
-   * Github uses the job name as the only connection point between a workflow and a required status check
-   * which means this is the only tool we can use to check if a job is actually required pre-merge.
-   * This has obvious implications if two workflows have jobs with the same name. This is a known issue
-   * with Github: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches#about-branch-protection-rules
-   */
-  manifest.services.forEach((service) => {
-    service["quality-gates"].forEach((qualityGate) => {
-      if (!rules) return;
-
-      const ruleNames = rules.map((rule) => rule.name);
-      if (ruleNames.includes(qualityGate.config.name)) {
-        qualityGate.isRequiredStatusCheck = true;
-      } else {
-        qualityGate.isRequiredStatusCheck = false;
-      }
-    });
-  });
-
-  const services = manifest.services.map((service) => {
-    return {
-      ...service,
-      ["quality-gates"]: fillMissingPhases(
-        qualityGatesConfig.environments,
-        fillMissingQualityGates(qualityGatesConfig.gates, service["quality-gates"]),
-      ),
-    };
-  });
-
-  return {
-    repo,
-    repoLink,
-    services,
-  };
-}
+import { TQualityGateOutput, TRepoGroupQualityGates, TWorkloadQualityGates } from "../../model/qualityGates";
+import { getVariant, getWorstNumeratorAndDenominator } from "./stats";
+import { enrichManifest, parseManifest } from "./manifest";
 
 /**
  * Fetch and construct a quality gate object for a given repo in a workload.
@@ -130,77 +47,6 @@ const getQualityGate = async (workload: Workload, repo: string): Promise<TQualit
       services: undefined,
     };
   }
-};
-
-const qualityGateDangerThreshold = getConfigItemAsNumber("QUALITY_GATE_THRESHOLD_DANGER", 30);
-const qualityGateWarningThreshold = getConfigItemAsNumber("GUALITY_GATE_THRESHOLD_WARNING", 80);
-
-const getVariant = (numerator?: number, denominator?: number): "success" | "warning" | "danger" | "no_data" => {
-  if (typeof numerator !== "number" || typeof denominator !== "number" || denominator === 0) return "no_data";
-
-  const percentage = (numerator / denominator) * 100;
-
-  if (percentage >= qualityGateWarningThreshold) {
-    return "success";
-  } else if (percentage >= qualityGateDangerThreshold) {
-    return "warning";
-  } else {
-    return "danger";
-  }
-};
-
-const getWorstNumeratorAndDenominator = (repoGroup: string, repos: TQualityGateOutput[]) => {
-  const repoScores = repos.map((repo) => {
-    if (!repo.services) return { missing: 1 };
-
-    const service = repo.services[0];
-
-    if (!service) {
-      console.warn(`Multiple services found in repo '${repo.repo}' but none match the repoGroup '${repoGroup}'`);
-      return { missing: 1 };
-    }
-
-    const denominator = Object.keys(service["quality-gates"]).length;
-
-    const numerator = Object.values(service["quality-gates"]).reduce((acc, gates) => {
-      const change = gates.find((gate) => gate.gates.length > 0) ? 1 : 0;
-      return acc + change;
-    }, 0);
-
-    return { missing: 0, numerator, denominator };
-  });
-
-  return repoScores.reduce(
-    (acc, repoScore) => {
-      if (repoScore.missing) {
-        return {
-          ...acc,
-          missing: acc.missing + repoScore.missing,
-        };
-      }
-
-      if (!acc.denominator) {
-        return {
-          ...repoScore,
-          missing: acc.missing + repoScore.missing,
-        };
-      }
-
-      const existingScore = acc.numerator / acc.denominator;
-      const currentScore = repoScore?.numerator / repoScore?.denominator;
-      if (currentScore > existingScore || (currentScore === existingScore && repoScore.denominator > acc.denominator)) {
-        return {
-          ...repoScore,
-          missing: acc.missing + repoScore.missing,
-        };
-      }
-      return {
-        ...acc,
-        missing: acc.missing + repoScore.missing,
-      };
-    },
-    { missing: 0, numerator: 0, denominator: 0 },
-  );
 };
 
 const stripExternalServices = (repoGroup: string, repos: TQualityGateOutput[]) => {
