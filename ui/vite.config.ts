@@ -6,6 +6,7 @@ import vue from "@vitejs/plugin-vue";
 import vuetify from "vite-plugin-vuetify";
 
 const isProdBuild = process.env.NODE_ENV === "production";
+const enableCoverage = process.env.COVERAGE_ENABLED === "true";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -31,12 +32,16 @@ export default defineConfig({
           }),
         ]
       : []),
-    istanbul({
-      include: "src/*",
-      exclude: ["node_modules", "__tests__/"],
-      extension: [".js", ".ts", ".vue"],
-      requireEnv: false,
-    }),
+    ...(enableCoverage
+      ? [
+          istanbul({
+            include: "src/*",
+            exclude: ["node_modules", "__tests__/"],
+            extension: [".js", ".ts", ".vue"],
+            requireEnv: false,
+          }),
+        ]
+      : []),
     // Added for fs and path polyfills
     nodePolyfills({
       protocolImports: true,
