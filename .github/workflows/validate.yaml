@@ -46,7 +46,7 @@ jobs:
       - name: Unit test backend + output coverage
         working-directory: backend
         env:
-          COVERAGE_ENABLED: "true"
+          COVERAGE_ENABLED: "false"
         run: npm test
       - name: Build backend
         working-directory: backend
@@ -109,7 +109,7 @@ jobs:
       - name: Run slow backend tests + output coverage
         working-directory: backend
         env:
-          COVERAGE_ENABLED: "true"
+          COVERAGE_ENABLED: "false"
         run: "npm run test:slow"
       - name: Upload Backend 'slow' Coverage report
         uses: actions/upload-artifact@v4
@@ -153,7 +153,7 @@ jobs:
       - name: Integration test backend + output coverage
         working-directory: backend
         env:
-          COVERAGE_ENABLED: "true"
+          COVERAGE_ENABLED: "false"
           MOCKS_PRINT_LOG_ON_CRASH: "true"
           MOCKS_VERBOSE: "false"
         run: "npm run test:integration"

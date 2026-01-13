@@ -102,3 +102,132 @@ workloads:
   qualityGates:
     id: default
     version: 0.1.0
+
+# TBA with application feature
+# - id: hermes
+#   name: "Hermes team"
+#   codeManagement:
+#     type: github
+#     serverId: example-github
+#     projectName: my-organization
+#     repoGroups:
+#       backend:
+#         components:
+#           - repo: /api-.*/
+#           - repo: /service-.*/
+#       frontend:
+#         components:
+#           - repo: /ui-.*/
+#           - repo: /web-.*/
+#   codeAnalysis:
+#     type: sonar
+#     serverId: mock-sonar
+#   pipelines:
+#     type: github
+#     serverId: example-github
+#     projectName: my-organization
+#     jobGroups:
+#       backend:
+#         jobNames:
+#           - /api-.*/
+#           - /service-.*/
+#       frontend:
+#         jobNames:
+#           - /ui-.*/
+#           - /web-.*/
+#     stages:
+#       - stageId: github-deployment-action
+#   projectManagement:
+#     type: github
+#     serverId: example-github
+#     owner: "my-organization"
+#     repo: "project-issues"
+#     ticketTypes:
+#       - "bug"
+#       - "feature"
+#       - "enhancement"
+#       - "task"
+#     ticketPriorities:
+#       - "low"
+#       - "medium"
+#       - "high"
+#       - "critical"
+#     stateFilter: "all"
+#     labelMapping:
+#       "priority/low": "Low"
+#       "priority/medium": "Medium"
+#       "priority/high": "High"
+#       "priority/critical": "Critical"
+#       "type/bug": "Bug"
+#       "type/feature": "Feature"
+#       "type/enhancement": "Enhancement"
+#       "type/task": "Task"
+#   incidents:
+#     type: github
+#     serverId: example-github
+#     owner: "my-organization"
+#     repo: "incidents"
+#     ticketTypes:
+#       - "incident"
+#       - "outage"
+#       - "service-disruption"
+#     ticketPriorities:
+#       - "Critical"
+#       - "High"
+#       - "Medium"
+#       - "Low"
+#     stateFilter: "all"
+#     labelMapping:
+#       "severity/critical": "Critical"
+#       "severity/high": "High"
+#       "severity/medium": "Medium"
+#       "severity/low": "Low"
+
+# TBA with application feature
+# - id: apollo
+#   name: "Apollo team (GitHub Enterprise)"
+#   codeManagement:
+#     type: github
+#     serverId: example-github-enterprise
+#     projectName: enterprise-org
+#     repoGroups:
+#       backend:
+#         components:
+#           - repo: /backend-.*/
+#       frontend:
+#         components:
+#           - repo: /frontend-.*/
+#   codeAnalysis:
+#     type: sonar
+#     serverId: mock-sonar
+#   pipelines:
+#     type: github
+#     serverId: example-github-enterprise
+#     projectName: enterprise-org
+#     jobGroups:
+#       backend:
+#         jobNames:
+#           - /backend-.*/
+#       frontend:
+#         jobNames:
+#           - /frontend-.*/
+#     stages:
+#       - stageId: github-deployment-action
+#   projectManagement:
+#     type: github
+#     serverId: example-github-enterprise
+#     owner: "enterprise-org"
+#     repo: "team-issues"
+#     ticketTypes:
+#       - "issue"
+#       - "bug"
+#       - "feature"
+#     stateFilter: "all"
+#   incidents:
+#     type: github
+#     serverId: example-github-enterprise
+#     owner: "enterprise-org"
+#     repo: "production-incidents"
+#     ticketTypes:
+#       - "incident"
+#     stateFilter: "all"

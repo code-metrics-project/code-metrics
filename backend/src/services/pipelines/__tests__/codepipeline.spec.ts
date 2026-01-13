@@ -41,6 +41,7 @@ const workload: Workload = {
     serverId: "test-jira",
     tableName: undefined,
   },
+  qualityGates: undefined,
 };
 
 beforeAll(async () => {
@@ -138,5 +139,20 @@ describe(`Codepipeline Pipelines integration`, () => {
     );
 
     expect(propValue).toBe("7636d59f3c461cEXAMPLE8417dbc6371");
+  });
+
+  it("gets runs for jobs", async () => {
+    const codepipeline = getPipelinesForWorkload(workload, "codepipeline-build-stage");
+
+    const startDate = new Date("2020-01-22");
+    const endDate = new Date("2020-01-22");
+    const runs = await codepipeline.getRunsForJobGroups(workload.id, ["backend"], [], startDate, endDate);
+
+    expect(runs).toHaveLength(4);
+    expect(runs[0].workloadId).toBe("athena");
+
+    const run = runs[0].run;
+    expect(run.job).toBe("FirstPipeline");
+    expect(run.result).toBe(RunResult.Succeeded);
   });
 });

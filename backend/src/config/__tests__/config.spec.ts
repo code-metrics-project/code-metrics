@@ -1,9 +1,11 @@
-import { clearCachedConfig, getConfig, loadConfig, mergeConfigs, readConfig } from "../config";
+import { clearCachedConfig, getConfig, loadConfig, mergeConfigs, readConfig, testables } from "../config";
 import path from "path";
 
 import { WorkloadConfigWrapper, WorkloadTicketConfigJira } from "../../model/config/workload-config";
-import { RemoteConfigWrapper } from "../../model/config/remote-config";
+import { RemoteConfigWrapper, AuthMethod } from "../../model/config/remote-config";
 import { StageConfigWrapper } from "../../model/config/pipeline-config";
+import { ConfigHolder, TicketManagementTypes } from "../../model/config/common";
+import { ConfigVersion } from "../../model/config/base";
 
 describe("readConfig", () => {
   it("should parse the JSON config", async () => {
@@ -140,5 +142,453 @@ describe("mergeConfigs", () => {
     expect(merged[2].id).toBe("item3");
     expect(merged[3].id).toBe("item4");
     expect(merged[3].nested.property).toBe("prop4");
+  });
+});
+
+describe("applyWorkloadDefaults", () => {
+  const { applyWorkloadDefaults } = testables;
+
+  it("should apply project management defaults from remote config", () => {
+    const config: ConfigHolder = {
+      metadata: { name: "test", version: "1.0.0" },
+      remoteConfigs: {
+        version: ConfigVersion.V2_0,
+        codeAnalysis: {},
+        codeManagement: {},
+        pipelines: {},
+        ticketManagement: {
+          jira: {
+            servers: [
+              {
+                id: "jira-server-1",
+                url: "https://jira.example.com",
+                apiKey: "secret",
+                authMethod: AuthMethod.BEARER_TOKEN,
+                defaults: {
+                  projectName: "DEFAULT",
+                  ticketTypes: ["Bug", "Story"],
+                  ticketPriorities: ["High", "Medium"],
+                },
+              },
+            ],
+          },
+        },
+      },
+      workloadConfigs: { version: ConfigVersion.V2_0, workloads: [] },
+      pipelineConfigs: { stages: [] },
+      qualityGatesConfigs: { "quality-gates": [] },
+    };
+
+    const workload: any = {
+      id: "test-workload",
+      projectManagement: {
+        type: TicketManagementTypes.JIRA,
+        serverId: "jira-server-1",
+        projectName: "TEST",
+      },
+    };
+
+    applyWorkloadDefaults(config, workload);
+
+    expect(workload.projectManagement.ticketTypes).toEqual(["Bug", "Story"]);
+    expect(workload.projectManagement.ticketPriorities).toEqual(["High", "Medium"]);
+  });
+
+  it("should apply incident management defaults from remote config", () => {
+    const config: ConfigHolder = {
+      metadata: { name: "test", version: "1.0.0" },
+      remoteConfigs: {
+        version: ConfigVersion.V2_0,
+        codeAnalysis: {},
+        codeManagement: {},
+        pipelines: {},
+        ticketManagement: {
+          jira: {
+            servers: [
+              {
+                id: "jira-incident-server",
+                url: "https://jira.example.com",
+                apiKey: "secret",
+                authMethod: AuthMethod.BEARER_TOKEN,
+                defaults: {
+                  projectName: "DEFAULT",
+                  ticketTypes: ["Incident", "Problem"],
+                  ticketPriorities: ["Critical", "High"],
+                },
+              },
+            ],
+          },
+        },
+      },
+      workloadConfigs: { version: ConfigVersion.V2_0, workloads: [] },
+      pipelineConfigs: { stages: [] },
+      qualityGatesConfigs: { "quality-gates": [] },
+    };
+
+    const workload: any = {
+      id: "test-workload",
+      incidents: {
+        type: TicketManagementTypes.JIRA,
+        serverId: "jira-incident-server",
+        projectName: "INC",
+      },
+    };
+
+    applyWorkloadDefaults(config, workload);
+
+    expect(workload.incidents.ticketTypes).toEqual(["Incident", "Problem"]);
+    expect(workload.incidents.ticketPriorities).toEqual(["Critical", "High"]);
+  });
+
+  it("should apply both project and incident management defaults", () => {
+    const config: ConfigHolder = {
+      metadata: { name: "test", version: "1.0.0" },
+      remoteConfigs: {
+        version: ConfigVersion.V2_0,
+        codeAnalysis: {},
+        codeManagement: {},
+        pipelines: {},
+        ticketManagement: {
+          jira: {
+            servers: [
+              {
+                id: "jira-pm-server",
+                url: "https://jira.example.com",
+                apiKey: "secret",
+                authMethod: AuthMethod.BEARER_TOKEN,
+                defaults: {
+                  projectName: "DEFAULT",
+                  ticketTypes: ["Bug"],
+                  ticketPriorities: ["High"],
+                },
+              },
+              {
+                id: "jira-incident-server",
+                url: "https://jira.example.com",
+                apiKey: "secret",
+                authMethod: AuthMethod.BEARER_TOKEN,
+                defaults: {
+                  projectName: "DEFAULT",
+                  ticketTypes: ["Incident"],
+                  ticketPriorities: ["Critical"],
+                },
+              },
+            ],
+          },
+        },
+      },
+      workloadConfigs: { version: ConfigVersion.V2_0, workloads: [] },
+      pipelineConfigs: { stages: [] },
+      qualityGatesConfigs: { "quality-gates": [] },
+    };
+
+    const workload: any = {
+      id: "test-workload",
+      projectManagement: {
+        type: TicketManagementTypes.JIRA,
+        serverId: "jira-pm-server",
+        projectName: "TEST",
+      },
+      incidents: {
+        type: TicketManagementTypes.JIRA,
+        serverId: "jira-incident-server",
+        projectName: "INC",
+      },
+    };
+
+    applyWorkloadDefaults(config, workload);
+
+    expect(workload.projectManagement.ticketTypes).toEqual(["Bug"]);
+    expect(workload.projectManagement.ticketPriorities).toEqual(["High"]);
+    expect(workload.incidents.ticketTypes).toEqual(["Incident"]);
+    expect(workload.incidents.ticketPriorities).toEqual(["Critical"]);
+  });
+
+  it("should merge defaults with existing workload properties", () => {
+    const config: ConfigHolder = {
+      metadata: { name: "test", version: "1.0.0" },
+      remoteConfigs: {
+        version: ConfigVersion.V2_0,
+        codeAnalysis: {},
+        codeManagement: {},
+        pipelines: {},
+        ticketManagement: {
+          jira: {
+            servers: [
+              {
+                id: "jira-server",
+                url: "https://jira.example.com",
+                apiKey: "secret",
+                authMethod: AuthMethod.BEARER_TOKEN,
+                defaults: {
+                  projectName: "DEFAULT",
+                  ticketTypes: ["Bug", "Story"],
+                  ticketPriorities: ["High", "Medium"],
+                },
+              },
+            ],
+          },
+        },
+      },
+      workloadConfigs: { version: ConfigVersion.V2_0, workloads: [] },
+      pipelineConfigs: { stages: [] },
+      qualityGatesConfigs: { "quality-gates": [] },
+    };
+
+    const workload: any = {
+      id: "test-workload",
+      projectManagement: {
+        type: TicketManagementTypes.JIRA,
+        serverId: "jira-server",
+        projectName: "TEST",
+        ticketTypes: ["Epic"],
+        ticketPriorities: ["Critical"],
+      },
+    };
+
+    applyWorkloadDefaults(config, workload);
+
+    // lodash merge will merge arrays by combining them
+    expect(workload.projectManagement.ticketTypes).toEqual(["Bug", "Story"]);
+    expect(workload.projectManagement.ticketPriorities).toEqual(["High", "Medium"]);
+  });
+
+  it("should handle workload with no project management", () => {
+    const config: ConfigHolder = {
+      metadata: { name: "test", version: "1.0.0" },
+      remoteConfigs: {
+        version: ConfigVersion.V2_0,
+        codeAnalysis: {},
+        codeManagement: {},
+        pipelines: {},
+        ticketManagement: {
+          jira: {
+            servers: [
+              {
+                id: "jira-server",
+                url: "https://jira.example.com",
+                apiKey: "secret",
+                authMethod: AuthMethod.BEARER_TOKEN,
+                defaults: {
+                  projectName: "DEFAULT",
+                  ticketTypes: ["Bug"],
+                },
+              },
+            ],
+          },
+        },
+      },
+      workloadConfigs: { version: ConfigVersion.V2_0, workloads: [] },
+      pipelineConfigs: { stages: [] },
+      qualityGatesConfigs: { "quality-gates": [] },
+    };
+
+    const workload: any = {
+      id: "test-workload",
+      projectManagement: undefined,
+    };
+
+    // Should not throw
+    expect(() => applyWorkloadDefaults(config, workload)).not.toThrow();
+    expect(workload.projectManagement).toBeUndefined();
+  });
+
+  it("should handle workload with no incident management", () => {
+    const config: ConfigHolder = {
+      metadata: { name: "test", version: "1.0.0" },
+      remoteConfigs: {
+        version: ConfigVersion.V2_0,
+        codeAnalysis: {},
+        codeManagement: {},
+        pipelines: {},
+        ticketManagement: {
+          jira: {
+            servers: [
+              {
+                id: "jira-server",
+                url: "https://jira.example.com",
+                apiKey: "secret",
+                authMethod: AuthMethod.BEARER_TOKEN,
+                defaults: {
+                  projectName: "DEFAULT",
+                  ticketTypes: ["Incident"],
+                },
+              },
+            ],
+          },
+        },
+      },
+      workloadConfigs: { version: ConfigVersion.V2_0, workloads: [] },
+      pipelineConfigs: { stages: [] },
+      qualityGatesConfigs: { "quality-gates": [] },
+    };
+
+    const workload: any = {
+      id: "test-workload",
+      incidents: undefined,
+    };
+
+    // Should not throw
+    expect(() => applyWorkloadDefaults(config, workload)).not.toThrow();
+    expect(workload.incidents).toBeUndefined();
+  });
+
+  it("should handle missing server defaults", () => {
+    const config: ConfigHolder = {
+      metadata: { name: "test", version: "1.0.0" },
+      remoteConfigs: {
+        version: ConfigVersion.V2_0,
+        codeAnalysis: {},
+        codeManagement: {},
+        pipelines: {},
+        ticketManagement: {
+          jira: {
+            servers: [
+              {
+                id: "jira-server",
+                url: "https://jira.example.com",
+                apiKey: "secret",
+                authMethod: AuthMethod.BEARER_TOKEN,
+                defaults: undefined, // No defaults
+              },
+            ],
+          },
+        },
+      },
+      workloadConfigs: { version: ConfigVersion.V2_0, workloads: [] },
+      pipelineConfigs: { stages: [] },
+      qualityGatesConfigs: { "quality-gates": [] },
+    };
+
+    const workload: any = {
+      id: "test-workload",
+      projectManagement: {
+        type: TicketManagementTypes.JIRA,
+        serverId: "jira-server",
+        projectName: "TEST",
+      },
+    };
+
+    // Should not throw when defaults are missing
+    expect(() => applyWorkloadDefaults(config, workload)).not.toThrow();
+  });
+
+  it("should handle non-existent server ID", () => {
+    const config: ConfigHolder = {
+      metadata: { name: "test", version: "1.0.0" },
+      remoteConfigs: {
+        version: ConfigVersion.V2_0,
+        codeAnalysis: {},
+        codeManagement: {},
+        pipelines: {},
+        ticketManagement: {
+          jira: {
+            servers: [
+              {
+                id: "jira-server-1",
+                url: "https://jira.example.com",
+                apiKey: "secret",
+                authMethod: AuthMethod.BEARER_TOKEN,
+                defaults: {
+                  projectName: "DEFAULT",
+                  ticketTypes: ["Bug"],
+                },
+              },
+            ],
+          },
+        },
+      },
+      workloadConfigs: { version: ConfigVersion.V2_0, workloads: [] },
+      pipelineConfigs: { stages: [] },
+      qualityGatesConfigs: { "quality-gates": [] },
+    };
+
+    const workload: any = {
+      id: "test-workload",
+      projectManagement: {
+        type: TicketManagementTypes.JIRA,
+        serverId: "non-existent-server",
+        projectName: "TEST",
+      },
+    };
+
+    // Should not throw when server ID is not found
+    expect(() => applyWorkloadDefaults(config, workload)).not.toThrow();
+  });
+
+  it("should handle missing ticket management type in remote config", () => {
+    const config: ConfigHolder = {
+      metadata: { name: "test", version: "1.0.0" },
+      remoteConfigs: {
+        version: ConfigVersion.V2_0,
+        codeAnalysis: {},
+        codeManagement: {},
+        pipelines: {},
+        ticketManagement: {
+          // No jira configuration
+        },
+      },
+      workloadConfigs: { version: ConfigVersion.V2_0, workloads: [] },
+      pipelineConfigs: { stages: [] },
+      qualityGatesConfigs: { "quality-gates": [] },
+    };
+
+    const workload: any = {
+      id: "test-workload",
+      projectManagement: {
+        type: TicketManagementTypes.JIRA,
+        serverId: "jira-server",
+        projectName: "TEST",
+      },
+    };
+
+    // Should not throw when ticket management type is not configured
+    expect(() => applyWorkloadDefaults(config, workload)).not.toThrow();
+  });
+
+  it("should handle partial defaults", () => {
+    const config: ConfigHolder = {
+      metadata: { name: "test", version: "1.0.0" },
+      remoteConfigs: {
+        version: ConfigVersion.V2_0,
+        codeAnalysis: {},
+        codeManagement: {},
+        pipelines: {},
+        ticketManagement: {
+          jira: {
+            servers: [
+              {
+                id: "jira-server",
+                url: "https://jira.example.com",
+                apiKey: "secret",
+                authMethod: AuthMethod.BEARER_TOKEN,
+                defaults: {
+                  projectName: "DEFAULT",
+                  ticketTypes: ["Bug"],
+                  // No ticketPriorities
+                },
+              },
+            ],
+          },
+        },
+      },
+      workloadConfigs: { version: ConfigVersion.V2_0, workloads: [] },
+      pipelineConfigs: { stages: [] },
+      qualityGatesConfigs: { "quality-gates": [] },
+    };
+
+    const workload: any = {
+      id: "test-workload",
+      projectManagement: {
+        type: TicketManagementTypes.JIRA,
+        serverId: "jira-server",
+        projectName: "TEST",
+      },
+    };
+
+    applyWorkloadDefaults(config, workload);
+
+    expect(workload.projectManagement.ticketTypes).toEqual(["Bug"]);
+    expect(workload.projectManagement.ticketPriorities).toBeUndefined();
   });
 });

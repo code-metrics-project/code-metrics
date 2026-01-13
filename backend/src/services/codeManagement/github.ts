@@ -1,4 +1,5 @@
 import { Octokit } from "@octokit/rest";
+import { uniq } from "lodash/fp";
 import { registerVcs, VcsService } from "./vcsService";
 import {
   FileChanges,
@@ -18,8 +19,8 @@ import { provideDatastore } from "../../db/factory";
 import { StorableLike, getDataForDateRange } from "../dateWalker";
 import { WorkloadId } from "../../model/config/workload-config";
 import { CodeManagementTypes } from "../../model/config/common";
-import { TMergeRules } from "../repos/qualityGates";
 import { getConfigItemAsNumber } from "../../config/sources/source";
+import { TMergeRules } from "../../model/qualityGates";
 
 const COLLECTION_NAME_REPO_COMMITS = "repo-commits";
 const COLLECTION_NAME_REPO_CHANGES = "repo-changes";
@@ -486,7 +487,7 @@ class GithubVcsService implements VcsService {
       }
     });
 
-    const allRepos: string[] = (await Promise.all(repoPromises)).flat();
+    const allRepos: string[] = uniq((await Promise.all(repoPromises)).flat());
     logger(`Retrieved ${allRepos.length} total repos for github org: ${vcsProject}`);
     return allRepos;
   }

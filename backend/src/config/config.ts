@@ -233,16 +233,20 @@ const applyWorkloadDefaults = (config: ConfigHolder, workload: Workload) => {
   const remoteTicketMgmt = config.remoteConfigs.ticketManagement;
 
   const workloadProjectMgmt = workload.projectManagement;
-  const projectMgmtDefaults = remoteTicketMgmt[workloadProjectMgmt.type]?.servers.find(
-    (s) => s.id === workloadProjectMgmt.serverId,
-  )?.defaults;
-  _merge(workloadProjectMgmt, projectMgmtDefaults);
+  if (workloadProjectMgmt) {
+    const projectMgmtDefaults = remoteTicketMgmt[workloadProjectMgmt.type]?.servers.find(
+      (s) => s.id === workloadProjectMgmt.serverId,
+    )?.defaults;
+    _merge(workloadProjectMgmt, projectMgmtDefaults);
+  }
 
   const workloadIncidentMgmt = workload.incidents;
-  const incidentMgmtDefaults = remoteTicketMgmt[workloadIncidentMgmt.type]?.servers.find(
-    (s) => s.id === workloadIncidentMgmt.serverId,
-  )?.defaults;
-  _merge(workloadIncidentMgmt, incidentMgmtDefaults);
+  if (workloadIncidentMgmt) {
+    const incidentMgmtDefaults = remoteTicketMgmt[workloadIncidentMgmt.type]?.servers.find(
+      (s) => s.id === workloadIncidentMgmt.serverId,
+    )?.defaults;
+    _merge(workloadIncidentMgmt, incidentMgmtDefaults);
+  }
 };
 
 /**
@@ -254,3 +258,5 @@ export const determineConfigVersion = (config: Partial<VersionedConfig>): Config
   verbose(`Determined config version: ${version}`, config);
   return version;
 };
+
+export const testables = { applyWorkloadDefaults };

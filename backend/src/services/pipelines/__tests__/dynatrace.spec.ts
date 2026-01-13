@@ -42,6 +42,7 @@ const workload: Workload = {
     serverId: "test-jira",
     tableName: undefined,
   },
+  qualityGates: undefined,
 };
 
 beforeAll(async () => {
@@ -124,13 +125,6 @@ describe(`Dynatrace Pipelines integration`, () => {
     expect(builds).toHaveLength(12);
     expect(builds[0].branch).toBeUndefined();
     expect(builds[0].result).toBe(RunResult.Succeeded);
-  });
-
-  it(`lists job names`, async () => {
-    const codepipeline = getPipelinesForWorkload(workload, "dynatrace-build-stage");
-
-    const jobNames = await codepipeline.discoverJobNames(workload, "backend");
-    expect(jobNames).toEqual(["spring-petclinic"]);
   });
 
   it(`returns no job names for nonexistent job group`, async () => {

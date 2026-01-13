@@ -2,14 +2,19 @@ plugin: rest
 
 resources:
   - method: get
-    path: /orgs/{org}/repos
-    queryParams:
-      type: "public"
+    path: /orgs/{org}/issue-types
     response:
-      file: repos.json
+      scriptFile: GET-issue-types.js
 
   - method: get
     path: /orgs/{org}/repos
+    response:
+      file: GET-repos.json
+
+  - method: get
+    path: /orgs/{org}/repos
+    queryParams:
+      type: 'private'
     response:
       content: "[]"
 
@@ -21,69 +26,79 @@ resources:
   - method: get
     path: /repos/{owner}/{repo}/commits
     response:
-      file: commits.json
+      file: GET-commits.json
 
   - method: get
     path: /repos/{owner}/{repo}/commits/{ref}
     response:
-      file: commit.json
+      file: GET-commit.json
 
   - method: get
     path: /repos/{owner}/{repo}/commits/{commit_sha}/pulls
     response:
-      file: commitPulls.json
+      file: GET-commitPulls.json
 
   - method: get
     path: /repos/{owner}/{repo}/pulls
     response:
-      file: pullRequests.json
+      file: GET-pullRequests.json
 
   - method: get
     path: /repos/{owner}/{repo}/pulls/{pull_number}/commits
     response:
-      file: pullRequestCommits.json
+      file: GET-pullRequestCommits.json
 
   - method: get
     path: /repos/{owner}/{repo}/pulls/{pullId}/files
     response:
-      file: files.json
+      file: GET-files.json
 
   - method: get
     path: /repos/{owner}/{repo}/actions/runs
     response:
-      file: workflowRuns.json
+      file: GET-workflowRuns.json
 
   - method: get
     path: /repos/{owner}/{repo}/actions/runs/{run_id}
     response:
-      file: workflowRun.json
-
+      file: GET-workflowRun.json
+  
   - method: get
     path: /repos/{owner}/{repo}/actions/runs/{run_id}/timing
     response:
-      file: workflowTiming.json
+      file: GET-workflowTiming.json
+
+  - method: get
+    path: /repos/{owner}/{repo}/issues
+    response:
+      scriptFile: GET-issues.js
+
+  - method: get
+    path: /repos/{owner}/{repo}/issues/{issue_number}
+    response:
+      scriptFile: GET-issue.js
 
   - method: get
     path: /repos/{owner}/{repo}/contents/{filename}
     response:
-      file: contents.txt
+      file: GET-contents.txt
 
   - method: get
     path: /repos/{owner}/{repo}/rulesets
     response:
-      file: rules.json
+      file: GET-rules.json
 
   - method: get
     path: /repos/{owner}/{repo}/rulesets/{rule}
     response:
-      file: rule.json
+      file: GET-rule.json
 
   - method: get
     path: /repos/{owner}/{repo}/branches/{branch}/protection
     response:
-      file: branch.json
+      file: GET-branch.json
 
   - method: get
     path: /repos/{owner}/{repo}/dependabot/alerts
     response:
-      file: dependabotAlerts.json
+      file: GET-dependabotAlerts.json

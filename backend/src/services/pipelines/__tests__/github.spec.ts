@@ -41,6 +41,7 @@ const workload: Workload = {
     serverId: "test-jira",
     tableName: undefined,
   },
+  qualityGates: undefined,
 };
 
 beforeAll(async () => {

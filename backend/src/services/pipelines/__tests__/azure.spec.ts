@@ -24,7 +24,7 @@ const workload: Workload = {
   pipelines: {
     jobGroups: {
       backend: {
-        jobNames: ["octo-repo"],
+        jobNames: ["spring-petclinic"],
       },
     },
     stages: [{ stageId: "azure-build-stage" }],
@@ -39,6 +39,7 @@ const workload: Workload = {
     serverId: "test-azure",
     tableName: undefined,
   },
+  qualityGates: undefined,
 };
 
 let mockServer;
@@ -136,11 +137,26 @@ describe("Azure Pipelines integration", () => {
     expect(propValue).toBe("80e98688993227435b416ae57aaa2625a30573c3");
   });
 
+  it("gets runs for jobs", async () => {
+    const azure = getPipelinesForWorkload(workload, "azure-build-stage");
+
+    const startDate = new Date("2022-09-15");
+    const endDate = new Date("2022-09-15");
+    const runs = await azure.getRunsForJobGroups(workload.id, ["backend"], [], startDate, endDate);
+
+    const groupRuns = runs.filter((r) => r.workloadId === "athena" && r.jobGroup === "backend");
+    expect(groupRuns).toHaveLength(2);
+
+    const run = groupRuns[0].run;
+    expect(run.job).toBe("spring-petclinic");
+    expect(run.result).toBe(RunResult.Succeeded);
+  });
+
   it(`lists job names`, async () => {
     const azure = getPipelinesForWorkload(workload, "azure-build-stage");
 
     const jobNames = await azure.discoverJobNames(workload, "backend");
-    expect(jobNames).toEqual(["octo-repo"]);
+    expect(jobNames).toEqual(["spring-petclinic"]);
   });
 
   it(`returns no job names for nonexistent job group`, async () => {

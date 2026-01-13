@@ -25,7 +25,7 @@ const workload: Workload = {
   pipelines: {
     jobGroups: {
       backend: {
-        jobNames: ["octo-repo"],
+        jobNames: ["Athena_platform"],
       },
     },
     stages: [{ stageId: "jenkins-build-stage" }],
@@ -40,6 +40,7 @@ const workload: Workload = {
     serverId: "test-jira",
     tableName: undefined,
   },
+  qualityGates: undefined,
 };
 
 beforeAll(async () => {
@@ -113,7 +114,22 @@ describe(`Jenkins CICD integration`, () => {
     const jenkins = getPipelinesForWorkload(workload, "jenkins-build-stage");
 
     const jobNames = await jenkins.discoverJobNames(workload, "backend");
-    expect(jobNames).toEqual(["octo-repo"]);
+    expect(jobNames).toEqual(["Athena_platform" ]);
+  });
+
+  it("gets runs for job groups", async () => {
+    const jenkins = getPipelinesForWorkload(workload, "jenkins-build-stage");
+
+    const startDate = new Date("2020-01-22");
+    const endDate = new Date("2024-01-22");
+    const runs = await jenkins.getRunsForJobGroups(workload.id, ["backend"], ["main"], startDate, endDate);
+
+    expect(runs).toHaveLength(7);
+    expect(runs[0].workloadId).toBe("athena");
+
+    const run = runs[0].run;
+    expect(run.job).toBe("athena-folder/Athena_platform/main");
+    expect(run.result).toBe(RunResult.Succeeded);
   });
 
   it(`returns no job names for nonexistent job group`, async () => {

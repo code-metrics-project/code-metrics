@@ -20,6 +20,7 @@ import { ConfigVersion } from "../../model/config/base";
 import { initSonar } from "../../services/codeAnalysis/sonar";
 import { initAdoVcs } from "../../services/codeManagement/azure";
 import { initAdoPipelines } from "../../services/pipelines/azure";
+import { initGithubVcs } from "../../services/codeManagement/github";
 
 // stub out unneeded fetch import
 jest.mock("node-fetch", () => ({}));
@@ -28,10 +29,162 @@ beforeEach(() => {
   jest.resetModules();
 });
 
+const workloads = [
+  {
+    id: "workload-fe-1",
+    tags: {
+      country: "GB",
+      department: "sales",
+    },
+    codeAnalysis: {
+      type: CodeAnalysisTypes.SONAR,
+      serverId: "test-sonar-1",
+    },
+    codeManagement: {
+      type: CodeManagementTypes.AZURE,
+      serverId: "test-azure-1",
+      repoGroups: {
+        frontend: {
+          sonarTags: ["fe"],
+        },
+        platform: {
+          components: [{ name: "cloud-config", repo: "cloud-config" }],
+        },
+      },
+      projectName: "myTestFrontendProject",
+    },
+    projectManagement: {
+      type: TicketManagementTypes.JIRA,
+      serverId: "test-jira",
+      ticketPriorities: [],
+      ticketTypes: ["Bug"],
+      projectName: "PROJ",
+    },
+    incidents: {
+      type: TicketManagementTypes.JIRA,
+      serverId: "test-jira",
+      ticketPriorities: [],
+      ticketTypes: ["Incident"],
+      projectName: "PROJ",
+    },
+    pipelines: {
+      stages: [{ stageId: "azure-build-stage" }],
+    },
+    qualityGates: undefined,
+  },
+  {
+    id: "workload-fe-2",
+    tags: {
+      country: "GB",
+      department: "marketing",
+    },
+    codeAnalysis: {
+      type: CodeAnalysisTypes.SONAR,
+      serverId: "test-sonar-1",
+    },
+    codeManagement: {
+      type: CodeManagementTypes.AZURE,
+      serverId: "test-azure-1",
+      repoGroups: {
+        frontend: {
+          sonarTags: ["fe"],
+        },
+        platform: {
+          components: [{ name: "/.*infra/", repo: "/.*infra/" }],
+        },
+      },
+      projectName: "myOtherTestFrontendProject",
+    },
+    projectManagement: {
+      type: TicketManagementTypes.JIRA,
+      serverId: "test-jira",
+      ticketPriorities: [],
+      ticketTypes: ["Bug"],
+      projectName: "PROJ",
+    },
+    incidents: {
+      type: TicketManagementTypes.JIRA,
+      serverId: "test-jira",
+      ticketPriorities: [],
+      ticketTypes: ["Bug"],
+      projectName: "PROJ",
+    },
+    pipelines: {
+      stages: [{ stageId: "azure-build-stage" }],
+    },
+    qualityGates: undefined,
+  },
+  {
+    id: "workload-be",
+    tags: {
+      country: "US",
+      department: "finance",
+    },
+    codeAnalysis: {
+      type: CodeAnalysisTypes.SONAR,
+      serverId: "test-sonar-2",
+    },
+    codeManagement: {
+      type: CodeManagementTypes.AZURE,
+      serverId: "test-azure-2",
+      repoGroups: {
+        backend: {
+          sonarTags: ["be"],
+        },
+      },
+      projectName: "myTestBackendProject",
+    },
+    projectManagement: {
+      type: TicketManagementTypes.JIRA,
+      serverId: "test-jira",
+      ticketPriorities: [],
+      ticketTypes: ["Bug"],
+      projectName: "PROJ",
+    },
+    incidents: {
+      type: TicketManagementTypes.JIRA,
+      serverId: "test-jira",
+      ticketPriorities: [],
+      ticketTypes: ["Bug"],
+      projectName: "PROJ",
+    },
+    pipelines: {
+      stages: [{ stageId: "azure-build-stage" }],
+    },
+    qualityGates: undefined,
+  },
+  {
+    id: "example",
+    pipelines: {
+      stages: [{ stageId: "github-build-stage" }],
+      jobNameMapping: JobNameMapping.None,
+      jobGroups: {
+        backend: {
+          jobNames: ["api"],
+        },
+        frontend: {
+          jobNames: ["web"],
+        },
+      },
+    },
+    codeManagement: {
+      type: CodeManagementTypes.GITHUB,
+      serverId: "test-github",
+      projectName: "test-project",
+      repoGroups: {},
+    },
+    projectManagement: undefined,
+    incidents: undefined,
+    codeAnalysis: undefined,
+    qualityGates: undefined,
+  },
+];
+
 beforeAll(async () => {
   await initDatastore();
   initAdoVcs();
   initAdoPipelines();
+  initGithubVcs();
   initGithubPipelines();
   initSonar();
 
@@ -58,134 +211,22 @@ beforeAll(async () => {
             },
           ],
         },
+        github: {
+          servers: [
+            {
+              apiKey: "gh-token",
+              branches: ["main"],
+              id: "test-github",
+            },
+          ],
+        },
       },
-      pipelines: {},
+      pipelines: undefined,
       ticketManagement: {},
     },
     workloadConfig: {
       version: ConfigVersion.V2_0,
-      workloads: [
-        {
-          id: "workload-fe-1",
-          tags: {
-            country: "GB",
-            department: "sales",
-          },
-          codeAnalysis: {
-            type: CodeAnalysisTypes.SONAR,
-            serverId: "test-sonar-1",
-          },
-          codeManagement: {
-            type: CodeManagementTypes.AZURE,
-            serverId: "test-azure-1",
-            repoGroups: {
-              frontend: {
-                sonarTags: ["fe"],
-              },
-              platform: {
-                components: [{ name: "cloud-config", repo: "cloud-config" }],
-              },
-            },
-            projectName: "myTestFrontendProject",
-          },
-          projectManagement: {
-            type: TicketManagementTypes.JIRA,
-            serverId: "test-jira",
-            ticketPriorities: [],
-            ticketTypes: ["Bug"],
-            projectName: "PROJ",
-          },
-          incidents: {
-            type: TicketManagementTypes.JIRA,
-            serverId: "test-jira",
-            ticketPriorities: [],
-            ticketTypes: ["Incident"],
-            projectName: "PROJ",
-          },
-          pipelines: {
-            stages: [{ stageId: "azure-build-stage" }],
-          },
-        },
-        {
-          id: "workload-fe-2",
-          tags: {
-            country: "GB",
-            department: "marketing",
-          },
-          codeAnalysis: {
-            type: CodeAnalysisTypes.SONAR,
-            serverId: "test-sonar-1",
-          },
-          codeManagement: {
-            type: CodeManagementTypes.AZURE,
-            serverId: "test-azure-1",
-            repoGroups: {
-              frontend: {
-                sonarTags: ["fe"],
-              },
-              platform: {
-                components: [{ name: "/.*infra/", repo: "/.*infra/" }],
-              },
-            },
-            projectName: "myOtherTestFrontendProject",
-          },
-          projectManagement: {
-            type: TicketManagementTypes.JIRA,
-            serverId: "test-jira",
-            ticketPriorities: [],
-            ticketTypes: ["Bug"],
-            projectName: "PROJ",
-          },
-          incidents: {
-            type: TicketManagementTypes.JIRA,
-            serverId: "test-jira",
-            ticketPriorities: [],
-            ticketTypes: ["Bug"],
-            projectName: "PROJ",
-          },
-          pipelines: {
-            stages: [{ stageId: "azure-build-stage" }],
-          },
-        },
-        {
-          id: "workload-be",
-          tags: {
-            country: "US",
-            department: "finance",
-          },
-          codeAnalysis: {
-            type: CodeAnalysisTypes.SONAR,
-            serverId: "test-sonar-2",
-          },
-          codeManagement: {
-            type: CodeManagementTypes.AZURE,
-            serverId: "test-azure-2",
-            repoGroups: {
-              backend: {
-                sonarTags: ["be"],
-              },
-            },
-            projectName: "myTestBackendProject",
-          },
-          projectManagement: {
-            type: TicketManagementTypes.JIRA,
-            serverId: "test-jira",
-            ticketPriorities: [],
-            ticketTypes: ["Bug"],
-            projectName: "PROJ",
-          },
-          incidents: {
-            type: TicketManagementTypes.JIRA,
-            serverId: "test-jira",
-            ticketPriorities: [],
-            ticketTypes: ["Bug"],
-            projectName: "PROJ",
-          },
-          pipelines: {
-            stages: [{ stageId: "azure-build-stage" }],
-          },
-        },
-      ],
+      workloads: workloads,
     },
     pipelineConfig: {
       stages: [
@@ -245,6 +286,7 @@ describe("config mapping", () => {
       projectManagement: undefined,
       incidents: undefined,
       codeAnalysis: undefined,
+      qualityGates: undefined,
     };
     const result = determineJobGroups(workload, ["mobile"]);
     expect(result).toStrictEqual(["mobile"]);
@@ -269,6 +311,7 @@ describe("config mapping", () => {
       projectManagement: undefined,
       incidents: undefined,
       codeAnalysis: undefined,
+      qualityGates: undefined,
     };
     const result = determineJobGroups(workload, []);
     expect(result).toStrictEqual(["backend", "frontend"]);
@@ -298,32 +341,15 @@ describe("config mapping", () => {
       projectManagement: undefined,
       incidents: undefined,
       codeAnalysis: undefined,
+      qualityGates: undefined,
     };
     const result = determineJobGroups(workload, []);
     expect(result).toStrictEqual(["backend", "frontend"]);
   });
 
   it("should return job names for a group", async () => {
-    const workload: Workload = {
-      id: "example",
-      pipelines: {
-        stages: [{ stageId: "github-build-stage" }],
-        jobNameMapping: JobNameMapping.None,
-        jobGroups: {
-          backend: {
-            jobNames: ["api"],
-          },
-          frontend: {
-            jobNames: ["web"],
-          },
-        },
-      },
-      codeManagement: undefined,
-      projectManagement: undefined,
-      incidents: undefined,
-      codeAnalysis: undefined,
-    };
-    const result = await determineJobNames(workload, "backend");
+    const exampleWorkload = workloads.find((w) => w.id === "example")!;
+    const result = await determineJobNames(exampleWorkload, "backend");
     expect(result).toStrictEqual(["api"]);
   });
 
@@ -335,10 +361,16 @@ describe("config mapping", () => {
         jobNameMapping: JobNameMapping.None,
         jobGroups: {},
       },
-      codeManagement: undefined,
+      codeManagement: {
+        type: CodeManagementTypes.GITHUB,
+        serverId: "test-github",
+        projectName: "test-project",
+        repoGroups: {},
+      },
       projectManagement: undefined,
       incidents: undefined,
       codeAnalysis: undefined,
+      qualityGates: undefined,
     };
     const result = await determineJobNames(workload, "no-such-group");
     expect(result).toStrictEqual([]);
@@ -360,6 +392,7 @@ describe("config mapping", () => {
         type: CodeAnalysisTypes.SONAR,
         serverId: "test-sonar-1",
       },
+      qualityGates: undefined,
     };
     const result = await determineJobNames(workload, "platform");
     expect(result).toStrictEqual(["cloud-config"]);
@@ -381,6 +414,7 @@ describe("config mapping", () => {
         type: CodeAnalysisTypes.SONAR,
         serverId: "test-sonar-1",
       },
+      qualityGates: undefined,
     };
     const result = await determineJobNames(workload, "platform");
     expect(result).toStrictEqual(["cloud-config"]);

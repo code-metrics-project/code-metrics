@@ -76,7 +76,21 @@ ticketManagement:
             - 2
             - 3
             - 4
-
+  github:
+    servers:
+      - id: mock-github
+        url: http://mocks:8080
+        apiKey: ""
+        authMethod: BEARER_TOKEN
+        defaults:
+          ticketTypes:
+            - Bug
+            - Enhancement
+            - Feature
+          ticketPriorities:
+            - High
+            - Medium
+            - Low
   jira:
     servers:
       - id: mock-jira
@@ -96,7 +110,6 @@ ticketManagement:
             - Medium
             - High
             - Highest
-
   servicenow:
     servers:
       - id: mock-servicenow

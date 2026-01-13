@@ -77,7 +77,7 @@ describe(`GitHub VCS integration`, () => {
   it(`lists all repos in an org`, async () => {
     const github = getVcsForWorkload(workload);
 
-    const repos = await github.getReposForProject(workload.id, "octocat");
+    const repos = await github.getReposForProject(workload.id, workload.codeManagement.projectName);
     expect(repos).toHaveLength(1);
     expect(repos[0]).toBe("octo-repo");
   });
