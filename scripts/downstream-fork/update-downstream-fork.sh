@@ -366,7 +366,7 @@ disable_coverage_in_workflows() {
 #######################################
 copy_license_files() {
   echo -e "${BLUE}📄 Copying license files to downstream root${NC}"
-  local license_files=("COPYING" "COPYING.LESSER" "LICENSE")
+  local license_files=("LICENSE")
   local license_file
   
   for license_file in "${license_files[@]}"; do

@@ -18,10 +18,10 @@ jobs:
         with:
           path: code-metrics
 
-      - name: Checkout downstream repo (code-metrics/external-collab)
+      - name: Checkout downstream repo (code-metrics-project/code-metrics)
         uses: actions/checkout@v4
         with:
-          repository: code-metrics-project/external-collab
+          repository: code-metrics-project/code-metrics
           ssh-key: ${{ secrets.EXT_COLLAB_REPO_SSH_KEY }}
           ref: main
           path: code-metrics-external-collab
