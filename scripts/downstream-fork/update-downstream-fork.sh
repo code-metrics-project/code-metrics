@@ -349,6 +349,39 @@ disable_coverage_in_workflows() {
 }
 
 #######################################
+# Update CI badge URL in README
+# Globals:
+#   DOWNSTREAM_REPO_PATH
+#   BLUE
+#   GREEN
+#   NC
+# Arguments:
+#   None
+# Outputs:
+#   Writes status messages to stdout
+# Returns:
+#   0 on success
+#######################################
+update_ci_badge() {
+  echo -e "${BLUE}🔧 Updating CI badge URL in README${NC}"
+  local readme_file="${DOWNSTREAM_REPO_PATH}/README.md"
+  
+  if [[ -f "${readme_file}" ]]; then
+    if grep -q 'DeloitteDigitalUK/code-metrics' "${readme_file}"; then
+      # Use portable sed for in-place editing (Linux and macOS)
+      if sed --version >/dev/null 2>&1; then
+        sed -i 's|DeloitteDigitalUK/code-metrics|code-metrics-project/code-metrics|g' \
+          "${readme_file}"
+      else
+        sed -i '' 's|DeloitteDigitalUK/code-metrics|code-metrics-project/code-metrics|g' \
+          "${readme_file}"
+      fi
+      echo -e "${GREEN}  ✓ Updated CI badge in README.md${NC}"
+    fi
+  fi
+}
+
+#######################################
 # Copy license files to downstream root
 # Globals:
 #   SCRIPT_DIR
@@ -502,6 +535,7 @@ main() {
   copy_files_from_upstream
   shrink_github_runner_size
   disable_coverage_in_workflows
+  update_ci_badge
   copy_license_files
   stage_changes
   show_change_summary

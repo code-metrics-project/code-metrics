@@ -1,6 +1,6 @@
 # Code Metrics
 
-[![CI](https://github.com/DeloitteDigitalUK/code-metrics/actions/workflows/ci.yaml/badge.svg)](https://github.com/DeloitteDigitalUK/code-metrics/actions/workflows/ci.yaml)
+[![CI](https://github.com/code-metrics-project/code-metrics/actions/workflows/ci.yaml/badge.svg)](https://github.com/code-metrics-project/code-metrics/actions/workflows/ci.yaml)
 
 ![Code Metrics logo](./docs/img/codemetrics_logo_small.png)
 
@@ -66,7 +66,7 @@ Access:
 
 ## Releases
 
-See the [Releases page](https://github.com/DeloitteDigitalUK/code-metrics/releases).
+See the [Releases page](https://github.com/code-metrics-project/code-metrics/releases).
 
 ## Contributing
 
@@ -81,4 +81,4 @@ Before submitting a pull request, please ensure your code follows our standards 
 
 ## Roadmap/project board
 
-See [the project board](https://github.com/DeloitteDigitalUK/code-metrics/projects/1).
+See [the project board](https://github.com/code-metrics-project/code-metrics/projects/1).
