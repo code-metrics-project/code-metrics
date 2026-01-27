@@ -1,6 +1,6 @@
 # Developer Documentation
 
-Welcome to the Code Metrics developer documentation! Whether you're new to the project or an existing contributor looking for a refresher, this is your guide to understanding how we work.
+Welcome to the CodeMetrics developer documentation! Whether you're new to the project or an existing contributor looking for a refresher, this is your guide to understanding how we work.
 
 ## Getting Started
 
@@ -30,4 +30,4 @@ When making changes:
 
 If you have questions or need clarification about anything in this documentation, please reach out to the core team through GitHub issues or discussions.
 
-Thank you for contributing to Code Metrics!
+Thank you for contributing to CodeMetrics!

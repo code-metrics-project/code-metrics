@@ -1,14 +1,14 @@
-# Code Metrics
+# CodeMetrics
 
 [![CI](https://github.com/code-metrics-project/code-metrics/actions/workflows/ci.yaml/badge.svg)](https://github.com/code-metrics-project/code-metrics/actions/workflows/ci.yaml)
 
-![Code Metrics logo](./docs/img/codemetrics_logo_small.png)
+![CodeMetrics logo](./docs/img/codemetrics_logo_small.png)
 
 ---
 
-Code Metrics is a system to help you gain deep insights into the quality of your software products. It draws on metrics about your source code, your CI/CD pipeline and your tickets (such as bugs/defects) and incidents.
+CodeMetrics is a system to help you gain deep insights into the quality of your software products. It draws on metrics about your source code, your CI/CD pipeline and your tickets (such as bugs/defects) and incidents.
 
-At its core, Code Metrics provides a collection of whole project lifecycle code quality analysis tools. It enables you to combine sources to look for correlations, to answer questions over time such as:
+At its core, CodeMetrics provides a collection of whole project lifecycle code quality analysis tools. It enables you to combine sources to look for correlations, to answer questions over time such as:
 
 - the bug to change ratio (related to change failure rate),
 - which files are frequently implicated when bugs are fixed,
@@ -25,9 +25,9 @@ At its core, Code Metrics provides a collection of whole project lifecycle code 
 
 [Read the documentation](https://code-metrics-project.github.io/docs/).
 
-## Running Code Metrics
+## Running CodeMetrics
 
-You can run Code Metrics in a number of ways:
+You can run CodeMetrics in a number of ways:
 
 - Docker or [Docker Compose](https://code-metrics-project.github.io/docs/getting_started/#docker-compose)
 - [Kubernetes](https://code-metrics-project.github.io/docs/getting_started/#kubernetes)
@@ -70,7 +70,7 @@ See the [Releases page](https://github.com/code-metrics-project/code-metrics/rel
 
 ## Contributing
 
-We welcome contributions to Code Metrics! If you're interested in contributing, please review the following resources:
+We welcome contributions to CodeMetrics! If you're interested in contributing, please review the following resources:
 
 - [Developer Documentation](./docs/dev/README.md) - Guide for new and existing contributors
 - [Standards and Patterns](./docs/dev/standards_patterns.md) - Our coding standards and architectural patterns

@@ -3,7 +3,7 @@
     <v-app-bar app color="dark">
       <router-link :to="Paths.Home">
         <v-img
-          alt="Code Metrics logo"
+          alt="CodeMetrics logo"
           class="shrink ml-3 mr-2"
           contain
           :src="`/assets/img/codemetrics_small_title.png`"

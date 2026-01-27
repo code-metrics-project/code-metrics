@@ -4,6 +4,7 @@ import { logger, verbose } from "../../utils/logger/logger";
 import {
   Branches,
   JobGroups,
+  JobNames,
   PipelineQueryOptions,
   PipelineStageInput,
   RollingAverages,
@@ -18,6 +19,7 @@ import { PipelineDurationArgs, PipelineRunArgs, PipelineSuccessArgs } from "../q
 
 type PipelineQueryArgs = Workloads &
   JobGroups &
+  JobNames &
   Branches &
   StartDate &
   RollingAverages &
@@ -67,6 +69,7 @@ const fetchPipelineRunsInternal = async (
     const result = await getPipelineRunsWithArgs({
       branches: args.branchNames,
       jobGroups: args.jobGroups,
+      jobNames: args.jobNames,
       startDate: args.startDate,
       workloads: args.workloads,
       stageId: args.stageId,
@@ -113,6 +116,7 @@ export const fetchPipelineDurations = async (args: PipelineDurationArgs): Promis
     const result = await getPipelineRunsWithArgs({
       branches: args.branchNames,
       jobGroups: args.jobGroups,
+      jobNames: args.jobNames,
       startDate: args.startDate,
       workloads: args.workloads,
       stageId: args.stageId,

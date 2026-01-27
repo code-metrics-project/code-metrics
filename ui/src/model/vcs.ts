@@ -43,6 +43,7 @@ export interface PathData {
   count: number;
   coverage: string;
   issueIds: string[];
+  issueLinks: { id: string; url: string }[];
 }
 
 export interface RepoData {

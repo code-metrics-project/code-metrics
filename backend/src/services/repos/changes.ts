@@ -3,7 +3,7 @@ import { getVcsBranches, getWorkloadById } from "../../config/configMapping";
 import { getVcsForWorkload } from "../codeManagement/vcsService";
 import { getIssueMgmtForWorkload } from "../projectManangement/issueMgmtService";
 import { getReposForWorkloadId } from "../../utils/repos";
-import { logger, verbose } from "../../utils/logger/logger";
+import { logger, verbose, warn } from "../../utils/logger/logger";
 import { vcsLimiter } from "./vcs-limiter";
 import { discoverLinks } from "../../utils/commits";
 
@@ -29,7 +29,7 @@ export async function fetchRepoChanges(
   for (const workloadId of workloadIds) {
     const workload = getWorkloadById(workloadId);
     if (!workload) {
-      console.warn(`Could not find workload with team ID: ${workloadId}`);
+      warn(`Could not find workload with team ID: ${workloadId}`);
       continue;
     }
     const vcs = getVcsForWorkload(workload);

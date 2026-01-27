@@ -113,16 +113,16 @@ describe(`Jenkins CICD integration`, () => {
   it(`lists job names`, async () => {
     const jenkins = getPipelinesForWorkload(workload, "jenkins-build-stage");
 
-    const jobNames = await jenkins.discoverJobNames(workload, "backend");
+    const jobNames = await jenkins.discoverJobNames(workload, { jobGroup: "backend" });
     expect(jobNames).toEqual(["Athena_platform" ]);
   });
 
-  it("gets runs for job groups", async () => {
+  it("gets runs for jobs", async () => {
     const jenkins = getPipelinesForWorkload(workload, "jenkins-build-stage");
 
     const startDate = new Date("2020-01-22");
     const endDate = new Date("2024-01-22");
-    const runs = await jenkins.getRunsForJobGroups(workload.id, ["backend"], ["main"], startDate, endDate);
+    const runs = await jenkins.getRunsForJobs(workload.id, ["Athena_platform"], ["main"], startDate, endDate);
 
     expect(runs).toHaveLength(7);
     expect(runs[0].workloadId).toBe("athena");
@@ -135,7 +135,7 @@ describe(`Jenkins CICD integration`, () => {
   it(`returns no job names for nonexistent job group`, async () => {
     const jenkins = getPipelinesForWorkload(workload, "jenkins-build-stage");
 
-    const jobNames = await jenkins.discoverJobNames(workload, "no-such-group");
+    const jobNames = await jenkins.discoverJobNames(workload, { jobGroup: "no-such-group" });
     expect(jobNames).toHaveLength(0);
   });
 });

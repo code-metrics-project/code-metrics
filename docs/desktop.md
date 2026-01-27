@@ -1,6 +1,6 @@
 # Desktop Application
 
-Code Metrics can be run as a desktop application. This enables you to use the tool without the need to set up a server or utilise a web browser.
+CodeMetrics can be run as a desktop application. This enables you to use the tool without the need to set up a server or utilise a web browser.
 It expects its licence file and configuration file to be located in the directory `~/.config/code-metrics`.
 
 ## Installation
@@ -24,11 +24,13 @@ The desktop application uses the same environment variables as the server applic
 The following environment variables used to configure the desktop application, of which some are relevant outside of development:
 
 **Development Environment Variables:**
-- `NODE_ENV`: `development|production` — *default: production* — Specifies the environment in which the application runs.
-- `DEBUG`: `true|false` — *default: false* — Enables a debugger to be attached to the backend application.
+
+- `NODE_ENV`: `development|production` — _default: production_ — Specifies the environment in which the application runs.
+- `DEBUG`: `true|false` — _default: false_ — Enables a debugger to be attached to the backend application.
 
 **User Environment Variables:**
-- `SHOW_CONSOLE`: `true|false` — *default: true* — Displays the console window. This is useful for debugging the application.
+
+- `SHOW_CONSOLE`: `true|false` — _default: true_ — Displays the console window. This is useful for debugging the application.
 
 ## Development
 

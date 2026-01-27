@@ -153,9 +153,20 @@
                   "id": { "type": "string" },
                   "url": { "type": "string" },
                   "apiKey": { "type": "string" },
+                  "authMethod": { "type": "string" },
                   "branches": {
                     "type": "array",
                     "items": { "type": "string" }
+                  },
+                  "githubApp": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "appId": { "type": "string" },
+                      "privateKey": { "type": "string" },
+                      "installationId": { "type": "string" }
+                    },
+                    "required": ["appId", "privateKey", "installationId"]
                   }
                 },
                 "required": ["id"]
@@ -322,9 +333,20 @@
                   "id": { "type": "string" },
                   "url": { "type": "string" },
                   "apiKey": { "type": "string" },
+                  "authMethod": { "type": "string" },
                   "branches": {
                     "type": "array",
                     "items": { "type": "string" }
+                  },
+                  "githubApp": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "appId": { "type": "string" },
+                      "privateKey": { "type": "string" },
+                      "installationId": { "type": "string" }
+                    },
+                    "required": ["appId", "privateKey", "installationId"]
                   }
                 },
                 "required": ["id"]
@@ -415,6 +437,59 @@
                     "type": "object",
                     "additionalProperties": true,
                     "properties": {}
+                  }
+                },
+                "required": ["id", "authMethod"]
+              }
+            }
+          },
+          "required": ["servers"]
+        },
+        "github": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "apiKey": { "type": "string" },
+                  "authMethod": { "type": "string" },
+                  "filter": { "type": "string" },
+                  "githubApp": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "appId": { "type": "string" },
+                      "privateKey": { "type": "string" },
+                      "installationId": { "type": "string" }
+                    },
+                    "required": ["appId", "privateKey", "installationId"]
+                  },
+                  "defaults": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "owner": { "type": "string" },
+                      "repo": { "type": "string" },
+                      "ticketTypes": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      },
+                      "ticketPriorities": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      },
+                      "stateFilter": { "type": "string" },
+                      "labelMapping": {
+                        "type": "object",
+                        "additionalProperties": { "type": "string" }
+                      }
+                    },
+                    "required": ["owner", "repo"]
                   }
                 },
                 "required": ["id", "authMethod"]

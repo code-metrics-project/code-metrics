@@ -4,24 +4,24 @@ version: "2.0"
 codeAnalysis:
   sonar:
     servers:
-    - id: example-sonar
-      url: https://sonar.example.com
-      apiKey: changeme
-    - id: mock-sonar
-      url: http://localhost:8080
-      apiKey: ''
+      - id: example-sonar
+        url: https://sonar.example.com
+        apiKey: changeme
+      - id: mock-sonar
+        url: http://localhost:8080
+        apiKey: ""
     tagKeyTypes:
-    - backend
-    - frontend
-    - mobile
-    - workload
+      - backend
+      - frontend
+      - mobile
+      - workload
 
 codeManagement:
   azure:
     servers:
       - id: mock-azure
         url: http://localhost:8080
-        apiKey: ''
+        apiKey: ""
         branches:
           - main
   bitbucketCloud:
@@ -42,35 +42,61 @@ codeManagement:
           - main
   github:
     servers:
+      # Example using Personal Access Token (Bearer Token) authentication
       - id: mock-github
         url: http://localhost:8080
-        apiKey: ''
+        apiKey: ""
+        authMethod: BEARER_TOKEN
         branches:
           - main
+      # Example using GitHub App authentication (recommended for organizations)
+      - id: example-github-app
+        url: https://api.github.com
+        authMethod: GITHUB_APP
+        githubApp:
+          appId: "${secret.GITHUB_APP_ID}"
+          privateKey: "${secret.GITHUB_APP_PRIVATE_KEY}"
+          installationId: "${secret.GITHUB_APP_INSTALLATION_ID}"
+        branches:
+          - main
+          - develop
   gitlab:
     servers: []
 
 pipelines:
   azure:
     servers:
-    - id: mock-azure
-      url: http://localhost:8080
-      apiKey: ''
-      branches:
-      - main
+      - id: mock-azure
+        url: http://localhost:8080
+        apiKey: ""
+        branches:
+          - main
   github:
     servers:
-    - id: mock-github
-      url: http://localhost:8080
-      apiKey: ''
-      branches:
-      - main
+      # Example using Personal Access Token (Bearer Token) authentication
+      - id: mock-github
+        url: http://localhost:8080
+        apiKey: ""
+        authMethod: BEARER_TOKEN
+        branches:
+          - main
+      # Example using GitHub App authentication (recommended for organizations)
+      - id: example-github-app
+        url: https://api.github.com
+        authMethod: GITHUB_APP
+        githubApp:
+          appId: "${secret.GITHUB_APP_ID}"
+          privateKey: "${secret.GITHUB_APP_PRIVATE_KEY}"
+          installationId: "${secret.GITHUB_APP_INSTALLATION_ID}"
+        branches:
+          - main
+          - develop
   jenkins:
     servers:
-    - id: example-jenkins
-      url: http://user:key@localhost:32769/
-      branches:
-      - main
+      - id: example-jenkins
+        url: http://user:key@localhost:32769/
+        branches:
+          - main
 
 ticketManagement:
   azure:
@@ -82,60 +108,64 @@ ticketManagement:
         project: Project Name
         defaults:
           ticketTypes:
+            - Bug
             - Issue
-
+          ticketPriorities:
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
   jira:
     servers:
-    - id: example-jira-1
-      url: https://example-jira-1.atlassian.net
-      email: user@example.co.uk
-      apiKey: changeme
-      authMethod: BASIC_AUTH
-      defaults:
-        ticketTypes:
-          - Bug
-        ticketPriorities:
-          - Lowest
-          - Low
-          - Medium
-          - High
-          - Highest
-
-    - id: example-jira-2
-      url: https://example-jira-2.atlassian.net
-      apiKey: changeme
-      authMethod: BEARER_TOKEN
-      defaults:
-        ticketTypes:
-          - Bug
-        ticketPriorities:
-          - Lowest
-          - Low
-          - Medium
-          - High
-          - Highest
-
-    - id: mock-jira
-      url: http://localhost:8080
-      apiKey: ''
-      authMethod: BEARER_TOKEN
-      defaults:
-        ticketTypes:
-          - Bug
-        ticketPriorities:
-          - Lowest
-          - Low
-          - Medium
-          - High
-          - Highest
+      - id: example-jira-1
+        url: https://example-jira-1.atlassian.net
+        email: user@example.co.uk
+        apiKey: changeme
+        authMethod: BASIC_AUTH
+        defaults:
+          ticketTypes:
+            - Bug
+          ticketPriorities:
+            - Lowest
+            - Low
+            - Medium
+            - High
+            - Highest
+      - id: example-jira-2
+        url: https://example-jira-2.atlassian.net
+        apiKey: changeme
+        authMethod: BEARER_TOKEN
+        defaults:
+          ticketTypes:
+            - Bug
+          ticketPriorities:
+            - Lowest
+            - Low
+            - Medium
+            - High
+            - Highest
+      - id: mock-jira
+        url: http://localhost:8080
+        apiKey: ""
+        authMethod: BEARER_TOKEN
+        defaults:
+          ticketTypes:
+            - Bug
+          ticketPriorities:
+            - Lowest
+            - Low
+            - Medium
+            - High
+            - Highest
 
   servicenow:
     servers:
       - id: mock-servicenow
-        url: http://mocks:8080
+        url: http://localhost:8080
         apiKey: ""
         authMethod: CUSTOM
         defaults:
           ticketPriorities: ["1", "2", "3"]
           tableName: "incident"
-          projectName: "ATHENA"
+          projectName: "L1 Support"

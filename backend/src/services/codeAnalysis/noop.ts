@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ComponentCoverage } from "../../model/codeAnalysis";
 import { CodeAnalysisTypes } from "../../model/config/common";
 import { RepoCodeAnalysisKey } from "../../utils/repos";
@@ -18,8 +19,6 @@ export const initNoOpCodeAnalysis = () =>
  * results when no code analysis service is configured.
  */
 class NoOpCodeAnalysisService implements CodeAnalysisService {
-  /* eslint-disable */
-
   async fetchMetricHistoryAsJson(
     repoGroups: string[],
     workload: Workload,
@@ -72,6 +71,4 @@ class NoOpCodeAnalysisService implements CodeAnalysisService {
   async getProjectKeysForRepoGroups(repoGroups: string[], workloadId: string): Promise<string[]> {
     return [];
   }
-
-  /* eslint-enable */
 }

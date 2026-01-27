@@ -7,7 +7,7 @@ import { IBuildApi } from "azure-devops-node-api/BuildApi";
 import { provideDatastore } from "../../db/factory";
 import { getAllPipelinesConfig, getWorkloadById } from "../../config/configMapping";
 import { Datastore, DatastoreCollection, QueryFilter } from "../../db/api";
-import { AbstractPipelinesService, registerPipelines } from "./pipelinesService";
+import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines } from "./pipelinesService";
 import { matchOrEquals } from "../../utils/matchers";
 import { jsonPathQuery } from "../../utils/json";
 import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName } from "../../utils/jobs";
@@ -17,6 +17,7 @@ import { StageConfig } from "../../model/config/pipeline-config";
 import { mapJobNamesUsingStageConfig, mapJobNameUsingStageConfig } from "./common";
 import { StorableLike } from "../dateWalker";
 import { PipelinesTypes } from "../../model/config/common";
+import { PagedList } from "azure-devops-node-api/interfaces/common/VSSInterfaces";
 
 const COLLECTION_NAME_PIPELINE_RUNS = "pipeline-executions";
 
@@ -74,8 +75,8 @@ class AdoPipelinesService extends AbstractPipelinesService {
     const days = Math.round((endDate.getTime() - startDate.getTime()) / MILLIS_PER_DAY);
     logger(`${days} days between ${startDate.toISOString()} and ${endDate.toISOString()}`);
 
-    // this is a work-around to query by day, as azure-devops-node-api imposes a hard limit
-    // of 1000 results and doesn't (currently) expose pagination/continuationToken support.
+    // Query by day to improve caching and avoid very large result sets.
+    // Each day's query handles pagination via continuation tokens.
     for (let i = 0; i <= days; i++) {
       const current = getRelativeDate(startDate, i);
       const projectBuilds = await this.getRunsForProjectForDay(
@@ -144,6 +145,7 @@ class AdoPipelinesService extends AbstractPipelinesService {
 
   /**
    * Invoke the ADO API to list the builds for the given project on a given date.
+   * Handles pagination by following continuation tokens until all results are retrieved.
    * @param buildApi
    * @param workloadId
    * @param vcsProjectName
@@ -159,10 +161,38 @@ class AdoPipelinesService extends AbstractPipelinesService {
 
     const endDate = getRelativeDate(date, 1);
 
-    const rawBuilds = await buildApi.getBuilds(vcsProjectName, null, null, null, date, endDate);
-    logger(`Retrieved ${rawBuilds.length} builds for ${vcsProjectName} on ${date}`);
+    const allBuilds: Build[] = [];
+    let continuationToken: string | undefined;
 
-    const runs: Run[] = rawBuilds
+    do {
+      const rawBuilds: PagedList<Build> = await buildApi.getBuilds(
+        vcsProjectName,
+        null, // definitions
+        null, // queues
+        null, // buildNumber
+        date, // minTime
+        endDate, // maxTime
+        null, // requestedFor
+        null, // reasonFilter
+        null, // statusFilter
+        null, // resultFilter
+        null, // tagFilters
+        null, // properties
+        null, // top
+        continuationToken, // continuationToken
+      );
+
+      allBuilds.push(...rawBuilds);
+      continuationToken = rawBuilds.continuationToken;
+
+      if (continuationToken) {
+        verbose(`Fetching next page of builds for ${vcsProjectName} on ${date} (continuation token present)`);
+      }
+    } while (continuationToken);
+
+    logger(`Retrieved ${allBuilds.length} builds for ${vcsProjectName} on ${date}`);
+
+    const runs: Run[] = allBuilds
       .filter((build) => {
         // exclude builds that complete within the given range but start before it
         return build.startTime >= date;
@@ -253,11 +283,17 @@ class AdoPipelinesService extends AbstractPipelinesService {
     };
   }
 
-  discoverJobNames = async (workload: Workload, jobGroup: string): Promise<string[]> => {
+  discoverJobNames = async (workload: Workload, filter: PipelinesServiceJobNameFilter): Promise<string[]> => {
     const jobGroups = listNormalisedJobGroupsForWorkload(workload);
 
-    // TODO discover via API and filter as jobName can be a regex
-    return jobGroups[jobGroup]?.jobNames ?? [];
+    // TODO discover via API and filter using 'filterJobsByJobGroup' as jobName can be a regex
+
+    if (filter.jobGroup) {
+      return jobGroups[filter.jobGroup]?.jobNames ?? [];
+    } else {
+      // return all job names
+      return Object.values(jobGroups).flatMap((group) => group.jobNames);
+    }
   };
 
   buildRunLink = (workloadId: string, jobName: string, runId: string): string => {

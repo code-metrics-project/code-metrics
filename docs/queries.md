@@ -1,6 +1,6 @@
 # Queries and filters
 
-Code Metrics provides a number of data sources that you can use to explore your data. You can filter and group your data in a number of ways to get the insights you need.
+CodeMetrics provides a number of data sources that you can use to explore your data. You can filter and group your data in a number of ways to get the insights you need.
 
 Visualise your data using a variety of [chart types](./charts.md), such as line, bar, doughnut and table.
 
@@ -9,7 +9,7 @@ These include:
 - Source code metrics
 - Build and deployment pipelines
 - Repository churn
-- Bug culprit files
+- Code hotspots
 - Bugs and escaped bugs
 - DORA metrics
 - Vulnerabilities
@@ -50,7 +50,7 @@ To remove a filter, click the delete button to the right of the filter:
 
 ## Query builder
 
-Code Metrics provides a custom query builder, which allows you to combine datasets from one or more query types, such as source code metrics, tickets etc.
+CodeMetrics provides a custom query builder, which allows you to combine datasets from one or more query types, such as source code metrics, tickets etc.
 
 The query builder supports timeseries datasets.
 
@@ -71,4 +71,4 @@ You can define custom queries using a JSON file. See [custom queries](custom_que
 
 ### Data points and rolling averages
 
-You can choose to chart all data points, which is most accurate, but can be quite spiky for some datasets. You can also choose to add rolling averages (over 4 weeks or 12 weeks). 
+You can choose to chart all data points, which is most accurate, but can be quite spiky for some datasets. You can also choose to add rolling averages (over 4 weeks or 12 weeks).

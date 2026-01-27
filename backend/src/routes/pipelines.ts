@@ -1,15 +1,16 @@
 import { Request, Response } from "express";
 import { RunWithMetadata } from "../model/runs";
-import { listWorkloadIds } from "../config/configMapping";
+import { getJobNamesForRepo, getWorkloadById, listWorkloadIds } from "../config/configMapping";
 import { ValidationError } from "../utils/validation";
 import { fetchDeploymentsForRun, fetchRunById, fetchRuns, fetchRunUrl } from "../services/pipelines/common";
 import { WorkloadId } from "../model/config/workload-config";
 import { getIdOfFirstStage, reifyMetaStageId } from "../services/deployment/common";
+import { getAllJobNamesFromRaw } from "../utils/jobs";
 
 // e.g. /api/pipeline/runs?workloads=ibt&startDate=2022-03-01
 export const getPipelineRuns = async (req: Request, res: Response<RunWithMetadata[] | string>): Promise<void> => {
   try {
-    const { workloads, startDate, jobGroups, branch, stageId } = req.query;
+    const { workloads, startDate, jobGroups, jobNames, repoNames, branch, stageId } = req.query;
 
     if (!branch) {
       throw new ValidationError("Missing branch query parameter");
@@ -19,6 +20,8 @@ export const getPipelineRuns = async (req: Request, res: Response<RunWithMetadat
       workloads,
       startDate,
       jobGroups,
+      jobNames,
+      repoNames,
       branches: [branch],
       stageId,
     });
@@ -184,15 +187,20 @@ export const getPipelineRunsWithArgs = async (args: Record<string, any>): Promis
     // query param format: yyyy-mm-dd
     const endDate = new Date((args?.endDate as string) ?? new Date());
 
-    let jobGroups: string[];
-    const jobGroupsRaw = args?.jobGroups;
-    if (!jobGroupsRaw) {
-      jobGroups = [];
-    } else {
-      jobGroups = Array.isArray(jobGroupsRaw)
-        ? jobGroupsRaw.map((w) => w.toString())
-        : (jobGroupsRaw as string).split(",");
+    const workloads = workloadIds.map((workloadId) => getWorkloadById(workloadId));
+
+    const allJobNames: string[] = [];
+
+    const queryRepoNames = args?.repoNames;
+    if (queryRepoNames) {
+      for (const workload of workloads) {
+        const jobNames = await getJobNamesForRepo(workload, queryRepoNames);
+        allJobNames.push(...jobNames);
+      }
     }
+
+    const jobNamesFromQuery = await getAllJobNamesFromRaw(workloadIds, args?.jobGroups, args?.jobNames);
+    allJobNames.push(...jobNamesFromQuery);
 
     let branches: string[];
     const branchesRaw = args?.branches;
@@ -211,7 +219,7 @@ export const getPipelineRunsWithArgs = async (args: Record<string, any>): Promis
     }
     stageId = reifyMetaStageId(stageId, workloadIds[0]);
 
-    return await fetchRuns(workloadIds, stageId, jobGroups, branches, startDate, endDate);
+    return await fetchRuns(workloadIds, stageId, allJobNames, branches, startDate, endDate);
   } catch (e) {
     throw new Error(`Failed to fetch pipeline runs: ${e}`);
   }

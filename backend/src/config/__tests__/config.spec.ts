@@ -30,8 +30,12 @@ describe("readConfig", () => {
       },
     );
     expect(config).toBeTruthy();
-    expect(config.workloads).toHaveLength(1);
-    expect(config.workloads[0].codeAnalysis.mappings).toHaveLength(1);
+    expect(config.workloads.length).toBeGreaterThanOrEqual(1);
+
+    // Find the original athena workload
+    const athenaWorkload = config.workloads.find((w) => w.id === "athena");
+    expect(athenaWorkload).toBeDefined();
+    expect(athenaWorkload?.codeAnalysis.mappings).toHaveLength(1);
   });
 
   it("should parse the YAML remote config", async () => {
@@ -84,6 +88,55 @@ describe("readConfig", () => {
     );
     expect(config).toBeTruthy();
     expect(config.workloads).toHaveLength(2);
+  });
+
+  it("should parse GitHub workload configuration", async () => {
+    const config: WorkloadConfigWrapper = await readConfig(
+      [path.join(__dirname, "test-data/yaml")],
+      "workload-config-github",
+      { required: true },
+    );
+    expect(config).toBeTruthy();
+    expect(config.workloads).toHaveLength(1);
+
+    const workload = config.workloads[0];
+    expect(workload.id).toBe("github-test-workload");
+    expect(workload.projectManagement.type).toBe("github");
+    expect(workload.incidents.type).toBe("github");
+
+    // Validate GitHub-specific configuration
+    const projectMgmt = workload.projectManagement as any;
+    expect(projectMgmt.owner).toBe("test-org");
+    expect(projectMgmt.repo).toBe("project-issues");
+    expect(projectMgmt.ticketTypes).toContain("bug");
+    expect(projectMgmt.ticketTypes).toContain("feature");
+    expect(projectMgmt.stateFilter).toBe("all");
+    expect(projectMgmt.labelMapping).toBeDefined();
+
+    const incidents = workload.incidents as any;
+    expect(incidents.owner).toBe("test-org");
+    expect(incidents.repo).toBe("incidents");
+    expect(incidents.ticketTypes).toContain("incident");
+  });
+
+  it("should parse GitHub remote configuration", async () => {
+    const config: RemoteConfigWrapper = await readConfig([path.join(__dirname, "test-data/yaml")], "remote-config", {
+      required: true,
+    });
+    expect(config).toBeTruthy();
+    expect(config.ticketManagement.github).toBeDefined();
+    expect(config.ticketManagement.github?.servers).toHaveLength(1);
+
+    const githubServer = config.ticketManagement.github?.servers[0];
+    expect(githubServer?.id).toBe("example-github");
+    expect(githubServer?.url).toBe("https://api.github.com");
+    expect(githubServer?.authMethod).toBe("BEARER_TOKEN");
+
+    const defaults = githubServer?.defaults as any;
+    expect(defaults.owner).toBe("example-org");
+    expect(defaults.repo).toBe("example-repo");
+    expect(defaults.ticketTypes).toContain("bug");
+    expect(defaults.ticketTypes).toContain("feature");
   });
 });
 

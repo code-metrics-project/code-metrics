@@ -5,8 +5,10 @@ info:
   version: 2.40.2
 
 paths:
-  /api/analysis/bug-culprit-files:
-    $ref: "./paths/api/analysis/bug-culprit-files.yaml"
+  /api/analysis/code-hotspots:
+    $ref: "./paths/api/analysis/code-hotspots.yaml"
+  /api/workloads/{workloadId}/issue-types:
+    $ref: "./paths/api/workloads/issue-types.yaml"
 
 components:
   schemas:

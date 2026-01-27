@@ -5,6 +5,7 @@ import {
   IncidentFilter,
   IssueFilter,
   JobGroups,
+  JobNames,
   PipelineQueryOptions,
   PipelineStageInput,
   RepoGroups,
@@ -67,6 +68,7 @@ export type NonWorkingPatternArgs = Workloads & RepoGroups & StartDate & Severit
 
 export type PipelineRunArgs = Workloads &
   JobGroups &
+  JobNames &
   Branches &
   StartDate &
   RollingAverages &
@@ -75,6 +77,7 @@ export type PipelineRunArgs = Workloads &
 
 export type PipelineSuccessArgs = Workloads &
   JobGroups &
+  JobNames &
   Branches &
   StartDate &
   RollingAverages &
@@ -83,6 +86,7 @@ export type PipelineSuccessArgs = Workloads &
 
 export type PipelineDurationArgs = Workloads &
   JobGroups &
+  JobNames &
   Branches &
   StartDate &
   RollingAverages &

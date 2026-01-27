@@ -1,5 +1,6 @@
 import Bottleneck from "bottleneck";
 import { getConfigItemAsNumber } from "../config/sources/source";
+import { warn } from "../utils/logger/logger.js";
 
 const API_RETRY_LIMIT = getConfigItemAsNumber("API_RETRY_LIMIT", 5);
 
@@ -38,7 +39,7 @@ export const retry = async <R>(callback: () => Promise<R>, remainingRetries = AP
     if (remainingRetries <= 0) {
       throw new Error(`Failed retrying execution - ${err}`);
     } else {
-      console.warn(`API call reset, retrying: ${callback}, remaining: ${remainingRetries - 1}`, err);
+      warn(`API call reset, retrying: ${callback}, remaining: ${remainingRetries - 1}`, err);
       return retry(callback, remainingRetries - 1);
     }
   }

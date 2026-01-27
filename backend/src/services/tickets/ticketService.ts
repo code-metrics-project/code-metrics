@@ -14,7 +14,20 @@ export enum TimeRangeMode {
 export type TicketService = {
   getTicket(workloadId: WorkloadId, issueId: string): Promise<LightweightIssue | null>;
 
-  getAllTicketIds(workload: Workload, daysBack: number): Promise<string[]>;
+  /**
+   * Gets all ticket IDs for the given workload within the specified time range.
+   * @param workload
+   * @param daysBack
+   * @param issueTypes - Optional array of issue types to filter by. If not provided, uses default ticket types.
+   */
+  getAllTicketIds(workload: Workload, daysBack: number, issueTypes?: string[]): Promise<string[]>;
+
+  /**
+   * Gets the available issue types for the given workload.
+   * Returns issue types from workload config, server defaults, or default values.
+   * @param workloadId - The workload ID
+   */
+  getAvailableIssueTypes(workloadId: WorkloadId): string[];
 
   /**
    * Fetches all issues for the given workload that were created within the specified date range.

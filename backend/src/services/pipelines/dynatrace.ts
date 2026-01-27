@@ -1,4 +1,4 @@
-import { AbstractPipelinesService, registerPipelines } from "./pipelinesService";
+import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines } from "./pipelinesService";
 import { Run, RunResult, RunWithMetadata } from "../../model/runs";
 import { logger, verbose, warn } from "../../utils/logger/logger";
 import { getRelativeDate, truncateDateOnly } from "../../utils/date";
@@ -220,11 +220,17 @@ class DynatracePipelinesService extends AbstractPipelinesService {
     }
   }
 
-  discoverJobNames = async (workload: Workload, jobGroup: string): Promise<string[]> => {
+  discoverJobNames = async (workload: Workload, filter: PipelinesServiceJobNameFilter): Promise<string[]> => {
     const jobGroups = listNormalisedJobGroupsForWorkload(workload);
 
-    // TODO discover via API and filter as jobName can be a regex
-    return jobGroups[jobGroup]?.jobNames ?? [];
+    // TODO discover via API and filter using 'filterJobsByJobGroup' as jobName can be a regex
+
+    if (filter.jobGroup) {
+      return jobGroups[filter.jobGroup]?.jobNames ?? [];
+    } else {
+      // return all job names
+      return Object.values(jobGroups).flatMap((group) => group.jobNames);
+    }
   };
 
   buildRunLink = (workloadId: string, jobName: string, runId: string): string => {

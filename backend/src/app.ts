@@ -4,7 +4,8 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { liveness, readiness } from "./routes/health";
 import { manageCache } from "./routes/system";
-import { findBugCulprits } from "./routes/bugCulprits";
+import { findCodeHotspots } from "./routes/codeHotspots";
+import { getIssueTypes } from "./routes/issueTypes";
 import { fetchBugHistory } from "./routes/tickets";
 import { fileMetricBreakdown } from "./routes/codeAnalysisBreakdown";
 import { codeAnalysisHistoryAsCsv, codeAnalysisHistoryAsJson } from "./routes/codeAnalysisHistory";
@@ -25,17 +26,27 @@ import { initAdoVcs } from "./services/codeManagement/azure";
 import { initGithubVcs } from "./services/codeManagement/github";
 import { initAdoIssues } from "./services/projectManangement/azure";
 import { initJiraIssues } from "./services/projectManangement/jira";
+import { initGithubIssues } from "./services/projectManangement/github";
 import { initBitbucketCloudVcs } from "./services/codeManagement/bitbucket-cloud";
 import { initBitbucketServerVcs } from "./services/codeManagement/bitbucket-server";
-import { getDashboard, getDashboards } from "./routes/dashboards";
 import { initVcs } from "./services/codeManagement/vcsService";
 import { initDatastore } from "./db/factory";
+import { initSonar } from "./services/codeAnalysis/sonar";
+import { initNoOpCodeAnalysis } from "./services/codeAnalysis/noop";
+import { initCodePipelinePipelines } from "./services/pipelines/codepipeline";
+import { initDynatracePipelines } from "./services/pipelines/dynatrace";
+import { initAdoIncidents } from "./services/incidentManagement/azure";
+import { initJiraIncidents } from "./services/incidentManagement/jira";
+import { initServiceNowIncidents } from "./services/incidentManagement/servicenow";
+import { initNoOpPipelines } from "./services/pipelines/noop";
+import { initNoOpIncidents } from "./services/incidentManagement/noop";
+import { initNoOpIssues } from "./services/projectManangement/noop";
+import { initGithubIncidents } from "./services/incidentManagement/github";
+import { getDashboard, getDashboards } from "./routes/dashboards";
 import { predictLinear } from "./routes/prediction";
 import { doIfFeatureActive, Features } from "./utils/features";
 import { persistVulnerabilities } from "./routes/vulnerabilities";
 import { validateLicense } from "./license/validate";
-import { initSonar } from "./services/codeAnalysis/sonar";
-import { initNoOpCodeAnalysis } from "./services/codeAnalysis/noop";
 import {
   deleteQueryCollection,
   getQueryCollection,
@@ -51,15 +62,7 @@ import {
   refreshSession,
   revokeServiceToken,
 } from "./routes/authentication";
-import { initCodePipelinePipelines } from "./services/pipelines/codepipeline";
-import { initDynatracePipelines } from "./services/pipelines/dynatrace";
 import { SecureRouter } from "./routes/router";
-import { initAdoIncidents } from "./services/incidentManagement/azure";
-import { initJiraIncidents } from "./services/incidentManagement/jira";
-import { initServiceNowIncidents } from "./services/incidentManagement/servicenow";
-import { initNoOpPipelines } from "./services/pipelines/noop";
-import { initNoOpIncidents } from "./services/incidentManagement/noop";
-import { initNoOpIssues } from "./services/projectManangement/noop";
 import { InvocationMode } from "./model/global";
 import { fetchQualityGates } from "./routes/qualityGates";
 import { getConfigItem, getConfigItemAsBoolean, getConfigItemAsNumber } from "./config/sources/source";
@@ -88,40 +91,42 @@ const initServices = async (): Promise<void> => {
   }
 };
 
-async function initVcsProviders() {
+const initVcsProviders = async () => {
   initAdoVcs();
   initGithubVcs();
   initBitbucketCloudVcs();
   initBitbucketServerVcs();
   await initVcs();
-}
+};
 
-function initProjectMgmtProviders() {
+const initProjectMgmtProviders = () => {
   initAdoIssues();
   initJiraIssues();
+  initGithubIssues();
   initNoOpIssues();
-}
+};
 
-function initPipelineProviders() {
+const initPipelineProviders = () => {
   initAdoPipelines();
   initCodePipelinePipelines();
   initDynatracePipelines();
   initGithubPipelines();
   initJenkinsPipelines();
   initNoOpPipelines();
-}
+};
 
-function initCodeAnalysisProviders() {
+const initCodeAnalysisProviders = () => {
   initNoOpCodeAnalysis();
   initSonar();
-}
+};
 
-function initIncidentMgmtProviders() {
+const initIncidentMgmtProviders = () => {
   initAdoIncidents();
+  initGithubIncidents();
   initJiraIncidents();
   initNoOpIncidents();
   initServiceNowIncidents();
-}
+};
 
 function initDependencyAlertsProviders() {
   initGithubDependencyAlerts();
@@ -174,9 +179,9 @@ const addRoutes = (router: SecureRouter) => {
   router.addUnauthenticatedRoute("get", "/api/logout", logout);
 
   // service token endpoints can't be used with service tokens themselves; we only allow access tokens.
-  router.addRouteWithOptions("post", "/api/tokens", { tokenTypes: [ "access_token"] }, generateServiceToken);
-  router.addRouteWithOptions("get", "/api/tokens", { tokenTypes: [ "access_token"] }, listServiceTokenIds);
-  router.addRouteWithOptions("delete", "/api/tokens/:tokenId", { tokenTypes: [ "access_token"] }, revokeServiceToken);
+  router.addRouteWithOptions("post", "/api/tokens", { tokenTypes: ["access_token"] }, generateServiceToken);
+  router.addRouteWithOptions("get", "/api/tokens", { tokenTypes: ["access_token"] }, listServiceTokenIds);
+  router.addRouteWithOptions("delete", "/api/tokens/:tokenId", { tokenTypes: ["access_token"] }, revokeServiceToken);
 
   // config
   router.addUnauthenticatedRoute("get", "/api/system/bootstrap", fetchBootstrap);
@@ -194,6 +199,9 @@ const addRoutes = (router: SecureRouter) => {
   router.addRoute("get", "/api/pipeline/run", getPipelineRun);
   router.addRoute("get", "/api/pipeline/redirect", getPipelineRunRedirect);
 
+  // workloads
+  router.addRoute("get", "/api/workloads/:workloadId/issue-types", getIssueTypes);
+
   // tickets
   router.addRoute("get", "/api/tickets/bugs", fetchBugHistory);
 
@@ -209,7 +217,7 @@ const addRoutes = (router: SecureRouter) => {
   router.addRoute("get", "/api/vcs/changes", vcsRepoChanges);
 
   // analysis
-  router.addRoute("post", "/api/analysis/bug-culprit-files", findBugCulprits);
+  router.addRoute("post", "/api/analysis/code-hotspots", findCodeHotspots);
 
   // query
   router.addRoute("post", "/api/query", executeQuery);
@@ -243,9 +251,7 @@ export const startApi = async (): Promise<Express> => {
   } else {
     const listenPort = getConfigItemAsNumber("PORT", 3000);
     const listenHost =
-      global.invocationMode === InvocationMode.DesktopMode
-        ? "localhost"
-        : getConfigItem("ADDR", "0.0.0.0");
+      global.invocationMode === InvocationMode.DesktopMode ? "localhost" : getConfigItem("ADDR", "0.0.0.0");
 
     app.listen(listenPort, listenHost, () => {
       logger(`CodeMetrics API listening on ${listenHost}:${listenPort}`);

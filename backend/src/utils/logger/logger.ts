@@ -9,15 +9,20 @@ enum Styles {
 }
 
 export enum LogLevel {
-  Off,
-  Debug,
-  Verbose,
+  OFF,
+  DEBUG,
+  VERBOSE,
 }
 
 // Use process.env directly here to avoid a circular dependency on the config item system
 const { LOG_LEVEL, LOG_FILE_PATH } = process.env;
 
-const envLogLevel = LOG_LEVEL && LogLevel[LOG_LEVEL as keyof typeof LogLevel];
+// Parse LOG_LEVEL from environment variable (supports both numeric strings "0", "1", "2" and enum names "OFF", "DEBUG", "VERBOSE")
+const envLogLevel = LOG_LEVEL
+  ? isNaN(Number(LOG_LEVEL))
+    ? LogLevel[LOG_LEVEL as keyof typeof LogLevel] // Try as enum name
+    : Number(LOG_LEVEL) // Parse as number
+  : undefined;
 
 let logQueue: LogQueue | undefined;
 
@@ -30,19 +35,22 @@ process.on("exit", () => {
   logQueue?.close();
 });
 
-let overrideLevel: LogLevel;
+let overrideLevel: LogLevel | undefined;
 export const overrideLogLevel = (level: LogLevel) => {
   overrideLevel = level;
 };
+export const resetLogLevel = () => {
+  overrideLevel = undefined;
+};
 
-const getLogLevel = (): LogLevel => overrideLevel ?? envLogLevel ?? LogLevel.Debug;
+const getLogLevel = (): LogLevel => overrideLevel ?? envLogLevel ?? LogLevel.DEBUG;
 
-export const isVerbose = () => getLogLevel() >= LogLevel.Verbose;
+export const isVerbose = () => getLogLevel() >= LogLevel.VERBOSE;
 
-export const logger = (message: string, ...args) => log(message, LogLevel.Debug, Styles.TextGreen, ...args);
-export const verbose = (message: string, ...args) => log(message, LogLevel.Verbose, Styles.TextBlue, ...args);
-export const warn = (message: string, ...args) => log(message, LogLevel.Debug, Styles.TextYellow, ...args);
-export const error = (message: string, ...args) => log(message, LogLevel.Debug, Styles.TextRed, ...args);
+export const logger = (message: string, ...args) => log(message, LogLevel.DEBUG, Styles.TextGreen, ...args);
+export const verbose = (message: string, ...args) => log(message, LogLevel.VERBOSE, Styles.TextBlue, ...args);
+export const warn = (message: string, ...args) => log(message, LogLevel.DEBUG, Styles.TextYellow, ...args);
+export const error = (message: string, ...args) => log(message, LogLevel.DEBUG, Styles.TextRed, ...args);
 
 const log = (message: string, level: LogLevel, color: Styles, ...args) => {
   if (level > getLogLevel()) return;
@@ -64,3 +72,10 @@ const log = (message: string, level: LogLevel, color: Styles, ...args) => {
     logQueue.enqueue(logEntry);
   }
 };
+
+// Log the current log level configuration at startup (always show this for validation)
+if (!overrideLevel) {
+  const currentLevel = getLogLevel();
+  const levelName = LogLevel[currentLevel];
+  console.log(`${Styles.TextYellow}[Logger] LOG_LEVEL=${currentLevel} (${levelName})${Styles.Reset}`);
+}

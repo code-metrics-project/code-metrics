@@ -1,4 +1,4 @@
-name: Validate
+name: Desktop
 on:
   workflow_call:
     inputs:
@@ -11,67 +11,11 @@ env:
   NODE_OPTIONS: "--dns-result-order=ipv4first"
 
 jobs:
-  build-desktop-linux:
-    if: ${{ fromJSON(inputs.vars).desktopComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: desktop
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: "/desktop/.nvmrc"
-      - name: Restore backend NPM cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-${{ github.run_id }}
-          restore-keys: |
-            npm-
-      - name: Install desktop dependencies
-        run: npm ci
-
-      - name: Install Linux packaging deps (Linux only)
-        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libnss3 libxss1 libasound2t64 fakeroot rpm
-
-      - name: Build full app (backend, ui, electron)
-        run: |
-          npm run install:ext
-          npm run dist:prod
-
-      - name: Build Electron App
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run dist:linux
-
-      - name: Upload Desktop artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: desktop-linux
-          path: |
-            desktop/dist-build/*.AppImage
-            desktop/dist-build/*.tar.gz
-          retention-days: 1
-
-  build-desktop-mac-win:
+  build-desktop:
+    if: ${{ fromJSON(inputs.vars).desktopMatrix[0] != null }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
-        include:
-          # This is 10:1min cost
-          - os: macos-latest
-            platform: mac
-            buildScript: dist:mac
-            artifactName: mac-build
-          # This is 2:1min cost
-          - os: windows-latest
-            platform: win
-            buildScript: dist:win
-            artifactName: win-build
-
-    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        include: ${{ fromJSON(inputs.vars).desktopMatrix }}
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -92,10 +36,28 @@ jobs:
       - name: Install desktop dependencies
         run: npm ci
 
-      - name: Build full app (backend, ui, electron)
+      - name: Install Linux packaging deps (Linux only)
+        if: ${{ matrix.platform == 'linux' }}
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libnss3 libxss1 libasound2t64 fakeroot rpm
+
+      - name: Download Backend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend
+          path: backend/dist
+
+      - name: Download UI Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ui
+          path: ui/dist
+
+      - name: Prepare and Build Desktop
         run: |
-          npm run install:ext
-          npm run dist:prod
+          # Remove conflicting config file from backend artifact to avoid EEXIST error
+          rm -f ../backend/dist/config/users.json
+          npm run convert-icon
+          npm run build
 
       - name: Build Electron App
         env:

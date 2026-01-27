@@ -1,11 +1,11 @@
 import Jenkins from "jenkins";
 import { Run, RunResult, RunWithMetadata } from "../../model/runs";
 import { getAllPipelinesConfig, getAllRemoteConfig, getWorkloadById } from "../../config/configMapping";
-import { AbstractPipelinesService, registerPipelines } from "./pipelinesService";
+import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines } from "./pipelinesService";
 import { matchOrEquals } from "../../utils/matchers";
 import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName } from "../../utils/jobs";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
-import { logger, verbose } from "../../utils/logger/logger";
+import { logger, verbose, warn } from "../../utils/logger/logger";
 import { jsonPathQuery } from "../../utils/json";
 import { StageConfig } from "../../model/config/pipeline-config";
 import { mapJobNamesUsingStageConfig, mapJobNameUsingStageConfig } from "./common";
@@ -103,11 +103,11 @@ class JenkinsPipelinesService extends AbstractPipelinesService {
     const buildApi = this.getConnection(workloadId);
     const rootLevelItems: TJenkinsJob[] = await buildApi.job.list({ depth: 3 } as any);
     const jobs = extractJobs(rootLevelItems);
-    const jobsMatchingRepo = jobs.filter((job) => jobNames.some((jobName) => matchOrEquals(jobName, job.displayName)));
+    const matchingJobs = jobs.filter((job) => jobNames.some((jobName) => matchOrEquals(jobName, job.displayName)));
 
-    if (!jobsMatchingRepo.length) return [];
+    if (!matchingJobs.length) return [];
 
-    const multiBranchJobs = jobsMatchingRepo
+    const multiBranchJobs = matchingJobs
       .filter((job) => job._class === EJenkinsJobClass.Multibranch)
       .map((mbJob) => {
         if (!branches?.length) return mbJob.jobs;
@@ -124,7 +124,7 @@ class JenkinsPipelinesService extends AbstractPipelinesService {
       )
     ).flat();
 
-    const otherJobs = jobsMatchingRepo.filter((job) => job._class !== EJenkinsJobClass.Multibranch);
+    const otherJobs = matchingJobs.filter((job) => job._class !== EJenkinsJobClass.Multibranch);
     const otherRuns = (
       await Promise.all(
         otherJobs.map(async (job) =>
@@ -174,11 +174,17 @@ class JenkinsPipelinesService extends AbstractPipelinesService {
     return propertyValue?.toString();
   };
 
-  discoverJobNames = async (workload: Workload, jobGroup: string): Promise<string[]> => {
+  discoverJobNames = async (workload: Workload, filter: PipelinesServiceJobNameFilter): Promise<string[]> => {
     const jobGroups = listNormalisedJobGroupsForWorkload(workload);
 
-    // TODO discover via API and filter as jobName can be a regex
-    return jobGroups[jobGroup]?.jobNames ?? [];
+    // TODO discover via API and filter using 'filterJobsByJobGroup' as jobName can be a regex
+
+    if (filter.jobGroup) {
+      return jobGroups[filter.jobGroup]?.jobNames ?? [];
+    } else {
+      // return all job names
+      return Object.values(jobGroups).flatMap((group) => group.jobNames);
+    }
   };
 
   buildRunLink = (workloadId: string, jobName: string, runId: string): string => {
@@ -251,7 +257,7 @@ async function getRunsForJob(
         .flat()
         .find((action) => action.name === JENKINS_BRANCH_PARAMETER);
       if (!branchParameter) {
-        console.warn(`Job ${jobName} build ${i} had no branch parameter.`);
+        warn(`Job ${jobName} build ${i} had no branch parameter.`);
         continue;
       }
       branchName = branches.find((branch) => branch.match(branchParameter.value)?.length);
@@ -285,7 +291,7 @@ function mapBuildResult(jenkinsBuildResult: TJenkinsBuildResult): RunResult {
     case "ABORTED":
       return RunResult.Aborted;
     default:
-      console.warn(`Unsupported build result: ${jenkinsBuildResult}`);
+      warn(`Unsupported build result: ${jenkinsBuildResult}`);
       break;
   }
 }

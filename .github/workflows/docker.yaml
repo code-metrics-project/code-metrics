@@ -11,10 +11,14 @@ on:
       DOCKER_HUB_ACCESS_TOKEN:
         required: false
 jobs:
-  docker-api:
+  build-docker:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: ${{ fromJSON(inputs.vars).dockerComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
+    if: ${{ fromJSON(inputs.vars).dockerMatrix[0] != null }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(inputs.vars).dockerMatrix }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,168 +48,21 @@ jobs:
           REPO="${REPO,,}"
           echo "REPO=${REPO}" >> ${GITHUB_ENV}
           echo "${REPO}"
-      - name: Build and push API
-        id: docker_build_api
+      - name: Build and push ${{ matrix.name }}
         uses: docker/build-push-action@v5
         with:
-          file: ${{ github.workspace }}/docker/Dockerfile.backend
-          context: "./backend"
+          file: ${{ github.workspace }}/${{ matrix.file }}
+          context: ${{ matrix.context }}
           platforms: linux/amd64,linux/arm64
           push: ${{ fromJSON(inputs.vars).push }}
           tags: |
-            ghcr.io/deloittedigitaluk/code-metrics-api:${{ fromJSON(inputs.vars).tag }}
-            ghcr.io/deloittedigitaluk/code-metrics-api:latest
+            ghcr.io/deloittedigitaluk/${{ matrix.imageName }}:${{ fromJSON(inputs.vars).tag }}
+            ghcr.io/deloittedigitaluk/${{ matrix.imageName }}:latest
+            ${{ matrix.isJenkins && format('deloittedigitaluk/{0}:{1}', matrix.imageName, fromJSON(inputs.vars).tag) || '' }}
+            ${{ matrix.isJenkins && format('deloittedigitaluk/{0}:latest', matrix.imageName) || '' }}
           build-args: |
-            RELEASE_TASK=release
-            IMGREPO=ghcr.io/${{ env.REPO }}/
-          secrets: |
-            GIT_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
-
-  docker-ui:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: ${{ fromJSON(inputs.vars).dockerComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          buildkitd-config-inline: |
-            [worker.oci]
-              max-parallelism = 1
-      - name: Log in to DockerHub
-        if: ${{ startsWith(github.ref, 'refs/tags/') && github.actor != 'dependabot[bot]' }}
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - name: Login to ghcr.io
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: downcase REPO Owner
-        run: |
-          REPO="${{ github.repository_owner }}"
-          REPO="${REPO,,}"
-          echo "REPO=${REPO}" >> ${GITHUB_ENV}
-          echo "${REPO}"
-      - name: Build and push UI
-        id: docker_build_ui
-        uses: docker/build-push-action@v5
-        with:
-          file: ${{ github.workspace }}/docker/Dockerfile.ui
-          context: "./ui"
-          platforms: linux/amd64,linux/arm64
-          push: ${{ fromJSON(inputs.vars).push }}
-          tags: |
-            ghcr.io/deloittedigitaluk/code-metrics-ui:${{ fromJSON(inputs.vars).tag }}
-            ghcr.io/deloittedigitaluk/code-metrics-ui:latest
-          build-args: |
-            IMGREPO=ghcr.io/${{ env.REPO }}/
-          secrets: |
-            GIT_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
-
-  docker-mocks:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: ${{ fromJSON(inputs.vars).dockerComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          buildkitd-config-inline: |
-            [worker.oci]
-              max-parallelism = 1
-      - name: Log in to DockerHub
-        if: ${{ startsWith(github.ref, 'refs/tags/') && github.actor != 'dependabot[bot]' }}
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - name: Login to ghcr.io
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: downcase REPO Owner
-        run: |
-          REPO="${{ github.repository_owner }}"
-          REPO="${REPO,,}"
-          echo "REPO=${REPO}" >> ${GITHUB_ENV}
-          echo "${REPO}"
-      - name: Build and push Mocks
-        id: docker_build_mocks
-        uses: docker/build-push-action@v5
-        with:
-          file: ${{ github.workspace }}/docker/Dockerfile.mocks
-          context: "./mocks"
-          platforms: linux/amd64,linux/arm64
-          push: ${{ fromJSON(inputs.vars).push }}
-          tags: |
-            ghcr.io/deloittedigitaluk/code-metrics-mocks:${{ fromJSON(inputs.vars).tag }}
-            ghcr.io/deloittedigitaluk/code-metrics-mocks:latest
-          build-args: |
-            IMGREPO=ghcr.io/${{ env.REPO }}/
-          secrets: |
-            GIT_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
-
-  docker-jenkins:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: ${{ fromJSON(inputs.vars).dockerComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          buildkitd-config-inline: |
-            [worker.oci]
-              max-parallelism = 1
-      - name: Log in to DockerHub
-        if: ${{ startsWith(github.ref, 'refs/tags/') && github.actor != 'dependabot[bot]' }}
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - name: Login to ghcr.io
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: downcase REPO Owner
-        run: |
-          REPO="${{ github.repository_owner }}"
-          REPO="${REPO,,}"
-          echo "REPO=${REPO}" >> ${GITHUB_ENV}
-          echo "${REPO}"
-      - name: Build and push Jenkins
-        id: docker_build_mocks
-        uses: docker/build-push-action@v5
-        with:
-          file: ${{ github.workspace }}/docker/Dockerfile.jenkins
-          context: "./examples/jenkins"
-          platforms: linux/amd64,linux/arm64
-          push: ${{ fromJSON(inputs.vars).push }}
-          tags: |
-            deloittedigitaluk/demo-jenkins:${{ fromJSON(inputs.vars).tag }}
-            deloittedigitaluk/demo-jenkins:latest
-            ghcr.io/deloittedigitaluk/demo-jenkins:${{ fromJSON(inputs.vars).tag }}
-            ghcr.io/deloittedigitaluk/demo-jenkins:latest
-          build-args: |
-            IMGREPO=ghcr.io/${{ env.REPO }}/
+            ${{ matrix.buildArgs }}
+          cache-from: ${{ matrix.cacheMode != 'none' && 'type=gha' || '' }}
+          cache-to: ${{ matrix.cacheMode != 'none' && format('type=gha,mode={0}', matrix.cacheMode) || '' }}
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}

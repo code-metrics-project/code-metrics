@@ -12,199 +12,16 @@ env:
 
 jobs:
   build-backend:
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    permissions:
-      contents: read
-    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: "/backend/.nvmrc"
-      - name: Restore backend NPM cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-${{ github.run_id }}
-          restore-keys: |
-            npm-
-      - name: Install backend dependencies
-        working-directory: backend
-        run: npm config get cache && npm ci --prefer-offline --verbose
-      - name: Install Imposter
-        uses: imposter-project/imposter-github-action/setup@v0.6.1
-      - name: Copy dummy config for testing
-        working-directory: backend
-        run: |
-          cp .env.template .env
-          cp config/examples/remote-config.yaml remote-config.yaml
-          cp config/examples/users.json users.json
-          cp config/examples/workload-config.yaml workload-config.yaml
-      - name: Unit test backend + output coverage
-        working-directory: backend
-        env:
-          COVERAGE_ENABLED: "false"
-        run: npm test
-      - name: Build backend
-        working-directory: backend
-        run: npm run release
-      - name: Copy dummy config for release
-        working-directory: backend
-        run: |
-          cp .env.template dist/.env
-          mkdir -p dist/config
-          cp config/examples/dashboard-config.json dist/config/dashboard-config.json
-          cp config/examples/queries-config.json dist/config/queries-config.json
-          cp config/examples/remote-config.yaml dist/config/remote-config.yaml
-          cp config/examples/users.json dist/config/users.json
-          cp config/examples/workload-config.yaml dist/config/workload-config.yaml
-      - name: Upload built backend app artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend
-          path: backend/dist
-          retention-days: 1
-      - name: Upload Backend unit test coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-be--unit
-          path: backend/coverage-be--unit
-          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
-
-  test-backend-slowtest:
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    permissions:
-      contents: read
-    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: "/backend/.nvmrc"
-      - name: Restore backend NPM cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-${{ github.run_id }}
-          restore-keys: |
-            npm-
-      - name: Install backend dependencies
-        working-directory: backend
-        run: npm config get cache && npm ci --prefer-offline --verbose
-      - name: Install Imposter
-        uses: imposter-project/imposter-github-action/setup@v0.6.1
-      - name: Copy dummy config for testing
-        working-directory: backend
-        run: |
-          cp .env.template .env
-          cp config/examples/remote-config.yaml remote-config.yaml
-          cp config/examples/users.json users.json
-          cp config/examples/workload-config.yaml workload-config.yaml
-      - name: Run slow backend tests + output coverage
-        working-directory: backend
-        env:
-          COVERAGE_ENABLED: "false"
-        run: "npm run test:slow"
-      - name: Upload Backend 'slow' Coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-be--slow
-          path: backend/coverage-be--slow
-          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
-
-  test-backend-integration:
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    permissions:
-      contents: read
-    if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: "/backend/.nvmrc"
-      - name: Restore backend NPM cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-${{ github.run_id }}
-          restore-keys: |
-            npm-
-      - name: Install backend dependencies
-        working-directory: backend
-        run: npm config get cache && npm ci --prefer-offline --verbose
-      - name: Install Imposter
-        uses: imposter-project/imposter-github-action/setup@v0.6.1
-      - name: Copy dummy config for testing
-        working-directory: backend
-        run: |
-          cp .env.template .env
-          cp config/examples/remote-config.yaml remote-config.yaml
-          cp config/examples/users.json users.json
-          cp config/examples/workload-config.yaml workload-config.yaml
-      - name: Integration test backend + output coverage
-        working-directory: backend
-        env:
-          COVERAGE_ENABLED: "false"
-          MOCKS_PRINT_LOG_ON_CRASH: "true"
-          MOCKS_VERBOSE: "false"
-        run: "npm run test:integration"
-      - name: Upload Backend integration test coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-be--integration
-          path: backend/coverage-be--integration
-          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
+    uses: ./.github/workflows/backend.yaml
+    with:
+      vars: ${{ inputs.vars }}
+    secrets: inherit
 
   build-frontend:
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    permissions:
-      contents: read
-    if: ${{ fromJSON(inputs.vars).uiComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: "/ui/.nvmrc"
-      - name: NPM cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-${{ github.run_id }}
-          restore-keys: |
-            npm-
-      - name: Install UI dependencies
-        working-directory: ui
-        run: npm config get cache && npm ci --prefer-offline --verbose
-      - name: Unit test UI
-        working-directory: ui
-        run: npm run test:unit:coverage
-      - name: Build UI
-        working-directory: ui
-        run: npm run build
-      - name: Upload UI artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ui
-          path: ui/dist
-          retention-days: 1
-      - name: Upload UI unit test coverage report files
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-ui--unit
-          path: ui/coverage-ui--unit
-          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
+    uses: ./.github/workflows/frontend.yaml
+    with:
+      vars: ${{ inputs.vars }}
+    secrets: inherit
 
   build-helm:
     runs-on: ubuntu-latest
@@ -245,6 +62,7 @@ jobs:
 
   build-desktop:
     uses: ./.github/workflows/desktop.yaml
+    needs: [build-frontend, build-backend]
     with:
       vars: ${{ inputs.vars }}
     secrets: inherit
@@ -290,67 +108,15 @@ jobs:
           retention-days: 1
 
   test-e2e:
-    # This job has high resource requirements and should be run on a larger instance.
-    # Large instances are more expensive, so we use them sparingly.
-    runs-on: ubuntu-latest
-    needs:
-      [
-        build-backend,
-        test-backend-slowtest,
-        test-backend-integration,
-        build-frontend,
-      ]
-    if: ${{ always() && !failure() && !cancelled() && (((needs.build-frontend.result == 'success' || (needs.build-backend.result == 'success' && needs.test-backend-slowtest.result == 'success' && needs.test-backend-integration.result == 'success'))) || fromJSON(inputs.vars).githubComponents != 0) }}
-    timeout-minutes: 20
-    permissions:
-      contents: read
-    env:
-      COVERAGE_ENABLED: "false"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: "/backend/.nvmrc"
-      - name: NPM cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-${{ github.run_id }}
-          restore-keys: |
-            npm-
-      - name: Install Imposter
-        uses: imposter-project/imposter-github-action/setup@v0.6.1
-      - name: E2E test UI with mock backend
-        env:
-          MOCKS_PRINT_LOG_ON_CRASH: "true"
-          MOCKS_VERBOSE: "false"
-        working-directory: scripts
-        run: ./validate-test_e2e_mocks.sh
-      - name: Upload E2E test run generated media
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-test-media
-          path: ui/__tests__/output
-          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
-      - name: Upload E2E test coverage report files
-        if: ${{ env.COVERAGE_ENABLED == 'true' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-ui--e2e
-          path: ui/coverage-ui--e2e
-          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
+    needs: [build-backend, build-frontend]
+    uses: ./.github/workflows/e2e.yaml
+    with:
+      vars: ${{ inputs.vars }}
+    secrets: inherit
 
   merge-test-reports:
     runs-on: ubuntu-latest
-    needs:
-      [
-        build-backend,
-        test-backend-slowtest,
-        test-backend-integration,
-        build-frontend,
-        test-e2e,
-      ]
+    needs: [build-backend, build-frontend, test-e2e]
     timeout-minutes: 3
     permissions:
       contents: read
@@ -384,8 +150,6 @@ jobs:
       [
         validate-machine-learning,
         build-backend,
-        test-backend-slowtest,
-        test-backend-integration,
         build-frontend,
         build-desktop,
         build-helm,

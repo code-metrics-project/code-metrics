@@ -138,6 +138,18 @@ export function getReposForWorkloadId(workloadId: string): string[] {
   return uniq(repos);
 }
 
+export function getJobsForWorkloadId(workloadId: string): string[] {
+  const jobsByGroup = getConfig().systemConfig.workloads.find((w) => w.id === workloadId)?.jobs;
+
+  if (!jobsByGroup) {
+    return [];
+  }
+
+  const jobs = Object.values(jobsByGroup).flat();
+  jobs.sort();
+  return uniq(jobs);
+}
+
 export function getUrlForRepo(workloadId: string, repoName: string): string {
   return getRepoInfosForWorkloadId(workloadId).find((repo) => repo.name === repoName)?.url ?? "";
 }

@@ -3,7 +3,7 @@
 Different datastore implementations are supported.
 
 | Name     | Details                                                                                                                                                                                                                             |
-|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | inmem    | In-memory datastore implementation.️ This datastore implementation holds all items in memory for the lifetime of the process. There is no eviction, so growth is infinite with continued insertions. Do not use this in production. |
 | dynamodb | AWS DynamoDB datastore. This datastore implementation holds items in external DynamoDB tables.                                                                                                                                      |
 | mongodb  | MongoDB datastore. This datastore implementation holds items in an external MongoDB instance.                                                                                                                                       |
@@ -49,7 +49,7 @@ The following environment variables apply:
     DATABASE_NAME=CodeMetrics
     AWS_REGION=us-east-1
 
-Ensure the Code Metrics backend has the necessary AWS permissions (e.g. using IAM or AWS configuration files) to read (and optionally create) the relevant tables.
+Ensure the CodeMetrics backend has the necessary AWS permissions (e.g. using IAM or AWS configuration files) to read (and optionally create) the relevant tables.
 
 The IAM permissions required are:
 
@@ -64,11 +64,11 @@ dynamodb:Scan
 dynamodb:UpdateTimeToLive
 ```
 
-
 <details>
 <summary>Example IAM policy document</summary>
 
 This example IAM policy scopes access to tables with names in the format `CodeMetrics_*`, but you can be a specific as required by your environment.
+
 ```json
 {
   "Version": "2012-10-17",
@@ -91,6 +91,7 @@ This example IAM policy scopes access to tables with names in the format `CodeMe
   ]
 }
 ```
+
 </details>
 
 ### MongoDB implementation
@@ -116,7 +117,7 @@ The cache is enabled by this environment variable:
 Other, more specific cache settings are as follows:
 
 | Name                     | Details                                          | Default |
-|--------------------------|--------------------------------------------------|---------|
+| ------------------------ | ------------------------------------------------ | ------- |
 | CACHE_REPO_LIST          | Cache the VCS repository names.                  | `true`  |
 | PRECACHE_REPO_LIST       | Pre-cache the VCS repository names at startup.   | `true`  |
 | CACHE_PIPELINE_BUILDS    | Cache the pipeline build metadata.               | `true`  |

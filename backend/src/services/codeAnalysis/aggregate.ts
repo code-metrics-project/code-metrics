@@ -63,7 +63,6 @@ const processAggregate = async (
 };
 
 const setVariants = (data: WorkloadRepoGroupCoverage[]): VariantGroupCoverage[] => {
-   
   data.forEach((tag: VariantGroupCoverage) => {
     if (tag.summary?.totalLinesToCover === 0) {
       tag.variant = "no_data";

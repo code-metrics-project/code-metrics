@@ -8,6 +8,39 @@ import vuetify from "vite-plugin-vuetify";
 const isProdBuild = process.env.NODE_ENV === "production";
 const enableCoverage = process.env.COVERAGE_ENABLED === "true";
 
+const viteHost = process.env.VITE_HOST || "code-metrics.localhost";
+const apiTarget = process.env.API_TARGET || "http://localhost:3000";
+
+const plugins = [vue()];
+
+if (isProdBuild) {
+  plugins.push(
+    ...vuetify({
+      styles: {
+        configFile: "src/assets/css/vuetify-overrides.scss",
+      },
+    }),
+  );
+}
+
+if (enableCoverage) {
+  plugins.push(
+    istanbul({
+      include: "src/*",
+      exclude: ["node_modules", "__tests__/"],
+      extension: [".js", ".ts", ".vue"],
+      requireEnv: false,
+    }),
+  );
+}
+
+// Added for fs and path polyfills
+plugins.push(
+  nodePolyfills({
+    protocolImports: true,
+  }),
+);
+
 // https://vitejs.dev/config/
 export default defineConfig({
   /**
@@ -21,38 +54,13 @@ export default defineConfig({
   build: {
     sourcemap: true,
   },
-  plugins: [
-    vue(),
-    ...(isProdBuild
-      ? [
-          vuetify({
-            styles: {
-              configFile: "src/assets/css/vuetify-overrides.scss",
-            },
-          }),
-        ]
-      : []),
-    ...(enableCoverage
-      ? [
-          istanbul({
-            include: "src/*",
-            exclude: ["node_modules", "__tests__/"],
-            extension: [".js", ".ts", ".vue"],
-            requireEnv: false,
-          }),
-        ]
-      : []),
-    // Added for fs and path polyfills
-    nodePolyfills({
-      protocolImports: true,
-    }),
-  ],
+  plugins,
   server: {
-    host: "code-metrics.localhost",
+    host: viteHost,
     port: 3001,
     proxy: {
       "/api": {
-        target: "http://localhost:3000",
+        target: apiTarget,
         changeOrigin: true,
         secure: false,
       },

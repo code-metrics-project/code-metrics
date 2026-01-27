@@ -75,10 +75,11 @@ export class JiraTicketService implements TicketService {
     return this.fetchIssues(workload, jql);
   };
 
-  getAllTicketIds = (workload: Workload, daysBack: number): Promise<string[]> => {
+  getAllTicketIds = (workload: Workload, daysBack: number, issueTypes?: string[]): Promise<string[]> => {
     const ticketManagement = this.configManager.getWorkloadConfig(workload.id);
-    const issueTypes = this.formatIssueTypes(this.getTicketTypesByWorkloadId(workload.id));
-    return this.getAllKeys(ticketManagement.projectName, issueTypes, daysBack, workload.id);
+    const effectiveIssueTypes = issueTypes?.length ? issueTypes : this.getTicketTypesByWorkloadId(workload.id);
+    const formattedIssueTypes = this.formatIssueTypes(effectiveIssueTypes);
+    return this.getAllKeys(ticketManagement.projectName, formattedIssueTypes, daysBack, workload.id);
   };
 
   getTicketTypesByWorkloadId = (workloadId: WorkloadId): string[] => {
@@ -94,7 +95,9 @@ export class JiraTicketService implements TicketService {
     }
   };
 
-  formatIssueTypes = (issueTypes: string[]): string => `"${issueTypes.join('","')}"`;
+  getAvailableIssueTypes = (workloadId: WorkloadId): string[] => {
+    return this.getTicketTypesByWorkloadId(workloadId);
+  };
 
   getTicket = async (workloadId: WorkloadId, issueId: string): Promise<LightweightIssue | null> => {
     try {
@@ -114,6 +117,8 @@ export class JiraTicketService implements TicketService {
 
   buildTicketLink = (workloadId: WorkloadId, issueId: string): string =>
     `${getAllIssueManagementUrls()[workloadId]}/browse/${issueId}`;
+
+  private formatIssueTypes = (issueTypes: string[]): string => `"${issueTypes.join('","')}"`;
 
   /**
    * @param rawJql the query to execute
@@ -158,7 +163,7 @@ export class JiraTicketService implements TicketService {
     fields: string[],
     mapFn: (issue) => T,
   ): Promise<T[]> => {
-    console.info(`Fetching Jira issues for ${workloadId}...`);
+    logger(`Fetching Jira issues for ${workloadId}...`);
     try {
       const allIssues = await this.fetchAllIssuesViaAPI(jql, workloadId, fields);
       logger(`${allIssues.length} total Jira issues retrieved`);

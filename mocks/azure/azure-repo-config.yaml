@@ -49,6 +49,14 @@ resources:
       statusCode: 200
 
   - method: GET
+    path: /_apis/ResourceAreas/{areaId}
+    response:
+      headers:
+        Content-Type: application/json; charset=utf-8; api-version=6.1-preview.1
+      scriptFile: _apis/GET-resourceArea.js
+      statusCode: 200
+
+  - method: GET
     path: /{projectName}/_apis/git/repositories
     response:
       headers:

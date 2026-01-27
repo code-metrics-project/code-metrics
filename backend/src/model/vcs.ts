@@ -123,6 +123,7 @@ export type PathData = {
   count: number;
   coverage: string;
   issueIds: string[];
+  issueLinks: { id: string; url: string }[];
 };
 
 export type RepoData = {

@@ -1,5 +1,6 @@
 import { getConfigItemAsNumber } from "../../config/sources/source";
 import { TQualityGateOutput } from "../../model/qualityGates";
+import { warn } from "../../utils/logger/logger.js";
 
 const qualityGateDangerThreshold = getConfigItemAsNumber("QUALITY_GATE_THRESHOLD_DANGER", 30);
 const qualityGateWarningThreshold = getConfigItemAsNumber("GUALITY_GATE_THRESHOLD_WARNING", 80);
@@ -23,7 +24,7 @@ export const getWorstNumeratorAndDenominator = (repoGroup: string, repos: TQuali
     const service = repo.services[0];
 
     if (!service) {
-      console.warn(`Multiple services found in repo '${repo.repo}' but none match the repoGroup '${repoGroup}'`);
+      warn(`Multiple services found in repo '${repo.repo}' but none match the repoGroup '${repoGroup}'`);
       return { missing: 1 };
     }
 
@@ -42,14 +43,14 @@ export const getWorstNumeratorAndDenominator = (repoGroup: string, repos: TQuali
       if (repoScore.missing) {
         return {
           ...acc,
-          missing: acc.missing + repoScore.missing
+          missing: acc.missing + repoScore.missing,
         };
       }
 
       if (!acc.denominator) {
         return {
           ...repoScore,
-          missing: acc.missing + repoScore.missing
+          missing: acc.missing + repoScore.missing,
         };
       }
 
@@ -58,14 +59,14 @@ export const getWorstNumeratorAndDenominator = (repoGroup: string, repos: TQuali
       if (currentScore > existingScore || (currentScore === existingScore && repoScore.denominator > acc.denominator)) {
         return {
           ...repoScore,
-          missing: acc.missing + repoScore.missing
+          missing: acc.missing + repoScore.missing,
         };
       }
       return {
         ...acc,
-        missing: acc.missing + repoScore.missing
+        missing: acc.missing + repoScore.missing,
       };
     },
-    { missing: 0, numerator: 0, denominator: 0 }
+    { missing: 0, numerator: 0, denominator: 0 },
   );
 };

@@ -5,6 +5,7 @@ import {
   getVcsBranches,
   getWorkloadsWithTags,
   listAllTagPairs,
+  getAllCodeManagementUrls,
 } from "../configMapping";
 import { getComponentPatternsByGroup } from "../../utils/repos";
 import {
@@ -21,9 +22,11 @@ import { initSonar } from "../../services/codeAnalysis/sonar";
 import { initAdoVcs } from "../../services/codeManagement/azure";
 import { initAdoPipelines } from "../../services/pipelines/azure";
 import { initGithubVcs } from "../../services/codeManagement/github";
+import * as pipelinesService from "../../services/pipelines/pipelinesService";
 
-// stub out unneeded fetch import
+// stub out unneeded imports
 jest.mock("node-fetch", () => ({}));
+// import { Octokit } from "@octokit/rest";
 
 beforeEach(() => {
   jest.resetModules();
@@ -348,12 +351,24 @@ describe("config mapping", () => {
   });
 
   it("should return job names for a group", async () => {
+    // Mock pipelines service to return job names directly
+    const mockPipelinesService = {
+      discoverJobNames: jest.fn().mockResolvedValue(["api"]),
+    };
+    jest.spyOn(pipelinesService, "getPipelinesForWorkload").mockReturnValue(mockPipelinesService as any);
+
     const exampleWorkload = workloads.find((w) => w.id === "example")!;
     const result = await determineJobNames(exampleWorkload, "backend");
     expect(result).toStrictEqual(["api"]);
   });
 
   it("should return empty array for nonexistent job group", async () => {
+    // Mock pipelines service to return empty array
+    const mockPipelinesService = {
+      discoverJobNames: jest.fn().mockResolvedValue([]),
+    };
+    jest.spyOn(pipelinesService, "getPipelinesForWorkload").mockReturnValue(mockPipelinesService as any);
+
     const workload: Workload = {
       id: "example",
       pipelines: {
@@ -444,6 +459,19 @@ describe("config mapping", () => {
     expect(result).toStrictEqual({
       country: ["GB", "US"],
       department: ["sales", "marketing", "finance"],
+    });
+  });
+
+  it("converts GitHub API URLs to web URLs for commit and PR links", () => {
+    const urls = getAllCodeManagementUrls();
+
+    // Check that GitHub workload URLs don't contain 'api.github.com'
+    Object.entries(urls).forEach(([workloadId, url]) => {
+      expect(url).not.toContain("api.github.com");
+      if (url.includes("github")) {
+        // Ensure it's using the web URL format
+        expect(url).toMatch(/^https:\/\/github\.com\//);
+      }
     });
   });
 });

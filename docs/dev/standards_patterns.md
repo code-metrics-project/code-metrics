@@ -1,6 +1,6 @@
 # Standards and Patterns
 
-This document outlines the coding standards, architectural patterns, and development norms for the Code Metrics project. It's split into sections for shared standards, backend-specific patterns, and UI-specific patterns, along with a review of how these standards are enforced.
+This document outlines the coding standards, architectural patterns, and development norms for the CodeMetrics project. It's split into sections for shared standards, backend-specific patterns, and UI-specific patterns, along with a review of how these standards are enforced.
 
 ## Shared Standards
 

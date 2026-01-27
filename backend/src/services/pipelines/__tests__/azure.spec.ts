@@ -142,7 +142,7 @@ describe("Azure Pipelines integration", () => {
 
     const startDate = new Date("2022-09-15");
     const endDate = new Date("2022-09-15");
-    const runs = await azure.getRunsForJobGroups(workload.id, ["backend"], [], startDate, endDate);
+    const runs = await azure.getRunsForJobs(workload.id, ["spring-petclinic"], [], startDate, endDate);
 
     const groupRuns = runs.filter((r) => r.workloadId === "athena" && r.jobGroup === "backend");
     expect(groupRuns).toHaveLength(2);
@@ -155,14 +155,14 @@ describe("Azure Pipelines integration", () => {
   it(`lists job names`, async () => {
     const azure = getPipelinesForWorkload(workload, "azure-build-stage");
 
-    const jobNames = await azure.discoverJobNames(workload, "backend");
+    const jobNames = await azure.discoverJobNames(workload, { jobGroup: "backend" });
     expect(jobNames).toEqual(["spring-petclinic"]);
   });
 
   it(`returns no job names for nonexistent job group`, async () => {
     const azure = getPipelinesForWorkload(workload, "azure-build-stage");
 
-    const jobNames = await azure.discoverJobNames(workload, "no-such-group");
+    const jobNames = await azure.discoverJobNames(workload, { jobGroup: "no-such-group" });
     expect(jobNames).toHaveLength(0);
   });
 });

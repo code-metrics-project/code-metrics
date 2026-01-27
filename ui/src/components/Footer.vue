@@ -2,7 +2,7 @@
   <div>
     <v-footer padless>
       <v-col class="text-center text-sm-body-2" cols="12">
-        <div class="text--secondary">Code Metrics version {{ version }}</div>
+        <div class="text--secondary">CodeMetrics version {{ version }}</div>
         <div>
           &copy; {{ new Date().getFullYear() }} —
           <strong>Deloitte Digital</strong>

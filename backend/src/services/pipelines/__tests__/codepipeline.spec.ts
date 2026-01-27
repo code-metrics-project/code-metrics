@@ -116,14 +116,14 @@ describe(`Codepipeline Pipelines integration`, () => {
   it(`lists job names`, async () => {
     const codepipeline = getPipelinesForWorkload(workload, "codepipeline-build-stage");
 
-    const jobNames = await codepipeline.discoverJobNames(workload, "backend");
+    const jobNames = await codepipeline.discoverJobNames(workload, { jobGroup: "backend" });
     expect(jobNames).toEqual(["FirstPipeline", "SecondPipeline"]);
   });
 
   it(`returns no job names for nonexistent job group`, async () => {
     const codepipeline = getPipelinesForWorkload(workload, "codepipeline-build-stage");
 
-    const jobNames = await codepipeline.discoverJobNames(workload, "no-such-group");
+    const jobNames = await codepipeline.discoverJobNames(workload, { jobGroup: "no-such-group" });
     expect(jobNames).toHaveLength(0);
   });
 
@@ -146,7 +146,7 @@ describe(`Codepipeline Pipelines integration`, () => {
 
     const startDate = new Date("2020-01-22");
     const endDate = new Date("2020-01-22");
-    const runs = await codepipeline.getRunsForJobGroups(workload.id, ["backend"], [], startDate, endDate);
+    const runs = await codepipeline.getRunsForJobs(workload.id, ["FirstPipeline", "SecondPipeline"], [], startDate, endDate);
 
     expect(runs).toHaveLength(4);
     expect(runs[0].workloadId).toBe("athena");

@@ -1,10 +1,10 @@
 # Configuration
 
-There are three primary files to configure Code Metrics.
+There are three primary files to configure CodeMetrics.
 
--   **remote-config.yaml** - controls how you connect to your external systems
--   **workload-config.yaml** - how you represent your teams/repositories
--   **license.yaml** - the license key to run the software
+- **remote-config.yaml** - controls how you connect to your external systems
+- **workload-config.yaml** - how you represent your teams/repositories
+- **license.yaml** - the license key to run the software
 
 These files model how your teams are organised, and contain settings to interact securely with external data sources for Code Quality (e.g. Sonar), Project Management (e.g. Jira) and Code Management (e.g. GitHub).
 
@@ -16,11 +16,11 @@ Start by copying the file `examples/remote-config.yaml` and name it `remote-conf
 
 This file has a section for each type of external system:
 
--   **Code Management** - See how to [configure code management](./config_code_management.md) settings.
--   **Pipelines** - See how to [configure pipelines](./config_pipelines.md) settings.
--   **Code Quality** - See how to [configure code quality](./config_code_quality.md) settings.
--   **Project Management (bugs)** - See how to [configure project management](./config_project_management.md) settings.
--   **Production Incidents** - See how to [configure incidents](./config_incidents.md) settings.
+- **Code Management** - See how to [configure code management](./config_code_management.md) settings.
+- **Pipelines** - See how to [configure pipelines](./config_pipelines.md) settings.
+- **Code Quality** - See how to [configure code quality](./config_code_quality.md) settings.
+- **Project Management (bugs)** - See how to [configure project management](./config_project_management.md) settings.
+- **Production Incidents** - See how to [configure incidents](./config_incidents.md) settings.
 
 > **Note**
 > Supported external systems are described in [the features section](./features.md).

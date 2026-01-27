@@ -1,8 +1,8 @@
 import { AggregatedFileChanges, RepoChangeSummary, RepoChurn } from "../../model/vcs";
-import { getVcsBranches, getWorkloadById } from "../../config/configMapping";
+import { getVcsBranches, getWorkloadById, listRepoGroups, listWorkloadIds } from "../../config/configMapping";
 import { getVcsForWorkload } from "../codeManagement/vcsService";
 import { getReposForWorkloadId } from "../../utils/repos";
-import { logger, verbose } from "../../utils/logger/logger";
+import { logger, verbose, warn } from "../../utils/logger/logger";
 import { vcsLimiter } from "./vcs-limiter";
 import { DatedMetricEntry } from "../../model/metrics";
 import { aggregateChanges } from "./changes";
@@ -16,10 +16,13 @@ export const vcsRepoChurnWithArgs = async (
 ): Promise<RepoChurn[]> => {
   const churnPromises: Promise<RepoChurn>[] = [];
 
-  for (const workloadId of workloadIds) {
+  // Expand "all" to all workload IDs
+  const expandedWorkloadIds = workloadIds.includes("all") ? listWorkloadIds() : workloadIds;
+
+  for (const workloadId of expandedWorkloadIds) {
     const workload = getWorkloadById(workloadId);
     if (!workload) {
-      console.warn(`Could not find workload with team ID: ${workloadId}`);
+      warn(`Could not find workload with team ID: ${workloadId}`);
       continue;
     }
     const vcs = getVcsForWorkload(workload);
@@ -27,7 +30,10 @@ export const vcsRepoChurnWithArgs = async (
     // TODO: Refactor data model with repoName
     const branches = getVcsBranches(workload.codeManagement.type);
 
-    for (const repoGroup of repoGroups) {
+    // Default to all repo groups for this workload if none specified
+    const groups = repoGroups.length === 0 ? listRepoGroups(workload) : repoGroups;
+
+    for (const repoGroup of groups) {
       const repoNames = await getReposForWorkloadId([repoGroup], workloadId);
       logger(`Looking for churn in ${repoNames.length} projects`);
 

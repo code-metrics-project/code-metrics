@@ -5,17 +5,35 @@ import { LightweightIssue } from "../model/tickets";
 import { getIssueMgmtForWorkload } from "../services/projectManangement/issueMgmtService";
 import { truncateDateOnly, walkDateRange } from "../utils/date";
 import { createMetricItem } from "../utils/metrics";
-import { logger } from "../utils/logger/logger";
+import { logger, warn, error } from "../utils/logger/logger";
 import { DatedMetrics, DateStamp } from "../model/metrics";
 import { TimeRangeMode } from "../services/tickets/ticketService";
 
 export const fetchNewBugsWithArgs = async (args: Record<string, any>): Promise<LightweightIssue[]> => {
   const { workloads, startDate, endDate, priority } = parseTicketArgs(args, false);
+
+  // Double check that dates are valid before proceeding
+  if (!startDate || isNaN(startDate.getTime())) {
+    throw new ValidationError(`Invalid startDate: ${args?.startDate}`);
+  }
+
+  if (!endDate || isNaN(endDate.getTime())) {
+    // This shouldn't happen due to our fixes in parseTicketArgs, but let's be safe
+    warn(`Invalid endDate, defaulting to current date`);
+    args.endDate = new Date();
+  }
+
   const ticketPromises = workloads.map(async (workloadId) => {
     const workload = getWorkloadById(workloadId);
     const issueMgmt = getIssueMgmtForWorkload(workload);
-    return await issueMgmt.fetchTickets(workloadId, startDate, endDate, priority, TimeRangeMode.CreatedWithinRange);
+    try {
+      return await issueMgmt.fetchTickets(workloadId, startDate, endDate, priority, TimeRangeMode.CreatedWithinRange);
+    } catch (err) {
+      error(`Error fetching tickets for workload '${workloadId}':`, err);
+      return [];
+    }
   });
+
   return (await Promise.all(ticketPromises)).flat();
 };
 
@@ -106,13 +124,24 @@ export const parseTicketArgs = (
     throw new ValidationError("Missing startDate query parameter");
   }
 
+  // Create a valid start date from string
+  const parsedStartDate = new Date(startDate);
+
+  // Handle end date - ensure it's never null
+  let parsedEndDate: Date;
+  if (args?.endDate) {
+    parsedEndDate = new Date(args.endDate as string);
+  } else if (defaultEndDateToNow) {
+    parsedEndDate = new Date(); // Current date
+  } else {
+    parsedEndDate = new Date(); // Default to today if null would be returned
+    warn("No endDate provided and defaultEndDateToNow=false, defaulting to current date");
+  }
+
   return {
     workloads,
-    startDate: new Date(startDate),
-
-    // format: yyyy-mm-dd
-    endDate: (args?.endDate as string) ? new Date(args?.endDate) : defaultEndDateToNow ? new Date() : null,
-
+    startDate: parsedStartDate,
+    endDate: parsedEndDate,
     // format: Low | Medium | High | Highest
     priority: (args?.issueFilter?.priority ?? args?.incidentFilter?.priority) as string,
   };

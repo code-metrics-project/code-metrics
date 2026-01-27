@@ -1,5 +1,7 @@
+import { Keycloak } from "keycloak-backend";
 import { AuthenticationResult, Authenticator, baseAuthenticator } from "../auth";
 import { getConfigItem } from "../../config/sources/source";
+import { error } from "../../utils/logger/logger";
 
 // Not used yet but here to support other methods such as oauth etc.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -26,8 +28,8 @@ const authenticateUser = async (username: string, password: string): Promise<Aut
     await keycloak.accessToken.get();
     // Authentication succeeded, you can fetch user information or handle it as needed
     return { success: true, user: { name: username } };
-  } catch (error) {
-    console.error(`Authentication failed for user: ${username}`, error);
+  } catch (err) {
+    error(`Authentication failed for user: ${username}`, err);
     return { success: false };
   }
 };

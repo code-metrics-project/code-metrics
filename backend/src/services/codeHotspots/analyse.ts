@@ -3,6 +3,8 @@ import { CompletePrInfo, PathData } from "../../model/vcs";
 import { getCodeAnalysisForWorkloadId } from "../codeAnalysis/codeAnalysisService";
 import { getCodeAnalysisKeysForComponent } from "../../utils/repos";
 import { SoftwareComponent, WorkloadId } from "../../model/config/workload-config";
+import { getIssueMgmtForWorkload } from "../projectManangement/issueMgmtService";
+import { getWorkloadById } from "../../config/configMapping";
 
 const getAllPaths = ({ filesChanged }: CompletePrInfo) => filesChanged.map((change) => change.path);
 
@@ -60,6 +62,10 @@ export const findCodeHotspotsForPRs = async (
   let allPathsWithFrequency: PathData[] = [];
   const codeAnalysisKeys = getCodeAnalysisKeysForComponent(workloadId, component);
 
+  // Get issue management service to build ticket links
+  const workload = getWorkloadById(workloadId);
+  const issueMgmt = getIssueMgmtForWorkload(workload);
+
   for (const codeAnalysisKey of codeAnalysisKeys) {
     const coverageMap = await getCoverageForPaths(workloadId, paths, codeAnalysisKey);
     const ticketMap = getTicketsForPaths(prs);
@@ -70,17 +76,18 @@ export const findCodeHotspotsForPRs = async (
         if (!path || !path.includes(".")) return acc;
 
         const coverage = coverageMap.get(path) ? `${coverageMap.get(path)}%` : `-`;
-        const issueIds = ticketMap.get(path);
+        const issueIds = ticketMap.get(path) || [];
         const currentPathInArray = acc.find((value) => value.path === path);
         if (!currentPathInArray) {
           acc.push({
             path,
-            count: 1,
+            count: issueIds.length, // Count how many issue-related PRs touched this file
             coverage,
             issueIds,
+            issueLinks: [], // Will be populated after deduplication
           });
         } else {
-          currentPathInArray.count = currentPathInArray.count + 1;
+          currentPathInArray.count = currentPathInArray.count + issueIds.length;
           currentPathInArray.issueIds.push(...issueIds);
         }
         return acc;
@@ -94,9 +101,13 @@ export const findCodeHotspotsForPRs = async (
     allPathsWithFrequency = allPathsWithFrequency.slice(0, limit);
   }
 
-  // dedupe tickets
+  // dedupe tickets and build issue links
   for (const item of allPathsWithFrequency) {
     item.issueIds = uniq(item.issueIds);
+    item.issueLinks = item.issueIds.map((id) => ({
+      id,
+      url: issueMgmt.buildTicketLink(workloadId, id),
+    }));
   }
 
   return allPathsWithFrequency;

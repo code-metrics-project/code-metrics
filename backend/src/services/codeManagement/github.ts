@@ -14,6 +14,8 @@ import {
 import { DatedMetricEntry } from "../../model/metrics";
 import { getAllCodeManagementConfig, getAllCodeManagementUrls, getWorkloadById } from "../../config/configMapping";
 import { logger, verbose, warn, error } from "../../utils/logger/logger";
+import { AuthMethod } from "../../model/config/remote-config";
+import { createGitHubAppOctokit } from "../auth/github-app";
 import { MILLIS_PER_DAY, truncateDateOnly } from "../../utils/date";
 import { provideDatastore } from "../../db/factory";
 import { StorableLike, getDataForDateRange } from "../dateWalker";
@@ -34,7 +36,7 @@ type GithubItemFilter = {
 
 type ChangesQueryResult = StorableLike & GithubItemFilter & { changes: RepoChange[] };
 
-const repoTypes = ["public", "private", "internal"];
+type repoTypes = "all" | "public" | "private" | "forks" | "sources" | "member";
 
 export const initGithubVcs = () => registerVcs(CodeManagementTypes.GITHUB, () => new GithubVcsService());
 
@@ -84,10 +86,17 @@ class GithubVcsService implements VcsService {
       if (!server) {
         throw new Error(`No GitHub server configuration found named: ${serverId}`);
       }
-      connection = new Octokit({
-        auth: server.apiKey,
-        baseUrl: server.url,
-      });
+      // Support both GitHub App and Personal Access Token authentication
+      if (server.authMethod === AuthMethod.GITHUB_APP && server.githubApp) {
+        // Use GitHub App authentication
+        connection = createGitHubAppOctokit(server.githubApp, server.url);
+      } else {
+        // Use Personal Access Token authentication (default)
+        connection = new Octokit({
+          auth: server.apiKey,
+          baseUrl: server.url,
+        });
+      }
       this.connections.set(workloadId, connection);
     }
     return connection;
@@ -469,26 +478,57 @@ class GithubVcsService implements VcsService {
     }
   }
 
+  /**
+   * Check if the connection is using GitHub App authentication
+   */
+  async #isGitHubApp(connection: Octokit): Promise<boolean> {
+    try {
+      // Try to call an app-specific endpoint
+      await connection.apps.getAuthenticated();
+      return true;
+    } catch (e) {
+      // If this fails, it's likely a PAT
+      return false;
+    }
+  }
+
   async getReposForProject(workloadId: WorkloadId, vcsProject: string): Promise<string[]> {
     const connection = this.#getConnection(workloadId);
 
-    const repoPromises = repoTypes.map(async (repoType) => {
+    // Check if this is a GitHub App by trying to get installation info
+    const isGitHubApp = await this.#isGitHubApp(connection);
+
+    const allRepos = await (async (repoType: repoTypes = "all") => {
       try {
-        const resp: { name }[] = await connection.paginate(connection.repos.listForOrg, {
-          org: vcsProject,
-          type: repoType as any,
-          per_page: 100,
-        });
-        return resp.map((repo) => repo.name);
+        let resp: { name }[];
+
+        if (isGitHubApp) {
+          // For GitHub Apps, use listReposAccessibleToInstallation
+          const installationRepos = await connection.apps.listReposAccessibleToInstallation({
+            per_page: 100,
+          });
+          // Filter by organization and extract repository names
+          resp = installationRepos.data.repositories
+            .filter((repo) => repo.owner.login === vcsProject)
+            .map((repo) => ({ name: repo.name }));
+        } else {
+          // For PATs, use the original listForOrg method
+          resp = await connection.paginate(connection.repos.listForOrg, {
+            org: vcsProject,
+            type: repoType,
+            per_page: 100,
+          });
+        }
+
+        return uniq(resp.map((repo) => repo.name)) as string[];
       } catch (e) {
-        warn(`Failed to list ${repoType} repos for ${vcsProject} - returning empty list: ${e.message}`);
+        warn(`Failed to list '${repoType}' repos for '${vcsProject}' - returning empty list: ${e.message}`);
         verbose(e);
         return [];
       }
-    });
+    })();
 
-    const allRepos: string[] = uniq((await Promise.all(repoPromises)).flat());
-    logger(`Retrieved ${allRepos.length} total repos for github org: ${vcsProject}`);
+    logger(`Retrieved ${allRepos.length} repos total for github org: '${vcsProject}'`);
     return allRepos;
   }
 
@@ -576,7 +616,8 @@ class GithubVcsService implements VcsService {
       });
 
       if (response?.data) {
-        return response.data;
+        // coerce because we set the Accept header to get raw content
+        return response.data as unknown as string;
       } else {
         error("File not found or content not available.");
         return null;

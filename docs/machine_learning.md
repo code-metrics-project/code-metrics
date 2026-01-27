@@ -1,6 +1,6 @@
 # Machine learning forecasts
 
-Machine learning forecasts let Code Metrics produce forward-looking projections for any time-series dataset via a standalone Python-based Machine Learning API. The capability replaces the legacy TensorFlow predictions workflow and is being rolled out incrementally across the stack.
+Machine learning forecasts let CodeMetrics produce forward-looking projections for any time-series dataset via a standalone Python-based Machine Learning API. The capability replaces the legacy TensorFlow predictions workflow and is being rolled out incrementally across the stack.
 
 > **Warning**
 > Machine learning forecasts are experimental. The user interface, API contract and deployment workflow may continue to change while we validate the approach. The original predictions feature (enabled via `FEATURE_PREDICTIONS`) is still available for backwards compatibility but is scheduled for removal once the new flow is fully adopted.

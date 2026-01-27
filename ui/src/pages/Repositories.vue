@@ -71,6 +71,7 @@
                       workloadId: item.workloadId,
                       executeImmediately: 'true',
                       branchName: 'main',
+                      repoName: item.name,
                     },
                   }"
                   class="mr-1"
@@ -88,6 +89,7 @@
                       workloadId: item.workloadId,
                       executeImmediately: 'true',
                       branchName: 'main',
+                      repoName: item.name,
                     },
                   }"
                 >

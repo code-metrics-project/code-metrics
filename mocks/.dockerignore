@@ -1,0 +1,7 @@
+.git
+.gitignore
+.dockerignore
+.imposter_cache
+.idea
+.vscode
+.DS_Store

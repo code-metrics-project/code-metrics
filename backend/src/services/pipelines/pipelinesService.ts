@@ -1,8 +1,6 @@
 import { Run, RunWithMetadata } from "../../model/runs";
 import { logger, verbose } from "../../utils/logger/logger";
 import {
-  determineJobGroups,
-  determineJobNames,
   getAllPipelinesConfig,
   getServerConfig,
   getWorkloadById,
@@ -12,6 +10,9 @@ import { getDeploymentService } from "../deployment/deploymentService";
 import { StageConfig } from "../../model/config/pipeline-config";
 import { PipelinesTypes } from "../../model/config/common";
 import { getConfigItemAsBoolean } from "../../config/sources/source";
+import { lookupJobGroupForJobName } from "../../utils/jobs";
+import { Datastore, DatastoreCollection, QueryFilter } from "../../db/api";
+import { provideDatastore } from "../../db/factory";
 
 const CACHE_PIPELINE_BUILDS = getConfigItemAsBoolean("CACHE_PIPELINE_BUILDS", true);
 
@@ -49,18 +50,23 @@ export const getPipelines = (workload: Workload | WorkloadId, stageId: string): 
   return instance;
 };
 
+export type PipelinesServiceJobNameFilter = {
+  jobGroup?: string | null;
+  repoName?: string | null;
+};
+
 export type PipelinesService = {
   /**
-   * Get the list of runs for a workload's job groups.
+   * Get the list of runs for specific job names.
    * @param workloadId
-   * @param jobGroups
+   * @param jobNames
    * @param branches
    * @param startDate
    * @param endDate
    */
-  getRunsForJobGroups(
+  getRunsForJobs(
     workloadId: WorkloadId,
-    jobGroups: string[],
+    jobNames: string[],
     branches: string[],
     startDate: Date,
     endDate: Date,
@@ -84,7 +90,13 @@ export type PipelinesService = {
     endDate: Date,
   ): Promise<Run[]>;
 
-  discoverJobNames(workload: Workload, jobGroup: string): Promise<string[]>;
+
+  /**
+   * Discover job names for a workload, optionally filtered by job group and/or repo name.
+   * @param workload
+   * @param filter
+   */
+  discoverJobNames(workload: Workload, filter: PipelinesServiceJobNameFilter): Promise<string[]>;
 
   /**
    * Get the list of branches for a workload.
@@ -132,43 +144,32 @@ export abstract class AbstractPipelinesService implements PipelinesService {
     this.stage = stage;
   }
 
-  async getRunsForJobGroups(
+  async getRunsForJobs(
     workloadId: WorkloadId,
-    jobGroups: string[],
+    jobNames: string[],
     branches: string[],
     startDate: Date,
     endDate: Date,
   ): Promise<RunWithMetadata[]> {
-    const workload = getWorkloadById(workloadId);
-    const allRuns: RunWithMetadata[] = [];
+    const runs = await this.getRunsForProject(
+      workloadId,
+      jobNames,
+      this.stage.projectName,
+      branches,
+      startDate,
+      endDate,
+    );
+    logger(`Found ${runs.length} pipeline runs for ${workloadId} jobs: ${jobNames.join(", ")}`);
 
-    const jGroups = determineJobGroups(workload, jobGroups);
-
-    for (const jobGroup of jGroups) {
-      const jobNames = await determineJobNames(workload, jobGroup);
-      const groupRuns = await this.getRunsForProject(
+    return runs.map((run) => {
+      const jobGroup = lookupJobGroupForJobName(workloadId, run.job);
+      return {
+        run,
         workloadId,
-        jobNames,
-        this.stage.projectName,
-        branches,
-        startDate,
-        endDate,
-      );
-      logger(`Found ${groupRuns.length} pipeline runs for ${workloadId}-${jobGroup}`);
-
-      allRuns.push(
-        ...groupRuns.map((run) => {
-          return {
-            run,
-            workloadId,
-            stageId: this.stage.id,
-            jobGroup,
-          };
-        }),
-      );
-    }
-
-    return allRuns;
+        stageId: this.stage.id,
+        jobGroup,
+      };
+    });
   }
 
   abstract getRunsForProject(
@@ -195,26 +196,28 @@ export abstract class AbstractPipelinesService implements PipelinesService {
     propertyJsonPath: string,
   ): Promise<string | null>;
 
-  abstract discoverJobNames(workload: Workload, jobGroup: string): Promise<string[]>;
+  abstract discoverJobNames(workload: Workload, filter: PipelinesServiceJobNameFilter): Promise<string[]>;
 
   abstract buildRunLink(workloadId: string, jobName: string, runId: string): string;
 }
 
 export class CachingPipelinesServiceImpl implements PipelinesService {
   private delegate: PipelinesService;
+  private datastore: Datastore<QueryFilter, DatastoreCollection>;
 
   constructor(delegate: PipelinesService) {
     this.delegate = delegate;
+    this.datastore = provideDatastore("pipelines-service-cache", { ttlIfToday: 3600 });
   }
 
-  getRunsForJobGroups = (
+  getRunsForJobs = (
     workloadId: WorkloadId,
-    jobGroups: string[],
+    jobNames: string[],
     branches: string[],
     startDate: Date,
     endDate: Date,
   ): Promise<RunWithMetadata[]> => {
-    return this.delegate.getRunsForJobGroups(workloadId, jobGroups, branches, startDate, endDate);
+    return this.delegate.getRunsForJobs(workloadId, jobNames, branches, startDate, endDate);
   };
 
   getRunsForProject = (
@@ -241,8 +244,11 @@ export class CachingPipelinesServiceImpl implements PipelinesService {
   ): Promise<string | null> =>
     this.delegate.getPipelineRunProperty(workloadId, vcsProjectName, jobName, runId, propertyJsonPath);
 
-  discoverJobNames = (workload: Workload, jobGroup: string): Promise<string[]> =>
-    this.delegate.discoverJobNames(workload, jobGroup);
+  discoverJobNames = (workload: Workload, filter: PipelinesServiceJobNameFilter): Promise<string[]> => {
+    return this.datastore.findOrInsertOne("pipelines-job-names", { ...filter, workloadId: workload.id }, () => {
+      return this.delegate.discoverJobNames(workload, filter);
+    });
+  };
 
   buildRunLink = (workloadId: string, jobName: string, runId: string): string =>
     this.delegate.buildRunLink(workloadId, jobName, runId);

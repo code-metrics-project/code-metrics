@@ -1,3 +1,17 @@
+// Polyfill for random.uuid() - required in Docker environment
+var random = typeof random !== "undefined" ? random : undefined;
+if (!random) {
+  random = {
+    uuid: function () {
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+        var r = (Math.random() * 16) | 0;
+        var v = c == "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
+    },
+  };
+}
+
 const { projectName: adoProjectName, repoName } = context.request.pathParams;
 
 const req = JSON.parse(context.request.body);

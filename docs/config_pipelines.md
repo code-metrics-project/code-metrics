@@ -21,6 +21,10 @@ Within a `pipelines.azure` server object:
 
 ## GitHub
 
+GitHub offers two authentication methods for pipeline integration:
+
+### Option 1: Personal Access Token
+
 Within a `pipelines.github` server object:
 
 1. Add a unique `id` value for the target server.
@@ -28,9 +32,9 @@ Within a `pipelines.github` server object:
 2. Create a Personal Access Token.
    Navigate to [https://github.com/settings/tokens](https://github.com/settings/tokens) and create a token with the following scopes:
 
-    - public_repo
-    - read:org
-    - read:project
+   - public_repo
+   - read:org
+   - read:project
 
 3. Paste the result into the server object's `apiKey` field.
 
@@ -38,11 +42,62 @@ Within a `pipelines.github` server object:
 
 ```yaml
 pipelines:
-  github: 
+  github:
     servers:
-      - id: CodeMetrics 
-        url: 'https://api.github.com'
+      - id: CodeMetrics
+        url: "https://api.github.com"
         apiKey: ${secret.github_api_key}
+        authMethod: BEARER_TOKEN
+        branches:
+          - main
+```
+
+### Option 2: GitHub App Authentication (Recommended)
+
+GitHub Apps provide higher rate limits (5000 requests/hour per installation) and better security for organization repositories.
+
+For detailed setup instructions, see the [GitHub App Authentication Guide](./authentication_github_app.md).
+
+Within a `pipelines.github` server object:
+
+1. Add a unique `id` value for the target server.
+
+2. Create a GitHub App following the [GitHub App Authentication Guide](./authentication_github_app.md).
+   Ensure the app has the **Actions (Read)** permission to access workflow runs.
+
+3. Configure the server with the GitHub App credentials.
+
+4. Add a list of `branches` you want to have the option to analyse.
+
+```yaml
+pipelines:
+  github:
+    servers:
+      - id: github-app-pipelines
+        url: "https://api.github.com"
+        authMethod: GITHUB_APP
+        githubApp:
+          appId: "${secret.GITHUB_APP_ID}"
+          privateKey: "${secret.GITHUB_APP_PRIVATE_KEY}"
+          installationId: "${secret.GITHUB_APP_INSTALLATION_ID}"
+        branches:
+          - main
+          - develop
+```
+
+For GitHub Enterprise:
+
+```yaml
+pipelines:
+  github:
+    servers:
+      - id: github-enterprise-pipelines
+        url: "https://github.enterprise.com/api/v3"
+        authMethod: GITHUB_APP
+        githubApp:
+          appId: "${secret.GITHUB_APP_ID}"
+          privateKey: "${secret.GITHUB_APP_PRIVATE_KEY}"
+          installationId: "${secret.GITHUB_APP_INSTALLATION_ID}"
         branches:
           - main
 ```

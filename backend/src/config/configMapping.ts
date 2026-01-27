@@ -115,7 +115,32 @@ export const determineJobNames = async (workload: Workload, jobGroup: string): P
   } else {
     const discoveries = workload.pipelines.stages.map(async ({ stageId }) => {
       const pipelinesService = getPipelinesForWorkload(workload, stageId);
-      return (await pipelinesService.discoverJobNames(workload, jobGroup)) ?? [];
+      return (await pipelinesService.discoverJobNames(workload, { jobGroup })) ?? [];
+    });
+    return (await Promise.all(discoveries)).flat();
+  }
+};
+
+/**
+ * Determine the job names for a given workload and repo name.
+ * @param workload
+ * @param repoName
+ */
+export const getJobNamesForRepo = async (workload: Workload, repoName: string): Promise<string[]> => {
+  if (workload.pipelines.jobNameMapping === JobNameMapping.RepoName) {
+    return [repoName];
+  } else if (workload.pipelines.jobNameMapping === JobNameMapping.ComponentName) {
+    const repoGroups = Object.entries(workload.codeManagement.repoGroups).filter(([_, rg]) =>
+      rg.components?.some((c) => c.repo === repoName),
+    );
+    const componentNames = repoGroups.flatMap(([_, rg]) =>
+      rg.components?.filter((c) => c.repo === repoName).map((c) => c.name) ?? [],
+    );
+    return componentNames;
+  } else {
+    const discoveries = workload.pipelines.stages.map(async ({ stageId }) => {
+      const pipelinesService = getPipelinesForWorkload(workload, stageId);
+      return (await pipelinesService.discoverJobNames(workload, { repoName })) ?? [];
     });
     return (await Promise.all(discoveries)).flat();
   }
@@ -173,7 +198,20 @@ export const getAllCodeManagementUrls = (): Record<string, string> => {
     const serverType = w.codeManagement.type;
     const servers = getAllCodeManagementConfig()[serverType].servers;
     const server = getServerConfig(servers, w.codeManagement.serverId);
-    const url = server.url || (serverType === CodeManagementTypes.GITHUB ? "https://github.com" : "");
+    let url = server.url || (serverType === CodeManagementTypes.GITHUB ? "https://github.com" : "");
+
+    // Convert API URL to web URL for GitHub
+    if (serverType === CodeManagementTypes.GITHUB && url) {
+      // Convert api.github.com to github.com
+      if (url.includes("api.github.com")) {
+        url = url.replace("api.github.com", "github.com");
+      }
+      // Convert GitHub Enterprise API URLs (e.g., https://github.company.com/api/v3 -> https://github.company.com)
+      else if (url.includes("/api/v3")) {
+        url = url.replace("/api/v3", "");
+      }
+    }
+
     urls[w.id] = url + "/" + w.codeManagement.projectName;
   });
   return urls;

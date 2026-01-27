@@ -4,7 +4,7 @@ This section is part of the `remote-config.yaml` configuration file. See the [co
 
 ## SonarQube and SonarCloud
 
-Code Metrics supports both SonarQube and SonarCloud as code quality providers. The configuration is similar for both.
+CodeMetrics supports both SonarQube and SonarCloud as code quality providers. The configuration is similar for both.
 
 ### SonarQube Cloud
 
@@ -29,6 +29,7 @@ Configure the `codeAnalysis.sonar` server object in the `remote-config.yaml` fil
 > rather than storing it directly within the configuration file.
 
 If no `authMethod` is specified then `BASIC_AUTH` is used.
+
 ```yaml
 # remote-config.yaml
 ---
@@ -40,7 +41,6 @@ codeAnalysis:
         apiKey: "${secret.SONAR_API_KEY}"
         authMethod: BEARER_TOKEN
 ```
-
 
 The branch to use for sonar (as the default branch on sonar server may not match the repo branch used) can also be specified on a per workload config. If omitted it will default to main.
 

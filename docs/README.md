@@ -34,7 +34,7 @@ At its core, CodeMetrics provides a collection of whole project lifecycle code q
 
 ## User documentation
 
-This documentation is intended for users of Code Metrics, such as engineers, QA or leadership.
+This documentation is intended for users of CodeMetrics, such as engineers, QA or leadership.
 
 - [Workload summary](./workloads.md)
 - [CI/CD pipelines](./pipelines.md)
@@ -44,7 +44,7 @@ This documentation is intended for users of Code Metrics, such as engineers, QA 
 
 - [Overview](./queries.md)
 - [Bugs and escaped bugs](./query_bugs.md)
-- [Bug culprit files](./query_bug_culprits.md)
+- [Code hotspots](./query_code_hotspots.md)
 - [DORA metrics](./dora.md)
 - [CI/CD pipelines](./query_pipelines.md)
 - [Repository churn](./query_repo_churn.md)
@@ -70,7 +70,7 @@ This documentation is intended for users of Code Metrics, such as engineers, QA 
 
 ## Administration and configuration
 
-This documentation is intended for people deploying and configuring Code Metrics.
+This documentation is intended for people deploying and configuring CodeMetrics.
 
 ### Configuration
 

@@ -2,11 +2,12 @@ import * as tf from "@tensorflow/tfjs";
 import { LayersModel } from "@tensorflow/tfjs";
 import { IntermediaryDatedMetrics, MetricEntry } from "../../model/metrics";
 import _ from "lodash/fp";
+import { logger, verbose } from "../../utils/logger/logger.js";
 
 const models: Record<string, LayersModel> = {};
 
 async function train(x: number[], y: number[]): Promise<tf.Sequential> {
-  console.log(`Initialising model for ${x.length} inputs`);
+  logger(`Initialising model for ${x.length} inputs`);
 
   // Train a simple model
   const model = tf.sequential();
@@ -15,22 +16,22 @@ async function train(x: number[], y: number[]): Promise<tf.Sequential> {
 
   // Create tensors from a flat array
   const xs = tf.tensor(x, undefined, "float32");
-  console.log("x shape:", xs.shape);
+  verbose("x shape:", xs.shape);
   const ys = tf.tensor(y, undefined, "float32");
 
   model.summary();
 
-  console.log("Training model...");
+  logger("Training model...");
   await model.fit(xs, ys, {
     epochs: 500,
     callbacks: {
-      onEpochEnd: (epoch, log) => console.log(`Epoch ${epoch}: loss = ${log?.loss}`),
+      onEpochEnd: (epoch, log) => verbose(`Epoch ${epoch}: loss = ${log?.loss}`),
     },
   });
 
-  // console.log("Model weights:");
+  // verbose("Model weights:");
   // model.weights.forEach((w) => {
-  //   console.log(w.name, w.shape);
+  //   verbose(w.name, w.shape);
   // });
 
   return model;
@@ -42,7 +43,7 @@ async function makePrediction(model: tf.LayersModel, input: number): Promise<num
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const predictedVal = (await prediction.buffer()).get(0, 0);
-  console.log(`Predicted value for input: ${input} is ${predictedVal}`);
+  verbose(`Predicted value for input: ${input} is ${predictedVal}`);
   return predictedVal;
 }
 
@@ -110,16 +111,16 @@ export async function predict(
     const normalisedInputForDate = inputForDate / maxInputValue;
     let prediction = await makePrediction(model, normalisedInputForDate);
 
-    console.log(">>>>>>>>>>>>>>>>>>>>");
-    console.log("inputForDate", inputForDate);
-    console.log("normalisedInputForDate", normalisedInputForDate);
-    console.log("prediction", prediction);
+    verbose(">>>>>>>>>>>>>>>>>>>>");
+    verbose("inputForDate", inputForDate);
+    verbose("normalisedInputForDate", normalisedInputForDate);
+    verbose("prediction", prediction);
 
     // denormalise prediction
     prediction *= maxLabelValue;
 
-    console.log("predictionDenormalised", prediction);
-    console.log("<<<<<<<<<<<<<<<<<<<<");
+    verbose("predictionDenormalised", prediction);
+    verbose("<<<<<<<<<<<<<<<<<<<<");
 
     // // start from same point as actual data
     // if (i < 10) {
@@ -134,19 +135,19 @@ export async function predict(
 }
 
 async function getModel(modelName: string, xs: number[], ys: number[]) {
-  // console.log(`xs`, xs);
+  // verbose(`xs`, xs);
   const xsnormalised = normalise(xs);
-  // console.log(`xsnormalised`, xsnormalised);
+  // verbose(`xsnormalised`, xsnormalised);
   const maxInputValue = _.max(xs)!;
 
-  // console.log(`ys`, ys);
+  // verbose(`ys`, ys);
   const ysnormalised = normalise(ys);
-  // console.log(`ysnormalised`, ysnormalised);
+  // verbose(`ysnormalised`, ysnormalised);
   const maxLabelValue = _.max(ys)!;
 
   let model = models[modelName];
   if (model) {
-    console.log(`Using existing model: ${modelName}`);
+    logger(`Using existing model: ${modelName}`);
   } else {
     model = await train(xsnormalised, ysnormalised);
     models[modelName] = model;

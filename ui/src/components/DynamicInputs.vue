@@ -109,7 +109,9 @@ import { logger } from "@/utils/logger";
 import { getDefaultValue, InputType, isPopulatedInputValue } from "@/queries/inputs";
 import PipelineActors from "@/components/inputs/PipelineActors.vue";
 import RepoGroups from "@/components/inputs/RepoGroups.vue";
+import RepoNames from "@/components/inputs/RepoNames.vue";
 import JobGroups from "@/components/inputs/JobGroups.vue";
+import JobNames from "@/components/inputs/JobNames.vue";
 import BranchNames from "@/components/inputs/BranchNames.vue";
 import { type RawQuery } from "@/model/query";
 import { useI18n } from "vue-i18n";
@@ -154,7 +156,9 @@ const InputMap = new Map<InputType, ComponentAndProps>([
   [InputType.PIPELINE_ACTOR_TYPE, { component: PipelineActors }],
   [InputType.PIPELINE_STAGE, { component: PipelineStage }],
   [InputType.REPO_GROUPS, { component: RepoGroups }],
+  [InputType.REPO_NAMES, { component: RepoNames }],
   [InputType.JOB_GROUPS, { component: JobGroups }],
+  [InputType.JOB_NAMES, { component: JobNames }],
   [InputType.SEVERITY_OPTIONS, { component: SeverityOptions }],
   [InputType.START_DATE, { component: DateInput }],
   [InputType.TAGS, { component: TagInput }],

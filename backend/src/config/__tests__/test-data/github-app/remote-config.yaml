@@ -1,0 +1,35 @@
+---
+version: "2.0"
+
+codeAnalysis:
+  sonar:
+    servers:
+      - id: mock-sonar
+        url: http://mock-sonar:9000
+        apiKey: test-api-key
+
+codeManagement:
+  github:
+    servers:
+      - id: github-app-server
+        url: https://api.github.com
+        authMethod: GITHUB_APP
+        githubApp:
+          appId: "${secret.GITHUB_APP_ID}"
+          privateKey: "${secret.GITHUB_APP_PRIVATE_KEY}"
+          installationId: "${secret.GITHUB_APP_INSTALLATION_ID}"
+        branches:
+          - main
+
+pipelines:
+  github:
+    servers:
+      - id: github-app-server
+        url: https://api.github.com
+        authMethod: GITHUB_APP
+        githubApp:
+          appId: "${secret.GITHUB_APP_ID}"
+          privateKey: "${secret.GITHUB_APP_PRIVATE_KEY}"
+          installationId: "${secret.GITHUB_APP_INSTALLATION_ID}"
+        branches:
+          - main

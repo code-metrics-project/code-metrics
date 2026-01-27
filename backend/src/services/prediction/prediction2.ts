@@ -1,11 +1,12 @@
 import * as tf from "@tensorflow/tfjs";
 import { LayersModel } from "@tensorflow/tfjs";
 import { IntermediaryDatedMetrics, MetricEntry } from "../../model/metrics";
+import { logger, verbose } from "../../utils/logger/logger.js";
 
 const models: Record<string, LayersModel> = {};
 
 async function train(x: number[][], y: number[]): Promise<tf.Sequential> {
-  console.log(`Initialising model for ${x.length} inputs`);
+  logger(`Initialising model for ${x.length} inputs`);
 
   // Train a simple model
   const model = tf.sequential();
@@ -19,22 +20,22 @@ async function train(x: number[][], y: number[]): Promise<tf.Sequential> {
 
   // Create tensors from a flat array
   const xs = tf.tensor(x, undefined, "float32");
-  // console.log('x shape:', xs.shape);
+  // logger('x shape:', xs.shape);
   const ys = tf.tensor(y, undefined, "float32");
 
   model.summary();
 
-  console.log("Training model...");
+  logger("Training model...");
   await model.fit(xs, ys, {
     epochs: 500,
     callbacks: {
-      //onEpochEnd: (epoch, log) => console.log(`Epoch ${epoch}: loss = ${log?.loss}`),
+      //onEpochEnd: (epoch, log) => logger(`Epoch ${epoch}: loss = ${log?.loss}`),
     },
   });
 
-  console.log("Model weights:");
+  verbose("Model weights:");
   model.weights.forEach((w) => {
-    console.log(w.name, w.shape);
+    verbose(w.name, w.shape);
   });
 
   return model;
@@ -46,7 +47,7 @@ async function makePrediction(model: tf.LayersModel, input: number[]): Promise<n
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const predictedVal = (await prediction.buffer()).get(0, 0);
-  console.log(`Predicted value for input: ${input} is ${predictedVal}`);
+  verbose(`Predicted value for input: ${input} is ${predictedVal}`);
   return predictedVal;
 }
 
@@ -107,12 +108,12 @@ export async function predict2(
     // }
     // }
   }
-  // console.log("flatLabelsForDate", flatLabelsForDate);
-  // console.log("flatInputsForDate", flatInputsForDate);
+  // verbose("flatLabelsForDate", flatLabelsForDate);
+  // verbose("flatInputsForDate", flatInputsForDate);
 
   const { maxInputValue, maxLabelValue, model } = await getModel(modelName, xs, ys);
-  // console.log("maxInputValue", maxInputValue);
-  // console.log("maxLabelValue", maxLabelValue);
+  // verbose("maxInputValue", maxInputValue);
+  // verbose("maxLabelValue", maxLabelValue);
 
   const predictions = new Map<string, IntermediaryDatedMetrics>();
 
@@ -123,16 +124,16 @@ export async function predict2(
     const normalisedInputForDate = inputForDate.map((num, idx) => num / maxInputValue[idx]);
     let prediction = await makePrediction(model, normalisedInputForDate);
 
-    console.log(">>>>>>>>>>>>>>>>>>>>");
-    console.log("inputForDate", inputForDate);
-    console.log("normalisedInputForDate", normalisedInputForDate);
-    console.log("prediction", prediction);
+    verbose(">>>>>>>>>>>>>>>>>>>>");
+    verbose("inputForDate", inputForDate);
+    verbose("normalisedInputForDate", normalisedInputForDate);
+    verbose("prediction", prediction);
 
     // denormalise prediction
     prediction *= maxLabelValue;
 
-    console.log("predictionDenormalised", prediction);
-    console.log("<<<<<<<<<<<<<<<<<<<<");
+    verbose("predictionDenormalised", prediction);
+    verbose("<<<<<<<<<<<<<<<<<<<<");
 
     // // start from same point as actual data
     // if (i < 10) {
@@ -158,8 +159,8 @@ export async function predict2(
  * [3] => [8, 300]
  */
 async function getModel(modelName: string, xs: number[][], ys: number[]) {
-  //console.log(`xs`, xs);
-  //console.log(`ys`, ys);
+  //verbose(`xs`, xs);
+  //verbose(`ys`, ys);
 
   // calc max for each dimension
   const maxInputValue = [];
@@ -174,18 +175,18 @@ async function getModel(modelName: string, xs: number[][], ys: number[]) {
       return xval / max;
     });
   });
-  //console.log(`xsnormalised`, xsnormalised);
+  //verbose(`xsnormalised`, xsnormalised);
 
   //const maxInputValue = xs.map((x) => Math.max(...x));
-  //console.log("maxInputValue", maxInputValue);
+  //verbose("maxInputValue", maxInputValue);
 
   const maxLabelValue = Math.max(...ys);
   const ysnormalised = normalise(ys, maxLabelValue);
-  //console.log(`ysnormalised`, ysnormalised);
+  //verbose(`ysnormalised`, ysnormalised);
 
   let model = models[modelName];
   if (model) {
-    console.log(`Using existing model: ${modelName}`);
+    logger(`Using existing model: ${modelName}`);
   } else {
     model = await train(xsnormalised, ysnormalised);
     models[modelName] = model;

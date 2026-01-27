@@ -151,13 +151,45 @@
             "team": { "type": "string" },
             "projectName": { "type": "string" },
             "teamFilterQuery": { "type": "string" },
-            "ticketTypes": { "type": "string" },
+            "ticketTypes": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
             "ticketPriorities": {
               "type": "array",
               "items": { "type": "string" }
             }
           },
           "required": ["type", "team", "projectName"]
+        }
+      ]
+    },
+    "WorkloadTicketConfigGithub": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseWorkloadTicketConfig" },
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "github" },
+            "owner": { "type": "string" },
+            "repo": { "type": "string" },
+            "ticketTypes": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "ticketPriorities": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "stateFilter": { "type": "string" },
+            "labelMapping": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["type", "owner", "repo"]
         }
       ]
     },
@@ -212,6 +244,7 @@
     "WorkloadTicketConfig": {
       "oneOf": [
         { "$ref": "#/definitions/WorkloadTicketConfigAzure" },
+        { "$ref": "#/definitions/WorkloadTicketConfigGithub" },
         { "$ref": "#/definitions/WorkloadTicketConfigJira" },
         { "$ref": "#/definitions/WorkloadTicketConfigNone" },
         { "$ref": "#/definitions/WorkloadTicketConfigServiceNow" }

@@ -2,17 +2,17 @@
 
 ## Introduction
 
-Docker Compose provides a straightforward containerized deployment option for Code Metrics, ideal for local development, testing, and evaluation. Using containers ensures consistency across different environments while maintaining simplicity through Docker Compose's declarative configuration.
+Docker Compose provides a straightforward containerized deployment option for CodeMetrics, ideal for local development, testing, and evaluation. Using containers ensures consistency across different environments while maintaining simplicity through Docker Compose's declarative configuration.
 
 ### When to choose Docker Compose
 
 **Best suited for:**
 
 - **Local development**: Run the full stack locally with a single command for development and debugging
-- **Testing and evaluation**: Quickly spin up Code Metrics to test features and evaluate functionality
+- **Testing and evaluation**: Quickly spin up CodeMetrics to test features and evaluate functionality
 - **CI/CD environments**: Reproducible testing environments in continuous integration pipelines
 - **Small-scale production**: Simple production deployments for small teams without orchestration needs
-- **Proof of concept**: Demonstrate Code Metrics capabilities without complex infrastructure setup
+- **Proof of concept**: Demonstrate CodeMetrics capabilities without complex infrastructure setup
 - **Learning environment**: Understand the application architecture with minimal setup overhead
 
 **Consider alternatives if:**
@@ -179,7 +179,7 @@ services:
 
 ## Summary
 
-Docker Compose deployment provides a containerized, reproducible environment for Code Metrics, balancing simplicity with the benefits of containerization. It's ideal for local development, testing, and small-scale production deployments. While it lacks the advanced orchestration features of Kubernetes, it offers a straightforward path to running Code Metrics in containers without infrastructure complexity.
+Docker Compose deployment provides a containerized, reproducible environment for CodeMetrics, balancing simplicity with the benefits of containerization. It's ideal for local development, testing, and small-scale production deployments. While it lacks the advanced orchestration features of Kubernetes, it offers a straightforward path to running CodeMetrics in containers without infrastructure complexity.
 
 **Key advantages:**
 
@@ -460,4 +460,4 @@ If issues persist:
 3. Verify Docker and Docker Compose versions
 4. Review the [configuration documentation](./configuration.md)
 5. Check [Docker documentation](https://docs.docker.com/)
-6. Join the [Code Metrics community](https://github.com/code-metrics-project) for support
+6. Join the [CodeMetrics community](https://github.com/code-metrics-project) for support

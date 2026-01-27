@@ -1,0 +1,62 @@
+name: Upload Image to GHCR
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_name:
+        description: "Name of the image to upload (e.g., busybox:latest)"
+        required: true
+        type: string
+
+jobs:
+  upload-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Downcase REPO Owner
+        run: |
+          REPO="${{ github.repository_owner }}"
+          REPO="${REPO,,}"
+          echo "REPO=${REPO}" >> ${GITHUB_ENV}
+
+      - name: Pull and Push Image
+        run: |
+          image="${{ inputs.image_name }}"
+
+          # Extract image name and tag (default to latest if no tag)
+          repo="$image"
+          tag="latest"
+          if [[ "$image" == *":"* ]]; then
+            repo=$(echo "$image" | cut -d':' -f1)
+            tag=$(echo "$image" | cut -d':' -f2)
+          fi
+
+          new_tag="ghcr.io/${REPO}/${repo}:$tag"
+
+          echo "******** Pulling $image from Dockerhub *********"
+          docker pull "$image"
+
+          echo "******** Tagging as $new_tag *********"
+          docker tag "$image" "$new_tag"
+
+          echo "******** Pushing to GHCR *********"
+          docker push "$new_tag"

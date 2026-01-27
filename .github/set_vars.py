@@ -11,36 +11,17 @@ import json, os, subprocess, argparse, sys
 from typing import Dict, List
 
 # ---- Config ----
-SERVICE_DIRS: List[str] = [
-    ".github",
-    "backend",
-    "desktop",
-    "docker",
-    "examples",
-    "helm",
-    "machinelearning",
-    "mcp",
-    "mocks",
-    "promosite",
-    "threatmodel",
-    "ui"
-]
-FOLD_RULES: Dict[str, List[str]] = {
-    # When .github changes, trigger many components
-    ".github": ["backend", "desktop", "docker", "examples", "helm", "machinelearning", "mcp", "promosite", "threatmodel", "ui"],
-    
-    # When backend changes, trigger docker and mocks
-    "backend": ["docker", "mocks"],
+CONFIG_FILE = os.path.join(os.path.dirname(__file__), "change_detection_config.json")
 
-    # When mocks changes, trigger backend
-    "mocks": ["backend"],
+def load_config():
+    with open(CONFIG_FILE, "r") as f:
+        return json.load(f)
 
-    # When ui or examples change, trigger docker
-    "ui": ["docker"],
-    "examples": ["docker"],
-}
+config = load_config()
+SERVICE_DIRS = config.get("service_dirs", {})
+FOLD_RULES = config.get("fold_rules", {})
+
 EMIT_SOURCES = False  # if False, sources that only serve folding (e.g. 'mocks') aren't emitted
-BASE_BRANCH = "origin/main"  # Branch to compare against
 
 # ---- Helpers ----
 def sh(*args: str, check=True) -> subprocess.CompletedProcess:
@@ -49,14 +30,28 @@ def sh(*args: str, check=True) -> subprocess.CompletedProcess:
 def git_base_ref() -> str:
     """
     Returns the base ref to compare against.
-    Uses origin/main if available, falls back to main, then master.
+    Prioritizes GITHUB_BASE_REF (PR target) if available.
+    Falls back to origin/main, then main, then master.
     """
-    # Check if origin/main exists
-    result = sh("git", "rev-parse", "--verify", BASE_BRANCH, check=False)
-    if result.returncode == 0:
-        return BASE_BRANCH
+    # 1. Try GITHUB_BASE_REF (PR target)
+    # GITHUB_BASE_REF is just the branch name (e.g. "main"), so we prepend "origin/"
+    base_ref = os.getenv("GITHUB_BASE_REF")
+    if base_ref:
+        candidate = f"origin/{base_ref}"
+        result = sh("git", "rev-parse", "--verify", candidate, check=False)
+        if result.returncode == 0:
+            return candidate
+        # If origin/base_ref doesn't fail, try local
+        result = sh("git", "rev-parse", "--verify", base_ref, check=False)
+        if result.returncode == 0:
+            return base_ref
 
-    # Fallback to main
+    # 2. Fallback to origin/main
+    result = sh("git", "rev-parse", "--verify", "origin/main", check=False)
+    if result.returncode == 0:
+        return "origin/main"
+
+    # 3. Fallback to main
     result = sh("git", "rev-parse", "--verify", "main", check=False)
     if result.returncode == 0:
         return "main"
@@ -70,9 +65,12 @@ def git_base_ref() -> str:
     print('WARNING: could not find base branch - falling back to first commit')
     return sh("git", "rev-list", "--max-parents=0", "HEAD").stdout.strip().splitlines()[-1]
 
-def dir_changed(base_ref: str, path: str) -> int:
+def dir_changed(base_ref: str, paths: List[str]) -> int:
     # 0 = no changes, 1 = changed
-    cp = subprocess.run(["git", "diff", "--quiet", f"{base_ref}...HEAD", f":(top,literal){path}"])
+    # We pass paths directly to git diff. 
+    # Use -- to separate paths.
+    cmd = ["git", "diff", "--quiet", f"{base_ref}...HEAD", "--"] + paths
+    cp = subprocess.run(cmd)
     return 0 if cp.returncode == 0 else 1
 
 def norm(key: str) -> str:
@@ -111,28 +109,31 @@ def main(argv=None) -> None:
     overrides, verbose, all_components = parse_set_args(argv)
     base = git_base_ref()
 
-    # Build mapping from normalized names to actual directory paths
-    norm_to_dir = {}
-    for d in SERVICE_DIRS:
-        norm_to_dir[norm(d)] = d
-
     # Build the set of "sources" to examine (using normalized names)
     sources = set()
-    for d in SERVICE_DIRS:
+    for d in SERVICE_DIRS.keys():
         sources.add(norm(d))
     for src in FOLD_RULES.keys():
         sources.add(norm(src))
 
     # Raw changes per normalized key
     values: Dict[str, int] = {}
+    
+    # Map normalized names back to their path lists
+    norm_to_paths = {}
+    for k, paths in SERVICE_DIRS.items():
+        norm_to_paths[norm(k)] = paths
+
     for normalized in sorted(sources):
-        # Use the actual directory path if it exists, otherwise use normalized name
-        actual_path = norm_to_dir.get(normalized, normalized)
-        values[normalized] = dir_changed(base, actual_path)
+        paths = norm_to_paths.get(normalized)
+        if paths:
+            values[normalized] = dir_changed(base, paths)
+        else:
+            # Source might be only in FOLD_RULES (e.g. if we had logical groups not in SERVICE_DIRS)
+            values[normalized] = 0
 
     # Apply folding rules (OR logic)
-    emit_keys = {norm(d) for d in SERVICE_DIRS}         # always emit these
-    service_dirs_normalized = {norm(d) for d in SERVICE_DIRS}
+    emit_keys = {norm(d) for d in SERVICE_DIRS.keys()}  # always emit these
     fold_sources = set()
     for src, dests in FOLD_RULES.items():
         src_normalized = norm(src)
@@ -146,6 +147,7 @@ def main(argv=None) -> None:
 
     # Only remove fold sources that are NOT service directories
     if not EMIT_SOURCES:
+        service_dirs_normalized = {norm(d) for d in SERVICE_DIRS.keys()}
         fold_sources_only = fold_sources - service_dirs_normalized
         emit_keys -= fold_sources_only
 
@@ -164,7 +166,7 @@ def main(argv=None) -> None:
 
     # Apply --all flag to set all components to true
     if all_components:
-        for d in SERVICE_DIRS:
+        for d in SERVICE_DIRS.keys():
             out[f"{norm(d)}Components"] = 1
 
     # Apply overrides from --set

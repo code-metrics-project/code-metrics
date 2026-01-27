@@ -40,7 +40,31 @@ export const resolveAllSecretsWithResolver = async (input: string, resolver: Sec
   let result;
   while ((result = reg.exec(input)) !== null) {
     const replacement = await resolver.resolve(result[1]);
-    resolved = resolved.replace(result[0], replacement);
+    // Check if the secret placeholder is inside a quoted YAML string
+    // If so, escape newlines to preserve the multiline content
+    const matchIndex = resolved.indexOf(result[0]);
+    const beforeMatch = resolved.substring(0, matchIndex);
+    const isInsideQuotes = isInsideQuotedString(beforeMatch, result[0], resolved);
+    const escapedReplacement = isInsideQuotes ? replacement.replace(/\n/g, "\\n") : replacement;
+    resolved = resolved.replace(result[0], escapedReplacement);
   }
   return resolved;
+};
+
+/**
+ * Determines if a placeholder is inside a quoted YAML string
+ */
+const isInsideQuotedString = (beforeMatch: string, placeholder: string, fullContent: string): boolean => {
+  // Find the start of the current line containing the placeholder
+  const lastNewline = beforeMatch.lastIndexOf("\n");
+  const lineStart = lastNewline === -1 ? 0 : lastNewline + 1;
+  const lineContent = fullContent.substring(lineStart);
+
+  // Check if the line contains a pattern like: key: "...${secret...}..."
+  // or key: '...${secret...}...'
+  const colonIndex = lineContent.indexOf(":");
+  if (colonIndex === -1) return false;
+
+  const afterColon = lineContent.substring(colonIndex + 1).trimStart();
+  return afterColon.startsWith('"') || afterColon.startsWith("'");
 };

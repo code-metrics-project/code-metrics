@@ -50,3 +50,16 @@ ticketManagement:
             - Medium
             - High
             - Highest
+  github:
+    servers:
+      - id: example-github
+        url: https://api.github.com
+        apiKey: ""
+        authMethod: BEARER_TOKEN
+        defaults:
+          owner: example-org
+          repo: example-repo
+          ticketTypes:
+            - bug
+            - feature
+            - issue

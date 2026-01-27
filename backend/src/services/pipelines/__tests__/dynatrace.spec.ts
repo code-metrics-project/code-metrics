@@ -127,13 +127,6 @@ describe(`Dynatrace Pipelines integration`, () => {
     expect(builds[0].result).toBe(RunResult.Succeeded);
   });
 
-  it(`returns no job names for nonexistent job group`, async () => {
-    const codepipeline = getPipelinesForWorkload(workload, "dynatrace-build-stage");
-
-    const jobNames = await codepipeline.discoverJobNames(workload, "no-such-group");
-    expect(jobNames).toHaveLength(0);
-  });
-
   it("gets a property of a run", async () => {
     const dynatrace = getPipelinesForWorkload(workload, "dynatrace-build-stage");
 
@@ -148,12 +141,12 @@ describe(`Dynatrace Pipelines integration`, () => {
     expect(propValue).toBe("1e7c2b4eb848a566652f752284c4995c2e57bc05");
   });
 
-  it("gets runs for job groups", async () => {
+  it("gets runs for jobs", async () => {
     const dynatrace = getPipelinesForWorkload(workload, "dynatrace-build-stage");
 
     const startDate = new Date("2011-04-19");
     const endDate = new Date("2011-04-19");
-    const runs = await dynatrace.getRunsForJobGroups(workload.id, ["backend"], ["main"], startDate, endDate);
+    const runs = await dynatrace.getRunsForJobs(workload.id, ["spring-petclinic"], ["main"], startDate, endDate);
 
     const groupRuns = runs.filter((r) => r.workloadId === "athena" && r.jobGroup === "backend");
     expect(groupRuns).toHaveLength(12);
@@ -168,14 +161,14 @@ describe(`Dynatrace Pipelines integration`, () => {
   it(`lists job names`, async () => {
     const dynatrace = getPipelinesForWorkload(workload, "dynatrace-build-stage");
 
-    const jobNames = await dynatrace.discoverJobNames(workload, "backend");
+    const jobNames = await dynatrace.discoverJobNames(workload, { jobGroup: "backend" });
     expect(jobNames).toEqual(["spring-petclinic"]);
   });
 
   it(`returns no job names for nonexistent job group`, async () => {
     const dynatrace = getPipelinesForWorkload(workload, "dynatrace-build-stage");
 
-    const jobNames = await dynatrace.discoverJobNames(workload, "no-such-group");
+    const jobNames = await dynatrace.discoverJobNames(workload, { jobGroup: "no-such-group" });
     expect(jobNames).toHaveLength(0);
   });
 });

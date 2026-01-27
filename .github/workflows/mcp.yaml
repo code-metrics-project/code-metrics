@@ -1,4 +1,4 @@
-name: Validate
+name: MCP
 on:
   workflow_call:
     inputs:

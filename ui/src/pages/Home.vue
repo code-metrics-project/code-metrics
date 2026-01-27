@@ -5,11 +5,11 @@
         <v-col class="py-8">
           <h2 class="text-h2 pb-4">CodeMetrics</h2>
           <p class="text-body-1 py-1">
-            Code Metrics is a system to help you gain deep insights into the quality of your software products. It draws
+            CodeMetrics is a system to help you gain deep insights into the quality of your software products. It draws
             on metrics about your source code, your CI/CD pipeline and your tickets (such as bugs/defects).
           </p>
           <p class="text-body-1 py-1">
-            At its core, Code Metrics provides a collection of whole project lifecycle code quality analysis tools.
+            At its core, CodeMetrics provides a collection of whole project lifecycle code quality analysis tools.
           </p>
           <p class="text-body-1 py-1">Choose an option below to get started!</p>
         </v-col>

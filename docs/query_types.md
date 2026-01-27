@@ -1,6 +1,6 @@
 # Data sources
 
-Code Metrics provides a number of data sources that you can use to explore your data. You can filter and group your data in a number of ways to get the insights you need.
+CodeMetrics provides a number of data sources that you can use to explore your data. You can filter and group your data in a number of ways to get the insights you need.
 
 ## Available data sources
 
@@ -28,9 +28,9 @@ Metrics include:
 
 A metric showing the amount of change in a repository.
 
-### [Bug culprit files](./query_bug_culprits.md)
+### [Code hotspots](./query_code_hotspots.md)
 
-Identifies files that are frequently changed in response to bug fixes. These are potential 'culprits' for code that needs attention.
+Identifies files that are frequently changed in relation to project issues. These are potential hotspots that may need attention or refactoring.
 
 ### [Bugs and escaped bugs](./query_bugs.md)
 

@@ -1,4 +1,4 @@
-const REDACTED_FIELDS = ["apiKey", "clientSecret", "password", "refreshToken"];
+const REDACTED_FIELDS = ["apiKey", "clientSecret", "password", "privateKey", "refreshToken"];
 
 /**
  * Redacts sensitive fields in an object and returns a JSON string representation.

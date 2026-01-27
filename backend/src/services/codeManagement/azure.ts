@@ -2,6 +2,7 @@ import { WebApi, getPersonalAccessTokenHandler } from "azure-devops-node-api/Web
 import { IGitApi } from "azure-devops-node-api/GitApi";
 import {
   GitCommitChanges,
+  GitCommitRef,
   GitPullRequest,
   GitPullRequestQueryType,
   GitVersionType,
@@ -34,6 +35,8 @@ import { CodeManagementTypes } from "../../model/config/common";
 import { TMergeRules } from "../../model/qualityGates";
 
 const REFS_HEADS_STR = "refs/heads/";
+const DEFAULT_PAGE_SIZE = 100;
+const MAX_COMMITS_PER_DAY = 1000;
 
 const limiter = new Bottleneck({
   maxConcurrent: 4,
@@ -55,6 +58,50 @@ class AdoVcsService implements VcsService {
     this.datastore = provideDatastore("ado-vcs", { ttlIfToday: 3600 });
     this.connections = new Map<string, WebApi>();
   }
+
+  /**
+   * Fetches all pull requests matching the criteria using pagination.
+   * The ADO getPullRequests API uses skip/top parameters for pagination.
+   */
+  #fetchAllPullRequests = async (
+    gitApi: IGitApi,
+    repositoryName: string,
+    searchCriteria: { status: PullRequestStatus },
+    vcsProjectName: string,
+    maxResults?: number,
+  ): Promise<GitPullRequest[]> => {
+    const allPrs: GitPullRequest[] = [];
+    let skip = 0;
+    const top = DEFAULT_PAGE_SIZE;
+
+    while (true) {
+      const prs = await limitConcurrencyAndRetry(limiter, async () =>
+        gitApi.getPullRequests(repositoryName, searchCriteria, vcsProjectName, undefined, skip, top),
+      );
+
+      if (!prs || prs.length === 0) {
+        break;
+      }
+
+      allPrs.push(...prs);
+      verbose(`Fetched ${allPrs.length} pull requests so far for ${vcsProjectName}/${repositoryName}`);
+
+      // If we got fewer results than requested, we've reached the end
+      if (prs.length < top) {
+        break;
+      }
+
+      // If we have a max limit and reached it, stop
+      if (maxResults && allPrs.length >= maxResults) {
+        break;
+      }
+
+      skip += top;
+    }
+
+    logger(`Retrieved ${allPrs.length} total pull requests for ${vcsProjectName}/${repositoryName}`);
+    return maxResults ? allPrs.slice(0, maxResults) : allPrs;
+  };
 
   #getConnection = (workloadId: WorkloadId, reset = false): WebApi => {
     let connection: WebApi;
@@ -134,21 +181,17 @@ class AdoVcsService implements VcsService {
     repositoryName: string,
     startDate: Date,
     endDate: Date,
-    limit = 1000,
+    limit?: number,
   ): Promise<PREvent[]> => {
     try {
       const gitApi = await this.#getConnection(workloadId).getGitApi();
-      const prs =
-        (await limitConcurrencyAndRetry(limiter, async () =>
-          gitApi.getPullRequests(
-            repositoryName,
-            { status: PullRequestStatus.Completed },
-            vcsProjectName,
-            undefined,
-            undefined,
-            limit,
-          ),
-        )) ?? [];
+      const prs = await this.#fetchAllPullRequests(
+        gitApi,
+        repositoryName,
+        { status: PullRequestStatus.Completed },
+        vcsProjectName,
+        limit,
+      );
       const prsInDateRange = prs.filter((pr) => {
         const completedDate = new Date(pr.closedDate);
         return completedDate >= startDate && completedDate <= endDate;
@@ -184,21 +227,17 @@ class AdoVcsService implements VcsService {
     vcsProjectName: string,
     repositoryName: string,
     issueIds: string[],
-    limit = 1000,
+    limit?: number,
   ): Promise<CompletePrInfo[]> => {
     try {
       const gitApi = await this.#getConnection(workloadId).getGitApi();
-      const prs =
-        (await limitConcurrencyAndRetry(limiter, async () =>
-          gitApi.getPullRequests(
-            repositoryName,
-            { status: PullRequestStatus.All },
-            vcsProjectName,
-            undefined,
-            undefined,
-            limit,
-          ),
-        )) ?? [];
+      const prs = await this.#fetchAllPullRequests(
+        gitApi,
+        repositoryName,
+        { status: PullRequestStatus.All },
+        vcsProjectName,
+        limit,
+      );
 
       const relevantPrs: { issueId: string; pr: GitPullRequest }[] = [];
       prs
@@ -375,37 +414,62 @@ class AdoVcsService implements VcsService {
     }
   };
 
+  /**
+   * Fetches all commits for a given date using pagination.
+   * The ADO getCommits API uses skip/top parameters for pagination.
+   */
   #fetchCommits = async (
     date: Date,
     gitApi: IGitApi,
     repositoryName: string,
     vcsProjectName: string,
     branch: string,
-  ) => {
+  ): Promise<GitCommitRef[]> => {
     try {
       const toDate = new Date(date.getTime() + MILLIS_PER_DAY);
+      const allCommits: GitCommitRef[] = [];
+      let skip = 0;
+      const top = DEFAULT_PAGE_SIZE;
 
-      let commits = await limitConcurrencyAndRetry(limiter, async () =>
-        gitApi.getCommits(
-          repositoryName,
-          {
-            $top: 1000,
-            fromDate: truncateDateOnly(date),
-            toDate: truncateDateOnly(toDate),
-            itemVersion: {
-              version: branch,
-              versionType: GitVersionType.Branch,
-            },
-          },
-          vcsProjectName,
-        ),
-      );
-      if (!commits) {
-        console.warn(`No commits found for ${vcsProjectName}/${repositoryName}/${branch} on ${date}`);
-        commits = [];
+      const searchCriteria = {
+        fromDate: truncateDateOnly(date),
+        toDate: truncateDateOnly(toDate),
+        itemVersion: {
+          version: branch,
+          versionType: GitVersionType.Branch,
+        },
+      };
+
+      while (true) {
+        const commits = await limitConcurrencyAndRetry(limiter, async () =>
+          gitApi.getCommits(repositoryName, searchCriteria, vcsProjectName, skip, top),
+        );
+
+        if (!commits || commits.length === 0) {
+          break;
+        }
+
+        allCommits.push(...commits);
+
+        // If we got fewer results than requested, we've reached the end
+        if (commits.length < top) {
+          break;
+        }
+
+        // Safety limit to prevent infinite loops
+        if (allCommits.length >= MAX_COMMITS_PER_DAY) {
+          warn(
+            `Reached maximum commits limit (${MAX_COMMITS_PER_DAY}) for ${vcsProjectName}/${repositoryName}/${branch} on ${date}`,
+          );
+          break;
+        }
+
+        skip += top;
+        verbose(`Fetched ${allCommits.length} commits so far for ${vcsProjectName}/${repositoryName}/${branch}`);
       }
-      logger(`${commits.length} commits in repo: ${repositoryName} on branch ${branch}`);
-      return commits;
+
+      logger(`${allCommits.length} commits in repo: ${repositoryName} on branch ${branch}`);
+      return allCommits;
     } catch (e) {
       warn(`Failed to fetch commits for ${vcsProjectName}/${repositoryName}/${branch} - returning empty: ${e.message}`);
       verbose(e);

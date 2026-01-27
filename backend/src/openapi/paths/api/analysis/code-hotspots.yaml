@@ -1,6 +1,6 @@
 post:
-  summary: Returns a list files changed in association with bugs.
-  description: ...
+  summary: Returns a list of files frequently changed in relation to project issues.
+  description: Identifies code hotspots - files that are changed frequently when resolving issues.
 
   requestBody:
     required: true
@@ -10,18 +10,23 @@ post:
           type: object
           required:
             - workload
-            - range
+            - startDate
           properties:
             workload:
               type: string
-            range:
-              type: integer
-              minimum: 1
-              maximum: 366
+            startDate:
+              type: string
+              format: date
+              description: The start date for the analysis period (ISO 8601 format, e.g. "2025-12-15")
+            issueTypes:
+              type: array
+              description: Optional list of issue types to filter by (e.g. ["Bug", "Defect"]). If not provided, defaults to the configured ticket types for the workload.
+              items:
+                type: string
 
   responses:
     "200":
-      description: A list of bug culprit files
+      description: A list of code hotspot files
       content:
         application/json:
           schema:
@@ -52,7 +57,7 @@ post:
                         type: string
 
     "400":
-      description: A bad request for bug culprit files
+      description: A bad request for code hotspots
       content:
         application/json:
           schema:

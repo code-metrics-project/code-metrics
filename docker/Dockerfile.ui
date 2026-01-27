@@ -4,11 +4,11 @@ FROM ${IMGREPO}node:20 AS build
 # INSTALL; separate from build to benefit from Docker cache
 WORKDIR /usr/src/app/ui
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 # BUILD
 COPY . ./
-RUN npm run build
+RUN npm run build-only
 
 
 FROM ${IMGREPO}nginx AS run

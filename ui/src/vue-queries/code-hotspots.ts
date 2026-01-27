@@ -1,5 +1,5 @@
 import { useQuery, type QueryFunctionContext } from "@tanstack/vue-query";
-import { BUG_CULPRIT_FILES } from "@/utils/urls";
+import { CODE_HOTSPOTS } from "@/utils/urls";
 import axios from "@/utils/axios";
 import type { RepoData } from "@/model/vcs";
 import type { Ref } from "vue";
@@ -7,16 +7,19 @@ import { KEYS } from "./keys";
 import { capitalize } from "lodash";
 import type { APIError } from "@/model/apiError";
 
-type BugCulpritRequest = {
-  range: number | Ref<number>;
-  workload: string | null | Ref<string | null>;
-};
-type BugCulpritQueryKey = [string, BugCulpritRequest];
+export type { RepoData };
 
-async function runQuery({ queryKey }: QueryFunctionContext<BugCulpritQueryKey>) {
+type CodeHotspotsRequest = {
+  startDate: string | Ref<string>;
+  workload: string | null | Ref<string | null>;
+  issueTypes?: string[] | Ref<string[] | undefined>;
+};
+type CodeHotspotsQueryKey = [string, CodeHotspotsRequest];
+
+async function runQuery({ queryKey }: QueryFunctionContext<CodeHotspotsQueryKey>) {
   const [_key, query] = queryKey;
 
-  const response = await axios.post(BUG_CULPRIT_FILES, query).catch((e) => {
+  const response = await axios.post(CODE_HOTSPOTS, query).catch((e) => {
     if (e.response.data) {
       const errorMessages = (e.response.data.errors as APIError)
         .map((error) => {
@@ -29,15 +32,15 @@ async function runQuery({ queryKey }: QueryFunctionContext<BugCulpritQueryKey>) 
     throw e;
   });
 
-  const culprits = response.data as RepoData[];
+  const hotspots = response.data as RepoData[];
 
-  return culprits;
+  return hotspots;
 }
 
-export function useBugCulprit(query: BugCulpritRequest) {
+export function useCodeHotspots(query: CodeHotspotsRequest) {
   return useQuery({
     enabled: false,
-    queryKey: [KEYS.BUG_CULPRITS, query] as BugCulpritQueryKey,
+    queryKey: [KEYS.CODE_HOTSPOTS, query] as CodeHotspotsQueryKey,
     queryFn: runQuery,
   });
 }

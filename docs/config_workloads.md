@@ -49,7 +49,7 @@ A monorepo example with multiple components, each with its own Sonar mapping.
 ```yaml
 workloads:
   - id: CodeMetricsMonoRepo
-    name: "Code Metrics"
+    name: "CodeMetrics"
     codeManagement:
       type: github
       serverId: CodeMetrics
@@ -188,7 +188,7 @@ workloads:
 
 ## Repository and Sonar mappings
 
-When Code Metrics looks up quality metrics about a repository, the query to Sonar uses the repository name as the component 'key' parameter by default.
+When CodeMetrics looks up quality metrics about a repository, the query to Sonar uses the repository name as the component 'key' parameter by default.
 
 It is possible to specify a different key for a given repository using the `mappings` property within the `codeAnalysis` section of a workload.
 
@@ -204,7 +204,7 @@ workloads:
           componentName: spring-petclinic
 ```
 
-In this example, Code Metrics would use the Sonar component key `petclinic` for the repository named `spring-petclinic`.
+In this example, CodeMetrics would use the Sonar component key `petclinic` for the repository named `spring-petclinic`.
 
 You can also map by VCS repository name:
 

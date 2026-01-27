@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Code Metrics supports file-based authentication. This is a simple authentication mechanism where the user's credentials are stored in a file on the server.
+CodeMetrics supports file-based authentication. This is a simple authentication mechanism where the user's credentials are stored in a file on the server.
 
 ## Configuration
 
@@ -60,4 +60,5 @@ Once you type the password, the configuration is generated as follows:
   "salt": "somesaltvalue"
 }
 ```
+
 </details>

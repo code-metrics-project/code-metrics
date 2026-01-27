@@ -121,6 +121,32 @@ describe(`a Jira issue management service`, () => {
     expect(incidents[0]).not.toBeNull();
   });
 
+  it(`lists bug IDs with custom issue types`, async () => {
+    const jira = getIssueMgmtForWorkload(workload);
+
+    const incidents = await jira.getAllTicketIds(workload, 7, ["Bug", "Defect"]);
+    expect(incidents.length).toBeGreaterThanOrEqual(1);
+    expect(incidents[0]).not.toBeNull();
+  });
+
+  it(`lists bug IDs with empty issue types uses defaults`, async () => {
+    const jira = getIssueMgmtForWorkload(workload);
+
+    // Empty array should use defaults
+    const incidents = await jira.getAllTicketIds(workload, 7, []);
+    expect(incidents.length).toBeGreaterThanOrEqual(1);
+    expect(incidents[0]).not.toBeNull();
+  });
+
+  it(`gets available issue types from configuration`, async () => {
+    const jira = getIssueMgmtForWorkload(workload);
+
+    const issueTypes = jira.getAvailableIssueTypes(workload.id);
+    expect(issueTypes).toBeDefined();
+    expect(issueTypes.length).toBeGreaterThanOrEqual(1);
+    expect(issueTypes).toContain("Bug");
+  });
+
   it(`gets a bug`, async () => {
     const jira = getIssueMgmtForWorkload(workload);
 

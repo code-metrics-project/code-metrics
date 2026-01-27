@@ -2,7 +2,7 @@
   <v-container fill-height class="d-flex align-center justify-center">
     <v-card width="400">
       <v-card-title class="headline">You're logged out</v-card-title>
-      <v-card-text>You are logged out of Code Metrics.</v-card-text>
+      <v-card-text>You are logged out of CodeMetrics.</v-card-text>
       <v-card-text>
         <v-alert v-if="!!alert" :type="alert.type" class="mb-3">{{ alert.message }}</v-alert>
         <v-btn color="primary" :to="Paths.Login">Log in</v-btn>

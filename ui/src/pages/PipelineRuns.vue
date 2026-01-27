@@ -20,6 +20,8 @@
             :stage-id="stageId as string"
             :branch-name="branchName as string"
             :job-groups="jobGroups"
+            :job-names="jobNames"
+            :repo-names="repoNames"
             :start-date="startDate as string"
             :end-date="endDate as string"
             :executeOnMount="executeImmediately"
@@ -46,12 +48,16 @@ const {
   stageId,
   branchName,
   jobGroup,
+  repoName: queryRepoName,
+  jobName: queryJobName,
   startDate,
   endDate,
 } = route.query;
 const executeImmediately = queryExecuteImmediately === "true";
 
 const jobGroups = jobGroup ? [jobGroup] : [];
+const jobNames = queryJobName ? [queryJobName] : [];
+const repoNames = queryRepoName ? [queryRepoName] : [];
 
 const items = workloadId
   ? [

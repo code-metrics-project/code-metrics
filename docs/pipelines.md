@@ -2,7 +2,7 @@
 
 ## Overview
 
-Code Metrics provides two views of your CI/CD pipelines:
+CodeMetrics provides two views of your CI/CD pipelines:
 
 - **Pipeline runs**: A list of all the pipeline runs for a repository.
 - **Pipeline health**: A summary of the health of your CI/CD pipelines.

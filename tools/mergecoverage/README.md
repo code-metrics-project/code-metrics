@@ -1,4 +1,4 @@
-# Code Metrics Merge Coverage
+# CodeMetrics Merge Coverage
 
 A tool for merging LCOV coverage reports from multiple directories and generating HTML reports.
 

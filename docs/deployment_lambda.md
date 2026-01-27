@@ -2,7 +2,7 @@
 
 ## Introduction
 
-AWS Lambda provides a serverless deployment option for Code Metrics, offering automatic scaling, pay-per-use pricing, and reduced operational overhead. This approach is ideal for organisations already invested in the AWS ecosystem or those seeking a managed infrastructure solution.
+AWS Lambda provides a serverless deployment option for CodeMetrics, offering automatic scaling, pay-per-use pricing, and reduced operational overhead. This approach is ideal for organisations already invested in the AWS ecosystem or those seeking a managed infrastructure solution.
 
 ### When to choose Lambda
 
@@ -94,7 +94,7 @@ You can run periodic cache updates on AWS Lambda. See [Trigger a cache refresh](
 
 ## Summary
 
-AWS Lambda deployment offers a serverless, scalable solution for Code Metrics with minimal operational overhead. While it introduces AWS-specific complexity and potential cold start latency, it provides excellent cost efficiency for variable workloads and integrates seamlessly with AWS services. This deployment method is particularly well-suited for teams with existing AWS infrastructure or those seeking to minimize server management responsibilities.
+AWS Lambda deployment offers a serverless, scalable solution for CodeMetrics with minimal operational overhead. While it introduces AWS-specific complexity and potential cold start latency, it provides excellent cost efficiency for variable workloads and integrates seamlessly with AWS services. This deployment method is particularly well-suited for teams with existing AWS infrastructure or those seeking to minimize server management responsibilities.
 
 ### Next steps
 
@@ -212,4 +212,4 @@ If issues persist:
 1. Check CloudWatch Logs for detailed error messages
 2. Enable X-Ray tracing for distributed tracing insights
 3. Review the [configuration documentation](./configuration.md)
-4. Consult the [Code Metrics community](https://github.com/code-metrics-project) for support
+4. Consult the [CodeMetrics community](https://github.com/code-metrics-project) for support

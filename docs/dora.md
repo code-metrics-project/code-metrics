@@ -1,10 +1,10 @@
 # DORA metrics
 
-Code Metrics can measure the four key metrics used in the [DORA State of DevOps Report](https://dora.dev/publications/) and [Accelerate](https://nicolefv.com/writing) that relate to software delivery performance. These metrics provide objective, quantifiable measures of organisational effectiveness in software delivery.
+CodeMetrics can measure the four key metrics used in the [DORA State of DevOps Report](https://dora.dev/publications/) and [Accelerate](https://nicolefv.com/writing) that relate to software delivery performance. These metrics provide objective, quantifiable measures of organisational effectiveness in software delivery.
 
 ## Overview
 
-The DORA (DevOps Research and Assessment) metrics were developed to help organisations measure and improve their software delivery capabilities. Code Metrics enables you to collect and analyse these metrics automatically from your deployment infrastructure.
+The DORA (DevOps Research and Assessment) metrics were developed to help organisations measure and improve their software delivery capabilities. CodeMetrics enables you to collect and analyse these metrics automatically from your deployment infrastructure.
 
 The four DORA metrics are:
 
@@ -17,7 +17,7 @@ The four DORA metrics are:
 
 To calculate DORA metrics you must configure your deployment infrastructure. See [Deployment configuration](./config_deployments.md) for detailed setup instructions.
 
-DORA metrics must be explicitly enabled by setting the environment variable `FEATURE_DORA_METRICS=true` on your Code Metrics instance.
+DORA metrics must be explicitly enabled by setting the environment variable `FEATURE_DORA_METRICS=true` on your CodeMetrics instance.
 
 ## Deployment frequency
 
@@ -39,7 +39,7 @@ Deployment frequency indicates your organisation's ability to deliver value cont
 The DORA research identifies the following performance bands for deployment frequency:
 
 | Performance Level | Deployment Frequency                     |
-|-------------------|------------------------------------------|
+| ----------------- | ---------------------------------------- |
 | Elite             | Multiple deployments per day             |
 | High              | Between once per day and once per week   |
 | Medium            | Between once per week and once per month |
@@ -76,7 +76,7 @@ Lead time for changes indicates the speed of your development pipeline and the e
 The DORA research identifies the following performance bands for lead time for changes:
 
 | Performance Level | Lead Time                    |
-|-------------------|------------------------------|
+| ----------------- | ---------------------------- |
 | Elite             | Less than one hour           |
 | High              | Between one hour and one day |
 | Medium            | Between one day and one week |
@@ -113,7 +113,7 @@ Time to restore service (MTTR - Mean Time to Repair) indicates your organisation
 The DORA research identifies the following performance bands for time to restore service:
 
 | Performance Level | Recovery Time                |
-|-------------------|------------------------------|
+| ----------------- | ---------------------------- |
 | Elite             | Less than one hour           |
 | High              | Between one hour and one day |
 | Medium            | Between one day and one week |
@@ -150,7 +150,7 @@ Change failure rate indicates the reliability of your deployment process and cod
 The DORA research identifies the following performance bands for change failure rate:
 
 | Performance Level | Failure Rate |
-|-------------------|--------------|
+| ----------------- | ------------ |
 | Elite             | 0–15%        |
 | High              | 16–30%       |
 | Medium            | 31–45%       |
@@ -171,14 +171,15 @@ A lower change failure rate demonstrates:
 
 ## Enabling DORA metrics
 
-DORA metrics must be enabled for your Code Metrics instance before they become available. To enable DORA metrics:
+DORA metrics must be enabled for your CodeMetrics instance before they become available. To enable DORA metrics:
 
 1. Set the environment variable:
+
    ```
    FEATURE_DORA_METRICS=true
    ```
 
-2. Restart your Code Metrics instance
+2. Restart your CodeMetrics instance
 
 Once enabled, DORA metrics will be calculated automatically for all configured workloads and deployments.
 

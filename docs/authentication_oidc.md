@@ -34,7 +34,7 @@ OIDC_REDIRECT_URI=https://example.com/login/callback
 The following environment variables are used to configure the OIDC authenticator:
 
 | Variable             | Purpose                                                                                                                                         | Default                       | Example                                                                     |
-|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------|-----------------------------------------------------------------------------|
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------- |
 | OIDC_ISSUER_BASE_URL | The base URL for the OIDC server. This should be the base from which the discovery endpoint (`/.well-known/openid-configuration`) can be found. |                               | `https://accounts.google.com`                                               |
 | OIDC_CLIENT_ID       | The client ID.                                                                                                                                  |                               | `000000000000-a1b2c3d4e5f6g7h8i9j10k11l12m13n14.apps.googleusercontent.com` |
 | OIDC_CLIENT_SECRET   | The client secret.                                                                                                                              |                               | `ABCDEF-ab12cd_aBcDeF12gH34-aB`                                             |
@@ -48,15 +48,15 @@ The following environment variables are used to configure the OIDC authenticator
 
 ## OIDC provider examples
 
-Code Metrics supports many OIDC providers. This section provides examples of how to configure Code Metrics to use specific OIDC providers.
+CodeMetrics supports many OIDC providers. This section provides examples of how to configure CodeMetrics to use specific OIDC providers.
 
 ### Google
 
-To configure Code Metrics to use Google as an OIDC provider:
+To configure CodeMetrics to use Google as an OIDC provider:
 
 1. Open or create a new project in the [Google Cloud Console](https://console.cloud.google.com/).
 2. In the console, create an OAuth 2.0 client, under _APIs and services_, then _Credentials_. Set the permitted redirect URI to `<UI_BASE_URL>/login/callback`.
-3. When deploying the Code Metrics API, set the `OIDC_ISSUER_BASE_URL` environment variable to `https://accounts.google.com`.
+3. When deploying the CodeMetrics API, set the `OIDC_ISSUER_BASE_URL` environment variable to `https://accounts.google.com`.
 4. Set the `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET` environment variables to the client ID and client secret from the OAuth 2.0 credentials.
 5. Set the `OIDC_SCOPES` environment variable to `openid email`.
 6. Set the `OIDC_USER_CLAIM` environment variable to `email`.

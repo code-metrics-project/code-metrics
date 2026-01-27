@@ -67,6 +67,7 @@ function start_backend() {
   cp config/examples/remote-config.yaml "${CONFIG_DIR}/remote-config.yaml"
   cp config/examples/workload-config.yaml "${CONFIG_DIR}/workload-config.yaml"
   cp config/examples/users.json "${CONFIG_DIR}/users.json"
+  cp config/examples/secrets.yaml.example "${CONFIG_DIR}/secrets.yaml"
   cp ${MOCKS_DIR}/config/pipeline-config.yaml "${CONFIG_DIR}/pipeline-config.yaml"
   cp ${MOCKS_DIR}/config/license.yaml "${CONFIG_DIR}/license.yaml"
 

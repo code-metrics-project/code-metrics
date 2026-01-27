@@ -7,16 +7,18 @@ describe("Repositories page", () => {
     cy.visit(Paths.Repositories);
     cy.contains("All Repositories");
     cy.contains("All repositories across all workloads");
-    cy.checkFooter();
-  });
 
-  it("Shows repositories table with workload column", () => {
-    cy.login();
-    cy.visit(Paths.Repositories);
-    cy.contains("Repository");
-    cy.contains("Workload");
-    cy.contains("Repo Groups");
-    cy.contains("Actions");
+    // shows breadcrumbs for program view
+    cy.contains("a", "Programme").should("have.attr", "href", "/program");
+
+    // shows repositories table with workload column
+    cy.get("#repositories-table").within(() => {
+      cy.contains("Repository");
+      cy.contains("Workload");
+      cy.contains("Repo Groups");
+      cy.contains("Actions");
+    });
+
     cy.checkFooter();
   });
 
@@ -39,24 +41,23 @@ describe("Repositories page", () => {
 
   it("Shows workload-filtered repositories", () => {
     cy.login();
-    cy.visit(`${Paths.WorkloadRepositories}?workloadId=athena`);
+    cy.visit(buildPath(Paths.WorkloadRepositories, { workloadId: "athena" }));
     cy.contains("Repositories - Athena team");
     cy.contains("Repositories in the Athena team workload.");
-    // Workload column should not be present when filtered
+
+    // workload column should not be present when filtered
     cy.get("#repositories-table").should("not.contain", "Workload");
+
+    // shows breadcrumbs for workload view
+    cy.contains("a", "Workloads").should("have.attr", "href", "/workload");
+    cy.contains("a", "Athena").should("have.attr", "href", "/workload/athena");
     cy.checkFooter();
   });
 
-  it("Has action links to Pipeline Health", () => {
+  it("Has action links to Pipeline Health and Runs", () => {
     cy.login();
     cy.visit(Paths.Repositories);
     cy.contains("Pipeline Health").should("be.visible");
-    cy.checkFooter();
-  });
-
-  it("Has action links to Pipeline Runs", () => {
-    cy.login();
-    cy.visit(Paths.Repositories);
     cy.contains("Pipeline Runs").should("be.visible");
     cy.checkFooter();
   });
@@ -69,21 +70,6 @@ describe("Repositories page", () => {
       cy.contains("backend").should("be.visible");
       cy.contains("frontend").should("be.visible");
     });
-    cy.checkFooter();
-  });
-
-  it("Shows breadcrumbs for program view", () => {
-    cy.login();
-    cy.visit(Paths.Repositories);
-    cy.contains("a", "Programme").should("have.attr", "href", "/program");
-    cy.checkFooter();
-  });
-
-  it("Shows breadcrumbs for workload view", () => {
-    cy.login();
-    cy.visit(buildPath(Paths.WorkloadRepositories, { workloadId: "athena" }));
-    cy.contains("a", "Workloads").should("have.attr", "href", "/workload");
-    cy.contains("a", "Athena").should("have.attr", "href", "/workload/athena");
     cy.checkFooter();
   });
 });

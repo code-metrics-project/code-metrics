@@ -15,11 +15,11 @@ To configure incidents, you need to:
 - add your project management tool or service management tool to the `ticketManagement` section of the [remote configuration](./config_project_management.md) file
 - refer to the server ID and type within the `incidents` section of a workload configuration
 
-### Using your project management tool (e.g. Jira)
+### Using your project management tool (e.g. Jira, GitHub Issues)
 
-This approach applies to teams that raise incidents as tickets in a project management tool (e.g. Jira). Incident tickets are typically identified by issue type, project or field value (e.g. `Environment=production`).
+This approach applies to teams that raise incidents as tickets in a project management tool (e.g. Jira, GitHub Issues). Incident tickets are typically identified by issue type, project or field value (e.g. `Environment=production`).
 
-#### Remote configuration example
+#### Jira Remote configuration example
 
 This is a snippet from the `remote-config.yaml` file:
 
@@ -54,39 +54,140 @@ ticketManagement:
       - id: "my-jira"
         # ...
         filter: "project = MYPROJECT"
-```     
+```
 
-#### Workload configuration example
+#### Jira Workload configuration example
 
 This is a snippet from the workload configuration file:
 
 ```yaml
 workloads:
-- id: "my-workload"
-  name: "My workload"
-  incidents:
-    type: "jira"
-    server: "my-jira"
+  - id: "my-workload"
+    name: "My workload"
+    incidents:
+      type: "jira"
+      server: "my-jira"
 ```
 
 If you need to further limit the incidents to be returned, you can add further elements to the workload configuration:
 
 ```yaml
 workloads:
-- id: "my-workload"
-  # ...
-  incidents:
-    type: "jira"
-    server: "my-jira"
-    
-    # supported by Jira
-    projectName: "MYPROJECT"
-    teamFilterQuery: "project=MYPROJECT"
-    
-    # supported by Azure DevOps
-    project: "my-project"
-    team: "my-team"
+  - id: "my-workload"
+    # ...
+    incidents:
+      type: "jira"
+      server: "my-jira"
+
+      # supported by Jira
+      projectName: "MYPROJECT"
+      teamFilterQuery: "project=MYPROJECT"
+
+      # supported by Azure DevOps
+      project: "my-project"
+      team: "my-team"
 ```
+
+#### GitHub Issues Remote configuration example
+
+GitHub Issues can be used for incident management by configuring specific repositories and issue types for incidents.
+
+This is a snippet from the `remote-config.yaml` file:
+
+```yaml
+ticketManagement:
+  github:
+    servers:
+      - id: "my-github-incidents"
+        url: "https://api.github.com"
+        authMethod: "BEARER_TOKEN"
+        apiKey: ${secret.GITHUB_PAT}
+        defaults:
+          owner: "my-organization"
+          repo: "incidents"
+          ticketTypes:
+            - "incident"
+            - "outage"
+            - "service-disruption"
+          stateFilter: "all"
+          labelMapping:
+            "severity/critical": "Critical"
+            "severity/high": "High"
+            "severity/medium": "Medium"
+            "severity/low": "Low"
+```
+
+For GitHub Enterprise:
+
+```yaml
+ticketManagement:
+  github:
+    servers:
+      - id: "my-github-enterprise-incidents"
+        url: "https://github.enterprise.com/api/v3"
+        authMethod: "BEARER_TOKEN"
+        apiKey: ${secret.GITHUB_ENTERPRISE_PAT}
+        defaults:
+          owner: "enterprise-org"
+          repo: "production-incidents"
+          ticketTypes:
+            - "incident"
+          stateFilter: "all"
+```
+
+> **Note**
+> Set the `GITHUB_PAT` or `GITHUB_ENTERPRISE_PAT` secret in your [secrets configuration](./secret_management.md).
+
+#### GitHub Issues Workload configuration example
+
+This is a snippet from the workload configuration file:
+
+```yaml
+workloads:
+  - id: "my-workload"
+    name: "My workload"
+    incidents:
+      type: "github"
+      serverId: "my-github-incidents"
+      owner: "my-organization"
+      repo: "incidents"
+      ticketTypes:
+        - "incident"
+        - "outage"
+        - "service-disruption"
+      stateFilter: "all"
+      labelMapping:
+        "severity/critical": "Critical"
+        "severity/high": "High"
+        "severity/medium": "Medium"
+        "severity/low": "Low"
+```
+
+If you need to further limit the incidents to be returned, you can customize the configuration:
+
+```yaml
+workloads:
+  - id: "my-workload"
+    # ...
+    incidents:
+      type: "github"
+      serverId: "my-github-incidents"
+      owner: "my-organization"
+      repo: "production-incidents"
+      ticketTypes:
+        - "incident"
+      ticketPriorities:
+        - "Critical"
+        - "High"
+      stateFilter: "closed" # Only resolved incidents
+      labelMapping:
+        "severity/critical": "Critical"
+        "severity/high": "High"
+```
+
+#### GitHub Issues Troubleshooting
+
+For common issues and solutions when configuring GitHub Issues for incident management, see the troubleshooting section in the [Configure project management documentation](./config_project_management.md#troubleshooting-github-issues-integration).
 
 ### Using your service management tool (e.g. ServiceNow)
 
@@ -114,7 +215,7 @@ ticketManagement:
 There are several authentication methods available for ServiceNow:
 
 | Auth method    | Behaviour                                                                 |
-|----------------|---------------------------------------------------------------------------|
+| -------------- | ------------------------------------------------------------------------- |
 | `BASIC_AUTH`   | Uses the `email` and API key in the HTTP Basic Authentication method.     |
 | `BEARER_TOKEN` | Sends the API key in the `Authorization` header with the `Bearer` prefix. |
 | `CUSTOM`       | Sends the API key in the `x-sn-apikey` header.                            |
@@ -143,26 +244,26 @@ This is a snippet from the workload configuration file:
 
 ```yaml
 workloads:
-- id: "my-workload"
-  name: "My workload"
-  incidents:
-    type: "servicenow"
-    server: "my-servicenow"
+  - id: "my-workload"
+    name: "My workload"
+    incidents:
+      type: "servicenow"
+      server: "my-servicenow"
 ```
 
 If you need to further limit the incidents to be returned, you can add further elements to the workload configuration:
 
 ```yaml
 workloads:
-- id: "my-workload"
-  # ...
-  incidents:
-    type: "servicenow"
-    server: "my-servicenow"
-    
-    # additional options
-    tableName: "non-standard-table-name"
-    teamFilterQuery: "project=MYPROJECT"
+  - id: "my-workload"
+    # ...
+    incidents:
+      type: "servicenow"
+      server: "my-servicenow"
+
+      # additional options
+      tableName: "non-standard-table-name"
+      teamFilterQuery: "project=MYPROJECT"
 ```
 
 ## No incident management provider

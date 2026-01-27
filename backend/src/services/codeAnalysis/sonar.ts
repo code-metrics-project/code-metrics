@@ -265,7 +265,7 @@ const fetchProjectCoverage = async (
 
   if (!resultJson.measures) {
     if (resultJson.errors) {
-      console.warn(`Could not parse metric history: ${JSON.stringify(resultJson.errors)}`);
+      warn(`Could not parse metric history: ${JSON.stringify(resultJson.errors)}`);
     }
     return emptyCoverage;
   }
@@ -437,7 +437,7 @@ const getMetricsHistory = async (
 const parseMeasures = (metricHistory: CodeAnalysisHistoryResponse, key: string) => {
   if (!metricHistory.measures) {
     if (metricHistory.errors) {
-      console.warn(`Could not parse metric history: ${JSON.stringify(metricHistory.errors)}`);
+      warn(`Could not parse metric history: ${JSON.stringify(metricHistory.errors)}`);
     }
     return [];
   }

@@ -1,21 +1,26 @@
 # This file is additive to the main docker-compose.yaml
 #
-# To start Code Metrics using mocked services, run Compose from the
+# To start CodeMetrics using mocked services, run Compose from the
 # root directory of the project as follows:
 #
 # docker-compose -f compose/docker-compose.yaml -f compose/docker-compose-mocks.yaml --project-directory . up --build
-
-version: '3.3'
 
 services:
   api:
     depends_on:
       mocks:
-        condition: service_healthy
+        condition: service_started
     environment:
-      AUTHENTICATOR_IMPL: "file"
+      AUTHENTICATOR_IMPL: file
+      ACCESS_TOKEN_SECRET: changeme
+      ACCESS_TOKEN_TTL: 10m
+      REFRESH_TOKEN_TTL: 60m
+      LOG_LEVEL: "1"
+      LOOKUP_CACHE_ENABLED: "true"
+      DATASTORE_IMPL: mongodb
+      DATABASE_URI: mongodb://code-metrics:changeme@db:27017
+      DATABASE_NAME: code-metrics
     volumes:
-      - "./mocks/config/.mockenv:/backend/.env"
       - "./mocks/config:/backend/config"
 
   mocks:

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { TicketService, TimeRangeMode } from "./ticketService";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { LightweightIssue } from "../../model/tickets";
@@ -29,8 +30,14 @@ export class NoOpTicketService implements TicketService {
     return Promise.resolve([]);
   }
 
-  getAllTicketIds(workload: Workload, daysBack: number): Promise<string[]> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getAllTicketIds(workload: Workload, daysBack: number, issueTypes?: string[]): Promise<string[]> {
     return Promise.resolve([]);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getAvailableIssueTypes(workloadId: WorkloadId): string[] {
+    return [];
   }
 
   getTicket(workloadId: WorkloadId, issueId: string): Promise<LightweightIssue | null> {

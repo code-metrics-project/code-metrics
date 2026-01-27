@@ -1,0 +1,47 @@
+get:
+  summary: Returns available issue types for a workload
+  description: |
+    Returns the list of issue types configured for the specified workload.
+    Issue types are determined from workload configuration, server defaults, or default values.
+
+  parameters:
+    - name: workloadId
+      in: path
+      required: true
+      description: The unique identifier of the workload
+      schema:
+        type: string
+
+  responses:
+    "200":
+      description: A list of available issue types for the workload
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - workloadId
+              - issueTypes
+            properties:
+              workloadId:
+                type: string
+                description: The workload identifier
+              issueTypes:
+                type: array
+                description: List of available issue types for this workload
+                items:
+                  type: string
+
+    "404":
+      description: Workload not found
+      content:
+        text/plain:
+          schema:
+            type: string
+
+    "500":
+      description: Internal server error
+      content:
+        text/plain:
+          schema:
+            type: string

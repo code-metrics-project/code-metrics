@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Kubernetes provides a robust, scalable platform for deploying Code Metrics in containerized environments. Using Helm charts simplifies the deployment and configuration management, making it suitable for teams running production workloads in cloud or on-premises Kubernetes clusters.
+Kubernetes provides a robust, scalable platform for deploying CodeMetrics in containerized environments. Using Helm charts simplifies the deployment and configuration management, making it suitable for teams running production workloads in cloud or on-premises Kubernetes clusters.
 
 ### When to choose Kubernetes
 
@@ -273,7 +273,7 @@ Rancher Desktop provides a local Kubernetes environment for development and test
 ### Setup steps
 
 1. Install [Rancher Desktop](https://rancherdesktop.io/) and enable Kubernetes
-2. Download and deploy Code Metrics:
+2. Download and deploy CodeMetrics:
 
 ```bash
 # Download the chart
@@ -413,7 +413,7 @@ See the [MongoDB Community Kubernetes Operator documentation](https://github.com
 
 ### Option 2: Managed database services
 
-Configure Code Metrics to use managed services:
+Configure CodeMetrics to use managed services:
 
 - **MongoDB Atlas**: Cloud-hosted MongoDB with automatic backups
 - **AWS DocumentDB**: AWS-managed MongoDB-compatible service
@@ -471,7 +471,7 @@ spec:
 
 ## Summary
 
-Kubernetes deployment with Helm provides enterprise-grade orchestration for Code Metrics, offering scalability, high availability, and operational flexibility. While it requires Kubernetes expertise and infrastructure, it delivers robust production capabilities for teams with demanding requirements. The Helm charts simplify deployment and configuration, though production deployments require careful attention to database configuration, resource management, and security.
+Kubernetes deployment with Helm provides enterprise-grade orchestration for CodeMetrics, offering scalability, high availability, and operational flexibility. While it requires Kubernetes expertise and infrastructure, it delivers robust production capabilities for teams with demanding requirements. The Helm charts simplify deployment and configuration, though production deployments require careful attention to database configuration, resource management, and security.
 
 ### Next steps
 
@@ -490,7 +490,7 @@ Kubernetes deployment with Helm provides enterprise-grade orchestration for Code
 **Check pod status:**
 
 ```bash
-# List all Code Metrics pods
+# List all CodeMetrics pods
 kubectl get pods -l app.kubernetes.io/instance=my-code-metrics
 
 # View pod details
@@ -725,7 +725,7 @@ If issues persist:
 2. Check Kubernetes events: `kubectl get events --sort-by='.lastTimestamp'`
 3. Review pod logs with increased verbosity
 4. Consult the [configuration documentation](./configuration.md)
-5. Join the [Code Metrics community](https://github.com/code-metrics-project) for support
+5. Join the [CodeMetrics community](https://github.com/code-metrics-project) for support
 
 **Best practices:**
 

@@ -1,4 +1,4 @@
-import { AbstractPipelinesService, registerPipelines } from "./pipelinesService";
+import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines } from "./pipelinesService";
 import { Run, RunWithMetadata } from "../../model/runs";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { PipelinesTypes } from "../../model/config/common";
@@ -9,7 +9,7 @@ export const initNoOpPipelines = () =>
 class NoOpPipelineService extends AbstractPipelinesService {
   /* eslint-disable */
 
-  discoverJobNames = async (workload: Workload, jobGroup: string): Promise<string[]> => {
+  discoverJobNames = async (workload: Workload, filter: PipelinesServiceJobNameFilter): Promise<string[]> => {
     return [];
   };
 

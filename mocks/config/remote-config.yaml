@@ -83,6 +83,8 @@ ticketManagement:
         apiKey: ""
         authMethod: BEARER_TOKEN
         defaults:
+          owner: "mock-organization"
+          repo: "mock-repo"
           ticketTypes:
             - Bug
             - Enhancement

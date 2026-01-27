@@ -9,7 +9,7 @@ import { getComponentsForWorkload } from "../../utils/repos";
 import { SoftwareComponent, WorkloadId } from "../../model/config/workload-config";
 import { getConfigItemAsNumber } from "../../config/sources/source";
 
-const TICKETMAP_MAX: number = getConfigItemAsNumber("BUG_CULPRITS_TICKETMAP_MAX", 50);
+const TICKETMAP_MAX: number = getConfigItemAsNumber("CODE_HOTSPOTS_TICKETMAP_MAX", 50);
 
 const getPathChecks = (repoGroup: string): string[] => {
   // FIXME externalise

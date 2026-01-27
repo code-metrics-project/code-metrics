@@ -1,5 +1,11 @@
 const MILLIS_PER_DAY = 1000 * 3600 * 24;
 
+// Issue generation multipliers
+// We generate more issues than requested to ensure enough remain after state filtering and date grouping
+const ISSUE_GENERATION_MULTIPLIER = 3;
+// Maximum multiplier for final issue count to allow some buffer above requested count
+const MAX_ISSUE_MULTIPLIER = 2;
+
 // Configuration
 const issueTypes = ["bug", "enhancement", "feature", "documentation"];
 const priorities = ["priority:high", "priority:medium", "priority:low"];
@@ -15,6 +21,10 @@ const req = context.request;
 const { owner, repo } = req.pathParams;
 const since = req.queryParams.since ? new Date(req.queryParams.since) : new Date(now - MILLIS_PER_DAY * 365);
 const state = req.queryParams.state || "all";
+const typeFilter = req.queryParams.type; // Filter by issue type (e.g., "bug")
+const labelsFilter = req.queryParams.labels
+  ? req.queryParams.labels.split(",").map((l) => l.trim().toLowerCase())
+  : null; // Filter by labels
 
 // Generate a random number of issues between min and max
 function randomRange(min, max) {
@@ -27,10 +37,10 @@ if (repo === "Hello-World") {
   // Use a fixed number for specific repos to ensure consistency
   issueCount = 12;
 } else {
-  // Otherwise generate a random number based on the repo name
-  // (but consistently the same for the same repo)
+  // Generate a consistent number based on the repo name hash
+  // Use a higher base to ensure enough issues survive filtering
   const repoHash = repo.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  issueCount = 5 + (repoHash % 15); // between 5 and 20 issues
+  issueCount = 15 + (repoHash % 10); // between 15 and 25 issues
 }
 
 // Generate issues with multiple per day, skewed to weekdays
@@ -58,8 +68,11 @@ console.debug(`Day of week distribution:
 respond().withHeader("Content-Type", "application/json").withData(JSON.stringify(issues));
 
 function generateIssues(count) {
-  const issues = [];
-  let closedCount = Math.floor(count * 0.4); // 40% of issues are closed
+  // Total number of issues to generate (more than the count to ensure we have enough after filtering)
+  const totalIssuesToGenerate = count * ISSUE_GENERATION_MULTIPLIER;
+
+  // 40% of generated issues are closed (calculate based on total, not original count)
+  const closedCount = Math.floor(totalIssuesToGenerate * 0.4);
 
   // Generate a date range starting from 60 days ago until now (daily)
   const startDate = new Date(now - MILLIS_PER_DAY * 60);
@@ -71,14 +84,12 @@ function generateIssues(count) {
     dateRange.push(date);
   }
 
-  // Total number of issues to generate (more than the count to ensure we have enough after filtering)
-  const totalIssuesToGenerate = count * 3;
   const generatedIssues = [];
 
   // First generate the raw issues with dates
-  for (let i = 0; i < totalIssuesToGenerate; i++) {
-    const issueNumber = i + 1;
-    const issueType = issueTypes[i % issueTypes.length];
+  for (let issueIndex = 0; issueIndex < totalIssuesToGenerate; issueIndex++) {
+    const issueNumber = issueIndex + 1;
+    const issueType = issueTypes[issueIndex % issueTypes.length];
     const priorityIndex = Math.floor(Math.random() * priorities.length);
     const priority = priorities[priorityIndex];
 
@@ -113,7 +124,7 @@ function generateIssues(count) {
     const createdDate = dateRange[dateIndex];
 
     // 60% of issues stay open, 40% are closed
-    const isClosed = i < closedCount;
+    const isClosed = issueIndex < closedCount;
     const closedDate = isClosed ? new Date(createdDate.getTime() + MILLIS_PER_DAY * randomRange(1, 30)) : null;
 
     // For closed issues, ensure the closed date is not in the future and not null
@@ -137,21 +148,21 @@ function generateIssues(count) {
     }
 
     // Skip if state filter doesn't match
-    if (state !== "all" && ((state === "open" && isClosed) || (state === "closed" && !isClosed))) {
+    if (!matchesStateFilter(state, isClosed)) {
       continue;
     }
 
     // Generate a unique ID (normally this would be a sequential integer in GitHub)
-    const id = i + 1;
-    const nodeId = `MDU6SXNzdWU${btoa(id.toString())}`;
+    const id = issueIndex + 1;
+    const nodeId = `MDU6SXNzdWU${generateMockId(id.toString())}`;
 
     // Assign to a random user
-    const assigneeIndex = Math.floor(Math.random() * (users.length + 1)); // +1 for possibility of null
-    const hasAssignee = assigneeIndex < users.length;
+    const assigneeRandomIndex = Math.floor(Math.random() * (users.length + 1)); // +1 for possibility of null
+    const hasAssignee = assigneeRandomIndex < users.length;
     const assignee = hasAssignee
       ? {
-          login: users[assigneeIndex],
-          id: assigneeIndex + 1,
+          login: users[assigneeRandomIndex],
+          id: assigneeRandomIndex + 1,
         }
       : null;
 
@@ -159,16 +170,18 @@ function generateIssues(count) {
     let title;
     switch (issueType) {
       case "bug":
-        title = `Fix ${["login", "checkout", "profile", "search", "payment"][i % 5]} functionality bug`;
+        title = `Fix ${["login", "checkout", "profile", "search", "payment"][issueIndex % 5]} functionality bug`;
         break;
       case "enhancement":
-        title = `Enhance ${["user interface", "performance", "accessibility", "mobile experience"][i % 4]}`;
+        title = `Enhance ${["user interface", "performance", "accessibility", "mobile experience"][issueIndex % 4]}`;
         break;
       case "feature":
-        title = `Add ${["dark mode", "export to PDF", "social sharing", "two-factor authentication"][i % 4]} feature`;
+        title = `Add ${
+          ["dark mode", "export to PDF", "social sharing", "two-factor authentication"][issueIndex % 4]
+        } feature`;
         break;
       case "documentation":
-        title = `Update documentation for ${["API", "setup process", "configuration", "deployment"][i % 4]}`;
+        title = `Update documentation for ${["API", "setup process", "configuration", "deployment"][issueIndex % 4]}`;
         break;
       default:
         title = `Issue ${issueNumber}`;
@@ -195,14 +208,14 @@ function generateIssues(count) {
       labels: [
         {
           id: issueTypes.indexOf(issueType) + 1,
-          node_id: `MDU6TGFiZWw${btoa((issueTypes.indexOf(issueType) + 1).toString())}`,
+          node_id: `MDU6TGFiZWw${generateMockId((issueTypes.indexOf(issueType) + 1).toString())}`,
           url: `https://api.github.com/repos/${owner}/${repo}/labels/${issueType}`,
           name: issueType,
           color: issueTypeColors[issueType],
         },
         {
           id: priorities.indexOf(priority) + issueTypes.length + 1,
-          node_id: `MDU6TGFiZWw${btoa((priorities.indexOf(priority) + issueTypes.length + 1).toString())}`,
+          node_id: `MDU6TGFiZWw${generateMockId((priorities.indexOf(priority) + issueTypes.length + 1).toString())}`,
           url: `https://api.github.com/repos/${owner}/${repo}/labels/${priority}`,
           name: priority,
           color: priorityColors[priority],
@@ -237,10 +250,24 @@ function generateIssues(count) {
     const dateIssues = issuesByDate[dateKey];
 
     // Filter by state if specified
-    const stateFilteredIssues = dateIssues.filter((issue) => {
+    let stateFilteredIssues = dateIssues.filter((issue) => {
       if (state === "all") return true;
       return (state === "open" && issue.state === "open") || (state === "closed" && issue.state === "closed");
     });
+
+    // Filter by type if specified (checks if any label matches the type)
+    if (typeFilter) {
+      stateFilteredIssues = stateFilteredIssues.filter((issue) => {
+        return issue.labels.some((label) => label.name.toLowerCase() === typeFilter.toLowerCase());
+      });
+    }
+
+    // Filter by labels if specified (checks if any label matches any of the specified labels)
+    if (labelsFilter && labelsFilter.length > 0) {
+      stateFilteredIssues = stateFilteredIssues.filter((issue) => {
+        return issue.labels.some((label) => labelsFilter.includes(label.name.toLowerCase()));
+      });
+    }
 
     // Take up to 5 issues per day, but ensure at least 2 for weekdays if available
     if (stateFilteredIssues.length > 0) {
@@ -260,13 +287,76 @@ function generateIssues(count) {
   // Sort by issue number to ensure consistent ordering
   filteredIssues.sort((a, b) => a.number - b.number);
 
+  // Ensure we return at least some issues when filtering is applied and generated issues exist
+  // This guarantees test stability when state/label/type filters are used
+  const hasFilters = state !== "all" || labelsFilter || typeFilter;
+  const minRequired = hasFilters ? 3 : 0;
+
+  // ALWAYS guarantee at least 1 issue for test stability
+  const absoluteMinimum = 1;
+  const effectiveMinRequired = Math.max(minRequired, absoluteMinimum);
+
+  if (filteredIssues.length < effectiveMinRequired && generatedIssues.length > 0) {
+    // Apply state, type, and label filters to the fallback set to ensure consistency
+    let fallbackIssues = generatedIssues;
+
+    // Filter by state
+    if (state !== "all") {
+      fallbackIssues = fallbackIssues.filter(
+        (issue) => (state === "open" && issue.state === "open") || (state === "closed" && issue.state === "closed")
+      );
+    }
+
+    // Filter by type (GitHub native issue types mapped to labels)
+    if (typeFilter) {
+      fallbackIssues = fallbackIssues.filter((issue) =>
+        issue.labels.some((label) => label.name.toLowerCase() === typeFilter.toLowerCase())
+      );
+    }
+
+    // Filter by labels
+    if (labelsFilter && labelsFilter.length > 0) {
+      fallbackIssues = fallbackIssues.filter((issue) =>
+        issue.labels.some((label) => labelsFilter.includes(label.name.toLowerCase()))
+      );
+    }
+
+    // Add issues from fallback that aren't already in filteredIssues
+    const existingNumbers = new Set(filteredIssues.map((i) => i.number));
+    for (const issue of fallbackIssues) {
+      if (!existingNumbers.has(issue.number) && filteredIssues.length < Math.max(count, effectiveMinRequired)) {
+        filteredIssues.push(issue);
+        existingNumbers.add(issue.number);
+      }
+    }
+
+    // Re-sort after adding fallback issues
+    filteredIssues.sort((a, b) => a.number - b.number);
+  }
+
   // Take at most the requested count, but ensure we have a minimum number of issues
-  const finalIssueCount = Math.max(count, Math.min(filteredIssues.length, count * 2));
+  const finalIssueCount = Math.max(count, Math.min(filteredIssues.length, count * MAX_ISSUE_MULTIPLIER));
   return filteredIssues.slice(0, finalIssueCount);
 }
 
-// Simple base64 encode function that works in both browser and Node.js environments
-function btoa(str) {
+/**
+ * Helper function to check if an issue matches the state filter.
+ * @param {string} stateFilter - The state filter ('all', 'open', or 'closed')
+ * @param {boolean} isClosed - Whether the issue is closed
+ * @returns {boolean} - Whether the issue matches the filter
+ */
+function matchesStateFilter(stateFilter, isClosed) {
+  if (stateFilter === "all") return true;
+  return (stateFilter === "open" && !isClosed) || (stateFilter === "closed" && isClosed);
+}
+
+/**
+ * Generates a deterministic mock ID string for consistent test data.
+ * This is NOT actual base64 encoding - it creates predictable IDs based on input.
+ * @param {string} str - The input string to generate an ID from
+ * @returns {string} - An 8-character deterministic ID string
+ */
+function generateMockId(str) {
   // Simple implementation that creates consistent IDs for the mock data
   // Not meant for production use or security purposes
   const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
@@ -275,9 +365,9 @@ function btoa(str) {
   // Use a simple hash of the string to generate a consistent ID
   const hash = str.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
-  // Generate a deterministic 8-character base64 string from the hash
-  for (let i = 0; i < 8; i++) {
-    result += charset[(hash * (i + 1)) % 64];
+  // Generate a deterministic 8-character ID string from the hash
+  for (let charIndex = 0; charIndex < 8; charIndex++) {
+    result += charset[(hash * (charIndex + 1)) % 64];
   }
 
   return result;

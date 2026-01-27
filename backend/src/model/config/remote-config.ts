@@ -1,12 +1,24 @@
-import { AzureTicketOptions, JiraTicketOptions, ServiceNowTicketOptions } from "./common";
+import { AzureTicketOptions, GithubTicketOptions, JiraTicketOptions, ServiceNowTicketOptions } from "./common";
 import { VersionedConfig } from "./base";
 
 export type RemoteServerCategory = "codeAnalysis" | "codeManagement" | "pipelines" | "ticketManagement";
-export type RemoteServerType = "azure" | "bitbucketCloud" | "bitbucketServer" | "github" | "gitlab" | "codepipeline" | "dynatrace" | "jenkins" | "none" | "jira" | "servicenow";
+export type RemoteServerType =
+  | "azure"
+  | "bitbucketCloud"
+  | "bitbucketServer"
+  | "github"
+  | "gitlab"
+  | "codepipeline"
+  | "dynatrace"
+  | "jenkins"
+  | "none"
+  | "jira"
+  | "servicenow";
 
 export enum AuthMethod {
   BASIC_AUTH = "BASIC_AUTH",
   BEARER_TOKEN = "BEARER_TOKEN",
+  GITHUB_APP = "GITHUB_APP",
   CUSTOM = "CUSTOM",
 }
 
@@ -36,7 +48,7 @@ export type OAuthConfig = {
 };
 
 export type TicketManagementServer = {
-  defaults: AzureTicketOptions | JiraTicketOptions | ServiceNowTicketOptions;
+  defaults: AzureTicketOptions | GithubTicketOptions | JiraTicketOptions | ServiceNowTicketOptions;
   email?: string;
   authMethod: AuthMethod;
 
@@ -44,6 +56,15 @@ export type TicketManagementServer = {
    * An optional, additional filter to apply to queries to this server.
    */
   filter?: string;
+
+  /**
+   * GitHub App configuration (alternative to apiKey for GitHub servers)
+   */
+  githubApp?: {
+    appId: string;
+    privateKey: string;
+    installationId: string;
+  };
 } & RemoteServer;
 
 /**
@@ -54,6 +75,16 @@ export type ServiceNowServer = TicketManagementServer & OAuthConfig;
 
 export type CodeManagementServer = {
   branches?: string[];
+  authMethod?: AuthMethod;
+
+  /**
+   * GitHub App configuration (alternative to apiKey for GitHub servers)
+   */
+  githubApp?: {
+    appId: string;
+    privateKey: string;
+    installationId: string;
+  };
 } & RemoteServer;
 
 export type BitbucketCodeManagementServer = {
@@ -145,6 +176,7 @@ export type PipelinesConfigWrapper = {
 
 export type TicketManagementConfigWrapper = {
   azure?: { servers: TicketManagementServer[] };
+  github?: { servers: TicketManagementServer[] };
   jira?: { servers: TicketManagementServer[] };
   servicenow?: { servers: ServiceNowServer[] };
 };

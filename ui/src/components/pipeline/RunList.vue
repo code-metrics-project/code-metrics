@@ -204,6 +204,14 @@ export default {
       type: Array,
       default: () => [],
     },
+    jobNames: {
+      type: Array,
+      default: () => [],
+    },
+    repoNames: {
+      type: Array,
+      default: () => [],
+    },
     stageId: {
       type: String,
       default: null,
@@ -238,6 +246,8 @@ export default {
       endDateInput: this.endDate ?? getRelativeDate(new Date(), 0),
       workloads: [] as string[],
       jobGroupsInput: this.jobGroups,
+      jobNamesInput: this.jobNames,
+      repoNamesInput: this.repoNames,
       stageInput: this.stageId?.length ? this.stageId : getFirstPipelineStage(),
       branch: this.branchName,
       busy: false,
@@ -325,6 +335,8 @@ export default {
               this.workloads,
               this.stageInput,
               this.jobGroupsInput,
+              this.jobNamesInput,
+              this.repoNamesInput,
               this.branch,
               firstDate,
               endDate,

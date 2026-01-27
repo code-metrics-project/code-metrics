@@ -226,9 +226,10 @@ class DeploymentServiceImpl implements DeploymentService {
   ): Promise<Record<string, Run[]>> => {
     verbose(`Fetching deployments for ${workloadId} between ${startDate} and ${endDate}`);
 
+    const workload = getWorkloadById(workloadId);
+
     let stage: StageConfig;
     try {
-      const workload = getWorkloadById(workloadId);
       stage = this.getStageConfigForWorkload(workload, stageId);
     } catch (e) {
       // if there is no deployment config, getDeploymentConfigForWorkload will throw an error
@@ -236,10 +237,10 @@ class DeploymentServiceImpl implements DeploymentService {
       return {};
     }
 
-    const workload = getWorkloadById(workloadId);
     const deploymentPipeline = getDeploymentPipelineProvider(workloadId, stage);
     const mainBranch = await this.#determineMainBranch(workloadId, stage);
 
+    let total = 0;
     const deployments: Record<string, Run[]> = {};
     for (const jobGroup of jobGroups) {
       // TODO: change this into a simpler list of job names in the deployment config
@@ -255,9 +256,10 @@ class DeploymentServiceImpl implements DeploymentService {
       );
       verbose(`Found ${jobRuns.length} deployment runs for ${workloadId}-${jobGroup}`);
       deployments[jobGroup] = jobRuns;
+      total += jobRuns.length;
     }
 
-    logger(`Fetched deployments for ${workloadId} between ${startDate} and ${endDate}`);
+    logger(`Fetched ${total} deployments for ${workloadId} between ${startDate} and ${endDate}`);
     return deployments;
   };
 

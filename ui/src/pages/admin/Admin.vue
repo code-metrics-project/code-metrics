@@ -5,7 +5,7 @@
         <v-col class="py-8">
           <h2 class="text-h2 pb-4">Administration</h2>
           <p class="text-body-1 py-1">
-            Manage your Code Metrics instance settings and administrative tasks. This section provides tools for system
+            Manage your CodeMetrics instance settings and administrative tasks. This section provides tools for system
             administration, security management, and service configuration.
           </p>
         </v-col>

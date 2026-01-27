@@ -4,7 +4,7 @@ This section is part of the `remote-config.yaml` configuration file. See the [co
 
 ## Overview
 
-Code Metrics integrates with version control systems to retrieve repository information, commit history, and code changes. This data is used to analyze code quality metrics, calculate velocity, and track development trends. Currently, Code Metrics supports Azure DevOps and GitHub as code management providers.
+CodeMetrics integrates with version control systems to retrieve repository information, commit history, and code changes. This data is used to analyze code quality metrics, calculate velocity, and track development trends. Currently, CodeMetrics supports Azure DevOps and GitHub as code management providers.
 
 ## Azure DevOps (ADO)
 
@@ -21,7 +21,7 @@ Azure DevOps authentication requires a Personal Access Token (PAT) with appropri
 2. Navigate to **User Settings** (top right corner) and select **Personal access tokens**.
 3. Click **+ New Token** to create a new PAT.
 4. Configure the token with the following settings:
-   - **Name**: Enter a descriptive name (e.g., "Code Metrics Integration")
+   - **Name**: Enter a descriptive name (e.g., "CodeMetrics Integration")
    - **Organization**: Select your organization
    - **Expiration**: Set an appropriate expiration date (recommended: 1 year)
 5. Under **Scopes**, select **Custom defined** and grant the following permissions:
@@ -79,14 +79,19 @@ The repository group name, such as `backend` in the example above, is an arbitra
 
 ### Access
 
-GitHub authentication requires a Personal Access Token (PAT) with specific scopes to retrieve repository information and commit data.
+GitHub offers two authentication methods:
+
+1. **Personal Access Token (PAT)** - Simple token-based authentication suitable for personal use
+2. **GitHub App Authentication** - Recommended for organizations, offering higher rate limits and better security
+
+### Option 1: Personal Access Token
 
 #### Creating a GitHub Personal Access Token
 
 1. Navigate to [https://github.com/settings/tokens](https://github.com/settings/tokens) (or in GitHub, go to **Settings > Developer settings > Personal access tokens**).
 2. Click **Generate new token** (or **Generate new token (classic)** for classic tokens).
 3. Configure the token with the following settings:
-   - **Note**: Enter a descriptive name (e.g., "Code Metrics Integration")
+   - **Note**: Enter a descriptive name (e.g., "CodeMetrics Integration")
    - **Expiration**: Set an appropriate expiration date (recommended: 90 days to 1 year)
 4. Under **Select scopes**, grant the following permissions:
    - **`public_repo`**: Provides access to public repositories
@@ -97,7 +102,7 @@ GitHub authentication requires a Personal Access Token (PAT) with specific scope
 
 For more information, see the [GitHub Personal Access Token documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
 
-### Configuration
+#### Configuration
 
 Configure the `codeManagement.github` server object in the `remote-config.yaml` file:
 
@@ -108,12 +113,45 @@ codeManagement:
   github:
     servers:
       - id: example-github
-        url: https://github.com
+        url: https://api.github.com
         apiKey: "${secret.GITHUB_PAT}"
         authMethod: BEARER_TOKEN
 ```
 
-For GitHub Enterprise, use your enterprise GitHub URL:
+### Option 2: GitHub App Authentication (Recommended)
+
+GitHub Apps provide several advantages over Personal Access Tokens:
+
+- **Higher rate limits**: 5000 requests/hour per installation vs shared PAT limits
+- **Organization-approved**: Bypass third-party application restrictions
+- **Fine-grained permissions**: Only grant specific permissions needed
+- **Audit trail**: Clear visibility of app actions in GitHub audit logs
+
+For detailed setup instructions, see the [GitHub App Authentication Guide](./authentication_github_app.md).
+
+#### Configuration
+
+Configure the `codeManagement.github` server object with GitHub App authentication:
+
+```yaml
+# remote-config.yaml
+---
+codeManagement:
+  github:
+    servers:
+      - id: example-github-app
+        url: https://api.github.com
+        authMethod: GITHUB_APP
+        githubApp:
+          appId: "${secret.GITHUB_APP_ID}"
+          privateKey: "${secret.GITHUB_APP_PRIVATE_KEY}"
+          installationId: "${secret.GITHUB_APP_INSTALLATION_ID}"
+        branches:
+          - main
+          - develop
+```
+
+For GitHub Enterprise, use your enterprise GitHub API URL:
 
 ```yaml
 # remote-config.yaml
@@ -122,13 +160,16 @@ codeManagement:
   github:
     servers:
       - id: example-github-enterprise
-        url: https://github.enterprise.com
-        apiKey: "${secret.GITHUB_ENTERPRISE_PAT}"
-        authMethod: BEARER_TOKEN
+        url: https://github.enterprise.com/api/v3
+        authMethod: GITHUB_APP
+        githubApp:
+          appId: "${secret.GITHUB_APP_ID}"
+          privateKey: "${secret.GITHUB_APP_PRIVATE_KEY}"
+          installationId: "${secret.GITHUB_APP_INSTALLATION_ID}"
 ```
 
 > **Note**
-> Store the token securely using the [secrets management](./secret_management.md) mechanism rather than storing it directly in the configuration file.
+> Store the credentials securely using the [secrets management](./secret_management.md) mechanism rather than storing them directly in the configuration file.
 
 ### Workload Configuration
 
@@ -178,7 +219,7 @@ If you encounter authentication errors:
 
 ### Repository Not Found
 
-If Code Metrics cannot locate a repository:
+If CodeMetrics cannot locate a repository:
 
 - Verify the `projectName` matches the actual project or organisation name in your code management system. For GitHub, ensure the project is the organization (e.g., `my-org`)
 - Confirm the token has access to the specified repository

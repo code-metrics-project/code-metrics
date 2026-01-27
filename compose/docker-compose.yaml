@@ -1,4 +1,5 @@
-version: '3.3'
+# To run CodeMetrics with mocked services, use both compose files:
+# docker compose --project-directory . -f compose/docker-compose.yaml -f compose/docker-compose-mocks.yaml -p code-metrics up -d --build
 
 services:
   api:
@@ -56,7 +57,7 @@ services:
       dockerfile: ../docker/Dockerfile.machinelearning
       context: machinelearning/
     ports:
-      - "8080:8080"
+      - "8085:8080"
 
 volumes:
   metrics-mongo: {}

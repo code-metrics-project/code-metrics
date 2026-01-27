@@ -6,13 +6,15 @@ import { initGithubPipelines } from "../github";
 import { getPipelinesForWorkload } from "../pipelinesService";
 import { join } from "path";
 import { loadConfig } from "../../../config/config";
-import { PipelinesTypes, TicketManagementTypes } from "../../../model/config/common";
+import { CodeManagementTypes, PipelinesTypes, TicketManagementTypes } from "../../../model/config/common";
 import { mocks } from "@imposter-js/imposter";
 import { RunResult } from "../../../model/runs";
 import { initDatastore } from "../../../db/factory";
 import { LogLevel, overrideLogLevel } from "../../../utils/logger/logger";
 import { Workload } from "../../../model/config/workload-config";
 import { ConfigVersion } from "../../../model/config/base";
+import { initGithubVcs } from "../../codeManagement/github";
+import { AuthMethod } from "../../../model/config/remote-config";
 
 jest.setTimeout(30000);
 if (process.env.MOCKS_VERBOSE === "true") mocks.verbose();
@@ -21,12 +23,21 @@ let mockServer;
 
 const workload: Workload = {
   codeAnalysis: undefined,
-  codeManagement: undefined,
+  codeManagement: {
+    type: CodeManagementTypes.GITHUB,
+    serverId: "test-github",
+    projectName: "octo-org",
+    repoGroups: {
+      backend: {
+        components: [{name: "octo-repo", repo: "octo-repo"}],
+      },
+    },
+  },
   id: "athena",
   pipelines: {
     jobGroups: {
       backend: {
-        jobNames: ["octo-repo"],
+        jobNames: ["CI"],
       },
     },
     stages: [{ stageId: "github-build-stage" }],
@@ -49,12 +60,23 @@ beforeAll(async () => {
 
   await initDatastore();
   initGithubPipelines();
+  initGithubVcs();
 
   mockServer = await mocks.start(join(__dirname, "../../../../../mocks/github"));
   await loadConfig({
     remoteConfig: {
       version: ConfigVersion.V2_0,
-      codeManagement: {},
+      codeManagement: {
+        github: {
+          servers: [
+            {
+              id: "test-github",
+              url: mockServer.baseUrl(),
+              apiKey: process.env.GITHUB_TOKEN,
+            },
+          ],
+        },
+      },
       pipelines: {
         github: {
           servers: [
@@ -62,7 +84,12 @@ beforeAll(async () => {
               id: "test-github",
               url: mockServer.baseUrl(),
               branches: ["main"],
-              apiKey: process.env.GITHUB_TOKEN,
+              authMethod: AuthMethod.GITHUB_APP,
+              githubApp: {
+                appId: "test-app-id",
+                privateKey: "-----BEGIN RSA PRIVATE KEY-----\ntest-key\n-----END RSA PRIVATE KEY-----",
+                installationId: "12345",
+              },
             },
           ],
         },
@@ -107,16 +134,16 @@ describe(`GitHub Pipelines integration`, () => {
   });
 
   it(`lists job names`, async () => {
-    const codepipeline = getPipelinesForWorkload(workload, "github-build-stage");
+    const github = getPipelinesForWorkload(workload, "github-build-stage");
 
-    const jobNames = await codepipeline.discoverJobNames(workload, "backend");
-    expect(jobNames).toEqual(["octo-repo"]);
+    const jobNames = await github.discoverJobNames(workload, { jobGroup: "backend" });
+    expect(jobNames).toEqual(["CI"]);
   });
 
   it(`returns no job names for nonexistent job group`, async () => {
     const codepipeline = getPipelinesForWorkload(workload, "github-build-stage");
 
-    const jobNames = await codepipeline.discoverJobNames(workload, "no-such-group");
+    const jobNames = await codepipeline.discoverJobNames(workload, { jobGroup: "no-such-group" });
     expect(jobNames).toHaveLength(0);
   });
 
@@ -134,34 +161,28 @@ describe(`GitHub Pipelines integration`, () => {
     expect(propValue).toBe("acb5820ced9479c074f688cc328bf03f341a511d");
   });
 
-  it("gets runs for job groups", async () => {
+  it("gets runs for jobs", async () => {
     const github = getPipelinesForWorkload(workload, "github-build-stage");
 
     const startDate = new Date(" 2011-04-19");
     const endDate = new Date("2011-04-19");
-    const runs = await github.getRunsForJobGroups(workload.id, ["backend"], ["main"], startDate, endDate);
+    const runs = await github.getRunsForJobs(workload.id, ["CI"], ["main"], startDate, endDate);
 
     const groupRuns = runs.filter((r) => r.workloadId === "athena" && r.jobGroup === "backend");
     expect(groupRuns).toHaveLength(1);
 
     const run = groupRuns[0].run;
     expect(run.branch).toBe("main");
-    expect(run.job).toBe("octo-repo");
+    expect(run.job).toBe("CI");
     expect(run.repo).toBe("octo-repo");
     expect(run.result).toBe(RunResult.Succeeded);
   });
 
-  it(`lists job names`, async () => {
+  it("builds correct run links for GitHub.com API URL", () => {
     const github = getPipelinesForWorkload(workload, "github-build-stage");
+    const link = github.buildRunLink(workload.id, "octo-repo", "12345");
 
-    const jobNames = await github.discoverJobNames(workload, "backend");
-    expect(jobNames).toEqual(["octo-repo"]);
-  });
-
-  it(`returns no job names for nonexistent job group`, async () => {
-    const github = getPipelinesForWorkload(workload, "github-build-stage");
-
-    const jobNames = await github.discoverJobNames(workload, "no-such-group");
-    expect(jobNames).toHaveLength(0);
+    // For mock server, URL should pass through unchanged (localhost)
+    expect(link).toContain("/DeloitteDigitalUK/octo-repo/actions/runs/12345");
   });
 });

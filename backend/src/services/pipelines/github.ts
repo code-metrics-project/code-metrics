@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/rest";
-import { AbstractPipelinesService, registerPipelines } from "./pipelinesService";
+import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines } from "./pipelinesService";
 import { ActorType, Run, RunResult, RunWithMetadata } from "../../model/runs";
 import { getAllPipelinesConfig, getWorkloadById } from "../../config/configMapping";
 import { logger, verbose, warn } from "../../utils/logger/logger";
@@ -7,13 +7,16 @@ import { truncateDateOnly } from "../../utils/date";
 import { provideDatastore } from "../../db/factory";
 import { getDataForDateRange, StorableLike } from "../dateWalker";
 import { jsonPathQuery } from "../../utils/json";
-import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName } from "../../utils/jobs";
+import { filterJobsByJobGroup, lookupJobGroupForJobName } from "../../utils/jobs";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 
 import { StageConfig } from "../../model/config/pipeline-config";
 import { mapJobNameUsingStageConfig } from "./common";
 import { PipelinesTypes } from "../../model/config/common";
+import { AuthMethod } from "../../model/config/remote-config";
+import { createGitHubAppOctokit } from "../auth/github-app";
 import { getConfigItemAsNumber } from "../../config/sources/source";
+import { getVcsForWorkload } from "../codeManagement/vcsService";
 
 const COLLECTION_NAME_PIPELINE_RUNS = "pipeline-executions";
 const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600);
@@ -60,6 +63,18 @@ type WorkflowRun = {
 
 type WorkflowRunResponse = { data: WorkflowRun };
 
+type Workflow = {
+  id: number;
+  name: string;
+  path: string;
+  state: string;
+};
+
+type WorkflowsResponse = {
+  total_count: number;
+  workflows: Workflow[];
+};
+
 export const initGithubPipelines = () =>
   registerPipelines(PipelinesTypes.GITHUB, (stage) => new GithubPipelinesService(stage));
 
@@ -80,10 +95,17 @@ class GithubPipelinesService extends AbstractPipelinesService {
       if (!server) {
         throw new Error(`No GitHub server configuration found named: ${serverId}`);
       }
-      connection = new Octokit({
-        auth: server.apiKey,
-        baseUrl: server.url,
-      });
+      // Support both GitHub App and Personal Access Token authentication
+      if (server.authMethod === AuthMethod.GITHUB_APP && server.githubApp) {
+        // Use GitHub App authentication
+        connection = createGitHubAppOctokit(server.githubApp, server.url);
+      } else {
+        // Use Personal Access Token authentication (default)
+        connection = new Octokit({
+          auth: server.apiKey,
+          baseUrl: server.url,
+        });
+      }
       this.connections.set(connectionId, connection);
     }
     return connection;
@@ -217,7 +239,25 @@ class GithubPipelinesService extends AbstractPipelinesService {
 
   buildRunLink = (workloadId: string, jobName: string, runId: string): string => {
     const server = getAllPipelinesConfig().github.servers.find((server) => server.id === this.stage.serverId);
-    return `${server.url?.length ? server.url : "https://github.com"}/${this.stage.projectName}/${jobName}/actions/runs/${runId}`;
+
+    // Convert API URL to web URL for links
+    let webUrl = "https://github.com";
+    if (server.url?.length) {
+      // Convert api.github.com to github.com
+      if (server.url.includes("api.github.com")) {
+        webUrl = server.url.replace("api.github.com", "github.com");
+      }
+      // Convert GitHub Enterprise API URLs (e.g., https://github.company.com/api/v3 -> https://github.company.com)
+      else if (server.url.includes("/api/v3")) {
+        webUrl = server.url.replace("/api/v3", "");
+      }
+      // For other cases, assume it's already a web URL
+      else {
+        webUrl = server.url;
+      }
+    }
+
+    return `${webUrl}/${this.stage.projectName}/${jobName}/actions/runs/${runId}`;
   };
 
   private getRawPipelineRun = async (
@@ -261,12 +301,57 @@ class GithubPipelinesService extends AbstractPipelinesService {
     };
   };
 
-  discoverJobNames = async (workload: Workload, jobGroup: string): Promise<string[]> => {
-    const jobGroups = listNormalisedJobGroupsForWorkload(workload);
+  discoverJobNames = async (workload: Workload, filter: PipelinesServiceJobNameFilter): Promise<string[]> => {
+    const vcs = getVcsForWorkload(workload);
+    const repos = filter.repoName ? [filter.repoName] : await vcs.getReposForProject(workload.id, this.stage.projectName);
 
-    // TODO discover via API and filter as jobName can be a regex
-    return jobGroups[jobGroup]?.jobNames ?? [];
+    const allWorkflowNames: string[] = [];
+    for (const repoName of repos) {
+      try {
+        const workflowNames = await this.getWorkflowNames(workload.id, this.stage.projectName, repoName);
+        allWorkflowNames.push(...workflowNames);
+        verbose("Fetched workflow names", { repoName, workflowNames });
+      } catch (e) {
+        warn(`Failed to fetch workflow names for repo ${repoName} - skipping: ${e.message}`);
+      }
+    }
+
+    const jobNames = filterJobsByJobGroup(workload.id, allWorkflowNames, filter.jobGroup);
+    logger(`Matched ${jobNames.length} Github workflows for: ${workload.id}/${filter.jobGroup}`);
+    return jobNames;
   };
+
+  /**
+   * Retrieves GitHub Actions workflow names for a repository
+   * @param workloadId - The workload identifier
+   * @param vcsProjectName - The repository owner
+   * @param repoName - The repository name
+   * @returns Array of workflow names
+   */
+  async getWorkflowNames(workloadId: WorkloadId, vcsProjectName: string, repoName: string): Promise<string[]> {
+    logger(`Fetching workflow names for github repo: ${vcsProjectName}/${repoName}`);
+    const connection = this.getConnection(workloadId);
+
+    try {
+      // see API: https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows
+      const response = await connection.actions.listRepoWorkflows({
+        owner: vcsProjectName,
+        repo: repoName,
+        per_page: 100,
+      });
+
+      const workflowsResponse = response.data as WorkflowsResponse;
+      const workflowNames = workflowsResponse.workflows
+        .filter((workflow) => workflow.state === "active")
+        .map((workflow) => workflow.name);
+
+      logger(`Retrieved ${workflowNames.length} active workflows for ${vcsProjectName}/${repoName}`);
+      return workflowNames;
+    } catch (error) {
+      warn(`Failed to fetch workflows for ${vcsProjectName}/${repoName}: ${error.message}`);
+      return [];
+    }
+  }
 }
 
 const convertConclusionToResult = (conclusion: WorkflowRunConclusion): RunResult => {
@@ -284,7 +369,7 @@ const convertConclusionToResult = (conclusion: WorkflowRunConclusion): RunResult
       verbose(`ignoring build result: ${conclusion}`);
       return null;
     default:
-      console.warn(`Unsupported build result: ${conclusion}`);
+      warn(`Unsupported build result: ${conclusion}`);
       return null;
   }
 };

@@ -2,6 +2,7 @@ import {
   AzureTicketOptions,
   CodeAnalysisTypes,
   CodeManagementTypes,
+  GithubTicketOptions,
   JiraTicketOptions,
   PipelinesTypes,
   ServiceNowTicketOptions,
@@ -85,12 +86,15 @@ export type WorkloadTicketConfigAzure = BaseWorkloadTicketConfig &
     ticketPriorities?: string[];
   };
 
+export type WorkloadTicketConfigGithub = BaseWorkloadTicketConfig & GithubTicketOptions;
+
 export type WorkloadTicketConfigJira = BaseWorkloadTicketConfig & JiraTicketOptions;
 
 export type WorkloadTicketConfigServiceNow = BaseWorkloadTicketConfig & ServiceNowTicketOptions;
 
 export type WorkloadTicketConfig =
   | WorkloadTicketConfigAzure
+  | WorkloadTicketConfigGithub
   | WorkloadTicketConfigJira
   | WorkloadTicketConfigServiceNow;
 
@@ -151,7 +155,7 @@ export type Workload = {
   incidents: WorkloadTicketConfig;
   pipelines: WorkloadPipelinesConfig;
   projectManagement: WorkloadTicketConfig;
-  qualityGates: {
+  qualityGates?: {
     id: string;
     version: string;
   };

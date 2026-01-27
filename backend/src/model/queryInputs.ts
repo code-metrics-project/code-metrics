@@ -14,8 +14,16 @@ export type RepoGroups = {
   repoGroups: string[];
 };
 
+export type RepoNames = {
+  repoNames: string[];
+};
+
 export type JobGroups = {
   jobGroups: string[];
+};
+
+export type JobNames = {
+  jobNames: string[];
 };
 
 export type StartDate = {

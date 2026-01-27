@@ -14,6 +14,7 @@ describe("redactAndRenderAsJson", () => {
       apiKey: "abc",
       clientSecret: "def",
       password: "ghi",
+      privateKey: "-----BEGIN RSA PRIVATE KEY-----\\nMIIE...",
       refreshToken: "jkl",
       safe: "ok",
     };
@@ -21,12 +22,14 @@ describe("redactAndRenderAsJson", () => {
     expect(result).toContain('"apiKey": "*****"');
     expect(result).toContain('"clientSecret": "*****"');
     expect(result).toContain('"password": "*****"');
+    expect(result).toContain('"privateKey": "*****"');
     expect(result).toContain('"refreshToken": "*****"');
     expect(result).toContain('"safe": "ok"');
     expect(result).not.toContain("abc");
     expect(result).not.toContain("def");
     expect(result).not.toContain("ghi");
     expect(result).not.toContain("jkl");
+    expect(result).not.toContain("BEGIN RSA");
   });
 
   it("should not redact fields not in the list", () => {

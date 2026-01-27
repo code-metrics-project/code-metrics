@@ -1,0 +1,52 @@
+{
+  "service_dirs": {
+    ".github": [".github"],
+    "auth": ["backend/src/auth"],
+    "backend": ["backend", ":!backend/.dockerignore"],
+    "desktop": ["desktop"],
+    "docker": [
+      "docker",
+      ":!docker/Dockerfile.backend",
+      ":!docker/Dockerfile.docs",
+      ":!docker/Dockerfile.jenkins",
+      ":!docker/Dockerfile.machinelearning",
+      ":!docker/Dockerfile.mocks",
+      ":!docker/Dockerfile.promosite",
+      ":!docker/Dockerfile.ui"
+    ],
+    "docker_backend": ["docker/Dockerfile.backend", "backend/.dockerignore"],
+    "docker_docs": ["docker/Dockerfile.docs", ".dockerignore"],
+    "docker_jenkins": ["docker/Dockerfile.jenkins"],
+    "docker_machinelearning": ["docker/Dockerfile.machinelearning", "machinelearning/.dockerignore"],
+    "docker_mocks": ["docker/Dockerfile.mocks", "mocks/.dockerignore"],
+    "docker_promosite": ["docker/Dockerfile.promosite", ".dockerignore"],
+    "docker_ui": ["docker/Dockerfile.ui", "ui/.dockerignore"],
+    "docs": ["docs"],
+    "examples": ["examples"],
+    "helm": ["helm"],
+    "machinelearning": ["machinelearning", ":!machinelearning/.dockerignore"],
+    "mcp": ["mcp"],
+    "mocks": ["mocks", ":!mocks/.dockerignore"],
+    "promosite": ["promosite"],
+    "threatmodel": ["threatmodel"],
+    "ui": ["ui", ":!ui/.dockerignore"]
+  },
+  "fold_rules": {
+    "backend": ["mocks"],
+    "mocks": ["backend"],
+    ".github": [
+      "auth",
+      "backend",
+      "desktop",
+      "docs",
+      "examples",
+      "helm",
+      "machinelearning",
+      "mcp",
+      "mocks",
+      "promosite",
+      "threatmodel",
+      "ui"
+    ]
+  }
+}

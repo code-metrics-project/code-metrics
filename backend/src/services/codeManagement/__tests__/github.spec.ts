@@ -10,8 +10,15 @@ import { CodeManagementTypes, TicketManagementTypes } from "../../../model/confi
 import { mocks } from "@imposter-js/imposter";
 import { initDatastore } from "../../../db/factory";
 import { PullRequest, RepoChange } from "../../../model/vcs";
-import { Workload, WorkloadId } from "../../../model/config/workload-config";
+import {
+  Workload,
+  WorkloadCodeAnalysisConfig,
+  WorkloadId,
+  WorkloadPipelinesConfig,
+} from "../../../model/config/workload-config";
 import { ConfigVersion } from "../../../model/config/base";
+import { AuthMethod } from "../../../model/config/remote-config";
+import { LogLevel, overrideLogLevel } from "../../../utils/logger/logger";
 
 jest.setTimeout(30000);
 if (process.env.MOCKS_VERBOSE === "true") mocks.verbose();
@@ -19,13 +26,25 @@ if (process.env.MOCKS_PRINT_LOG_ON_CRASH === "true") mocks.printLogOnCrash();
 let mockServer;
 
 const workload: Workload = {
-  id: "athena",
+  id: "gaia",
   codeManagement: {
     type: CodeManagementTypes.GITHUB,
     serverId: "test-github",
-    //@ts-expect-error
-    jobGroups: {},
-    projectName: "DeloitteDigitalUK",
+    projectName: "Octocat",
+    repoGroups: {
+      backend: {
+        components: [{ repo: "/octocat.*/", name: "octo-backend" }],
+      },
+      frontend: {
+        sonarTags: ["fe"],
+      },
+      platform: {
+        components: [
+          { repo: "/.*_platform/", name: "octo-platform" },
+          { repo: "/.*_infrastructure/", name: "octo-infra" },
+        ],
+      },
+    },
   },
   projectManagement: {
     type: TicketManagementTypes.JIRA,
@@ -37,9 +56,13 @@ const workload: Workload = {
     serverId: "test-jira",
     tableName: undefined,
   },
+  codeAnalysis: {} as WorkloadCodeAnalysisConfig,
+  pipelines: {} as WorkloadPipelinesConfig,
 };
 
 beforeAll(async () => {
+  overrideLogLevel(LogLevel.Verbose);
+
   await initDatastore();
   initGithubVcs();
 
@@ -54,7 +77,12 @@ beforeAll(async () => {
               id: "test-github",
               url: mockServer.baseUrl(),
               branches: ["main"],
-              apiKey: process.env.GITHUB_TOKEN,
+              authMethod: AuthMethod.GITHUB_APP,
+              githubApp: {
+                appId: "test-app-id",
+                privateKey: "-----BEGIN RSA PRIVATE KEY-----\ntest-key\n-----END RSA PRIVATE KEY-----",
+                installationId: "12345",
+              },
             },
           ],
         },
@@ -134,15 +162,15 @@ describe(`GitHub VCS integration`, () => {
   it(`generates a valid repo link`, () => {
     const github = getVcsForWorkload(workload);
 
-    const workloadId: WorkloadId = "athena";
+    const workloadId: WorkloadId = "gaia";
     const link = github.buildRepoLink(workloadId, "octo-repo");
-    expect(link).toBe(`${mockServer.baseUrl()}/DeloitteDigitalUK/octo-repo`);
+    expect(link).toBe(`${mockServer.baseUrl()}/Octocat/octo-repo`);
   });
 
   it(`generates a valid commit link`, () => {
     const github = getVcsForWorkload(workload);
 
-    const workloadId: WorkloadId = "athena";
+    const workloadId: WorkloadId = "gaia";
     const change: RepoChange = {
       branch: "main",
       commitId: "a1b2c3d4",
@@ -152,13 +180,13 @@ describe(`GitHub VCS integration`, () => {
       workload: workloadId,
     };
     const link = github.buildCommitLink(change, workloadId, "octocat");
-    expect(link).toBe(`${mockServer.baseUrl()}/DeloitteDigitalUK/octo-repo/commit/a1b2c3d4`);
+    expect(link).toBe(`${mockServer.baseUrl()}/Octocat/octo-repo/commit/a1b2c3d4`);
   });
 
   it(`generates a valid PR link`, () => {
     const github = getVcsForWorkload(workload);
 
-    const workloadId: WorkloadId = "athena";
+    const workloadId: WorkloadId = "gaia";
     const change: RepoChange = {
       branch: "main",
       commitId: "a1b2c3d4",
@@ -177,7 +205,7 @@ describe(`GitHub VCS integration`, () => {
       workloadId: workloadId,
     };
     const link = github.buildPRLink(change, pr, workloadId);
-    expect(link).toBe(`${mockServer.baseUrl()}/DeloitteDigitalUK/octo-repo/pull/5`);
+    expect(link).toBe(`${mockServer.baseUrl()}/Octocat/octo-repo/pull/5`);
   });
 
   it("should get the PR associated with a commit", async () => {

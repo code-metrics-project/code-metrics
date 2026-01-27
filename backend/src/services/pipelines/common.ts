@@ -4,14 +4,13 @@ import { getPipelinesForWorkload } from "./pipelinesService";
 import { Workload, WorkloadId, WorkloadPipelineStage } from "../../model/config/workload-config";
 import { verbose, warn } from "../../utils/logger/logger";
 import { getDeploymentService } from "../deployment/deploymentService";
-import { lookupJobGroupForJobName } from "../../utils/jobs";
 import { dateDiffDays, getRelativeDate, walkDateRange } from "../../utils/date";
 
 /**
- * Fetches runs for the given workloads, job groups, branches, and date range.
+ * Fetches runs for the given workloads, job names, branches, and date range.
  * @param workloadIds
  * @param stageId
- * @param jobGroups
+ * @param jobNames
  * @param branches
  * @param startDate
  * @param endDate
@@ -19,7 +18,7 @@ import { dateDiffDays, getRelativeDate, walkDateRange } from "../../utils/date";
 export const fetchRuns = async (
   workloadIds: WorkloadId[],
   stageId: string,
-  jobGroups: string[],
+  jobNames: string[],
   branches: string[],
   startDate: Date,
   endDate: Date,
@@ -34,7 +33,7 @@ export const fetchRuns = async (
     }
 
     const pipelines = getPipelinesForWorkload(workload, stageId);
-    const workloadRuns = await pipelines.getRunsForJobGroups(workloadId, jobGroups, branches, startDate, endDate);
+    const workloadRuns = await pipelines.getRunsForJobs(workloadId, jobNames, branches, startDate, endDate);
     allRuns.push(...workloadRuns);
   }
 
@@ -92,7 +91,7 @@ const MAX_DAYS_TO_SEARCH = 3;
 async function findDownstreamRuns(
   workload: Workload,
   stageId: string,
-  jobGroup: string,
+  jobName: string,
   branch: string,
   commitId: string,
   run: RunWithMetadata,
@@ -116,7 +115,7 @@ async function findDownstreamRuns(
   for (const subsequentStageId of subsequentStageIds) {
     await walkDateRange(inputRunStartDate, searchEndDate, async (current) => {
       const nextDay = getRelativeDate(current, 1);
-      const subsequentRuns = await pipelines.getRunsForJobGroups(workload.id, [jobGroup], [branch], current, nextDay);
+      const subsequentRuns = await pipelines.getRunsForJobs(workload.id, [jobName], [branch], current, nextDay);
       for (const subsequentRun of subsequentRuns) {
         try {
           const subsequentCommitId = await deploymentService.findCommitIdForRun(
@@ -160,12 +159,6 @@ export const fetchDeploymentsForRun = async (
     return [];
   }
 
-  const jobGroup = lookupJobGroupForJobName(workloadId, jobName, null);
-  if (!jobGroup) {
-    warn(`Could not find job group for job name: ${jobName}`);
-    return [];
-  }
-
   const pipelines = getPipelinesForWorkload(workload, stageId);
   const run = await pipelines.getRunById(workloadId, jobName, runId);
   if (!run) {
@@ -180,7 +173,7 @@ export const fetchDeploymentsForRun = async (
   verbose(`Found commit ID ${commitId} for run ${runId}`);
 
   // find all pipeline runs from the workload's deployment provider where the start date >= this run's start date
-  const found = await findDownstreamRuns(workload, stageId, jobGroup, branch, commitId, run);
+  const found = await findDownstreamRuns(workload, stageId, jobName, branch, commitId, run);
   return found;
 };
 

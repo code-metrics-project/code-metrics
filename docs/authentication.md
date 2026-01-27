@@ -1,9 +1,9 @@
 # User authentication
 
-To use Code Metrics users require authentication. You configure how users authenticate using one of the supported authentication providers:
+To use CodeMetrics users require authentication. You configure how users authenticate using one of the supported authentication providers:
 
 | Name         | Details                                                                                                                                         |
-|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | file         | User configuration is represented as password hashes and usernames in a file named `users.json`.                                                |
 | azureEntraId | Authenticate against Azure Entra ID using RPOC                                                                                                  |
 | cognito      | AWS Cognito user store. This authenticator implementation holds items in an external Cognito instance. It requires appropriate AWS credentials. |
@@ -23,7 +23,7 @@ Set the authenticator implementation to use with the `AUTHENTICATOR_IMPL` enviro
 
 ## Configuring the access token secret
 
-Once a user has authenticated with one of the providers, Code Metrics issues them a time-limited token. This token is used by the user's browser when calling the Code Metrics backend APIs.
+Once a user has authenticated with one of the providers, CodeMetrics issues them a time-limited token. This token is used by the user's browser when calling the CodeMetrics backend APIs.
 
 The token is generated based on a secret - the `ACCESS_TOKEN_SECRET`. This value is sensitive and should be protected, as it is used by the backend to determine whether to trust a token presented by the user's browser.
 
@@ -40,7 +40,7 @@ This section lists the supported authentication providers.
 
 ### File-based authenticator (default)
 
-Code Metrics supports file-based authentication. This is a simple authentication mechanism where the user's credentials are stored in a file on the server.
+CodeMetrics supports file-based authentication. This is a simple authentication mechanism where the user's credentials are stored in a file on the server.
 
 See the [File-based Authentication](./authentication_file.md) documentation for more information.
 
@@ -86,24 +86,26 @@ This is useful for demo purposes, or for when a user that does not require authe
 
 ### Configuring Automatic Login
 
-Note: This feature only works with flows that use the webUI for password entry. 
+Note: This feature only works with flows that use the webUI for password entry.
 Flows such as OIDC that require a redirect to an external provider will not work with this feature.
 
 To configure automatic login:
+
 1. Update the config file for the frontend server to include the following:
 
 ```json
-{ "apiBaseUrl": "<URL to the backend API>:<port>",
+{
+  "apiBaseUrl": "<URL to the backend API>:<port>",
   "auth": {
     "required": false,
-    "provided":
-    {
-      "user":"Username",
-      "pass":"Password"
+    "provided": {
+      "user": "Username",
+      "pass": "Password"
     }
   }
 }
 ```
-4. Start the frontend server. 
+
+4. Start the frontend server.
 
 The frontend server will automatically log in the user and redirect to the dashboard.

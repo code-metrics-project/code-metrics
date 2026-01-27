@@ -56,6 +56,12 @@ workloads:
       serverId: mock-azure
       projectName: ADOMockProject
       team: ADOMock
+      ticketTypes:
+        - Bug
+        - Task
+        - User Story
+        - Defect
+        - Issue
     incidents:
       type: azure
       serverId: mock-azure
@@ -106,39 +112,31 @@ workloads:
       stages:
         - stageId: github-deployment-pipeline
     projectManagement:
-      type: jira
-      serverId: mock-jira
-      teamFilterJql: '"Team name[Dropdown]" in ("Gaia")'
-      projectName: DEV
-      prodFilterJql: '"Project Environment[Dropdown]" = PROD'
-      # type: github
-      # serverId: mock-github
-      # owner: "octocat"  
-      # repo: "octo-org"
-      # stateFilter: "all"
-      # issueTypes:
-      #   - bug
-      #   - enhancement
-      #   - feature
-      # labelMapping:
-      #   "priority:high": "High"
-      #   "priority:medium": "Medium"
-      #   "priority:low": "Low"
+      type: github
+      serverId: mock-github
+      owner: "octocat"  
+      repo: "octo-org"
+      stateFilter: "all"
+      issueTypes:
+        - bug
+        - enhancement
+        - feature
+      labelMapping:
+        "priority:high": "High"
+        "priority:medium": "Medium"
+        "priority:low": "Low"
     incidents:
-      type: servicenow
-      serverId: mock-servicenow
-      tableName: incident
-      # type: github
-      # serverId: mock-github
-      # owner: octocat
-      # repo: octo-org
-      # stateFilter: all
-      # issueTypes:
-      #   - issue
-      # labelMapping:
-      #   "priority:high": "High"
-      #   "priority:medium": "Medium"
-      #   "priority:low": "Low"
+      type: github
+      serverId: mock-github
+      owner: octocat
+      repo: octo-org
+      stateFilter: all
+      issueTypes:
+        - issue
+      labelMapping:
+        "priority:high": "High"
+        "priority:medium": "Medium"
+        "priority:low": "Low"
 
   - id: icarus
     tags:

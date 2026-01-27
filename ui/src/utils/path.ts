@@ -1,5 +1,3 @@
-import { Paths } from "../router/paths";
-
 /**
  * Build a path with query parameters, starting from a {@link Path} property.
  */

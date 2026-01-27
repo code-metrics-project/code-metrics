@@ -7,9 +7,11 @@ export enum InputType {
   INCIDENT_FILTER = "incidentFilter",
   ISSUE_FILTER = "issueFilter",
   JOB_GROUPS = "jobGroups",
+  JOB_NAMES = "jobNames",
   PIPELINE_ACTOR_TYPE = "actorType",
   PIPELINE_STAGE = "stageId",
   REPO_GROUPS = "repoGroups",
+  REPO_NAMES = "repoNames",
   SEVERITY_OPTIONS = "severityOptions",
   START_DATE = "startDate",
   TAGS = "tags",
@@ -22,9 +24,11 @@ const defaultInputValues = new Map<InputType, () => any>([
   [InputType.INCIDENT_FILTER, () => ({})],
   [InputType.ISSUE_FILTER, () => ({})],
   [InputType.JOB_GROUPS, () => []],
+  [InputType.JOB_NAMES, () => []],
   [InputType.PIPELINE_ACTOR_TYPE, () => ActorType.All],
   [InputType.PIPELINE_STAGE, () => getFirstPipelineStage()],
   [InputType.REPO_GROUPS, () => []],
+  [InputType.REPO_NAMES, () => []],
   [
     InputType.SEVERITY_OPTIONS,
     (): SeverityOptionsInput => ({

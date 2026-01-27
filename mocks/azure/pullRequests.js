@@ -1,7 +1,25 @@
+// Polyfill for random.uuid() - required in Docker environment
+var random = typeof random !== "undefined" ? random : undefined;
+if (!random) {
+  random = {
+    uuid: function () {
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+        var r = (Math.random() * 16) | 0;
+        var v = c == "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
+    },
+  };
+}
+
 const MILLIS_PER_HOUR = 1000 * 3600;
 const now = new Date();
 
 const { projectName: adoProjectName, repoName } = context.request.pathParams;
+
+// Pagination parameters
+const skip = parseInt(context.request.queryParams["$skip"] || "0", 10);
+const top = parseInt(context.request.queryParams["$top"] || "100", 10);
 
 // See jira/search mock re matching ticket naming and numbering
 const jiraProjectName = "DEV";
@@ -15,12 +33,18 @@ for (let current = start; current < now; current = new Date(current.getTime() + 
   prs = prs.concat(generatePrs(current));
 }
 
+// Apply pagination
+const totalCount = prs.length;
+const paginatedPrs = prs.slice(skip, skip + top);
+
 const response = {
-  count: prs.length,
-  value: prs,
+  count: paginatedPrs.length,
+  value: paginatedPrs,
 };
 
-console.debug(`Generated ${prs.length} PRs for ${adoProjectName}/${repoName}`);
+console.debug(
+  `Generated ${totalCount} total PRs, returning ${paginatedPrs.length} (skip=${skip}, top=${top}) for ${adoProjectName}/${repoName}`
+);
 respond().withData(JSON.stringify(response));
 
 function generatePrs(date) {

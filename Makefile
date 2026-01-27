@@ -1,4 +1,4 @@
-# Code Metrics - Top-Level Makefile
+# CodeMetrics - Top-Level Makefile
 # This Makefile delegates to service-specific Makefiles and provides orchestration targets
 
 NAME := code-metrics
@@ -114,7 +114,8 @@ build-mocks:
 deps: deps-backend deps-ui deps-desktop deps-mcp
 
 # Build all services (Docker images)
-build-docker: build-backend build-ui build-mlapi build-docs build-mocks
+build-docker:
+	$(MAKE) -j5 build-backend build-ui build-mlapi build-docs build-mocks
 
 build-docker-all: build-docker build-promosite build-jenkins
 

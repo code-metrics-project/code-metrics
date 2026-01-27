@@ -270,7 +270,8 @@ export class ServiceNowTicketService implements TicketService {
     return [];
   };
 
-  getAllTicketIds = (workload: Workload, daysBack: number): Promise<string[]> => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getAllTicketIds = (workload: Workload, daysBack: number, issueTypes?: string[]): Promise<string[]> => {
     warn("ServiceNow does not support fetching all issue IDs.");
     return Promise.resolve([]);
   };
@@ -286,6 +287,10 @@ export class ServiceNowTicketService implements TicketService {
     } else {
       return this.configManager.getDefaultTicketTypes();
     }
+  };
+
+  getAvailableIssueTypes = (workloadId: WorkloadId): string[] => {
+    return this.getTicketTypesByWorkloadId(workloadId);
   };
 
   getTicket = async (workloadId: WorkloadId, issueId: string): Promise<LightweightIssue | null> => {

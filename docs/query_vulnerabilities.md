@@ -11,7 +11,7 @@ Available dimensions:
 
 The source of the vulnerability data is [SARIF](https://sarifweb.azurewebsites.net/) files.
 
-Data can be uploaded using the Code Metrics API, or [the report uploader](./vulnerability_report_upload.md) user interface.
+Data can be uploaded using the CodeMetrics API, or [the report uploader](./vulnerability_report_upload.md) user interface.
 
 ## Query details
 

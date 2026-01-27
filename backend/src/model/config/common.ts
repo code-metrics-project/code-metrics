@@ -22,6 +22,15 @@ export type AzureTicketOptions = {
   ticketTypes: string[];
 };
 
+export type GithubTicketOptions = {
+  owner: string;
+  repo: string;
+  ticketTypes: string[];
+  ticketPriorities?: string[];
+  stateFilter?: "all" | "open" | "closed";
+  labelMapping?: Record<string, string>;
+};
+
 export type JiraTicketOptions = {
   projectName: string;
   teamFilterQuery?: string;
@@ -34,7 +43,6 @@ export type ServiceNowTicketOptions = {
   teamFilterQuery?: string;
 };
 
-// export type CodeManagementTypes = keyof CodeManagementConfigWrapper;
 export enum CodeManagementTypes {
   AZURE = "azure",
   BITBUCKET_CLOUD = "bitbucketCloud",
@@ -52,15 +60,14 @@ export enum PipelinesTypes {
   NONE = "none",
 }
 
-// export type CodeAnalysisTypes = keyof CodeAnalysisConfigWrapper;
 export enum CodeAnalysisTypes {
   NONE = "none",
   SONAR = "sonar",
 }
 
-// export type ProjectManagementTypes = keyof ProjectManagementConfigWrapper;
 export enum TicketManagementTypes {
   AZURE = "azure",
+  GITHUB = "github",
   JIRA = "jira",
   NONE = "none",
   SERVICENOW = "servicenow",

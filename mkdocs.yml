@@ -1,4 +1,4 @@
-site_name: Code Metrics
+site_name: CodeMetrics
 
 theme:
   name: "material"
@@ -30,7 +30,7 @@ nav:
       - Query types:
           - Overview: "query_types.md"
           - Bugs: "query_bugs.md"
-          - Bug culprits: "query_bug_culprits.md"
+          - Code hotspots: "query_code_hotspots.md"
           - DORA metrics: "dora.md"
           - CI/CD pipelines: "query_pipelines.md"
           - Repository churn: "query_repo_churn.md"

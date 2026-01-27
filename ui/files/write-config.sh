@@ -1,1 +1,8 @@
-echo "{ \"apiBaseUrl\": \"${API_BASE_URL}\" }" > /usr/share/nginx/html/config.json
+cat > /usr/share/nginx/html/config.json <<EOF
+{
+  "apiBaseUrl": "${API_BASE_URL}",
+  "auth": {
+    "required": true
+  }
+}
+EOF

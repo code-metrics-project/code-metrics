@@ -2,15 +2,15 @@
 
 ## Introduction
 
-Running Code Metrics directly with Node.js provides the simplest deployment option, requiring minimal infrastructure and no containerization or cloud platform dependencies. This approach is ideal for quick starts, development environments, or small-scale deployments where operational complexity needs to be minimized.
+Running CodeMetrics directly with Node.js provides the simplest deployment option, requiring minimal infrastructure and no containerization or cloud platform dependencies. This approach is ideal for quick starts, development environments, or small-scale deployments where operational complexity needs to be minimized.
 
 ### When to choose Node.js deployment
 
 **Best suited for:**
 
-- **Quick evaluation**: Get Code Metrics running in minutes to evaluate features and functionality
+- **Quick evaluation**: Get CodeMetrics running in minutes to evaluate features and functionality
 - **Development environments**: Developers can run locally for testing and debugging without Docker or Kubernetes overhead
-- **Learning and experimentation**: Understand Code Metrics internals without abstraction layers
+- **Learning and experimentation**: Understand CodeMetrics internals without abstraction layers
 - **Resource-constrained environments**: Minimal overhead—runs on laptops, small VMs etc.
 - **Custom integrations**: Direct access to the Node.js process for debugging and customisation
 
@@ -146,7 +146,7 @@ See the [environment variables documentation](./env_vars.md) for comprehensive c
 
 ## Summary
 
-Direct Node.js deployment offers the fastest path to running Code Metrics with minimal dependencies and complexity. While it lacks the advanced features of containerised or cloud deployments (automatic scaling, high availability, orchestration), it provides an excellent option for development, evaluation, and small-scale production use. This approach gives you direct access to the application without abstraction layers, making it ideal for learning and customisation.
+Direct Node.js deployment offers the fastest path to running CodeMetrics with minimal dependencies and complexity. While it lacks the advanced features of containerised or cloud deployments (automatic scaling, high availability, orchestration), it provides an excellent option for development, evaluation, and small-scale production use. This approach gives you direct access to the application without abstraction layers, making it ideal for learning and customisation.
 
 **Key advantages:**
 
@@ -347,4 +347,4 @@ If issues persist:
 2. Check logs for detailed error messages
 3. Review the [configuration documentation](./configuration.md)
 4. Test components individually (database, API, UI)
-5. Join the [Code Metrics community](https://github.com/code-metrics-project) for support
+5. Join the [CodeMetrics community](https://github.com/code-metrics-project) for support

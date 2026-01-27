@@ -2,8 +2,8 @@
 
 CodeMetrics provides a comprehensive REST API that allows you to build custom tools and integrations on top of its data analysis capabilities. By leveraging the CodeMetrics API, you can:
 
-- **Extract metrics programmatically** - Query source code metrics, pipeline data, bug reports, and DORA metrics
-- **Build custom dashboards** - Create specialized visualizations tailored to your team's needs  
+- **Extract metrics programmatically** - Query source CodeMetrics, pipeline data, bug reports, and DORA metrics
+- **Build custom dashboards** - Create specialized visualizations tailored to your team's needs
 - **Automate reporting** - Generate regular reports and notifications based on CodeMetrics data
 - **Integrate with existing tools** - Connect CodeMetrics data to your existing toolchain and workflows
 - **Develop custom applications** - Build specialized applications that leverage CodeMetrics' extensive data collection and analysis capabilities
@@ -46,7 +46,9 @@ The CodeMetrics API provides endpoints for:
 ## Example Use Cases
 
 ### Custom Reporting
+
 Generate specialized reports combining multiple data sources:
+
 ```bash
 # Example: Get test coverage and bug correlation data
 curl -H "Authorization: Bearer YOUR_TOKEN" \
@@ -56,7 +58,9 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 ```
 
 ### Automated Monitoring
+
 Set up automated alerts based on code quality thresholds:
+
 ```bash
 # Example: Check if test coverage falls below threshold
 curl -H "Authorization: Bearer YOUR_TOKEN" \
@@ -66,6 +70,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 ```
 
 ### Integration with External Tools
+
 Connect CodeMetrics data to your existing dashboards and tools using the programmatic API.
 
 ## Best Practices

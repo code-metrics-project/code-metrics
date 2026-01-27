@@ -1,6 +1,6 @@
 # Chart types
 
-Code Metrics supports a variety of chart types to help you visualise your data.
+CodeMetrics supports a variety of chart types to help you visualise your data.
 
 The supported chart types are:
 

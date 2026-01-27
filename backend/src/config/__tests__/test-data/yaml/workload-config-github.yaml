@@ -1,0 +1,52 @@
+---
+workloads:
+  - id: github-test-workload
+    name: GitHub Test Workload
+    codeManagement:
+      type: github
+      serverId: example-github
+      projectName: test-project
+      repoGroups:
+        backend:
+          components:
+            - repo: "backend-service"
+        frontend:
+          components:
+            - repo: "frontend-app"
+    codeAnalysis:
+      type: sonar
+      serverId: example-sonar
+      mappings:
+        - key: github-test-project
+          vcsRepoName: backend-service
+    projectManagement:
+      type: github
+      serverId: example-github
+      owner: test-org
+      repo: project-issues
+      ticketTypes:
+        - bug
+        - feature
+        - task
+        - enhancement
+      ticketPriorities:
+        - low
+        - medium
+        - high
+        - critical
+      stateFilter: all
+      labelMapping:
+        "priority/critical": "Critical"
+        "priority/high": "High"
+        "priority/medium": "Medium"
+        "priority/low": "Low"
+    incidents:
+      type: github
+      serverId: example-github
+      owner: test-org
+      repo: incidents
+      ticketTypes:
+        - incident
+        - outage
+        - bug
+      stateFilter: all

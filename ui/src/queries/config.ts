@@ -76,8 +76,12 @@ function inferGroupByFromInputs(queryType: QueryType) {
           return "workloadId";
         case InputType.REPO_GROUPS:
           return "repoGroup";
+        case InputType.REPO_NAMES:
+          return "repoName";
         case InputType.JOB_GROUPS:
           return "jobGroup";
+        case InputType.JOB_NAMES:
+          return "jobName";
         default:
           return null;
       }

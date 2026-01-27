@@ -7,14 +7,14 @@ ARG RELEASE_TASK="release:dev"
 # INSTALL; separate from build to benefit from Docker cache
 WORKDIR /usr/src/app/backend
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 # BUILD
 COPY . ./
 RUN npm run ${RELEASE_TASK}
 
 
-FROM ${IMGREPO}node:20 AS run
+FROM ${IMGREPO}node:20-alpine AS run
 
 LABEL org.opencontainers.image.source=https://github.com/code-metrics-project/releases
 

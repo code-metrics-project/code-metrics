@@ -4,7 +4,7 @@ jobs:
   setvars:
     runs-on: ubuntu-latest
     outputs:
-      vars: ${{ steps.vars.outputs.vars }}
+      vars: ${{ steps.docker.outputs.vars }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,6 +21,7 @@ jobs:
             python3 ./.github/set_vars.py --verbose "${ALL_FLAG}"
           else
             python3 ./.github/set_vars.py --verbose "${ALL_FLAG}" \
+              --set auth=false \
               --set desktop=false \
               --set docker=false \
               --set helm=false \
@@ -29,6 +30,30 @@ jobs:
               --set promosite=false \
               --set threatmodel=false
           fi
+
+      - name: Add Desktop Matrix
+        id: desktop
+        run: |
+          VARS='${{ steps.vars.outputs.vars }}'
+
+          # Call Python script
+          MATRIX=$(python3 ./.github/generate_matrix.py --type desktop --vars "$VARS")
+
+          # Inject into VARS
+          NEW_VARS=$(echo "$VARS" | jq -c --argjson dm "$MATRIX" '. + {desktopMatrix: $dm}')
+          echo "vars=$NEW_VARS" >> $GITHUB_OUTPUT
+
+      - name: Add Docker Matrix
+        id: docker
+        run: |
+          VARS='${{ steps.desktop.outputs.vars }}'
+
+          # Call Python script
+          MATRIX=$(python3 ./.github/generate_matrix.py --type docker --vars "$VARS")
+
+          # Inject into VARS
+          NEW_VARS=$(echo "$VARS" | jq -c --argjson dkm "$MATRIX" '. + {dockerMatrix: $dkm}')
+          echo "vars=$NEW_VARS" >> $GITHUB_OUTPUT
 
   validate-config:
     runs-on: ubuntu-latest
@@ -59,6 +84,7 @@ jobs:
 
   cd:
     needs: [setvars, validate-config, validate]
+    if: ${{ always() && !failure() && !cancelled() }}
     uses: ./.github/workflows/cd.yaml
     with:
       vars: ${{ needs.setvars.outputs.vars }}

@@ -1,4 +1,4 @@
-import { AbstractPipelinesService, registerPipelines } from "./pipelinesService";
+import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines } from "./pipelinesService";
 import { getAllPipelinesConfig, getWorkloadById } from "../../config/configMapping";
 import { logger, verbose, warn } from "../../utils/logger/logger";
 import { sameDay, truncateDateOnly } from "../../utils/date";
@@ -13,10 +13,9 @@ import {
   PipelineExecutionSummary,
   PipelineSummary,
 } from "@aws-sdk/client-codepipeline";
-import { matchOrEquals } from "../../utils/matchers";
 import { Run, RunResult, RunWithMetadata } from "../../model/runs";
 import { jsonPathQuery } from "../../utils/json";
-import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName } from "../../utils/jobs";
+import { filterJobsByJobGroup, lookupJobGroupForJobName } from "../../utils/jobs";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { StageConfig } from "../../model/config/pipeline-config";
 import { mapJobNameUsingStageConfig } from "./common";
@@ -146,7 +145,7 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
     };
   };
 
-  discoverJobNames = async (workload: Workload, jobGroup: string): Promise<string[]> => {
+  discoverJobNames = async (workload: Workload, filter: PipelinesServiceJobNameFilter): Promise<string[]> => {
     const paginator = paginateListPipelines(
       {
         client: this.getClient(workload.id),
@@ -158,18 +157,11 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
     for await (const page of paginator) {
       raw.push(...page.pipelines);
     }
-    verbose(`Retrieved ${raw.length} raw CodePipeline pipelines for: ${workload.id}`);
+    const allJobNames = raw.map((pipeline) => pipeline.name);
+    verbose(`Retrieved ${allJobNames.length} raw CodePipeline pipelines for: ${workload.id}`);
 
-    const jobGroups = listNormalisedJobGroupsForWorkload(workload);
-    const jobPatterns = jobGroups[jobGroup]?.jobNames ?? [];
-    const jobNames = raw
-      .filter((pipeline) => {
-        return jobPatterns.some((jobPattern) => matchOrEquals(jobPattern, pipeline.name));
-      })
-      .map((pipeline) => {
-        return pipeline.name;
-      });
-    logger(`Matched ${jobNames.length} CodePipeline pipelines for: ${workload.id}/${jobGroup}`);
+    const jobNames = filterJobsByJobGroup(workload.id, allJobNames, filter.jobGroup);
+    logger(`Matched ${jobNames.length} CodePipeline pipelines for: ${workload.id}/${filter.jobGroup}`);
     return jobNames;
   };
 
@@ -277,7 +269,7 @@ const convertResult = (result: PipelineExecutionStatus): RunResult => {
     case PipelineExecutionStatus.Superseded:
       return RunResult.Aborted;
     default:
-      console.warn(`Unsupported execution result: ${result}`);
+      warn(`Unsupported execution result: ${result}`);
       return null;
   }
 };

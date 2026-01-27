@@ -54,6 +54,11 @@ resources:
       file: GET-files.json
 
   - method: get
+    path: /repos/{owner}/{repo}/actions/workflows
+    response:
+      file: workflows.json
+
+  - method: get
     path: /repos/{owner}/{repo}/actions/runs
     response:
       file: GET-workflowRuns.json

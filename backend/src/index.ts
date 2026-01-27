@@ -1,6 +1,6 @@
 import { bootstrap, startApi } from "./app";
 import serverlessExpress from "@codegenie/serverless-express";
-import { error, verbose } from "./utils/logger/logger";
+import { logger, error, verbose } from "./utils/logger/logger";
 import { InvocationMode } from "./model/global";
 import { getConfigItem, overrideConfigItem } from "./config/sources/source";
 import path from "path";
@@ -34,7 +34,7 @@ const startup = async () => {
   }
 };
 
-console.log("Invocation mode:", global.invocationMode);
+logger("Invocation mode:", global.invocationMode);
 
 if (global.isLambda) {
   switch (global.invocationMode) {
@@ -57,7 +57,7 @@ if (global.isLambda) {
       break;
 
     default:
-      console.error("Invalid invocation mode", global.invocationMode);
+      error("Invalid invocation mode", global.invocationMode);
       process.exit(1);
   }
 } else {

@@ -14,7 +14,7 @@
   <v-container>
     <v-row>
       <v-col>
-        <BugCulprits
+        <CodeHotspots
           v-if="!Array.isArray(workloadId)"
           :workload="workloadId as string"
           :executeOnMount="executeImmediately"
@@ -49,7 +49,7 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import DynamicQuery from "@/components/DynamicQuery.vue";
 import Predictions from "@/components/Predictions.vue";
-import BugCulprits from "@/components/BugCulprits.vue";
+import CodeHotspots from "@/components/CodeHotspots.vue";
 import { QueryName } from "@/queries/queries";
 import BehindFlag from "@/components/BehindFlag.vue";
 import { Paths } from "@/router/paths";

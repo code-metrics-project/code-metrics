@@ -34,12 +34,9 @@ describe("DeploymentService", () => {
       },
     },
     pipelines: {
-      type: PipelinesTypes.GITHUB,
-      serverId: "test-github",
-      projectName: "octocat",
       jobGroups: {
         backend: {
-          jobNames: ["octo-repo"],
+          jobNames: ["CI"],
         },
       },
       stages: [
@@ -59,6 +56,7 @@ describe("DeploymentService", () => {
       serverId: "test-jira",
       tableName: undefined,
     },
+    qualityGates: undefined,
   };
 
   let mockServer;
@@ -137,7 +135,7 @@ describe("DeploymentService", () => {
           {
             date: "2011-04-19",
             run: "30433642",
-            job: "octo-repo",
+            job: "CI",
             repo: "octo-repo",
             earliestCommit: new Date("2011-04-14T16:00:49.000Z"),
             deployed: new Date("2011-04-19T19:43:08.000Z"),
@@ -163,7 +161,7 @@ describe("DeploymentService", () => {
       expect(runs).toHaveLength(1);
       expect(runs[0]).toStrictEqual({
         id: "30433642",
-        job: "octo-repo",
+        job: "CI",
         branch: "main",
         startDate: "2011-04-19T19:33:08Z",
         result: "SUCCEEDED",

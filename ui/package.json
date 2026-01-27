@@ -3,7 +3,7 @@
   "version": "4.0.0",
   "private": true,
   "type": "module",
-  "description": "Code Metrics tool - analysis on Project Issues, Codebase and Code Quality Tooling data",
+  "description": "CodeMetrics tool - analysis on Project Issues, Codebase and Code Quality Tooling data",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/DeloitteDigitalUK/code-metrics.git"

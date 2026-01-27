@@ -2,8 +2,11 @@ import { Paths } from "../../../../src/router/paths";
 import { buildPath } from "../../../../src/utils/path";
 
 describe("Workloads page", () => {
-  it("Visits the workloads url", () => {
+  beforeEach(() => {
     cy.login();
+  });
+
+  it("Visits the workloads url", () => {
     cy.visit(Paths.Workloads);
     cy.contains("Workloads");
     cy.checkFooter();
@@ -11,8 +14,11 @@ describe("Workloads page", () => {
 });
 
 describe("Workload page", () => {
-  it("Visits the workload url", () => {
+  beforeEach(() => {
     cy.login();
+  });
+
+  it("Visits the workload url", () => {
     cy.visit(buildPath(Paths.Workloads, { workloadId: "athena" }));
     cy.contains("Athena");
     cy.checkFooter();
@@ -20,17 +26,19 @@ describe("Workload page", () => {
 });
 
 describe("Workload pipeline runs page", () => {
-  it("Visits the workload pipeline runs url", () => {
+  beforeEach(() => {
     cy.login();
+  });
+
+  it("Visits the workload pipeline runs url", () => {
     cy.visit(Paths.WorkloadPipelineRuns);
     cy.contains("Pipeline runs");
     cy.checkFooter();
   });
   it("Checks success rate on pipeline runs page", () => {
-    cy.login();
     cy.visit(
       buildPath(Paths.WorkloadPipelineRuns, {
-        workloadId: "gaia",
+        workloadId: "athena",
         executeImmediately: true,
         branchName: "main",
       }),
@@ -42,18 +50,20 @@ describe("Workload pipeline runs page", () => {
 });
 
 describe("Workload pipeline health page", () => {
-  it("Visits the workload pipeline health url", () => {
+  beforeEach(() => {
     cy.login();
+  });
+
+  it("Visits the workload pipeline health url", () => {
     cy.visit(Paths.WorkloadPipelineHealth);
     cy.contains("Pipeline health");
     cy.checkFooter();
   });
 
   it("Checks success rate on pipeline health page", () => {
-    cy.login();
     cy.visit(
       buildPath(Paths.WorkloadPipelineHealth, {
-        workloadId: "gaia",
+        workloadId: "athena",
         executeImmediately: true,
         branchName: "main",
       }),
@@ -74,18 +84,24 @@ describe("Workload pipeline health page", () => {
 });
 
 describe("Workload analysis page", () => {
-  it("Visits the workload analysis url", () => {
+  beforeEach(() => {
     cy.login();
+  });
+
+  it("Visits the workload analysis url", () => {
     cy.visit(Paths.WorkloadAnalysis);
-    cy.contains("Bug culprit files");
+    cy.contains("Code hotspots");
     cy.contains("Bugs vs. Coverage");
     cy.checkFooter();
   });
 });
 
 describe("Workload changes page", () => {
-  it("Visits the workload changes url", () => {
+  beforeEach(() => {
     cy.login();
+  });
+
+  it("Visits the workload changes url", () => {
     cy.visit(buildPath(Paths.WorkloadChanges, { workloadId: "athena" }));
     cy.contains("Changes");
     cy.checkFooter();
@@ -93,15 +109,17 @@ describe("Workload changes page", () => {
 });
 
 describe("Workload code quality page", () => {
-  it("Visits the workload code quality url", () => {
+  beforeEach(() => {
     cy.login();
+  });
+
+  it("Visits the workload code quality url", () => {
     cy.visit(buildPath(Paths.WorkloadCodeQuality, { workloadId: "athena" }));
     cy.contains("Code analysis");
     cy.checkFooter();
   });
 
   it("Displays code quality tiles with full titles (no ellipsis)", () => {
-    cy.login();
     cy.visit(buildPath(Paths.WorkloadCodeQuality, { workloadId: "athena" }));
 
     cy.contains("Code quality metric summary");
@@ -122,8 +140,11 @@ describe("Workload code quality page", () => {
 });
 
 describe("Workload tickets page", () => {
-  it("Visits the workload tickets url", () => {
+  beforeEach(() => {
     cy.login();
+  });
+
+  it("Visits the workload tickets url", () => {
     cy.visit(buildPath(Paths.ProgramTickets, { workloadId: "athena" }));
     cy.contains("Tickets");
     cy.checkFooter();

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { logger } from "../utils/logger/logger";
+import { logger, warn } from "../utils/logger/logger";
 import { getCodeAnalysisForWorkloadId } from "../services/codeAnalysis/codeAnalysisService";
 
 const DEFAULT_METRIC = "coverage";
@@ -50,7 +50,7 @@ export const fileMetricBreakdown = async (req: Request, res: Response): Promise<
         metricValue = metrics.component.measures[0].value;
       } else {
         if (metrics.errors) {
-          console.warn(`Could not parse metrics: ${JSON.stringify(metrics.errors)}`);
+          warn(`Could not parse metrics: ${JSON.stringify(metrics.errors)}`);
         }
         metricValue = "0";
       }

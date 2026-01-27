@@ -1,5 +1,6 @@
 export const KEYS = {
-  BUG_CULPRITS: "bug-culprits",
+  CODE_HOTSPOTS: "code-hotspots",
+  ISSUE_TYPES: "issue-types",
   QUERY: "query",
   QUALITY_GATES: "quality-gates",
 };
