@@ -24,6 +24,13 @@ jobs:
               --set auth=false \
               --set desktop=false \
               --set docker=false \
+              --set docker_backend=false \
+              --set docker_docs=false \
+              --set docker_jenkins=false \
+              --set docker_machinelearning=false \
+              --set docker_mocks=false \
+              --set docker_promosite=false \
+              --set docker_ui=false \
               --set helm=false \
               --set machinelearning=false \
               --set mcp=false \
