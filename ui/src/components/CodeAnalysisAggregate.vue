@@ -130,7 +130,7 @@
 // @ts-nocheck
 import axios from "@/utils/axios";
 import DatePicker from "@/components/DatePicker.vue";
-import { truncateDateOnly } from "@/utils/date";
+import { truncateDateOnly, getOffsetDate } from "@/utils/date";
 import { CODE_ANALYSIS_AGGREGATE } from "@/utils/urls";
 import { OperationState } from "@/utils/ui";
 import RepoGroups from "@/components/inputs/RepoGroups.vue";
@@ -207,7 +207,7 @@ export default {
       workloadIds: this.workloads,
       repoGroupsInput: this.repoGroups,
       individualReposInput: this.individualRepos,
-      startDate: truncateDateOnly(new Date()),
+      startDate: truncateDateOnly(getOffsetDate(-30)),
       endDate: truncateDateOnly(new Date()),
     };
   },

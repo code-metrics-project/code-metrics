@@ -90,6 +90,18 @@ class TestGenerateMatrix(unittest.TestCase):
         names = [m["name"] for m in matrix]
         self.assertIn("jenkins", names)
 
+    def test_docker_matrix_kill_switch(self):
+        """Test global kill switch for docker builds."""
+        # Even if backend changes, kill switch should prevent build
+        vars_json = {"backendComponents": 1, "run_docker_buildsComponents": 0}
+        matrix = generate_matrix.generate_docker_matrix(vars_json, is_tag=False, repo_owner="owner")
+        self.assertEqual(len(matrix), 0)
+
+        # Confirm 1 works (or absence works)
+        vars_json = {"backendComponents": 1, "run_docker_buildsComponents": 1}
+        matrix = generate_matrix.generate_docker_matrix(vars_json, is_tag=False, repo_owner="owner")
+        self.assertEqual(len(matrix), 1)
+
     def test_main_cli_docker(self):
         """Test the main entry point for docker type."""
         vars_input = json.dumps({"uiComponents": 1})

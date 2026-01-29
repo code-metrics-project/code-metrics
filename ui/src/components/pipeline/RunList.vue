@@ -242,7 +242,7 @@ export default {
       search: "",
       showRepository: false,
       fetchLabel: "Show runs",
-      startDateInput: this.startDate ?? getRelativeDate(new Date(), 0),
+      startDateInput: this.startDate ?? getRelativeDate(new Date(), -7),
       endDateInput: this.endDate ?? getRelativeDate(new Date(), 0),
       workloads: [] as string[],
       jobGroupsInput: this.jobGroups,

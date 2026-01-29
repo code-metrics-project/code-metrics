@@ -35,6 +35,7 @@ jobs:
               --set machinelearning=false \
               --set mcp=false \
               --set promosite=false \
+              --set run_docker_builds=false \
               --set threatmodel=false
           fi
 

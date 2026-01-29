@@ -225,7 +225,7 @@ export default {
       groupTickets: true,
       showMessages: false,
       fetchLabel: "Show changes",
-      startDate: getRelativeDate(new Date(), -7),
+      startDate: getRelativeDate(new Date(), -30),
       endDate: getRelativeDate(new Date(), 0),
       workloads: [] as string[],
       repoGroups: [] as string[],
