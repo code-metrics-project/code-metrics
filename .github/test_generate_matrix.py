@@ -102,6 +102,21 @@ class TestGenerateMatrix(unittest.TestCase):
         matrix = generate_matrix.generate_docker_matrix(vars_json, is_tag=False, repo_owner="owner")
         self.assertEqual(len(matrix), 1)
 
+    def test_docker_matrix_kill_switch_jenkins(self):
+        """Test global kill switch specifically for Jenkins leak."""
+        # Jenkins usually runs if examplesComponents OR docker_jenkinsComponents is 1.
+        # Ensure kill switch stops it.
+        
+        # Scenario 1: examples triggered
+        vars_json = {"examplesComponents": 1, "run_docker_buildsComponents": 0}
+        matrix = generate_matrix.generate_docker_matrix(vars_json, is_tag=False, repo_owner="owner")
+        self.assertEqual(len(matrix), 0)
+
+        # Scenario 2: docker_jenkins triggers
+        vars_json = {"docker_jenkinsComponents": 1, "run_docker_buildsComponents": 0}
+        matrix = generate_matrix.generate_docker_matrix(vars_json, is_tag=False, repo_owner="owner")
+        self.assertEqual(len(matrix), 0)
+
     def test_main_cli_docker(self):
         """Test the main entry point for docker type."""
         vars_input = json.dumps({"uiComponents": 1})

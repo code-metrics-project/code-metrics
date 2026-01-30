@@ -9,21 +9,16 @@ def get_bool_var(vars_json, key):
     return str(val) == "1" or val is True
 
 def generate_docker_matrix(vars_json, is_tag, repo_owner):
+    # Global override to disable all docker builds
+    # Let's inspect vars_json directly for the kill switch to avoid default 0 confusion
+    if "run_docker_buildsComponents" in vars_json and vars_json["run_docker_buildsComponents"] == 0:
+        return []
+
     matrix = []
     
     # Helper to check if a component should build
     def should_build(component):
         if is_tag: return True
-        # Global override to disable all docker builds
-        if get_bool_var(vars_json, "run_docker_buildsComponents") is False:
-             # Check if it was explicitly present as 0/false, not just missing (0 default)
-             # get_bool_var returns False for missing (0) or explicit 0.
-             pass
-        
-        # Let's inspect vars_json directly for the kill switch to avoid default 0 confusion
-        if "run_docker_buildsComponents" in vars_json and vars_json["run_docker_buildsComponents"] == 0:
-            return False
-
         if get_bool_var(vars_json, f"{component}Components"): return True
         if get_bool_var(vars_json, "dockerComponents"): return True
         if get_bool_var(vars_json, f"docker_{component}Components"): return True
