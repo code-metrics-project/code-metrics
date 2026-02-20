@@ -5,6 +5,7 @@ import { getComponentsForWorkloadId, getReposForWorkloadId } from "../utils/repo
 import { getPipelinesForWorkload } from "../services/pipelines/pipelinesService";
 import { listNormalisedJobGroupsForWorkload } from "../utils/jobs";
 import {
+  LlmConfigWrapper,
   CodeAnalysisConfigWrapper,
   CodeManagementConfigWrapper,
   CodeManagementServer,
@@ -236,6 +237,8 @@ export const getAllPipelinesConfig = (): PipelinesConfigWrapper => getConfig().r
 
 export const getAllTicketManagementConfig = (): TicketManagementConfigWrapper =>
   getConfig().remoteConfigs.ticketManagement;
+
+export const getAllLlmConfig = (): LlmConfigWrapper | undefined => getConfig().remoteConfigs.llm;
 
 /**
  * Last resort => return full Remote Config object

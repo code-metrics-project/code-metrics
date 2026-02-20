@@ -7,7 +7,7 @@
     "start": "node validate-config.js"
   },
   "dependencies": {
-    "ajv": "^8.0.0",
+    "ajv": "^8.18.0",
     "ajv-formats": "^2.0.0",
     "js-yaml": "^4.1.1"
   }

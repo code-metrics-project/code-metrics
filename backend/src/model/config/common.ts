@@ -77,3 +77,8 @@ export enum DependencyAlertsTypes {
   NONE = "none",
   GITHUB = "github",
 }
+
+export enum LlmProviderTypes {
+  CLAUDE = "claude",
+  GEMINI = "gemini",
+}

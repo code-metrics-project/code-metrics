@@ -6,6 +6,7 @@ import {
   getVcsBranches,
   listAllTagPairs,
   listWorkloads,
+  getAllLlmConfig,
 } from "../config/configMapping";
 import { getConfig, hasConfig } from "../config/config";
 import { listActiveFeatures } from "../utils/features";
@@ -24,6 +25,23 @@ import { getConfigItem } from "../config/sources/source";
 
 const authSessionStoreMethod: AuthSessionStoreMethod =
   (getConfigItem("CLIENT_SESSION_STORE") as AuthSessionStoreMethod) || "cookie";
+
+/**
+ * Check if LLM is configured by verifying that remote config has LLM settings
+ * with a server configured.
+ */
+const isLlmEnabled = (): boolean => {
+  const llmConfig = getAllLlmConfig();
+  if (!llmConfig) {
+    return false;
+  }
+
+  // Check if either Claude or Gemini has a server configured
+  const hasClaudeServer = !!llmConfig.claude?.server;
+  const hasGeminiServer = !!llmConfig.gemini?.server;
+
+  return hasClaudeServer || hasGeminiServer;
+};
 
 /**
  * List repos, in repo groups, for each workload.
@@ -87,6 +105,7 @@ export const fetchConfig = async (_req: Request, res: Response<SystemConfig>): P
     issuePriorities: getAllTicketPriorities(),
     tags: listAllTagPairs(),
     workloads,
+    llmEnabled: isLlmEnabled(),
   };
   res.json(config);
 };

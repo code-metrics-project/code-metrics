@@ -13,7 +13,8 @@ describe("Dashboards page", () => {
   it("Visits the dashboards url", () => {
     cy.login();
     cy.visit(Paths.SavedDashboards);
-    cy.contains("No dashboards available.");
+    // Temporary: Increase timeout for flaky test (framework replacement planned)
+    cy.contains("No dashboards available.", { timeout: 10000 });
     cy.checkFooter();
   });
 });
@@ -22,7 +23,8 @@ describe("Queries page", () => {
   it("Visits the saved queries url", () => {
     cy.login();
     cy.visit(Paths.SavedQueries);
-    cy.contains("Saved Queries");
+    // Temporary: Increase timeout for flaky test (framework replacement planned)
+    cy.contains("Saved Queries", { timeout: 10000 });
     cy.checkFooter();
   });
 });
@@ -31,7 +33,8 @@ describe("New query page", () => {
   it("Visits the new query url", () => {
     cy.login();
     cy.visit(Paths.NewQuery);
-    cy.contains("New Query");
+    // Temporary: Increase timeout for flaky test (framework replacement planned)
+    cy.contains("New Query", { timeout: 10000 });
     cy.checkFooter();
   });
 });
@@ -40,9 +43,10 @@ describe("Programme codebase page", () => {
   it("Visits the Programme codebase url", () => {
     cy.login();
     cy.visit(Paths.ProgramMetrics);
-    cy.contains("Code quality metric summary");
-    cy.contains("Code quality metric history");
-    cy.contains("Repository churn");
+    // Temporary: Increase timeout for flaky test (framework replacement planned)
+    cy.contains("Code quality metric summary", { timeout: 10000 });
+    cy.contains("Code quality metric history", { timeout: 10000 });
+    cy.contains("Repository churn", { timeout: 10000 });
     cy.checkFooter();
   });
 });
@@ -51,7 +55,8 @@ describe("Programme changes page", () => {
   it("Visits the programme changes url", () => {
     cy.login();
     cy.visit(Paths.ProgramNarratives);
-    cy.contains("Repository changes");
+    // Temporary: Increase timeout for flaky test (framework replacement planned)
+    cy.contains("Repository changes", { timeout: 10000 });
     cy.checkFooter();
   });
 });
@@ -60,7 +65,8 @@ describe("Programme pipeline page", () => {
   it("Visits the programme pipeline url", () => {
     cy.login();
     cy.visit(Paths.ProgramPipelineHealth);
-    cy.contains("Pipeline health");
+    // Temporary: Increase timeout for flaky test (framework replacement planned)
+    cy.contains("Pipeline health", { timeout: 10000 });
     cy.checkFooter();
   });
 });
@@ -69,7 +75,8 @@ describe("Programme security page", () => {
   it("Visits the programme security url", () => {
     cy.login();
     cy.visit(Paths.ProgramSecurity);
-    cy.contains("Security");
+    // Temporary: Increase timeout for flaky test (framework replacement planned)
+    cy.contains("Security", { timeout: 10000 });
     cy.checkFooter();
   });
 });

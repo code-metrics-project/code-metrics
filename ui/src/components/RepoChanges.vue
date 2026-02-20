@@ -36,6 +36,30 @@
       <v-progress-circular v-if="busy" :model-value="progress" color="primary" :width="4" :size="32" class="mr-3" />
     </v-card-text>
 
+    <v-card-text>
+      <!-- AI Generated Executive Summary -->
+      <v-card
+        v-if="aiSummary || aiSummaryLoading || aiSummaryError"
+        class="mb-3"
+        elevation="2"
+        color="blue-grey-lighten-5"
+      >
+        <v-card-title class="d-flex align-center pb-2">
+          <v-icon class="mr-2" color="primary">mdi-head-lightbulb</v-icon>
+          <span class="text-h6">AI Generated Executive Summary</span>
+          <v-spacer />
+          <v-progress-circular v-if="aiSummaryLoading" indeterminate color="primary" size="20" width="2" />
+        </v-card-title>
+        <v-card-text class="pt-0">
+          <v-alert v-if="aiSummaryError" type="warning" variant="tonal" class="mb-0">
+            {{ aiSummaryError }}
+          </v-alert>
+          <p v-else-if="aiSummary" class="text-body-1 mb-0">{{ aiSummary }}</p>
+          <p v-else-if="aiSummaryLoading" class="text-body-2 mb-0 text-medium-emphasis">Generating summary...</p>
+        </v-card-text>
+      </v-card>
+    </v-card-text>
+
     <v-card-title>
       Changes
       <v-row>
@@ -142,10 +166,11 @@ import WorkloadNames from "@/components/inputs/WorkloadNames.vue";
 import RepoGroups from "@/components/inputs/RepoGroups.vue";
 import { OperationState } from "@/utils/ui";
 import { logger } from "@/utils/logger";
-import { type ChangeRow, fetchForDateRange } from "@/services/changes";
+import { type ChangeRow, fetchForDateRange, fetchSummary } from "@/services/changes";
 import ModalQuery from "@/components/query/ModalQuery.vue";
 import { QueryName } from "@/queries/queries";
 import { ChartType } from "@/chart/chart-types";
+import { getConfig } from "@/utils/config";
 
 const API_BATCH_DAYS = 7;
 
@@ -233,6 +258,9 @@ export default {
       progress: 0,
       summary: null as RepoChangeSummary | null,
       showModalQuery: false,
+      aiSummary: "" as string,
+      aiSummaryLoading: false,
+      aiSummaryError: null as string | null,
     };
   },
 
@@ -306,6 +334,8 @@ export default {
         this.rawChanges = [];
         this.changes = [];
         this.summary = null;
+        this.aiSummary = "";
+        this.aiSummaryError = null;
 
         await walkDateRangeBatched(
           new Date(this.startDate),
@@ -322,8 +352,43 @@ export default {
             this.progress = progress * 100;
           },
         );
+
+        // Fetch AI summary after changes are loaded
+        this.fetchAISummary();
       } finally {
         this.busy = false;
+      }
+    },
+
+    async fetchAISummary(): Promise<void> {
+      // Check if LLM is enabled in the system config
+      const config = getConfig();
+      if (!config?.systemConfig?.llmEnabled) {
+        // LLM not configured - silently skip without showing any UI
+        return;
+      }
+
+      if (this.rawChanges.length === 0) {
+        return;
+      }
+
+      try {
+        this.aiSummaryLoading = true;
+        this.aiSummaryError = null;
+
+        const summary = await fetchSummary(
+          this.workloads,
+          this.repoGroups,
+          new Date(this.startDate),
+          new Date(this.endDate),
+        );
+
+        this.aiSummary = summary;
+      } catch (error) {
+        logger("Failed to fetch AI summary", error);
+        this.aiSummaryError = "Failed to generate AI summary. Please check the LLM configuration.";
+      } finally {
+        this.aiSummaryLoading = false;
       }
     },
 

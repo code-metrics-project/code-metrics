@@ -1,5 +1,5 @@
 import { getSecretsManagerResolver } from "./impl/secrets_manager";
-import { logger } from "../utils/logger/logger";
+import { logger, warn } from "../utils/logger/logger";
 import { getFileSecretResolver } from "./impl/file";
 import { getConfigItem } from "./sources/source";
 
@@ -39,14 +39,23 @@ export const resolveAllSecretsWithResolver = async (input: string, resolver: Sec
   let resolved = input;
   let result;
   while ((result = reg.exec(input)) !== null) {
-    const replacement = await resolver.resolve(result[1]);
-    // Check if the secret placeholder is inside a quoted YAML string
-    // If so, escape newlines to preserve the multiline content
-    const matchIndex = resolved.indexOf(result[0]);
-    const beforeMatch = resolved.substring(0, matchIndex);
-    const isInsideQuotes = isInsideQuotedString(beforeMatch, result[0], resolved);
-    const escapedReplacement = isInsideQuotes ? replacement.replace(/\n/g, "\\n") : replacement;
-    resolved = resolved.replace(result[0], escapedReplacement);
+    const placeholder = result[0];
+    const secretName = result[1];
+    let escapedReplacement: string;
+
+    const replacement = await resolver.resolve(secretName);
+    if (!replacement) {
+      warn(`Secret '${secretName}' could not be resolved`);
+      escapedReplacement = replacement;
+    } else {
+      // Check if the secret placeholder is inside a quoted YAML string
+      // If so, escape newlines to preserve the multiline content
+      const matchIndex = resolved.indexOf(placeholder);
+      const beforeMatch = resolved.substring(0, matchIndex);
+      const isInsideQuotes = isInsideQuotedString(beforeMatch, placeholder, resolved);
+      escapedReplacement = isInsideQuotes ? replacement.replace(/\n/g, "\\n") : replacement;
+    }
+    resolved = resolved.replace(placeholder, escapedReplacement);
   }
   return resolved;
 };

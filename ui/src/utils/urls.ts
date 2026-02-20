@@ -11,6 +11,7 @@ export const WORKLOAD_ISSUE_TYPES = (workloadId: string) => `/api/workloads/${wo
 export const QUALITY_GATES = "/api/quality-gates";
 export const METRIC_BREAKDOWN = "/api/codebase/breakdown";
 export const REPO_CHANGES = "/api/vcs/changes";
+export const REPO_CHANGES_SUMMARY = "/api/vcs/changes/summary";
 export const CODE_ANALYSIS_METRIC_HISTORY_CSV = "/api/codebase/metrics.csv";
 export const QUERY = "/api/query";
 export const CODE_ANALYSIS_AGGREGATE = "/api/codebase/aggregate";

@@ -553,6 +553,53 @@
           "required": ["servers"]
         }
       }
+    },
+    "llm": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["claude", "gemini"]
+        },
+        "claude": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "server": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string" },
+                "url": { "type": "string" },
+                "apiKey": { "type": "string" },
+                "model": { "type": "string" }
+              },
+              "required": ["id"]
+            }
+          },
+          "required": ["server"]
+        },
+        "gemini": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "server": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string" },
+                "url": { "type": "string" },
+                "apiKey": { "type": "string" },
+                "model": { "type": "string" }
+              },
+              "required": ["id"]
+            }
+          },
+          "required": ["server"]
+        }
+      },
+      "required": ["type"]
     }
   },
   "required": ["version", "codeAnalysis", "codeManagement", "pipelines", "ticketManagement"]

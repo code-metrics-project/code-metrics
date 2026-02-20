@@ -43,6 +43,7 @@ export type SystemConfig = {
   issuePriorities: string[];
   tags: Record<string, string[]>;
   workloads: WorkloadMeta[];
+  llmEnabled: boolean;
 };
 
 export type WebConfig = {

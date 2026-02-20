@@ -6,6 +6,7 @@ import { ValidationError } from "../utils/validation";
 import { vcsPROpenTimeWithArgs } from "../services/repos/prs";
 import { vcsRepoChurnWithArgs } from "../services/repos/churn";
 import { fetchRepoChanges } from "../services/repos/changes";
+import { getLlmService } from "../services/llm/llmService";
 
 export type RepoChangesRequest = {
   workloads: string[];
@@ -136,4 +137,39 @@ const parseRepoGroups = (args: Record<string, any>): string[] => {
   } else {
     return Array.isArray(repoGroupsRaw) ? repoGroupsRaw.map((w) => w.toString()) : (repoGroupsRaw as string).split(",");
   }
+};
+
+export type RepoChangesSummaryResponse = {
+  summary: string;
+};
+
+// Generate AI summary of repository changes
+export const vcsRepoChangesSummary = async (
+  request: Request,
+  response: Response<RepoChangesSummaryResponse>,
+): Promise<void> => {
+  const args = request.query as RepoChangesRequest;
+
+  const { error, result: workloadIds } = getWorkloadIdsFromArgs(args);
+  if (error) {
+    throw new ValidationError(error.toString());
+  }
+
+  const repoGroups = parseRepoGroups(args);
+
+  const startDate = args?.startDate as string;
+  if (!startDate) {
+    throw new ValidationError("Missing startDate query parameter");
+  }
+
+  const endDate = (args?.endDate as string) ?? truncateDateOnly(new Date());
+
+  // Fetch the changes
+  const changes = await fetchRepoChanges(workloadIds, repoGroups, new Date(startDate), new Date(endDate), true);
+
+  // Generate LLM summary
+  const llmService = getLlmService();
+  const summary = await llmService.generateChangesSummary(changes);
+
+  response.send({ summary });
 };

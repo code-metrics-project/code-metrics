@@ -169,3 +169,25 @@ ticketManagement:
           ticketPriorities: ["1", "2", "3"]
           tableName: "incident"
           projectName: "L1 Support"
+
+llm:
+  # Type can be "claude" or "gemini" (only one provider can be configured at a time)
+  type: claude
+  claude:
+    # Single server configuration for Claude
+    server:
+      id: example-claude
+      # API endpoint (optional, defaults to https://api.anthropic.com)
+      url: https://api.anthropic.com
+      # Get your API key from: https://console.anthropic.com/
+      apiKey: "${secret.ANTHROPIC_API_KEY}"
+      # Optional: specify model (defaults to claude-sonnet-4-5-20250929)
+      model: claude-sonnet-4-5-20250929
+  # Alternative: Use Gemini instead of Claude
+  # gemini:
+  #   server:
+  #     id: example-gemini
+  #     # Get your API key from: https://aistudio.google.com/app/apikey
+  #     apiKey: "${secret.GOOGLE_AI_API_KEY}"
+  #     # Optional: specify model (defaults to gemini-1.5-flash)
+  #     model: gemini-1.5-flash

@@ -10,7 +10,7 @@ import { fetchBugHistory } from "./routes/tickets";
 import { fileMetricBreakdown } from "./routes/codeAnalysisBreakdown";
 import { codeAnalysisHistoryAsCsv, codeAnalysisHistoryAsJson } from "./routes/codeAnalysisHistory";
 import { codeAnalysisAggregate } from "./routes/codeAnalysisAggregate";
-import { vcsPROpenTime, vcsRepoChanges, vcsRepoChurn } from "./routes/vcs";
+import { vcsPROpenTime, vcsRepoChanges, vcsRepoChurn, vcsRepoChangesSummary } from "./routes/vcs";
 import { logger } from "./utils/logger/logger";
 import { getPipelineDeployments, getPipelineRun, getPipelineRunRedirect, getPipelineRuns } from "./routes/pipelines";
 import { getDependencyAlerts } from "./routes/dependencyAlerts";
@@ -69,6 +69,8 @@ import { getConfigItem, getConfigItemAsBoolean, getConfigItemAsNumber } from "./
 import { buildOpenAPIValidator, openAPIErrorHandler } from "./middleware/openAPIValidator";
 import { initGithubDependencyAlerts } from "./services/dependencyAlerts/github";
 import { initNoopDependencyAlerts } from "./services/dependencyAlerts/noop";
+import { initClaudeLlm } from "./services/llm/claude";
+import { initGeminiLlm } from "./services/llm/gemini";
 
 const CONFIG_REFRESH_MS = getConfigItemAsNumber("CONFIG_REFRESH_MS", 30000);
 const configReloadFlag = getConfigItemAsBoolean("CONFIG_AUTO_RELOAD");
@@ -85,6 +87,7 @@ const initServices = async (): Promise<void> => {
   initCodeAnalysisProviders();
   initIncidentMgmtProviders();
   initDependencyAlertsProviders();
+  initLlmProviders();
 
   if (configReloadFlag) {
     logger(`Reloading config in ${CONFIG_REFRESH_MS / 1000}s`);
@@ -132,6 +135,11 @@ function initDependencyAlertsProviders() {
   initGithubDependencyAlerts();
   initNoopDependencyAlerts();
 }
+
+const initLlmProviders = () => {
+  initClaudeLlm();
+  initGeminiLlm();
+};
 
 const initApi = async (): Promise<Express> => {
   registerQueries();
@@ -215,6 +223,7 @@ const addRoutes = (router: SecureRouter) => {
   router.addRoute("get", "/api/vcs/churn", vcsRepoChurn);
   router.addRoute("get", "/api/vcs/pr-open-time", vcsPROpenTime);
   router.addRoute("get", "/api/vcs/changes", vcsRepoChanges);
+  router.addRoute("get", "/api/vcs/changes/summary", vcsRepoChangesSummary);
 
   // analysis
   router.addRoute("post", "/api/analysis/code-hotspots", findCodeHotspots);

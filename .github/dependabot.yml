@@ -18,6 +18,10 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      docker-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "docker"
     target-branch: "build/dependabot-test"
@@ -33,6 +37,10 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      docker-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -47,6 +55,10 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"
       
   - package-ecosystem: "npm"
     directory: "/backend"
@@ -62,6 +74,10 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
       
   - package-ecosystem: "npm"
     directory: "/ui"
@@ -77,6 +93,29 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "npm"
+    directory: "/desktop"
+    schedule:
+      interval: "daily"
+    # Disable version updates for dependencies, but not security updates, per:
+    # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
+    open-pull-requests-limit: 0
+    labels:
+      - "dependencies"
+      - "desktop"
+      - "npm"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "pip"
     directory: "/machinelearning"
@@ -92,3 +131,7 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      pip-dependencies:
+        patterns:
+          - "*"

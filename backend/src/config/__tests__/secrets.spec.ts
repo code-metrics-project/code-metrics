@@ -29,4 +29,26 @@ describe(`a secret resolver`, () => {
     const result = await resolveAllSecretsWithResolver(input, resolver);
     expect(result).toBe("Hello sp3ci4l");
   });
+
+  it(`replaces placeholder with falsy value when secret cannot be resolved`, async () => {
+    const falsyResolver: SecretResolver = {
+      async resolve(): Promise<string> {
+        return undefined as unknown as string;
+      },
+    };
+    const input = `key: \${secret.missing}`;
+    const result = await resolveAllSecretsWithResolver(input, falsyResolver);
+    expect(result).toBe("key: undefined");
+  });
+
+  it(`replaces placeholder with empty string when secret resolves to empty`, async () => {
+    const emptyResolver: SecretResolver = {
+      async resolve(): Promise<string> {
+        return "";
+      },
+    };
+    const input = `key: \${secret.empty}`;
+    const result = await resolveAllSecretsWithResolver(input, emptyResolver);
+    expect(result).toBe("key: ");
+  });
 });

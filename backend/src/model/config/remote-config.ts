@@ -1,4 +1,4 @@
-import { AzureTicketOptions, GithubTicketOptions, JiraTicketOptions, ServiceNowTicketOptions } from "./common";
+import { LlmProviderTypes, AzureTicketOptions, GithubTicketOptions, JiraTicketOptions, ServiceNowTicketOptions } from "./common";
 import { VersionedConfig } from "./base";
 
 export type RemoteServerCategory = "codeAnalysis" | "codeManagement" | "pipelines" | "ticketManagement";
@@ -146,11 +146,22 @@ export type SonarConfig = {
   tagKeyTypes?: string[];
 };
 
+export type LlmServer = {
+  model?: string;
+} & RemoteServer;
+
+export type LlmConfigWrapper = {
+  type: LlmProviderTypes;
+  claude?: { server: LlmServer };
+  gemini?: { server: LlmServer };
+};
+
 export type RemoteConfigWrapper = VersionedConfig & {
   codeAnalysis: CodeAnalysisConfigWrapper;
   codeManagement: CodeManagementConfigWrapper;
   pipelines: PipelinesConfigWrapper;
   ticketManagement: TicketManagementConfigWrapper;
+  llm?: LlmConfigWrapper;
 };
 
 export type CodeAnalysisConfigWrapper = {

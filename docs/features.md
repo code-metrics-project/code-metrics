@@ -53,3 +53,16 @@ This table shows feature support for third party tools.
 | [Gitlab](https://about.gitlab.com/)                                         | ❌ Not yet supported                                                    |
 | [Jira](https://www.atlassian.com/software/jira)                             | ✅ Supported                                                            |
 | [ServiceNow](https://www.servicenow.com/)                                   | ✅ Supported for incidents                                              |
+
+## AI Agents
+
+AI agents generate executive summaries of repository changes, providing high-level insights into development activity.
+
+| Provider                                                        | Support      |
+| --------------------------------------------------------------- | ------------ |
+| [Anthropic Claude](https://www.anthropic.com/)                  | ✅ Supported |
+| [Google Gemini](https://ai.google.dev/)                         | ✅ Supported |
+
+Configure AI agents in [remote-config.yaml](./configuration.md) under the `llm` section. See [examples/remote-config.yaml](../backend/config/examples/remote-config.yaml) for configuration details.
+
+➡️ [Learn more about AI Summaries](./ai_summaries.md)

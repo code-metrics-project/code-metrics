@@ -111,6 +111,7 @@ See a list of [supported features](./features.md) for third party tools.
 
 ## CodeMetrics and AI
 
+- [AI Summaries](./ai_summaries.md)
 - [MCP Server Setup](./mcp_server.md)
 
 ---

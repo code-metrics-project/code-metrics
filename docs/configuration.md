@@ -21,6 +21,7 @@ This file has a section for each type of external system:
 - **Code Quality** - See how to [configure code quality](./config_code_quality.md) settings.
 - **Project Management (bugs)** - See how to [configure project management](./config_project_management.md) settings.
 - **Production Incidents** - See how to [configure incidents](./config_incidents.md) settings.
+- **AI Agents (optional)** - Configure AI agents for generating change summaries. See [AI Summaries](./ai_summaries.md) for detailed configuration guidance.
 
 > **Note**
 > Supported external systems are described in [the features section](./features.md).

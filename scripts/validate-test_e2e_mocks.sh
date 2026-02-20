@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
+ROOT_DIR="$( git rev-parse --show-toplevel )"
+
 # Check Node.js version
-REQUIRED_NODE_VERSION=$(cat ../backend/.nvmrc)
+REQUIRED_NODE_VERSION=$(cat "${ROOT_DIR}/backend/.nvmrc")
 CURRENT_NODE_VERSION=$(node -v | grep -oE '[0-9]+' | head -1)
 
 if [[ "$CURRENT_NODE_VERSION" -lt "$REQUIRED_NODE_VERSION" ]]; then
@@ -19,7 +21,6 @@ for PORT in 3000 3001; do
 done
 
 # Starts mocks + backend - runs headless e2e ui tests
-ROOT_DIR="$( git rev-parse --show-toplevel )"
 export CONFIG_DIR="$( mktemp -d -t code-metrics-config-XXXXXX )"
 
 MOCKS_DIR=${ROOT_DIR}/mocks
