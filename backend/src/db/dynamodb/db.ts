@@ -212,6 +212,11 @@ export class DynamoDatastore extends AbstractDatastore<QueryFilter, DynamoTable>
     try {
       let justCreated = false;
       if (!(await this.doesTableExist(client, tableName))) {
+        if (!this.config.autoCreate) {
+          const msg = `Table '${tableName}' does not exist and DATASTORE_AUTO_CREATE is disabled. Create the table manually or set DATASTORE_AUTO_CREATE=true.`;
+          error(msg);
+          throw new Error(msg);
+        }
         logger(`Creating table: ${tableName}`);
         try {
           await this.createTable(client, tableName);

@@ -13,6 +13,8 @@ import { DynamoDatastore, initDynamoDB } from "./dynamodb/db";
 import { initNeDB, NeDBDatastore } from "./nedb/db";
 import { getConfigItemAsBoolean, getConfigItem } from "../config/sources/source";
 
+const isAutoCreateEnabled = () => getConfigItemAsBoolean("DATASTORE_AUTO_CREATE", true);
+
 export type DatastoreFactory = (config: DatastoreConfig) => Datastore<any, any>;
 
 const isCacheEnabled = () => getConfigItemAsBoolean("LOOKUP_CACHE_ENABLED");
@@ -95,6 +97,7 @@ const buildConfig = (
     implName,
     storeEnabled: baseConfig.persistentStore || cacheEnabled,
     expiryEnabled: expireAfterSeconds != DO_NOT_EXPIRE || ttlIfToday != DO_NOT_EXPIRE,
+    autoCreate: isAutoCreateEnabled(),
     expireAfterSeconds,
     ttlIfToday,
   };

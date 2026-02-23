@@ -10,6 +10,7 @@ const testConfigBase = {
   implName: "nedb",
   storeEnabled: true,
   expiryEnabled: true,
+  autoCreate: true,
   expireAfterSeconds: 3600,
   ttlIfToday: -1,
 };

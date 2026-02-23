@@ -55,7 +55,9 @@ jobs:
       - name: Prepare and Build Desktop
         run: |
           # Remove conflicting config file from backend artifact to avoid EEXIST error
-          rm -f ../backend/dist/config/users.json
+          # Note, this needs to work in a cross-platform way, since the OS can include Linux and Windows,
+          # so we use Node.js instead of a shell command.
+          node -e "try { require('fs').unlinkSync('../backend/dist/config/users.json') } catch(e) {}"
           npm run convert-icon
           npm run build
 

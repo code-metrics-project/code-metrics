@@ -1,6 +1,6 @@
 import { Collection, Db, Document, Filter, MongoClient } from "mongodb";
 import { AbstractDatastore, DatastoreCollection, EXPIRY_FIELD, QueryFilter } from "../api";
-import { error, logger, verbose } from "../../utils/logger/logger";
+import { error, logger, verbose, warn } from "../../utils/logger/logger";
 import { getConfigItem } from "../../config/sources/source";
 
 /**
@@ -87,6 +87,11 @@ export class MongoDatastore extends AbstractDatastore<Filter<Document>, MongoCol
     try {
       const database = client.db(config.name);
       if (!(await this.doesCollectionExist(database, collectionName))) {
+        if (!this.config.autoCreate) {
+          const msg = `Collection '${collectionName}' does not exist and DATASTORE_AUTO_CREATE is disabled. Create the collection manually or set DATASTORE_AUTO_CREATE=true.`;
+          error(msg);
+          throw new Error(msg);
+        }
         logger(`Creating collection: ${collectionName}`);
         try {
           await database.createCollection(collectionName);
@@ -128,6 +133,10 @@ export class MongoDatastore extends AbstractDatastore<Filter<Document>, MongoCol
     if (await col.indexExists(EXPIRY_INDEX)) {
       verbose(`Expiry index ${EXPIRY_INDEX} already exists on collection: ${collectionName}`);
     } else {
+      if (!this.config.autoCreate) {
+        warn(`Expiry index '${EXPIRY_INDEX}' does not exist on collection '${collectionName}' and DATASTORE_AUTO_CREATE is disabled. TTL expiration will not function until the index is created manually or DATASTORE_AUTO_CREATE is enabled.`);
+        return;
+      }
       logger(`Creating expiry index '${EXPIRY_INDEX}' on collection: ${collectionName}`);
       await col.createIndex({ [EXPIRY_FIELD]: 1 }, { expireAfterSeconds: 0, name: EXPIRY_INDEX });
       logger(`Created expiry index '${EXPIRY_INDEX}' on collection: ${collectionName}`);

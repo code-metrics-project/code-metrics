@@ -5,6 +5,7 @@ const getInMemoryDatastore = () =>
   new InMemoryDatastore({
     storeEnabled: false,
     expiryEnabled: false,
+    autoCreate: true,
     implName: "inmem",
     expireAfterSeconds: 0,
     ttlIfToday: DO_NOT_EXPIRE,

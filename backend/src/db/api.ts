@@ -16,16 +16,32 @@ export type DatastoreCollection = {
   deleteAll(): Promise<void>;
 };
 
+/**
+ * Caller-facing configuration for a datastore. These are the tuning
+ * parameters that consumers (e.g. cache modules) supply when requesting
+ * a datastore instance via {@link provideDatastore}.
+ */
 export type BaseDatastoreConfig = {
   expireAfterSeconds: number;
   persistentStore?: boolean;
   ttlIfToday: number;
 };
 
+/**
+ * Full runtime configuration used internally by {@link AbstractDatastore}
+ * and its subclasses. Extends {@link BaseDatastoreConfig} with fields that
+ * the datastore factory derives from environment variables and the base
+ * config during initialisation (see `buildConfig` in `factory.ts`).
+ */
 export type DatastoreConfig = BaseDatastoreConfig & {
+  /** Datastore implementation name, e.g. `inmem`, `dynamodb`, `mongodb`. */
   implName: string;
+  /** Whether reads/writes to the store are enabled. */
   storeEnabled: boolean;
+  /** Whether TTL-based expiration is active for cached items. */
   expiryEnabled: boolean;
+  /** Whether tables/collections may be created automatically on first access. */
+  autoCreate: boolean;
 };
 
 type CacheBehaviour = {

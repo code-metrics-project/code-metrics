@@ -2,18 +2,32 @@
 
 Different datastore implementations are supported.
 
-| Name     | Details                                                                                                                                                                                                                             |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Name     | Details                                                                                                                                                                                                                            |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | inmem    | In-memory datastore implementation.️ This datastore implementation holds all items in memory for the lifetime of the process. There is no eviction, so growth is infinite with continued insertions. Do not use this in production. |
-| dynamodb | AWS DynamoDB datastore. This datastore implementation holds items in external DynamoDB tables.                                                                                                                                      |
-| mongodb  | MongoDB datastore. This datastore implementation holds items in an external MongoDB instance.                                                                                                                                       |
-| nedb     | NeDB datastore. This datastore implementation holds items in an external nedb database.                                                                                                                                             |
+| dynamodb | AWS DynamoDB datastore. This datastore implementation holds items in external DynamoDB tables.                                                                                                                                     |
+| mongodb  | MongoDB datastore. This datastore implementation holds items in an external MongoDB instance.                                                                                                                                      |
+| nedb     | NeDB datastore. This datastore implementation holds items in an external nedb database.                                                                                                                                            |
 
 ## Configuration
 
 Configuration can be set using the `DATASTORE_IMPL` environment variable in backend, which accepts one of `inmem`, `mongodb` as values.
 
     DATASTORE_IMPL=inmem
+
+## Auto-creation of tables and collections
+
+By default, CodeMetrics automatically creates the required datastore tables (DynamoDB) or collections (MongoDB) on first access if they do not already exist.
+
+Operators who prefer to manage database resources externally (e.g. via Terraform, CloudFormation, or manual provisioning) can disable this behaviour:
+
+    DATASTORE_AUTO_CREATE=false
+
+When auto-creation is disabled and a required table or collection does not exist, the application will log an error message identifying the missing resource and guidance on how to resolve it, then throw an error.
+
+This setting applies to **DynamoDB** and **MongoDB** datastores only. The in-memory and local file database implementations always create their stores automatically, as they are local/embedded.
+
+> **Note:** For MongoDB, if auto-creation is disabled and the TTL expiry index does not exist on an existing collection, a warning will be logged but the application will continue to operate. TTL-based expiration will not function until the index is created.
 
 ## Datastore implementations
 
