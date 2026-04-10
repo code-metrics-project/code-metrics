@@ -41,6 +41,11 @@ export const groupVulnerabilities = (vulns: Record<string, Vulnerability[]>): Ma
       }
 
       const datedMetrics = grouped.get(current) ?? { [axisName]: [] };
+      // Ensure the array for this severity level exists
+      if (!datedMetrics[axisName]) {
+        datedMetrics[axisName] = [];
+      }
+
       const repoGroup = lookupRepoGroupForRepoName(workloadId, v.repoName);
 
       const dimensions: MetricItemDimensions = {

@@ -1,5 +1,5 @@
 engine: golang
-version: 1.6.1
+version: 5.17.1
 startTimeout: 60
 
 env:

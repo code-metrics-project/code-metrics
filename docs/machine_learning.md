@@ -26,17 +26,6 @@ Machine learning forecasts let CodeMetrics produce forward-looking projections f
 - The current implementation is wrapped in `FEATURE_ML_FORECASTS` and will eventually replace the TensorFlow-based `predict`/`predict2` helpers.
 - Until the integration is fully wired, the transform still returns stubbed data while the ML API contract stabilises.
 
-```36:68:backend/src/transforms/impl/mlForecast.ts
-async function fetchMLForecast(
-  workload,
-  { forecastEndDate, forecastModel, forecastStartDate, trainingDataStartDate }: TMLForecastArgs,
-): Promise<TMLForecastAPIResponse> {
-  // TODO: Fetch this from API.
-  const response = await fetch("http://localhost:8080/ml");
-  return response.json();
-}
-```
-
 ## Enabling the feature
 
 1. **Run the Mocks**

@@ -50,7 +50,7 @@ Resources:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
-        Enabled: 'true'
+        Enabled: true
         Comment: !Sub 'Distribution for ${DomainName}'
         HttpVersion: http2
         PriceClass: 'PriceClass_All'
@@ -75,12 +75,12 @@ Resources:
               Forward: none
           ViewerProtocolPolicy: allow-all
         CustomErrorResponses:
-          - ErrorCode: '403'
+          - ErrorCode: 403
             ResponsePagePath: /index.html
-            ResponseCode: '200'
-          - ErrorCode: '404'
+            ResponseCode: 200
+          - ErrorCode: 404
             ResponsePagePath: /index.html
-            ResponseCode: '200'
+            ResponseCode: 200
 
 Outputs:
   DistributionDomainName:

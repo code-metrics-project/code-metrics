@@ -2,6 +2,7 @@ import { RemoteConfigWrapper } from "./remote-config";
 import { WorkloadConfigWrapper } from "./workload-config";
 import { StageConfigWrapper } from "./pipeline-config";
 import { QualityGatesConfigWrapper } from "./quality-gates-config";
+import { RBACConfigWrapper } from "./rbac-config";
 
 export type AppMetadata = {
   name: string;
@@ -14,6 +15,7 @@ export type ConfigHolder = {
   workloadConfigs: WorkloadConfigWrapper;
   pipelineConfigs: StageConfigWrapper;
   qualityGatesConfigs: QualityGatesConfigWrapper;
+  rbacConfig: RBACConfigWrapper;
 };
 
 export type AzureTicketOptions = {

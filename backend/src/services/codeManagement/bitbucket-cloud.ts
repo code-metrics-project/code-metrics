@@ -3,6 +3,7 @@ import { AsyncResponse } from "bitbucket/lib/bitbucket";
 import { DatedMetricEntry } from "../../model/metrics";
 import { logger, warn } from "../../utils/logger/logger";
 import {
+  CommitFileChanges,
   CompletePrInfo,
   PREvent,
   PREventDetail,
@@ -11,6 +12,7 @@ import {
   RepoChange,
   RepoChangeSummary,
 } from "../../model/vcs";
+import { TMergeRules } from "../../model/qualityGates";
 import { provideDatastore } from "../../db/factory";
 import { getAllCodeManagementConfig, getAllCodeManagementUrls, getWorkloadById } from "../../config/configMapping";
 import { Datastore, DatastoreCollection, QueryFilter } from "../../db/api";
@@ -54,7 +56,7 @@ const listPullRequestFiles = async (
     pull_request_id: pullRequestId,
     fields: "next,values.new.path",
   });
-  logger(`Found ${files.values.length} files on PR ${pullRequestId}`);
+  logger(`Found ${files.length} files on PR ${pullRequestId}`);
   return files.map((file) => {
     const path = file.new.path.startsWith("/") ? file.new.path : `/${file.new.path}`;
     return { path };
@@ -208,6 +210,111 @@ class BitbucketCloudVcsService implements VcsService {
     }
   };
 
+  getPRsInDateRange = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repositoryName: string,
+    startDate: Date,
+    endDate: Date,
+    limit?: number,
+  ): Promise<CompletePrInfo[]> => {
+    try {
+      const connection = this.#getConnection(workloadId);
+      let prs = [];
+      try {
+        const resp = await paginate(connection, connection.pullrequests.list, {
+          workspace: vcsProjectName,
+          repo_slug: repositoryName,
+          state: "MERGED",
+          fields: "next,values.id,values.title,values.updated_on",
+          q: `updated_on>=${startDate.toISOString()} AND updated_on<=${endDate.toISOString()}`,
+        });
+        prs = resp.filter(({ updated_on }) => {
+          const completedDate = new Date(updated_on);
+          return completedDate >= startDate && completedDate <= endDate;
+        });
+        if (limit) prs = prs.slice(0, limit);
+      } catch (err) {
+        warn(`Error retrieving list of PRs from Bitbucket Cloud: ${err}`);
+        return [];
+      }
+
+      const completePrs: CompletePrInfo[] = await Promise.all(
+        prs.map(async (pr) => {
+          const filesChanged = await listPullRequestFiles(connection, vcsProjectName, repositoryName, pr.id);
+          return {
+            pr: {
+              id: pr.id,
+              title: pr.title,
+              workloadId,
+              vcsProjectName,
+              repositoryName,
+            },
+            issueId: "",
+            filesChanged,
+          };
+        }),
+      );
+
+      return completePrs;
+    } catch (err) {
+      throw new Error(`BitbucketCloud.getPRsInDateRange error ${err}`);
+    }
+  };
+
+  getCommitFileChanges = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repositoryName: string,
+    branches: string[],
+    start: string,
+    end: string,
+  ): Promise<CommitFileChanges[]> => {
+    try {
+      const connection = this.#getConnection(workloadId);
+      const allCommitChanges: CommitFileChanges[] = [];
+      const processedCommits = new Set<string>();
+
+      for (const branch of branches) {
+        try {
+          const commits = await paginate(connection, connection.commits.list, {
+            workspace: vcsProjectName,
+            repo_slug: repositoryName,
+            include: branch,
+          });
+
+          for (const commit of commits) {
+            const commitDate = new Date(commit.date);
+            if (commitDate < new Date(start) || commitDate > new Date(end)) continue;
+
+            if (processedCommits.has(commit.hash)) continue;
+            processedCommits.add(commit.hash);
+
+            const diffStat = (await paginate(connection, (connection.repositories as any).getDiffStat, {
+              workspace: vcsProjectName,
+              repo_slug: repositoryName,
+              spec: commit.hash,
+              fields: "next,values.new.path",
+            })) as any[];
+
+            const filePaths = diffStat.map((f: any) => f.new?.path || "").filter((p: string) => !!p);
+
+            allCommitChanges.push({
+              commitId: commit.hash,
+              filePaths,
+            });
+          }
+        } catch (err) {
+          warn(`Bitbucket Cloud fetch commits failed for branch ${branch}: ${err}`);
+        }
+      }
+
+      return allCommitChanges;
+    } catch (err) {
+      throw new Error(`BitbucketCloud.getCommitFileChanges error ${err}`);
+    }
+  };
+
   fetchChangesInDateRange = async (
     workloadId: WorkloadId,
     vcsProjectName: string,
@@ -337,4 +444,7 @@ class BitbucketCloudVcsService implements VcsService {
 
   buildRepoLink = (workloadId: WorkloadId, repoName: string): string =>
     `${getAllCodeManagementUrls()[workloadId]}/${repoName}`;
+
+  buildFileLink = (workloadId: WorkloadId, repoName: string, branch: string, path: string): string =>
+    `${this.buildRepoLink(workloadId, repoName)}/${path}`;
 }

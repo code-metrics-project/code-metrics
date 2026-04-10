@@ -108,6 +108,8 @@ This example IAM policy scopes read access to secrets with names in the format `
 
 > To refer to these secrets in your configuration, use the ID of the secret in Secrets Manager as the secret name in the placeholder, such as: `${secret.some/secret}`
 
+For LocalStack-based Secrets Manager workflows during development and testing, see [Secrets for Development](./dev/secrets.md).
+
 #### Architectural overview
 
 ```mermaid

@@ -28,7 +28,7 @@ There are two ways to generate a Service Token for your CodeMetrics instance:
 
 The easiest way to generate a Service Token is through the Administration Portal.
 
-For detailed step-by-step instructions with screenshots, see [Creating a New Service Token](./admin_portal.md#creating-a-new-service-token) in the Administration Portal documentation.
+For detailed step-by-step instructions with screenshots, see [Creating a New Service Token](./service_tokens.md#creating-a-new-service-token) in the Service Token Management documentation.
 
 ## Method 2: Using the API Directly
 

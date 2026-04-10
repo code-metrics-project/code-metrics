@@ -1,6 +1,10 @@
 # Datastores
 
-Different datastore implementations are supported.
+CodeMetrics uses a datastore to persist data such as [caching](./caching.md), query results, and configuration. Choosing the right datastore for your environment affects performance, scalability, and operational complexity.
+
+For lightweight or local use, the in-memory or local file implementations require no external infrastructure. For production deployments, a managed datastore such as DynamoDB or MongoDB is recommended to ensure data durability and support multiple application instances running concurrently.
+
+The following datastore implementations are supported:
 
 | Name     | Details                                                                                                                                                                                                                            |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -14,6 +18,8 @@ Different datastore implementations are supported.
 Configuration can be set using the `DATASTORE_IMPL` environment variable in backend, which accepts one of `inmem`, `mongodb` as values.
 
     DATASTORE_IMPL=inmem
+
+For a full list of collections used by CodeMetrics, see [Datastore collections](datastore_collections.md).
 
 ## Auto-creation of tables and collections
 
@@ -108,6 +114,8 @@ This example IAM policy scopes access to tables with names in the format `CodeMe
 
 </details>
 
+For local development and automated testing against DynamoDB with LocalStack, see the developer guide at [Developer datastore setup](./dev/datastores.md).
+
 ### MongoDB implementation
 
 The MongoDB implementation uses an external MongoDB instance to store data. It requires configuration of the connection and authentication details for the MongoDB server.
@@ -118,22 +126,3 @@ The following environment variables apply:
     DATABASE_NAME=code-metrics
     DATABASE_URI=mongodb://code-metrics:changeme@localhost:27017
 
----
-
-## Caching
-
-Certain metrics can be cached in the datastore, for rapid subsequent retrieval and reduction of API calls to the external data providers.
-
-The cache is enabled by this environment variable:
-
-    LOOKUP_CACHE_ENABLED=true
-
-Other, more specific cache settings are as follows:
-
-| Name                     | Details                                          | Default |
-| ------------------------ | ------------------------------------------------ | ------- |
-| CACHE_REPO_LIST          | Cache the VCS repository names.                  | `true`  |
-| PRECACHE_REPO_LIST       | Pre-cache the VCS repository names at startup.   | `true`  |
-| CACHE_PIPELINE_BUILDS    | Cache the pipeline build metadata.               | `true`  |
-| EXPIRY_SECONDS           | Time to cache data if it is for the current day. | `3600`  |
-| REPO_LIST_EXPIRY_SECONDS | Time to cache the VCS repository names.          | `21600` |

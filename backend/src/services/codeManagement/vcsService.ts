@@ -1,4 +1,12 @@
-import { CompletePrInfo, PREvent, PREventDetail, PullRequest, RepoChange, RepoChangeSummary } from "../../model/vcs";
+import {
+  CommitFileChanges,
+  CompletePrInfo,
+  PREvent,
+  PREventDetail,
+  PullRequest,
+  RepoChange,
+  RepoChangeSummary,
+} from "../../model/vcs";
 import { DatedMetricEntry } from "../../model/metrics";
 import { logger, verbose } from "../../utils/logger/logger";
 import { getWorkloadById } from "../../config/configMapping";
@@ -8,11 +16,30 @@ import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { CodeManagementTypes } from "../../model/config/common";
 import { getConfigItem, getConfigItemAsNumber } from "../../config/sources/source";
 import { TMergeRules } from "../../model/qualityGates";
+import { DO_NOT_EXPIRE } from "../../db/api";
+import { truncateDateOnly } from "../../utils/date";
+import { getDataForDateRange, StorableLike } from "../dateWalker";
 
 type RepoList = {
   key: string;
   value: any;
 };
+
+type TemporalPrItemFilter = {
+  serverId: string;
+  projectName: string;
+  repositoryName: string;
+};
+
+type TemporalCommitItemFilter = {
+  serverId: string;
+  projectName: string;
+  repositoryName: string;
+  branchKey: string;
+};
+
+type TemporalPrDayEntry = StorableLike & TemporalPrItemFilter & { value: CompletePrInfo[] };
+type TemporalCommitDayEntry = StorableLike & TemporalCommitItemFilter & { value: CommitFileChanges[] };
 
 export const CACHE_REPO_LIST = getConfigItem("CACHE_REPO_LIST") !== "false";
 const COLLECTION_NAME_COMMIT_PRS = "commit-prs";
@@ -20,11 +47,14 @@ const COLLECTION_NAME_EARLIEST_COMMIT = "earliest-commits";
 const COLLECTION_NAME_VCS_CACHE = "vcs-cache";
 const COLLECTION_NAME_FETCH_FILE = "fetch-file";
 const COLLECTION_NAME_FETCH_MERGE_RULES = "fetch-merge-rules";
+const COLLECTION_NAME_PRS_BY_DAY = "prs-by-day";
+const COLLECTION_NAME_COMMIT_FILE_CHANGES_BY_DAY = "commit-file-changes-by-day";
 
 /**
  * Cache for 6 hours by default.
  */
 const REPO_LIST_EXPIRY_SECONDS: number = getConfigItemAsNumber("REPO_LIST_EXPIRY_SECONDS", 21600)!;
+const TODAY_TTL_SECONDS = 1800;
 
 const builders: Record<string, () => VcsService> = {};
 const instances: Record<string, VcsService> = {};
@@ -113,6 +143,15 @@ export type VcsService = {
     limit?: number,
   ): Promise<CompletePrInfo[]>;
 
+  getPRsInDateRange(
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repositoryName: string,
+    startDate: Date,
+    endDate: Date,
+    limit?: number,
+  ): Promise<CompletePrInfo[]>;
+
   /**
    * Fetch all repository changes in the given date range.
    * @param workloadId
@@ -147,6 +186,15 @@ export type VcsService = {
     start: string,
     end: string,
   ): Promise<DatedMetricEntry<RepoChangeSummary>[]>;
+
+  getCommitFileChanges(
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repositoryName: string,
+    branches: string[],
+    start: string,
+    end: string,
+  ): Promise<CommitFileChanges[]>;
 
   /**
    * Get the pull request associated with a commit.
@@ -200,6 +248,14 @@ export type VcsService = {
   buildRepoLink(workloadId: WorkloadId, repoName: string): string;
 
   /**
+   * Build a user-facing URL to a file.
+   * @param workloadId
+   * @param repoName
+   * @param branch
+   */
+  buildFileLink(workloadId: WorkloadId, repoName: string, branch: string, path: string): string;
+
+  /**
    * Fetch the quality gate manifest from a repository.
    * @param workloadId
    * @param vcsProjectName
@@ -251,6 +307,56 @@ export class CachingVcsServiceImpl implements VcsService {
   ): Promise<DatedMetricEntry<RepoChangeSummary>[]> =>
     this.delegate.summariseChangesInDateRange(workloadId, vcsProjectName, repositoryName, branches, start, end);
 
+  getCommitFileChanges = (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repositoryName: string,
+    branches: string[],
+    start: string,
+    end: string,
+  ): Promise<CommitFileChanges[]> => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const branchKey = [...branches].sort().join(",");
+    const serverId = getWorkloadById(workloadId).codeManagement.serverId;
+    const datastore = provideDatedDatastore(`${serverId}-${COLLECTION_NAME_COMMIT_FILE_CHANGES_BY_DAY}`);
+
+    return getDataForDateRange<TemporalCommitItemFilter, TemporalCommitDayEntry, TemporalCommitDayEntry>(
+      COLLECTION_NAME_COMMIT_FILE_CHANGES_BY_DAY,
+      {
+        serverId,
+        projectName: vcsProjectName,
+        repositoryName,
+        branchKey,
+      },
+      startDate,
+      endDate,
+      datastore,
+      async (currentDate) => {
+        const day = truncateDateOnly(currentDate);
+        return {
+          serverId,
+          projectName: vcsProjectName,
+          repositoryName,
+          branchKey,
+          date: day,
+          value: await this.delegate.getCommitFileChanges(
+            workloadId,
+            vcsProjectName,
+            repositoryName,
+            branches,
+            day,
+            day,
+          ),
+        };
+      },
+    ).then((entries) => {
+      const uniqueByCommitId = new Map<string, CommitFileChanges>();
+      entries.flatMap((entry) => entry.value).forEach((item) => uniqueByCommitId.set(item.commitId, item));
+      return [...uniqueByCommitId.values()];
+    });
+  };
+
   getPROpenTimeFromRepo = (
     workload: string,
     vcsProjectName: string,
@@ -280,6 +386,52 @@ export class CachingVcsServiceImpl implements VcsService {
   ): Promise<CompletePrInfo[]> =>
     this.delegate.getPRsForIssuesFromRepository(workloadId, vcsProjectName, repositoryName, issueIds, limit);
 
+  getPRsInDateRange = (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repositoryName: string,
+    startDate: Date,
+    endDate: Date,
+    limit?: number,
+  ): Promise<CompletePrInfo[]> => {
+    const serverId = getWorkloadById(workloadId).codeManagement.serverId;
+    const datastore = provideDatedDatastore(`${serverId}-${COLLECTION_NAME_PRS_BY_DAY}`);
+
+    return getDataForDateRange<TemporalPrItemFilter, TemporalPrDayEntry, TemporalPrDayEntry>(
+      COLLECTION_NAME_PRS_BY_DAY,
+      {
+        serverId,
+        projectName: vcsProjectName,
+        repositoryName,
+      },
+      startDate,
+      endDate,
+      datastore,
+      async (currentDate) => {
+        const day = truncateDateOnly(currentDate);
+        const dayStart = new Date(`${day}T00:00:00.000Z`);
+        const dayEnd = new Date(`${day}T23:59:59.999Z`);
+        return {
+          serverId,
+          projectName: vcsProjectName,
+          repositoryName,
+          date: day,
+          value: await this.delegate.getPRsInDateRange(
+            workloadId,
+            vcsProjectName,
+            repositoryName,
+            dayStart,
+            dayEnd,
+            undefined,
+          ),
+        };
+      },
+    ).then((entries) => {
+      const allItems = entries.flatMap((entry) => entry.value);
+      return limit ? allItems.slice(0, limit) : allItems;
+    });
+  };
+
   getPRForCommit = async (
     workloadId: WorkloadId,
     vcsProjectName: string,
@@ -300,6 +452,9 @@ export class CachingVcsServiceImpl implements VcsService {
 
   buildRepoLink = (workloadId: WorkloadId, repoName: string): string =>
     this.delegate.buildRepoLink(workloadId, repoName);
+
+  buildFileLink = (workloadId: WorkloadId, repoName: string, branch: string, path: string): string =>
+    this.delegate.buildFileLink(workloadId, repoName, branch, path);
 
   getEarliestCommitForPr = (
     workloadId: WorkloadId,
@@ -419,3 +574,9 @@ const findOrInsert = async <T>(
   );
   return cached.value;
 };
+
+const provideDatedDatastore = (storeId: string) =>
+  provideDatastore(storeId, {
+    expireAfterSeconds: DO_NOT_EXPIRE,
+    ttlIfToday: TODAY_TTL_SECONDS,
+  });

@@ -80,7 +80,7 @@ describe("reifyMetaStageId", () => {
             description: "build stage",
             type: PipelinesTypes.GITHUB,
             serverId: "test-github",
-            projectName: "octo-org",
+            projectName: "octocat",
             commitMapping: {
               runProperty: "$.data.head_sha",
             },

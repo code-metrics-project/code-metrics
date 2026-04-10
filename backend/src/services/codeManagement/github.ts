@@ -10,6 +10,7 @@ import {
   CompletePrInfo,
   PrFileChangeItem,
   PREventDetail,
+  CommitFileChanges,
 } from "../../model/vcs";
 import { DatedMetricEntry } from "../../model/metrics";
 import { getAllCodeManagementConfig, getAllCodeManagementUrls, getWorkloadById } from "../../config/configMapping";
@@ -478,6 +479,89 @@ class GithubVcsService implements VcsService {
     }
   }
 
+  getPRsInDateRange = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repositoryName: string,
+    startDate: Date,
+    endDate: Date,
+    limit?: number,
+  ): Promise<CompletePrInfo[]> => {
+    try {
+      const connection = this.#getConnection(workloadId);
+      const prs = await this.#listClosedPRs(workloadId, vcsProjectName, repositoryName, startDate, endDate, limit);
+
+      const completePrs: CompletePrInfo[] = await Promise.all(
+        prs.map(async (pr) => {
+          const filesChanged = await listPullRequestFiles(connection, vcsProjectName, repositoryName, pr.number);
+          return {
+            pr: {
+              id: pr.number,
+              title: pr.title,
+              workloadId,
+              vcsProjectName,
+              repositoryName,
+            },
+            issueId: "",
+            filesChanged,
+          };
+        }),
+      );
+
+      return completePrs;
+    } catch (err) {
+      throw new Error(`Github.getPRsInDateRange error ${err}`);
+    }
+  };
+
+  getCommitFileChanges = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repositoryName: string,
+    branches: string[],
+    start: string,
+    end: string,
+  ): Promise<CommitFileChanges[]> => {
+    const connection = this.#getConnection(workloadId);
+    const allCommitChanges: CommitFileChanges[] = [];
+    const processedCommits = new Set<string>();
+
+    for (const branch of branches) {
+      try {
+        const commits = await connection.paginate(connection.rest.repos.listCommits, {
+          owner: vcsProjectName,
+          repo: repositoryName,
+          sha: branch,
+          since: new Date(start).toISOString(),
+          until: new Date(end).toISOString(),
+          per_page: 100,
+        });
+
+        for (const commit of commits) {
+          if (processedCommits.has(commit.sha)) continue;
+          processedCommits.add(commit.sha);
+
+          const detail = await connection.rest.repos.getCommit({
+            owner: vcsProjectName,
+            repo: repositoryName,
+            ref: commit.sha,
+          });
+
+          const filePaths = detail.data.files?.map((f) => f.filename) || [];
+
+          allCommitChanges.push({
+            commitId: commit.sha,
+            filePaths,
+          });
+        }
+      } catch (err) {
+        warn(`Failed to fetch commits for ${vcsProjectName}/${repositoryName}/${branch}: ${err}`);
+      }
+    }
+
+    return allCommitChanges;
+  };
+
   /**
    * Check if the connection is using GitHub App authentication
    */
@@ -719,4 +803,7 @@ class GithubVcsService implements VcsService {
 
   buildRepoLink = (workloadId: WorkloadId, repoName: string): string =>
     `${getAllCodeManagementUrls()[workloadId]}/${repoName}`;
+
+  buildFileLink = (workloadId: WorkloadId, repoName: string, branch: string, path: string): string =>
+    `${this.buildRepoLink(workloadId, repoName)}/blob/${branch}/${path}`;
 }

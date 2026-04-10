@@ -1,18 +1,1 @@
-stages:
-  - id: azure-deployment-pipeline
-    description: deployment stage
-    type: azure
-    serverId: mock-azure
-    projectName: "octo-org"
-    #jobNameMapping: "repo-name"
-    commitMapping:
-      runProperty: "$.data.head_sha"
-
-  - id: github-deployment-pipeline
-    description: deployment stage
-    type: github
-    serverId: mock-github
-    projectName: "octo-org"
-    #jobNameMapping: "repo-name"
-    commitMapping:
-      runProperty: "$.data.head_sha"
+../../backend/config/examples/pipeline-config.yaml

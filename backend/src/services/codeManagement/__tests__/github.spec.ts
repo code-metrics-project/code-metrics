@@ -107,13 +107,13 @@ describe(`GitHub VCS integration`, () => {
 
     const repos = await github.getReposForProject(workload.id, workload.codeManagement.projectName);
     expect(repos).toHaveLength(1);
-    expect(repos[0]).toBe("octo-repo");
+    expect(repos[0]).toBe("hello-world");
   });
 
   it(`gets all prs matching issueId for a given repo in an org`, async () => {
     const github = getVcsForWorkload(workload);
 
-    const prs = await github.getPRsForIssuesFromRepository(workload.id, "octocat", "octo-repo", ["DEV-12345"]);
+    const prs = await github.getPRsForIssuesFromRepository(workload.id, "octocat", "hello-world", ["DEV-12345"]);
     expect(prs).toHaveLength(1);
     expect(prs[0].pr.title).toBe("DEV-12345 - Amazing new feature");
     expect(prs[0].filesChanged).toHaveLength(1);
@@ -125,14 +125,14 @@ describe(`GitHub VCS integration`, () => {
     const changes = await github.fetchChangesInDateRange(
       workload.id,
       "octocat",
-      "octo-repo",
+      "hello-world",
       ["main"],
       "2011-04-14",
       "2011-04-14",
     );
     expect(changes).toHaveLength(1);
     expect(changes[0].date).toBe("2011-04-14T16:00:49Z");
-    expect(changes[0].repo).toBe("octo-repo");
+    expect(changes[0].repo).toBe("hello-world");
     expect(changes[0].message).toBe("Fix all the bugs");
     expect(changes[0].commitId).toBe("6dcb09b5b57875f334f61aebed695e2e4193db5e");
     expect(changes[0].branch).toBe("main");
@@ -144,14 +144,14 @@ describe(`GitHub VCS integration`, () => {
     const changes = await github.summariseChangesInDateRange(
       workload.id,
       "octocat",
-      "octo-repo",
+      "hello-world",
       ["main"],
       "2011-04-14",
       "2011-04-14",
     );
     expect(changes).toHaveLength(1);
     expect(changes[0].date).toBe("2011-04-14");
-    expect(changes[0].value.repositoryName).toBe("octo-repo");
+    expect(changes[0].value.repositoryName).toBe("hello-world");
     expect(changes[0].value.changes).toHaveLength(1);
     expect(changes[0].value.changes[0].added).toBe(104);
     expect(changes[0].value.commits).toHaveLength(1);
@@ -163,8 +163,16 @@ describe(`GitHub VCS integration`, () => {
     const github = getVcsForWorkload(workload);
 
     const workloadId: WorkloadId = "gaia";
-    const link = github.buildRepoLink(workloadId, "octo-repo");
-    expect(link).toBe(`${mockServer.baseUrl()}/Octocat/octo-repo`);
+    const link = github.buildRepoLink(workloadId, "hello-world");
+    expect(link).toBe(`${mockServer.baseUrl()}/Octocat/hello-world`);
+  });
+
+  it(`generates a valid file link`, () => {
+    const github = getVcsForWorkload(workload);
+
+    const workloadId: WorkloadId = "gaia";
+    const link = github.buildFileLink(workloadId, "hello-world", "main", ".github/workflows/test.yml");
+    expect(link).toBe(`${mockServer.baseUrl()}/Octocat/hello-world/blob/main/.github/workflows/test.yml`);
   });
 
   it(`generates a valid commit link`, () => {
@@ -176,11 +184,11 @@ describe(`GitHub VCS integration`, () => {
       commitId: "a1b2c3d4",
       date: "2024-04-09",
       message: "Commit message",
-      repo: "octo-repo",
+      repo: "hello-world",
       workload: workloadId,
     };
     const link = github.buildCommitLink(change, workloadId, "octocat");
-    expect(link).toBe(`${mockServer.baseUrl()}/Octocat/octo-repo/commit/a1b2c3d4`);
+    expect(link).toBe(`${mockServer.baseUrl()}/Octocat/hello-world/commit/a1b2c3d4`);
   });
 
   it(`generates a valid PR link`, () => {
@@ -192,26 +200,26 @@ describe(`GitHub VCS integration`, () => {
       commitId: "a1b2c3d4",
       date: "2024-04-09",
       message: "Commit message",
-      repo: "octo-repo",
+      repo: "hello-world",
       workload: workloadId,
     };
     const pr: PullRequest = {
       id: 5,
       message: "Pull request body",
-      repositoryName: "octo-repo",
+      repositoryName: "hello-world",
       sourceBranch: "main",
       title: "Pull request title",
       vcsProjectName: "octocat",
       workloadId: workloadId,
     };
     const link = github.buildPRLink(change, pr, workloadId);
-    expect(link).toBe(`${mockServer.baseUrl()}/Octocat/octo-repo/pull/5`);
+    expect(link).toBe(`${mockServer.baseUrl()}/Octocat/hello-world/pull/5`);
   });
 
   it("should get the PR associated with a commit", async () => {
     const github = getVcsForWorkload(workload);
 
-    const pr = await github.getPRForCommit(workload.id, "octo-org", "octo-repo", "a1b2c3d4");
+    const pr = await github.getPRForCommit(workload.id, "octocat", "hello-world", "a1b2c3d4");
     expect(pr.id).toBe(1347);
     expect(pr.title).toBe("Amazing new feature");
   });
@@ -219,7 +227,7 @@ describe(`GitHub VCS integration`, () => {
   it("should get the earliest commit for a PR", async () => {
     const github = getVcsForWorkload(workload);
 
-    const commit = await github.getEarliestCommitForPr(workload.id, "octo-org", "octo-repo", 1347);
+    const commit = await github.getEarliestCommitForPr(workload.id, "octocat", "hello-world", 1347);
     expect(commit.commitId).toBe("6dcb09b5b57875f334f61aebed695e2e4193db5e");
     expect(commit.date).toBe("2011-04-14T16:00:49Z");
     expect(commit.message).toBe("Fix all the bugs");

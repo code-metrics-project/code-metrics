@@ -1,0 +1,58 @@
+# Docker Compose configuration for local AWS emulation.
+#
+# The file name is preserved for compatibility, but the default emulator is
+# MiniStack for Secrets Manager, DynamoDB, and deployed Node.js Lambda workflows.
+#
+# Usage options:
+#
+# 1. With Node.js backend (Secrets Manager + DynamoDB only via MiniStack):
+#    docker-compose -f compose/docker-compose.yaml -f compose/docker-compose-aws-local.yaml --project-directory . up --build
+#
+# 2. With Lambda backend (MiniStack plus deployment sidecars):
+#    docker-compose -f compose/docker-compose-aws-local.yaml -f compose/docker-compose-aws-local-lambda.yaml --project-directory . up --build
+#
+# 3. Standalone local AWS emulator for backend development:
+#    docker-compose -f compose/docker-compose-aws-local.yaml up -d
+#
+# Then configure the backend .env with:
+#   AWS_REGION=us-east-1
+#   AWS_ENDPOINT_URL=http://localhost:4566
+#   SECRET_RESOLVER_IMPL=secretsmanager
+#   DATASTORE_IMPL=dynamodb
+
+services:
+  aws-local:
+    image: nahuelnucera/ministack:latest
+    ports:
+      - "4566:4566"
+    environment:
+      GATEWAY_PORT: 4566
+      LOG_LEVEL: INFO
+      MINISTACK_HOST: aws-local
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'python -c "import urllib.request; urllib.request.urlopen(''http://localhost:4566/_ministack/health'')"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  aws-local-init:
+    image: amazon/aws-cli:latest
+    depends_on:
+      aws-local:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ENDPOINT_URL: http://aws-local:4566
+    volumes:
+      - "./aws-local-init:/scripts:ro"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        /scripts/01-create-secrets.sh
+        /scripts/02-create-dynamodb-tables.sh

@@ -128,6 +128,7 @@ const handleCallback = async (req: Request): Promise<string> => {
 
   const tokenSet = await performTokenExchange(req, params);
   if (!tokenSet) {
+    warn("OIDC: Token exchange failed or returned null");
     return null;
   }
 

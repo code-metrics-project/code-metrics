@@ -25,7 +25,16 @@ describe("qualityGates", () => {
 
   describe("enrichManifest", () => {
     it("should enrich manifest with phases, gates, and required status checks for multiple services", () => {
+      const mockVcs = {
+        buildFileLink: jest
+          .fn()
+          .mockReturnValueOnce("https://alpha.com/blob/main/.github/workflows/pre-commit.yml")
+          .mockReturnValueOnce("https://alpha.com/blob/main/.github/workflows/pre-commit.yml"),
+      };
+
       const result = enrichManifest(
+        mockVcs as any,
+        "test-workload",
         "alpha",
         "https://alpha.com",
         {
@@ -77,6 +86,14 @@ describe("qualityGates", () => {
         },
       );
 
+      expect(mockVcs.buildFileLink).toHaveBeenCalledWith(
+        "test-workload",
+        "alpha",
+        "main",
+        ".github/workflows/pre-commit.yml",
+      );
+      expect(mockVcs.buildFileLink).toHaveBeenCalledTimes(2);
+
       expect(result).toEqual({
         repo: "alpha",
         repoLink: "https://alpha.com",
@@ -94,6 +111,7 @@ describe("qualityGates", () => {
                       phase: "pre-merge",
                       config: {
                         file: ".github/workflows/pre-commit.yml",
+                        fileURL: "https://alpha.com/blob/main/.github/workflows/pre-commit.yml",
                         path: "jobs.pre-commit",
                         name: "Run pre-commit",
                       },
@@ -122,6 +140,7 @@ describe("qualityGates", () => {
                       phase: "pre-merge",
                       config: {
                         file: ".github/workflows/pre-commit.yml",
+                        fileURL: "https://alpha.com/blob/main/.github/workflows/pre-commit.yml",
                         path: "jobs.pre-commit",
                         name: "Run pre-commit 2",
                       },
@@ -163,7 +182,13 @@ describe("qualityGates", () => {
 
     describe("enrichManifest - edge cases", () => {
       it("should handle manifest with empty services array", () => {
+        const mockVcs = {
+          buildFileLink: jest.fn(),
+        };
+
         const result = enrichManifest(
+          mockVcs as any,
+          "test-workload",
           "test-repo",
           "https://test.com",
           {
@@ -183,10 +208,17 @@ describe("qualityGates", () => {
           repoLink: "https://test.com",
           services: [],
         });
+        expect(mockVcs.buildFileLink).not.toHaveBeenCalled();
       });
 
       it("should handle rules being null/undefined", () => {
+        const mockVcs = {
+          buildFileLink: jest.fn().mockReturnValue("https://test.com/blob/main/.github/workflows/test.yml"),
+        };
+
         const result = enrichManifest(
+          mockVcs as any,
+          "test-workload",
           "test-repo",
           "https://test.com",
           {
@@ -220,10 +252,22 @@ describe("qualityGates", () => {
         expect(
           result.services[0]["quality-gates"]["code style and linting"][0].gates[0].isRequiredStatusCheck,
         ).toBeUndefined();
+        expect(result.services[0]["quality-gates"]["code style and linting"][0].gates[0].config.fileURL).toBe(
+          "https://test.com/blob/main/.github/workflows/test.yml",
+        );
       });
 
       it("should handle multiple quality gates with different check-types", () => {
+        const mockVcs = {
+          buildFileLink: jest
+            .fn()
+            .mockReturnValueOnce("https://test.com/blob/main/.github/workflows/lint.yml")
+            .mockReturnValueOnce("https://test.com/blob/main/.github/workflows/test.yml"),
+        };
+
         const result = enrichManifest(
+          mockVcs as any,
+          "test-workload",
           "test-repo",
           "https://test.com",
           {
@@ -270,6 +314,12 @@ describe("qualityGates", () => {
           true,
         );
         expect(result.services[0]["quality-gates"]["unit tests"][0].gates[0].isRequiredStatusCheck).toBe(false);
+        expect(result.services[0]["quality-gates"]["code style and linting"][0].gates[0].config.fileURL).toBe(
+          "https://test.com/blob/main/.github/workflows/lint.yml",
+        );
+        expect(result.services[0]["quality-gates"]["unit tests"][0].gates[0].config.fileURL).toBe(
+          "https://test.com/blob/main/.github/workflows/test.yml",
+        );
       });
     });
 
@@ -298,6 +348,7 @@ describe("qualityGates", () => {
           ),
           fetchMergeRules: jest.fn().mockResolvedValue([]),
           buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo"),
+          buildFileLink: jest.fn().mockReturnValue("https://test.com/repo/blob/main/test-file"),
         };
 
         jest.spyOn(configMapping, "getWorkloadById").mockReturnValue(mockWorkload as any);
@@ -336,6 +387,7 @@ describe("qualityGates", () => {
           fetchFile: jest.fn().mockRejectedValue(new Error("Fetch failed")),
           fetchMergeRules: jest.fn().mockRejectedValue(new Error("Fetch failed")),
           buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo"),
+          buildFileLink: jest.fn().mockReturnValue("https://test.com/repo/blob/main/test-file"),
         };
 
         jest.spyOn(configMapping, "getWorkloadById").mockReturnValue(mockWorkload as any);
@@ -389,6 +441,7 @@ describe("qualityGates", () => {
           ),
           fetchMergeRules: jest.fn().mockResolvedValue([]),
           buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo1"),
+          buildFileLink: jest.fn().mockReturnValue("https://test.com/repo1/blob/main/test-file"),
         };
 
         jest.spyOn(configMapping, "getWorkloadById").mockReturnValue(mockWorkload as any);
@@ -424,6 +477,7 @@ describe("qualityGates", () => {
           ),
           fetchMergeRules: jest.fn().mockResolvedValue([]),
           buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo"),
+          buildFileLink: jest.fn().mockReturnValue("https://test.com/repo/blob/main/test-file"),
         };
 
         jest.spyOn(configMapping, "listWorkloadIds").mockReturnValue(["workload-1"]);
@@ -471,6 +525,7 @@ describe("qualityGates", () => {
             .mockRejectedValueOnce(new Error("Failed to fetch")),
           fetchMergeRules: jest.fn().mockResolvedValueOnce([]).mockRejectedValueOnce(new Error("Failed to fetch")),
           buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo"),
+          buildFileLink: jest.fn().mockReturnValue("https://test.com/repo/blob/main/test-file"),
         };
 
         jest.spyOn(configMapping, "getWorkloadById").mockReturnValue(mockWorkload as any);
@@ -515,6 +570,7 @@ describe("qualityGates", () => {
           ),
           fetchMergeRules: jest.fn().mockResolvedValue([]),
           buildRepoLink: jest.fn().mockReturnValue("https://test.com/repo"),
+          buildFileLink: jest.fn().mockReturnValue("https://test.com/repo/blob/main/test-file"),
         };
 
         jest.spyOn(configMapping, "getWorkloadById").mockReturnValue(mockWorkload as any);

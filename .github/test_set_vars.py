@@ -31,13 +31,16 @@ class TestSetVars(unittest.TestCase):
             "service_dirs": {
                 "auth": ["backend/src/auth"],
                 "backend": ["backend", ":!backend/.dockerignore"],
+                "desktop": ["desktop"],
+                "frontend": ["frontend", ":!frontend/.dockerignore"],
                 "ui": ["ui", ":!ui/.dockerignore"],
                 "docker_backend": ["docker/Dockerfile.backend", "backend/.dockerignore"],
                 ".github": [".github"]
             },
             "fold_rules": {
-                ".github": ["auth", "backend", "docker_backend"],
-                "backend": ["ui"] # simplified for testing
+                ".github": ["auth", "backend", "desktop", "docker_backend", "frontend", "ui"],
+                "backend": ["frontend"],
+                "desktop": ["backend", "frontend"]
             }
         }
         # Patch the module-level config variables directly
@@ -103,6 +106,29 @@ class TestSetVars(unittest.TestCase):
             
             self.assertEqual(data.get("backendComponents"), 1)
             self.assertEqual(data.get("authComponents"), 0)
+
+    def test_desktop_changed_triggers_backend_and_frontend(self):
+        """
+        Test case: desktop changes.
+        Desktop packaging depends on both backend and frontend artifacts.
+        """
+        def side_effect(base, paths):
+            if "desktop" in paths:
+                return 1
+            return 0
+        self.mock_changed.side_effect = side_effect
+
+        with patch("builtins.open", new_callable=MagicMock) as mock_file:
+            set_vars.main([])
+
+            handle = mock_file.return_value.__enter__.return_value
+            write_call = handle.write.call_args[0][0]
+            json_str = write_call.replace("vars=", "").strip()
+            data = json.loads(json_str)
+
+            self.assertEqual(data.get("desktopComponents"), 1)
+            self.assertEqual(data.get("backendComponents"), 1)
+            self.assertEqual(data.get("frontendComponents"), 1)
 
     def test_granular_docker_triggers(self):
         """
@@ -218,6 +244,8 @@ class TestSetVars(unittest.TestCase):
             self.assertEqual(data.get("authComponents"), 1)
             self.assertEqual(data.get("backendComponents"), 1)
             self.assertEqual(data.get("docker_backendComponents"), 1)
+            self.assertEqual(data.get("frontendComponents"), 1)
+            self.assertEqual(data.get("uiComponents"), 1)
 
     def test_overrides(self):
         """Verify --set override works for auth."""

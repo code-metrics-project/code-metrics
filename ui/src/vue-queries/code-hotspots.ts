@@ -1,6 +1,6 @@
 import { useQuery, type QueryFunctionContext } from "@tanstack/vue-query";
 import { CODE_HOTSPOTS } from "@/utils/urls";
-import axios from "@/utils/axios";
+import { client } from "@/utils/apiClient";
 import type { RepoData } from "@/model/vcs";
 import type { Ref } from "vue";
 import { KEYS } from "./keys";
@@ -19,7 +19,7 @@ type CodeHotspotsQueryKey = [string, CodeHotspotsRequest];
 async function runQuery({ queryKey }: QueryFunctionContext<CodeHotspotsQueryKey>) {
   const [_key, query] = queryKey;
 
-  const response = await axios.post(CODE_HOTSPOTS, query).catch((e) => {
+  const response = await client.post(CODE_HOTSPOTS, query).catch((e) => {
     if (e.response.data) {
       const errorMessages = (e.response.data.errors as APIError)
         .map((error) => {

@@ -28,7 +28,7 @@ Cypress.Commands.add("login", () => {
   cy.get('input[name="username"]').type("admin");
   cy.get('input[name="password"]').type("admin");
   cy.get('button[type="submit"]').click();
-  cy.contains("CodeMetrics");
+  cy.contains("Logout", { timeout: 10000 }).should("be.visible");
 });
 
 Cypress.Commands.add("checkFooter", () => {

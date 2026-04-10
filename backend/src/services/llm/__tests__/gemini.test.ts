@@ -1,11 +1,10 @@
 import { GeminiLlmService } from "../gemini";
 import * as configMapping from "../../../config/configMapping";
+import { LlmProviderTypes } from "../../../model/config/common";
 
 // Mock the config mapping module
 jest.mock("../../../config/configMapping");
-const mockGetAllLlmConfig = configMapping.getAllLlmConfig as jest.MockedFunction<
-  typeof configMapping.getAllLlmConfig
->;
+const mockGetAllLlmConfig = configMapping.getAllLlmConfig as jest.MockedFunction<typeof configMapping.getAllLlmConfig>;
 
 // Mock logger to avoid console output during tests
 jest.mock("../../../utils/logger/logger", () => ({
@@ -29,7 +28,7 @@ describe("GeminiLlmService", () => {
   describe("constructor", () => {
     it("should use API key from remote config when available", () => {
       mockGetAllLlmConfig.mockReturnValue({
-        type: "gemini" as const,
+        type: LlmProviderTypes.GEMINI,
         gemini: {
           server: {
             id: "test-gemini",
@@ -46,7 +45,7 @@ describe("GeminiLlmService", () => {
 
     it("should use default model when not provided in remote config", () => {
       mockGetAllLlmConfig.mockReturnValue({
-        type: "gemini" as const,
+        type: LlmProviderTypes.GEMINI,
         gemini: {
           server: {
             id: "test-gemini",
@@ -61,7 +60,7 @@ describe("GeminiLlmService", () => {
 
     it("should prefer constructor parameters over remote config", () => {
       mockGetAllLlmConfig.mockReturnValue({
-        type: "gemini" as const,
+        type: LlmProviderTypes.GEMINI,
         gemini: {
           server: {
             id: "test-gemini",
@@ -87,7 +86,7 @@ describe("GeminiLlmService", () => {
 
     it("should handle empty gemini config gracefully", () => {
       mockGetAllLlmConfig.mockReturnValue({
-        type: "gemini" as const,
+        type: LlmProviderTypes.GEMINI,
       });
 
       const service = new GeminiLlmService();
@@ -98,7 +97,7 @@ describe("GeminiLlmService", () => {
 
     it("should initialize Google AI when API key is provided", () => {
       mockGetAllLlmConfig.mockReturnValue({
-        type: "gemini" as const,
+        type: LlmProviderTypes.GEMINI,
         gemini: {
           server: {
             id: "test-gemini",
@@ -124,7 +123,7 @@ describe("GeminiLlmService", () => {
   describe("generateChangesSummary", () => {
     it("should return default message when no changes provided", async () => {
       mockGetAllLlmConfig.mockReturnValue({
-        type: "gemini" as const,
+        type: LlmProviderTypes.GEMINI,
         gemini: {
           server: {
             id: "test-gemini",
@@ -136,6 +135,30 @@ describe("GeminiLlmService", () => {
       const service = new GeminiLlmService();
       const result = await service.generateChangesSummary([]);
       expect(result).toBe("No changes found for this period.");
+    });
+
+    it("should include locale-code language instruction in generated prompt", async () => {
+      mockGetAllLlmConfig.mockReturnValue({
+        type: LlmProviderTypes.GEMINI,
+        gemini: {
+          server: {
+            id: "test-gemini",
+            apiKey: "test-key",
+          },
+        },
+      });
+
+      const service = new GeminiLlmService();
+      const sendMessageSpy = jest.spyOn(service, "sendMessage").mockResolvedValue("Résumé");
+
+      await service.generateChangesSummary(
+        [{ repo: "repo-a", message: "Fix issue", links: { issueId: "PROJ-1", issueType: "Bug" } }],
+        "fr-FR",
+      );
+
+      expect(sendMessageSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Respond in the language indicated by this BCP-47 locale code: "fr".'),
+      );
     });
   });
 });

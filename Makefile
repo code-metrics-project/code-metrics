@@ -262,49 +262,49 @@ docker-compose-promosite:
 
 _helm-dep_up:
 ifeq ($(DEP_UP_RUN), false)
-	helm dependency update helm/$(NAME)
-	helm dependency update helm/$(NAME)/charts/$(BACKEND_NAME)
-	helm dependency update helm/$(NAME)/charts/$(FRONTEND_NAME)
+	helm dependency update deployment/helm/$(NAME)
+	helm dependency update deployment/helm/$(NAME)/charts/$(BACKEND_NAME)
+	helm dependency update deployment/helm/$(NAME)/charts/$(FRONTEND_NAME)
 DEP_UP_RUN := true
 endif
 
 lint-helm: _helm-dep_up lint-helm-backend lint-helm-frontend
-	helm lint helm/$(NAME)
+	helm lint deployment/helm/$(NAME)
 
 render-helm: _helm-dep_up render-helm-backend render-helm-frontend
-	helm template helm/$(NAME)
+	helm template deployment/helm/$(NAME)
 
 lint-helm-backend: _helm-dep_up
-	helm lint helm/$(NAME)/charts/$(BACKEND_NAME)
+	helm lint deployment/helm/$(NAME)/charts/$(BACKEND_NAME)
 
 lint-helm-frontend: _helm-dep_up
-	helm lint helm/$(NAME)/charts/$(FRONTEND_NAME)
+	helm lint deployment/helm/$(NAME)/charts/$(FRONTEND_NAME)
 
 render-helm-backend: _helm-dep_up
-	helm template helm/$(NAME)/charts/$(BACKEND_NAME)
+	helm template deployment/helm/$(NAME)/charts/$(BACKEND_NAME)
 
 render-helm-frontend: _helm-dep_up
-	helm template helm/$(NAME)/charts/$(FRONTEND_NAME)
+	helm template deployment/helm/$(NAME)/charts/$(FRONTEND_NAME)
 
 build-helm: lint-helm lint-helm-backend render-helm-backend lint-helm-frontend render-helm-frontend
-	helm dependency update helm/$(NAME)
-	helm package helm/$(NAME)
+	helm dependency update deployment/helm/$(NAME)
+	helm package deployment/helm/$(NAME)
 
 lint-helm-demo: _helm-dep_up
-	helm lint helm/$(DEMO)
+	helm lint deployment/helm/$(DEMO)
 
 render-helm-demo: _helm-dep_up
-	helm template helm/$(DEMO)
+	helm template deployment/helm/$(DEMO)
 
 build-helm-demo: lint-helm-demo
-	helm dependency update helm/$(DEMO)
-	helm package helm/$(DEMO)
+	helm dependency update deployment/helm/$(DEMO)
+	helm package deployment/helm/$(DEMO)
 
 k8s-helm: render-helm lint-helm build-helm
 	helm $(HELM_ARGS) upgrade -i $(NAME) ./$(NAME)-*.tgz
 
 k8s-helm-demo: render-helm lint-helm build-helm render-helm-demo lint-helm-demo build-helm-demo
-	helm $(HELM_ARGS) upgrade -i -f helm/demo-code-metrics-values.yaml $(NAME) ./$(NAME)-*.tgz
+	helm $(HELM_ARGS) upgrade -i -f deployment/helm/demo-code-metrics-values.yaml $(NAME) ./$(NAME)-*.tgz
 	helm $(HELM_ARGS) upgrade -i $(DEMO) ./$(DEMO)-*.tgz
 
 rancher-helm: HELM_ARGS=--kube-context rancher-desktop

@@ -128,7 +128,7 @@
 
 <script lang="ts">
 // @ts-nocheck
-import axios from "@/utils/axios";
+import { client } from "@/utils/apiClient";
 import DatePicker from "@/components/DatePicker.vue";
 import { truncateDateOnly, getOffsetDate } from "@/utils/date";
 import { CODE_ANALYSIS_AGGREGATE } from "@/utils/urls";
@@ -219,7 +219,7 @@ export default {
       this.runToggle = true;
       this.runToggleLabel = "Summarising metrics...";
       try {
-        const { data } = await axios.post(CODE_ANALYSIS_AGGREGATE, {
+        const { data } = await client.post(CODE_ANALYSIS_AGGREGATE, {
           workloads: this.workloadIds,
           repoGroups: this.repoGroupsInput,
           individualRepos: this.individualReposInput?.map((it) => {

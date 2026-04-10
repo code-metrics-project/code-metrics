@@ -12,7 +12,7 @@ ui/
 desktop/
 machinelearning/
 mocks/
-helm/
+deployment/helm/
 tools/
 examples/
 threatmodel/

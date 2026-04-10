@@ -17,9 +17,9 @@ npm run test:integration
 npm run test:slow
 popd
 
-pushd "${ROOT_DIR}/ui"
+pushd "${ROOT_DIR}/frontend"
 npm ci
-npm run test:unit run
+npm run test:unit
 popd
 
-"${ROOT_DIR}/scripts/validate-test_e2e_mocks.sh" --skip-install
+"${ROOT_DIR}/scripts/validate-test_e2e_mocks.sh" --auth-mode file --skip-install

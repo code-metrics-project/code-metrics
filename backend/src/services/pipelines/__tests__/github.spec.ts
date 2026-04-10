@@ -26,10 +26,10 @@ const workload: Workload = {
   codeManagement: {
     type: CodeManagementTypes.GITHUB,
     serverId: "test-github",
-    projectName: "octo-org",
+    projectName: "octocat",
     repoGroups: {
       backend: {
-        components: [{name: "octo-repo", repo: "octo-repo"}],
+        components: [{ name: "hello-world", repo: "hello-world" }],
       },
     },
   },
@@ -127,10 +127,18 @@ describe(`GitHub Pipelines integration`, () => {
 
     const startDate = new Date("2011-04-19");
     const endDate = new Date("2011-04-19");
-    const builds = await github.getRunsForProject(workload.id, ["octo-org"], "octo-repo", ["main"], startDate, endDate);
-    expect(builds).toHaveLength(1);
-    expect(builds[0].branch).toBe("main");
-    expect(builds[0].result).toBe(RunResult.Succeeded);
+    const builds = await github.getRunsForProject(
+      workload.id,
+      ["octocat"],
+      "hello-world",
+      ["main"],
+      startDate,
+      endDate,
+    );
+    expect(builds).toHaveLength(2);
+    expect(builds.every((b) => b.branch === "main")).toBe(true);
+    expect(builds.map((b) => b.id).sort()).toEqual(["30433642", "30433643"]);
+    expect(builds.every((b) => Object.values(RunResult).includes(b.result))).toBe(true);
   });
 
   it(`lists job names`, async () => {
@@ -152,8 +160,8 @@ describe(`GitHub Pipelines integration`, () => {
 
     const propValue = await github.getPipelineRunProperty(
       workload.id,
-      "octo-org",
-      "octo-repo",
+      "octocat",
+      "hello-world",
       "30433642",
       "$.data.head_sha",
     );
@@ -169,20 +177,20 @@ describe(`GitHub Pipelines integration`, () => {
     const runs = await github.getRunsForJobs(workload.id, ["CI"], ["main"], startDate, endDate);
 
     const groupRuns = runs.filter((r) => r.workloadId === "athena" && r.jobGroup === "backend");
-    expect(groupRuns).toHaveLength(1);
-
-    const run = groupRuns[0].run;
-    expect(run.branch).toBe("main");
-    expect(run.job).toBe("CI");
-    expect(run.repo).toBe("octo-repo");
-    expect(run.result).toBe(RunResult.Succeeded);
+    expect(groupRuns).toHaveLength(2);
+    expect(groupRuns.every((r) => r.stageId === "github-build-stage")).toBe(true);
+    expect(groupRuns.map((r) => r.run.id).sort()).toEqual(["30433642", "30433643"]);
+    expect(groupRuns.every((r) => r.run.branch === "main")).toBe(true);
+    expect(groupRuns.every((r) => r.run.job === "CI")).toBe(true);
+    expect(groupRuns.every((r) => r.run.repo === "hello-world")).toBe(true);
+    expect(groupRuns.every((r) => Object.values(RunResult).includes(r.run.result))).toBe(true);
   });
 
   it("builds correct run links for GitHub.com API URL", () => {
     const github = getPipelinesForWorkload(workload, "github-build-stage");
-    const link = github.buildRunLink(workload.id, "octo-repo", "12345");
+    const link = github.buildRunLink(workload.id, "hello-world", "12345");
 
     // For mock server, URL should pass through unchanged (localhost)
-    expect(link).toContain("/DeloitteDigitalUK/octo-repo/actions/runs/12345");
+    expect(link).toContain("/DeloitteDigitalUK/hello-world/actions/runs/12345");
   });
 });

@@ -31,7 +31,7 @@ const workload: Workload = {
     type: TicketManagementTypes.GITHUB,
     serverId: "test-github",
     owner: "octocat",
-    repo: "Hello-World",
+    repo: "hello-world",
     ticketTypes: ["bug", "enhancement", "feature"],
     ticketPriorities: ["priority:low", "priority:medium", "priority:high"],
     stateFilter: "all",
@@ -45,7 +45,7 @@ const workload: Workload = {
     type: TicketManagementTypes.GITHUB,
     serverId: "test-github",
     owner: "octocat",
-    repo: "Hello-World",
+    repo: "incidents",
     ticketTypes: ["bug"],
     stateFilter: "all",
   },
@@ -69,7 +69,7 @@ beforeAll(async () => {
               apiKey: "test-token",
               defaults: {
                 owner: "octocat",
-                repo: "Hello-World",
+                repo: "hello-world",
                 ticketTypes: ["bug", "enhancement", "feature"],
                 stateFilter: "all",
               },
@@ -398,19 +398,19 @@ describe(`GitHub issue management service`, () => {
     const link1 = github.buildTicketLink(workload.id, "#123");
     const link2 = github.buildTicketLink(workload.id, "456");
 
-    expect(link1).toBe(`${mockServer.baseUrl()}/octocat/Hello-World/issues/123`);
-    expect(link2).toBe(`${mockServer.baseUrl()}/octocat/Hello-World/issues/456`);
+    expect(link1).toBe(`${mockServer.baseUrl()}/octocat/hello-world/issues/123`);
+    expect(link2).toBe(`${mockServer.baseUrl()}/octocat/hello-world/issues/456`);
   });
 
   it(`handles various issue number formats in URLs`, async () => {
     const github = getIssueMgmtForWorkload(workload);
 
     const testCases = [
-      { issueId: "1", expected: `${mockServer.baseUrl()}/octocat/Hello-World/issues/1` },
-      { issueId: "#1", expected: `${mockServer.baseUrl()}/octocat/Hello-World/issues/1` },
-      { issueId: "999", expected: `${mockServer.baseUrl()}/octocat/Hello-World/issues/999` },
-      { issueId: "#999", expected: `${mockServer.baseUrl()}/octocat/Hello-World/issues/999` },
-      { issueId: "0", expected: `${mockServer.baseUrl()}/octocat/Hello-World/issues/0` },
+      { issueId: "1", expected: `${mockServer.baseUrl()}/octocat/hello-world/issues/1` },
+      { issueId: "#1", expected: `${mockServer.baseUrl()}/octocat/hello-world/issues/1` },
+      { issueId: "999", expected: `${mockServer.baseUrl()}/octocat/hello-world/issues/999` },
+      { issueId: "#999", expected: `${mockServer.baseUrl()}/octocat/hello-world/issues/999` },
+      { issueId: "0", expected: `${mockServer.baseUrl()}/octocat/hello-world/issues/0` },
     ];
 
     testCases.forEach(({ issueId, expected }) => {

@@ -1,5 +1,19 @@
-# To run CodeMetrics with mocked services, use both compose files:
-# docker compose --project-directory . -f compose/docker-compose.yaml -f compose/docker-compose-mocks.yaml -p code-metrics up -d --build
+# CodeMetrics Docker Compose Configuration
+#
+# Basic usage:
+#   docker-compose --project-directory . -f compose/docker-compose.yaml up --build
+#
+# With additional mock services:
+#   docker compose --project-directory . -f compose/docker-compose.yaml -f compose/docker-compose-mocks.yaml -p code-metrics up -d --build
+#
+# Available compose files:
+#   - docker-compose-mocks.yaml      : Mock external services (GitHub, Jira, etc.)
+#   - docker-compose-aws-local.yaml  : Local AWS services (Secrets Manager, DynamoDB)
+#   - docker-compose-keycloak.yaml   : Keycloak authentication
+#   - docker-compose-ldap.yml        : LDAP authentication
+#   - docker-compose-examples.yaml   : Example integrations (Jenkins, etc.)
+
+version: "3.3"
 
 services:
   api:
@@ -12,7 +26,9 @@ services:
     environment:
       CORS_ORIGIN: "http://localhost:3001"
       DATABASE_URI: "mongodb://code-metrics:changeme@db:27017"
-    volumes: []
+    # volumes: []
+    volumes:
+      - "${CONFIG_DIR:-../mocks/config}:/backend/config"
       # uncomment as required
       # - "./backend/.env:/backend/.env"
       # - "./backend/.config:/backend/config"  # NOTE: Expects local folder path of `backend/.config` for mapping into container
@@ -21,11 +37,11 @@ services:
       # - "./backend/config/examples/users.json:/backend/config/users.json"
       # - "./backend/config/examples/queries-config.json:/backend/config/queries-config.json"
 
-  ui:
-    image: ghcr.io/code-metrics-project/code-metrics-ui
+  frontend:
+    image: ghcr.io/code-metrics-project/code-metrics-frontend
     build:
-      dockerfile: ../docker/Dockerfile.ui
-      context: ui/
+      dockerfile: ../docker/Dockerfile.frontend
+      context: frontend/
     ports:
       - "3001:80"
     environment:

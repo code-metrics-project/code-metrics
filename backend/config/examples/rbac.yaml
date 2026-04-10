@@ -1,0 +1,5 @@
+rbac:
+  - user: admin
+    roles: [ "admin" ]
+  - user: anothertestperson
+    roles: []

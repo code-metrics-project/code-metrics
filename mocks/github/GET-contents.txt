@@ -2,7 +2,7 @@
   "$schema": "https://github.com/octocat/quality-gates/tree/v0.1.0/schemas/schema.json",
   "services": [
     {
-      "service-tag": "athena_ui_subject_portal",
+      "service-tag": "backend",
       "quality-gates": [
         {
           "check-types": ["code style and linting"],
@@ -20,7 +20,8 @@
           "phase": "pre-merge",
           "config": {
             "file": ".github/workflows/pre-merge-checks.yml",
-            "path": "jobs.run-unit-tests"
+            "path": "jobs.run-unit-tests",
+            "name": "Unit Tests"
           }
         },
         {
@@ -29,31 +30,34 @@
           "phase": "pre-merge",
           "config": {
             "file": ".github/workflows/pre-merge-checks.yml",
-            "path": "jobs.run-integration-tests"
+            "path": "jobs.run-integration-tests",
+            "name": "Integration Tests"
           }
         },
         {
-          "check-types": ["code quality"],
+          "check-types": ["unit test coverage"],
           "provider": "GitHub",
           "phase": "pre-merge",
           "config": {
             "file": ".github/workflows/pre-merge-checks.yml",
-            "path": "jobs.run-sonar-analysis"
+            "path": "jobs.coverage",
+            "name": "Coverage Check"
           }
         },
         {
-          "check-types": ["integration"],
+          "check-types": ["vulnerability detection"],
           "provider": "GitHub",
           "phase": "build",
           "config": {
-            "file": ".github/workflows/pre-merge-checks.yml",
-            "path": "jobs.integration-step"
+            "file": ".github/workflows/security.yml",
+            "path": "jobs.security-scan",
+            "name": "Security Scan"
           }
         }
       ]
     },
     {
-      "service-tag": "beta_ui_subject_portal",
+      "service-tag": "frontend",
       "quality-gates": [
         {
           "check-types": ["code style and linting"],
@@ -71,16 +75,63 @@
           "phase": "pre-merge",
           "config": {
             "file": ".github/workflows/pre-merge-checks.yml",
-            "path": "jobs.run-unit-tests"
+            "path": "jobs.run-unit-tests",
+            "name": "Unit Tests"
           }
         },
         {
-          "check-types": ["code quality"],
+          "check-types": ["accessibility"],
           "provider": "GitHub",
           "phase": "pre-merge",
           "config": {
-            "file": ".github/workflows/pre-merge-checks.yml",
-            "path": "jobs.run-sonar-analysis"
+            "file": ".github/workflows/accessibility.yml",
+            "path": "jobs.a11y-check",
+            "name": "Accessibility Check"
+          }
+        }
+      ]
+    },
+    {
+      "service-tag": "platform",
+      "quality-gates": [
+        {
+          "check-types": ["code style and linting"],
+          "provider": "GitHub",
+          "phase": "pre-merge",
+          "config": {
+            "file": ".github/workflows/pre-commit.yml",
+            "path": "jobs.pre-commit",
+            "name": "Run pre-commit"
+          }
+        },
+        {
+          "check-types": ["unit"],
+          "provider": "GitHub",
+          "phase": "pre-merge",
+          "config": {
+            "file": ".github/workflows/ci.yml",
+            "path": "jobs.unit-tests",
+            "name": "Unit Tests"
+          }
+        },
+        {
+          "check-types": ["smoke"],
+          "provider": "GitHub",
+          "phase": "staging",
+          "config": {
+            "file": ".github/workflows/staging.yml",
+            "path": "jobs.smoke-tests",
+            "name": "Smoke Tests"
+          }
+        },
+        {
+          "check-types": ["secret scanning"],
+          "provider": "GitHub",
+          "phase": "pre-merge",
+          "config": {
+            "file": ".github/workflows/security.yml",
+            "path": "jobs.secret-scan",
+            "name": "Secret Scanning"
           }
         }
       ]

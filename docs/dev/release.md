@@ -3,6 +3,7 @@
 The following artifacts are produced as part of a release:
 
 - ZIP archives, including Lambda function and static website (frontend and backend)
+- Frontend ZIP artifacts: `codemetrics-frontend.zip` (new frontend) and `codemetrics-ui.zip` (legacy UI)
 - Docker images (frontend, backend and mocks)
 - Documentation website
 
@@ -101,7 +102,7 @@ $ npm test && npm run test:integration && npm run test:slow
 
 Frontend:
 ```bash
-cd $PROJECT_ROOT/ui
+cd $PROJECT_ROOT/frontend
 npm run test:unit
 ```
 
@@ -142,6 +143,14 @@ Push your tag to GitHub. The CI/CD pipeline will test the application components
 
 Follow the instructions here: [https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository#creating-a-release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository#creating-a-release)
 
+Generate the changelog for the release using the script:
+
+```
+scripts/generate-changelog.sh
+```
+
+Use this as the release description.
+
 ---
 
 ## Documentation website
@@ -163,5 +172,10 @@ Public releases are located at https://github.com/code-metrics-project/releases
 The GitHub org for this is `code-metrics-project` and the repository within it is `release`.
 
 The release process involves copying the release name, body and its assets form the main repository to the `code-metrics-project/release` repository.
+
+The public release includes both frontend website assets:
+
+- `codemetrics-frontend.zip` (new frontend)
+- `codemetrics-ui.zip` (legacy UI)
 
 To initiate the public release from the main project repository, run the `public-release` [GitHub Actions workflow](https://github.com/DeloitteDigitalUK/code-metrics/actions/workflows/public-release.yaml).

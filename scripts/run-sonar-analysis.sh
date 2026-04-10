@@ -5,7 +5,7 @@
 #
 # Usage:
 #   ./scripts/run-sonar-analysis.sh                    # Run all projects
-#   ./scripts/run-sonar-analysis.sh backend ui-react   # Run specific projects
+#   ./scripts/run-sonar-analysis.sh backend frontend   # Run specific projects
 #   ./scripts/run-sonar-analysis.sh --list             # List all configured projects
 #
 # Environment Variables:
@@ -138,7 +138,7 @@ main() {
         echo ""
         echo "Examples:"
         echo "  $0                           # Run all projects"
-        echo "  $0 backend ui-react          # Run specific projects"
+        echo "  $0 backend frontend          # Run specific projects"
         echo "  SONAR_TOKEN=xxx $0 backend   # Run with token"
         exit 0
     fi

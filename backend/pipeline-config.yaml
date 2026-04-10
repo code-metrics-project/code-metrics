@@ -3,7 +3,7 @@ stages:
     description: deployment stage
     type: azure
     serverId: mock-azure
-    projectName: "octo-org"
+    projectName: "octocat"
     #jobNameMapping: "repo-name"
     commitMapping:
       runProperty: "$.data.head_sha"
@@ -12,7 +12,7 @@ stages:
     description: deployment stage
     type: github
     serverId: mock-github
-    projectName: "octo-org"
+    projectName: "octocat"
     #jobNameMapping: "repo-name"
     commitMapping:
       runProperty: "$.data.head_sha"

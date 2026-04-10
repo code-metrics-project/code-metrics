@@ -45,7 +45,9 @@ Download the `codemetrics-api.zip` file. See the example [template.yaml](../back
 
 The frontend web UI is a static site, so can be hosted anywhere. You can find the latest version of the web UI on the [Releases page](https://github.com/code-metrics-project/releases/releases).
 
-Download the `codemetrics-ui.zip` file and host it on a static site. You will need to set the `apiBaseUrl` variable in `config.json` to point to the API endpoint.
+Download the `codemetrics-frontend.zip` file and host it on a static site. You will need to set the `apiBaseUrl` variable in `config.json` to point to the API endpoint.
+
+> Legacy fallback: if needed, `codemetrics-ui.zip` is also available.
 
 ### Example
 
@@ -89,6 +91,10 @@ For teams with moderate usage (e.g., 100K requests/month), Lambda typically cost
 ## Running periodic cache updates on AWS Lambda
 
 You can run periodic cache updates on AWS Lambda. See [Trigger a cache refresh](./system_admin.md) for more information.
+
+---
+
+For LocalStack-based Lambda packaging, deployment, and testing during development, see [Lambda development with LocalStack](./dev/lambda.md).
 
 ---
 

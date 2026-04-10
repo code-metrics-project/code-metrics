@@ -10,8 +10,8 @@ FROM ${IMGREPO}ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
 LABEL org.opencontainers.image.source=https://github.com/code-metrics-project/releases
 
-ENV MLAPI_PORT 8080
-ENV MLAPI_ADDR "0.0.0.0"
+ENV MLAPI_PORT=8080
+ENV MLAPI_ADDR="0.0.0.0"
 
 WORKDIR /app
 COPY --from=builder /app/dist/*.whl /tmp/

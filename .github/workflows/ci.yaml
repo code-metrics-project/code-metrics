@@ -1,12 +1,12 @@
 name: CI
 on: [push]
 jobs:
-  setvars:
+  setup:
     runs-on: ubuntu-latest
     outputs:
-      vars: ${{ steps.docker.outputs.vars }}
+      vars: ${{ steps.playwright.outputs.vars }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Set vars (Python)
@@ -55,15 +55,16 @@ jobs:
           NEW_VARS=$(echo "$VARS" | jq -c --argjson dkm "$MATRIX" '. + {dockerMatrix: $dkm}')
           echo "vars=$NEW_VARS" >> $GITHUB_OUTPUT
 
-  validate-config:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    needs: [setvars]
-    steps:
-      - uses: actions/checkout@v4
+      - name: Add Playwright container image
+        id: playwright
+        run: |
+          VARS='${{ steps.docker.outputs.vars }}'
+          IMAGE="$(python3 ./.github/resolve_playwright_container.py frontend/package.json frontend/bun.lock)"
+          NEW_VARS=$(echo "$VARS" | jq -c --arg image "$IMAGE" '. + {playwrightContainerImage: $image}')
+          echo "vars=$NEW_VARS" >> $GITHUB_OUTPUT
+
       - name: Setup Node (backend)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: "/backend/.nvmrc"
       - name: Install backend config dependencies
@@ -77,15 +78,15 @@ jobs:
         run: ./validate-config.sh ../examples
 
   validate:
-    needs: [setvars, validate-config]
+    needs: [setup]
     uses: ./.github/workflows/validate.yaml
     with:
-      vars: ${{ needs.setvars.outputs.vars }}
+      vars: ${{ needs.setup.outputs.vars }}
 
   cd:
-    needs: [setvars, validate-config, validate]
+    needs: [setup, validate]
     if: ${{ always() && !failure() && !cancelled() }}
     uses: ./.github/workflows/cd.yaml
     with:
-      vars: ${{ needs.setvars.outputs.vars }}
+      vars: ${{ needs.setup.outputs.vars }}
     secrets: inherit

@@ -1,4 +1,4 @@
-import axios from "axios";
+import { create } from "@/utils/apiClient";
 import {
   type BootstrapConfig,
   type RepoInfo,
@@ -74,13 +74,13 @@ export async function fetchSystemConfig(authToken: string): Promise<SystemConfig
 }
 
 async function fetchConfig(url: string, authToken?: string): Promise<any> {
-  const config = authToken ? { headers: { Authorization: `Bearer ${authToken}` } } : {};
+  const config = authToken ? { headers: { Authorization: `Bearer ${authToken}` } } : undefined;
 
   /*
-   * Need to create a new axios instance here to avoid Pinia store checks in
-   * our axios interceptors which fail because Vue/Pinia have not initialised yet.
+   * Need to create a new client instance here to avoid Pinia store checks in
+   * our auth-aware request wrapper before Vue/Pinia have initialised.
    */
-  const client = axios.create(config);
+  const client = create(config);
   const { data } = await client.get(url);
   return data;
 }

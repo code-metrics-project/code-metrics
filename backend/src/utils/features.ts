@@ -6,8 +6,10 @@ import { getConfigItemAsBoolean } from "../config/sources/source";
  */
 export enum Features {
   dora = "FEATURE_DORA_METRICS",
-  predictions = "FEATURE_PREDICTIONS",
+  languageSelector = "FEATURE_LANGUAGE_SELECTOR",
   mlForecasts = "FEATURE_ML_FORECASTS",
+  predictions = "FEATURE_PREDICTIONS",
+  temporalCoupling = "FEATURE_TEMPORAL_COUPLING",
 }
 
 type FeatureKey = keyof typeof Features;

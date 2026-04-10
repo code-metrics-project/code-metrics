@@ -1,12 +1,24 @@
 import { describe, it, expect, beforeEach, vi, afterEach, type Mock } from "vitest";
-import axios from "axios";
 import { QueryName } from "@/queries/queries";
 
-// Mock axios for API calls
-vi.mock("axios");
-const mockedAxios = vi.mocked(axios);
-const mockedPost = mockedAxios.post as Mock;
-const mockedGet = mockedAxios.get as Mock;
+const mockedFetch = vi.fn() as Mock;
+
+async function postJson(url: string, body: unknown) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json();
+  return { data };
+}
+
+async function getJson(url: string, params?: Record<string, string>) {
+  const queryString = params ? `?${new URLSearchParams(params).toString()}` : "";
+  const response = await fetch(`${url}${queryString}`);
+  const data = await response.json();
+  return { data };
+}
 
 // Mock GitHub Issues API response data
 const mockGithubIssuesApiResponse = {
@@ -83,15 +95,17 @@ const mockRawGithubIssues = [
 describe("GitHub Issues Integration Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal("fetch", mockedFetch);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   describe("API Integration", () => {
     it("should fetch GitHub bugs data from the correct API endpoint", async () => {
-      mockedPost.mockResolvedValueOnce(mockGithubIssuesApiResponse);
+      mockedFetch.mockResolvedValueOnce({ json: vi.fn().mockResolvedValue(mockGithubIssuesApiResponse.data) });
 
       const queryPayload = {
         queryName: QueryName.BugsNew,
@@ -105,14 +119,17 @@ describe("GitHub Issues Integration Tests", () => {
         },
       };
 
-      const response = await axios.post("/api/query", [queryPayload]);
+      const response = await postJson("/api/query", [queryPayload]);
 
-      expect(mockedAxios.post).toHaveBeenCalledWith("/api/query", [queryPayload]);
+      expect(mockedFetch).toHaveBeenCalledWith(
+        "/api/query",
+        expect.objectContaining({ method: "POST", body: JSON.stringify([queryPayload]) }),
+      );
       expect(response.data).toEqual(mockGithubIssuesApiResponse.data);
     });
 
     it("should fetch GitHub incidents data from the correct API endpoint", async () => {
-      mockedPost.mockResolvedValueOnce(mockGithubIncidentsApiResponse);
+      mockedFetch.mockResolvedValueOnce({ json: vi.fn().mockResolvedValue(mockGithubIncidentsApiResponse.data) });
 
       const queryPayload = {
         queryName: QueryName.ProductionIncidents,
@@ -126,30 +143,27 @@ describe("GitHub Issues Integration Tests", () => {
         },
       };
 
-      const response = await axios.post("/api/query", [queryPayload]);
+      const response = await postJson("/api/query", [queryPayload]);
 
-      expect(mockedAxios.post).toHaveBeenCalledWith("/api/query", [queryPayload]);
+      expect(mockedFetch).toHaveBeenCalledWith(
+        "/api/query",
+        expect.objectContaining({ method: "POST", body: JSON.stringify([queryPayload]) }),
+      );
       expect(response.data).toEqual(mockGithubIncidentsApiResponse.data);
     });
 
     it("should fetch raw GitHub issues data from tickets endpoint", async () => {
-      mockedGet.mockResolvedValueOnce({ data: mockRawGithubIssues });
+      mockedFetch.mockResolvedValueOnce({ json: vi.fn().mockResolvedValue(mockRawGithubIssues) });
 
-      const response = await axios.get("/api/tickets/bugs", {
-        params: {
-          workloads: "github-workload",
-          startDate: "2024-01-15",
-          priority: "Medium",
-        },
+      const response = await getJson("/api/tickets/bugs", {
+        workloads: "github-workload",
+        startDate: "2024-01-15",
+        priority: "Medium",
       });
 
-      expect(mockedAxios.get).toHaveBeenCalledWith("/api/tickets/bugs", {
-        params: {
-          workloads: "github-workload",
-          startDate: "2024-01-15",
-          priority: "Medium",
-        },
-      });
+      expect(mockedFetch).toHaveBeenCalledWith(
+        "/api/tickets/bugs?workloads=github-workload&startDate=2024-01-15&priority=Medium",
+      );
       expect(response.data).toEqual(mockRawGithubIssues);
     });
   });
@@ -234,10 +248,10 @@ describe("GitHub Issues Integration Tests", () => {
           data: { message: "Internal server error" },
         },
       };
-      mockedPost.mockRejectedValueOnce(errorResponse);
+      mockedFetch.mockRejectedValueOnce(errorResponse);
 
       try {
-        await axios.post("/api/query", [
+        await postJson("/api/query", [
           {
             queryName: QueryName.BugsNew,
             args: { workloads: ["github-workload"] },
@@ -256,10 +270,10 @@ describe("GitHub Issues Integration Tests", () => {
           data: { message: "Workload not found" },
         },
       };
-      mockedPost.mockRejectedValueOnce(errorResponse);
+      mockedFetch.mockRejectedValueOnce(errorResponse);
 
       try {
-        await axios.post("/api/query", [
+        await postJson("/api/query", [
           {
             queryName: QueryName.ProductionIncidents,
             args: { workloads: ["nonexistent-workload"] },
@@ -272,9 +286,9 @@ describe("GitHub Issues Integration Tests", () => {
     });
 
     it("should handle empty response data gracefully", async () => {
-      mockedPost.mockResolvedValueOnce({ data: [] });
+      mockedFetch.mockResolvedValueOnce({ json: vi.fn().mockResolvedValue([]) });
 
-      const response = await axios.post("/api/query", [
+      const response = await postJson("/api/query", [
         {
           queryName: QueryName.BugsNew,
           args: { workloads: ["empty-workload"] },
@@ -293,9 +307,9 @@ describe("GitHub Issues Integration Tests", () => {
           },
         ],
       };
-      mockedPost.mockResolvedValueOnce(malformedResponse);
+      mockedFetch.mockResolvedValueOnce({ json: vi.fn().mockResolvedValue(malformedResponse.data) });
 
-      const response = await axios.post("/api/query", [
+      const response = await postJson("/api/query", [
         {
           queryName: QueryName.BugsNew,
           args: { workloads: ["github-workload"] },

@@ -1,0 +1,1 @@
+export { DependencyAlertsList } from "./DependencyAlertsList";

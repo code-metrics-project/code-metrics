@@ -1,8 +1,8 @@
-import axios from "../utils/axios";
+import { client } from "../utils/apiClient";
 import { AUTH, CHECK_AUTH_STATE, REFRESH, LOGOUT } from "../utils/urls";
 import { logger, verbose } from "@/utils/logger";
 import type { Alert } from "@/utils/ui";
-import type { AxiosError } from "axios";
+import type { HttpError } from "@/utils/apiClient";
 
 export enum LoginResult {
   Success = "Success",
@@ -23,9 +23,14 @@ export type LoginResponse =
       result: LoginResult.IncorrectCredentials | LoginResult.ServerError | LoginResult.LoginRequired;
     };
 
+type TokenResponse = {
+  accessToken: string;
+  refreshToken: string;
+};
+
 export async function login(username: string, password: string): Promise<LoginResponse> {
   try {
-    const response = await axios.post(AUTH, {
+    const response = await client.post<TokenResponse>(AUTH, {
       username,
       password,
     });
@@ -38,7 +43,7 @@ export async function login(username: string, password: string): Promise<LoginRe
       },
     };
   } catch (e) {
-    const error = e as AxiosError;
+    const error = e as HttpError;
     const statusString = `${error.response?.status}`;
     if (statusString.startsWith("401")) {
       return { result: LoginResult.IncorrectCredentials };
@@ -54,7 +59,7 @@ export const checkAuthState = () => authStateChecker.check();
 
 export const refreshSession = async (refreshToken: string): Promise<LoginResponse> => {
   try {
-    const response = await axios.post(REFRESH, {
+    const response = await client.post<TokenResponse>(REFRESH, {
       refreshToken,
     });
     logger("Session refreshed successfully");
@@ -66,7 +71,7 @@ export const refreshSession = async (refreshToken: string): Promise<LoginRespons
       },
     };
   } catch (e) {
-    const error = e as AxiosError;
+    const error = e as HttpError;
     const statusString = `${error.response?.status}`;
     if (statusString.startsWith("401")) {
       return { result: LoginResult.IncorrectCredentials };
@@ -79,7 +84,7 @@ export const refreshSession = async (refreshToken: string): Promise<LoginRespons
 };
 
 export async function logout() {
-  const response = await axios.get(LOGOUT);
+  const response = await client.get(LOGOUT);
   return response.data;
 }
 
@@ -154,7 +159,7 @@ class AuthStateChecker {
       }
 
       const checkAuthUrl = `${CHECK_AUTH_STATE}${window.location.search}`;
-      const response = await axios.get(checkAuthUrl);
+      const response = await client.get<TokenResponse>(checkAuthUrl);
       logger("Auth state check successful");
       return {
         result: LoginResult.Success,
@@ -164,7 +169,7 @@ class AuthStateChecker {
         },
       };
     } catch (e) {
-      const error = e as AxiosError;
+      const error = e as HttpError;
       const statusString = `${error.response?.status}`;
       if (statusString.startsWith("401")) {
         // receiving 401 from checkAuthState means login failed

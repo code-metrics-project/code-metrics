@@ -61,6 +61,9 @@ workloads:
               name: backend
               paths: ["/backend"]
             - repo: /code-metrics/
+              name: frontend
+              paths: ["/frontend"]
+            - repo: /code-metrics/
               name: ui
               paths: ["/ui"]
         CodeMetricsML:
@@ -74,6 +77,8 @@ workloads:
       mappings:
         - key: ml
           componentName: machinelearning
+        - key: code-metrics-frontend
+          componentName: frontend
         - key: code-metrics-ui
           componentName: ui
     pipelines:

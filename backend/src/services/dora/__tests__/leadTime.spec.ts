@@ -65,8 +65,8 @@ describe("Lead Time for Changes", () => {
                   deploys: [
                     {
                       run: "30433641",
-                      job: "octo-repo",
-                      repo: "octo-repo",
+                      job: "hello-world",
+                      repo: "hello-world",
                       earliestCommit: new Date("2011-04-14T16:00:49.000Z"),
                       deployed: new Date("2011-04-19T19:43:08.000Z"),
                       leadTime: 445339,
@@ -87,16 +87,16 @@ describe("Lead Time for Changes", () => {
                   deploys: [
                     {
                       run: "30433642",
-                      job: "octo-repo",
-                      repo: "octo-repo",
+                      job: "hello-world",
+                      repo: "hello-world",
                       earliestCommit: new Date("2011-04-20T17:00:00.000Z"),
                       deployed: new Date("2011-04-20T18:00:00.000Z"),
                       leadTime: 3600,
                     },
                     {
                       run: "30433643",
-                      job: "octo-repo",
-                      repo: "octo-repo",
+                      job: "hello-world",
+                      repo: "hello-world",
                       earliestCommit: new Date("2011-04-20T17:00:00.000Z"),
                       deployed: new Date("2011-04-20T20:00:00.000Z"),
                       leadTime: 10800,

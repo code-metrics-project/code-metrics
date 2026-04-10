@@ -1,0 +1,6 @@
+{
+  "apiBaseUrl": "",
+  "auth": {
+    "required": true
+  }
+}

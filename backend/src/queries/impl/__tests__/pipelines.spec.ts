@@ -22,7 +22,7 @@ const mockPipelineRuns: RunWithMetadata[] = [
       branch: "main",
       startDate: "2011-04-19T19:33:08Z",
       result: RunResult.Succeeded,
-      repo: "octo-repo",
+      repo: "hello-world",
       duration: 600,
       user: "octocat",
       userType: ActorType.User,
@@ -38,7 +38,7 @@ const mockPipelineRuns: RunWithMetadata[] = [
       branch: "main",
       startDate: "2011-04-19T19:33:08Z",
       result: RunResult.Succeeded,
-      repo: "octo-repo",
+      repo: "hello-world",
       duration: 600,
       user: "octocat",
       userType: ActorType.Bot,
@@ -54,7 +54,7 @@ const mockPipelineRuns: RunWithMetadata[] = [
       branch: "main",
       startDate: "2011-04-19T19:33:08Z",
       result: RunResult.Succeeded,
-      repo: "octo-repo",
+      repo: "hello-world",
       duration: 600,
     },
   },
@@ -104,21 +104,21 @@ describe("fetchPipelineRuns", () => {
     expect(runsAborted).toHaveLength(3);
 
     const successful = runsSuccessful.filter(
-      (metric) => metric.dimensions.workloadId === "workload1" && metric.dimensions.repoName === "octo-repo",
+      (metric) => metric.dimensions.workloadId === "workload1" && metric.dimensions.repoName === "hello-world",
     );
     expect(successful).toHaveLength(1);
     expect(successful[0].date.toISOString()).toEqual("2011-04-19T00:00:00.000Z");
     expect(successful[0].value).toEqual(1);
 
     const failed = runsFailed.filter(
-      (metric) => metric.dimensions.workloadId === "workload1" && metric.dimensions.repoName === "octo-repo",
+      (metric) => metric.dimensions.workloadId === "workload1" && metric.dimensions.repoName === "hello-world",
     );
     expect(failed).toHaveLength(1);
     expect(failed[0].date.toISOString()).toEqual("2011-04-19T00:00:00.000Z");
     expect(failed[0].value).toEqual(0);
 
     const aborted = runsAborted.filter(
-      (metric) => metric.dimensions.workloadId === "workload1" && metric.dimensions.repoName === "octo-repo",
+      (metric) => metric.dimensions.workloadId === "workload1" && metric.dimensions.repoName === "hello-world",
     );
     expect(aborted).toHaveLength(1);
     expect(aborted[0].date.toISOString()).toEqual("2011-04-19T00:00:00.000Z");
@@ -167,7 +167,7 @@ describe("fetchPipelineRuns", () => {
           branch: "main",
           startDate: "2011-04-19T19:33:08Z",
           result: "SUCCEEDED",
-          repo: "octo-repo",
+          repo: "hello-world",
           duration: 600,
           user: "octocat",
           userType: "User",
@@ -183,7 +183,7 @@ describe("fetchPipelineRuns", () => {
           branch: "main",
           startDate: "2011-04-19T19:33:08Z",
           result: "SUCCEEDED",
-          repo: "octo-repo",
+          repo: "hello-world",
           duration: 600,
         },
       },
@@ -204,7 +204,7 @@ describe("fetchPipelineRuns", () => {
           branch: "main",
           startDate: "2011-04-19T19:33:08Z",
           result: "SUCCEEDED",
-          repo: "octo-repo",
+          repo: "hello-world",
           duration: 600,
           user: "octocat",
           userType: "Bot",
@@ -220,7 +220,7 @@ describe("fetchPipelineRuns", () => {
           branch: "main",
           startDate: "2011-04-19T19:33:08Z",
           result: "SUCCEEDED",
-          repo: "octo-repo",
+          repo: "hello-world",
           duration: 600,
         },
       },
@@ -241,7 +241,7 @@ describe("fetchPipelineRuns", () => {
           branch: "main",
           startDate: "2011-04-19T19:33:08Z",
           result: "SUCCEEDED",
-          repo: "octo-repo",
+          repo: "hello-world",
           duration: 600,
           user: "octocat",
           userType: "User",
@@ -257,7 +257,7 @@ describe("fetchPipelineRuns", () => {
           branch: "main",
           startDate: "2011-04-19T19:33:08Z",
           result: "SUCCEEDED",
-          repo: "octo-repo",
+          repo: "hello-world",
           duration: 600,
           user: "octocat",
           userType: "Bot",
@@ -273,7 +273,7 @@ describe("fetchPipelineRuns", () => {
           branch: "main",
           startDate: "2011-04-19T19:33:08Z",
           result: "SUCCEEDED",
-          repo: "octo-repo",
+          repo: "hello-world",
           duration: 600,
         },
       },

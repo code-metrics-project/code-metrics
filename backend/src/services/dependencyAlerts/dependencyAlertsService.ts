@@ -13,7 +13,11 @@ export const registerDependencyAlerts = (type: DependencyAlertsTypes, builder: (
   builders[type] = builder;
 };
 
-export const getDependencyAlertsForWorkload = (workload: Workload): DependencyAlertsService => {
+export const getDependencyAlertsForWorkload = (workload: Workload | null): DependencyAlertsService => {
+  if (!workload) {
+    warn(`Workload not found - using noop implementation for dependency alerts`);
+    return getDependencyAlerts(DependencyAlertsTypes.NONE);
+  }
   // TODO break out type to use a new workload dependencyAlerts object, using DependencyAlertsTypes
   // instead of reusing codemanagement type
   return getDependencyAlerts(workload.codeManagement.type);

@@ -3,7 +3,7 @@
   "name": "main",
   "target": "branch",
   "source_type": "Repository",
-  "source": "octocat/octo-repo",
+  "source": "octocat/hello-world",
   "enforcement": "active",
   "conditions": {
     "ref_name": {
@@ -60,10 +60,10 @@
   "current_user_can_bypass": "never",
   "_links": {
     "self": {
-      "href": "https://api.github.com/repos/octocat/octo-repo/rulesets/7382607"
+      "href": "https://api.github.com/repos/octocat/hello-world/rulesets/7382607"
     },
     "html": {
-      "href": "https://github.com/octocat/octo-repo/rules/7382607"
+      "href": "https://github.com/octocat/hello-world/rules/7382607"
     }
   }
 }

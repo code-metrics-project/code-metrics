@@ -1,6 +1,12 @@
 # Mocks
 
-This directory holds mocks of the third party systems invoked by the backend.
+This directory holds mocks of the third party systems invoked by the backend using [Imposter](https://imposter.sh).
+
+## Directory Structure
+
+- `github/`, `azure/`, `jira/`, etc. - External VCS/service mocks
+- `config/` - Configuration files for mock workloads and quality gates
+- `oidc-server/` - OIDC authentication mock
 
 ## Getting started
 
@@ -22,6 +28,7 @@ Mocks are available on port 8080.
 ## How to use the mocks
 
 In `remote-config.json`, define a server taking note of the `id` that references your running mock server instance of each type, for example for JIRA:
+
 ```
 {
   "projectManagement": {
@@ -42,6 +49,7 @@ In `remote-config.json`, define a server taking note of the `id` that references
 ```
 
 In `workload-config.json`, ensure your mock workload references the correct jira server via the same `ids` as defined within your remote :
+
 ```
 {
   "workloads": [

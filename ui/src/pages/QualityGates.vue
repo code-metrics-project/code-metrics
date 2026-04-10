@@ -178,7 +178,7 @@
                                       <div>
                                         <dt>File:</dt>
                                         <dd>
-                                          <a :href="item.repoLink + '/' + job.config.file">{{ job.config.file }}</a>
+                                          <a :href="job.config.fileURL">{{ job.config.file }}</a>
                                         </dd>
                                       </div>
                                       <div>

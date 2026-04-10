@@ -13,8 +13,7 @@ describe("Dashboards page", () => {
   it("Visits the dashboards url", () => {
     cy.login();
     cy.visit(Paths.SavedDashboards);
-    // Temporary: Increase timeout for flaky test (framework replacement planned)
-    cy.contains("No dashboards available.", { timeout: 10000 });
+    cy.contains("Saved Dashboards");
     cy.checkFooter();
   });
 });

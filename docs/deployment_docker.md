@@ -27,7 +27,7 @@ Docker Compose provides a straightforward containerized deployment option for Co
 The Docker Compose deployment includes:
 
 - **API container**: Backend service with all dependencies bundled
-- **UI container**: Nginx-based frontend serving static assets
+- **Frontend container**: Nginx-based frontend serving static assets
 - **MongoDB container**: Database service (optional, can use external database)
 - **Mock services** (optional): Simulated external services for testing without real integrations
 - **Networking**: Internal Docker network for service communication
@@ -150,9 +150,9 @@ Change default ports by modifying the port mappings:
 
 ```yaml
 services:
-  ui:
+  frontend:
     ports:
-      - "8080:80" # Change UI port to 8080
+      - "8080:80" # Change frontend port to 8080
   api:
     ports:
       - "8000:3000" # Change API port to 8000
@@ -221,7 +221,7 @@ docker inspect <container-name>
 
 # Check container logs
 docker compose -f compose/docker-compose.yaml --project-directory . logs api
-docker compose -f compose/docker-compose.yaml --project-directory . logs ui
+docker compose -f compose/docker-compose.yaml --project-directory . logs frontend
 
 # Follow logs in real-time
 docker compose -f compose/docker-compose.yaml --project-directory . logs -f
@@ -377,8 +377,8 @@ volumes:
 docker network inspect code-metrics_default
 
 # Test connectivity between containers
-docker compose -f compose/docker-compose.yaml --project-directory . exec api ping ui
-docker compose -f compose/docker-compose.yaml --project-directory . exec ui ping api
+docker compose -f compose/docker-compose.yaml --project-directory . exec api ping frontend
+docker compose -f compose/docker-compose.yaml --project-directory . exec frontend ping api
 
 # Recreate network
 docker compose -f compose/docker-compose.yaml --project-directory . down

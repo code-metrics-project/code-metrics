@@ -1,5 +1,4 @@
 .DS_Store
-dist
 .env
 
 .AGENTS_LOCAL.md
@@ -30,6 +29,7 @@ docs/*.bkp
 samconfig.toml
 
 # Artefacts
+dist
 *.tgz
 
 *.map
@@ -50,3 +50,7 @@ node_modules/
 # Testing
 .playwright-mcp/
 .scannerwork/
+
+# LocalStack
+compose/localstack-data/
+/.worktrees/

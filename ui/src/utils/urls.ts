@@ -1,4 +1,4 @@
-import axios from "axios";
+import { getApiBaseUrl, setApiBaseUrl } from "@/utils/apiClient";
 
 export const AUTH = "/api/authenticate";
 export const CHECK_AUTH_STATE = "/api/authenticated";
@@ -24,15 +24,5 @@ export const PIPELINE_RUNS = "/api/pipeline/runs";
 export const PIPELINE_RUN = "/api/pipeline/run";
 export const PIPELINE_DEPLOYMENTS = "/api/pipeline/deployments";
 export const PIPELINE_RUN_REDIRECT = "/api/pipeline/redirect";
-
-let apiBaseUrl = "";
-
-const setApiBaseUrl = (url: string) => {
-  console.log(`Setting API base URL to '${url}'`);
-  apiBaseUrl = url;
-  axios.defaults.baseURL = url;
-};
-
-const getApiBaseUrl = (): string => apiBaseUrl;
 
 export { getApiBaseUrl, setApiBaseUrl };

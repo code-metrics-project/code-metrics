@@ -142,8 +142,16 @@ describe(`a Bitbucket VCS service`, () => {
     const bitbucket = getVcsForWorkload(workload);
 
     const workloadId: WorkloadId = "athena";
-    const link = bitbucket.buildRepoLink(workloadId, "octo-repo");
-    expect(link).toBe(`${mockServer.baseUrl()}/athena-1234/octo-repo`);
+    const link = bitbucket.buildRepoLink(workloadId, "hello-world");
+    expect(link).toBe(`${mockServer.baseUrl()}/athena-1234/hello-world`);
+  });
+
+  it(`generates a valid file link`, () => {
+    const bitbucket = getVcsForWorkload(workload);
+
+    const workloadId: WorkloadId = "athena";
+    const link = bitbucket.buildFileLink(workloadId, "hello-world", "main", ".github/workflows/test.yml");
+    expect(link).toBe(`${mockServer.baseUrl()}/athena-1234/hello-world/.github/workflows/test.yml`);
   });
 
   it(`generates a valid commit link`, () => {
@@ -155,11 +163,11 @@ describe(`a Bitbucket VCS service`, () => {
       commitId: "a1b2c3d4",
       date: "2024-04-09",
       message: "Commit message",
-      repo: "octo-repo",
+      repo: "hello-world",
       workload: workloadId,
     };
     const link = bitbucket.buildCommitLink(change, workloadId, "octocat");
-    expect(link).toBe(`${mockServer.baseUrl()}/athena-1234/octo-repo/commit/a1b2c3d4`);
+    expect(link).toBe(`${mockServer.baseUrl()}/athena-1234/hello-world/commit/a1b2c3d4`);
   });
 
   it(`generates a valid PR link`, () => {
@@ -171,19 +179,19 @@ describe(`a Bitbucket VCS service`, () => {
       commitId: "a1b2c3d4",
       date: "2024-04-09",
       message: "Commit message",
-      repo: "octo-repo",
+      repo: "hello-world",
       workload: workloadId,
     };
     const pr: PullRequest = {
       id: 5,
       message: "Pull request body",
-      repositoryName: "octo-repo",
+      repositoryName: "hello-world",
       sourceBranch: "main",
       title: "Pull request title",
       vcsProjectName: "octocat",
       workloadId: workloadId,
     };
     const link = bitbucket.buildPRLink(change, pr, workloadId);
-    expect(link).toBe(`${mockServer.baseUrl()}/athena-1234/octo-repo/pull/5`);
+    expect(link).toBe(`${mockServer.baseUrl()}/athena-1234/hello-world/pull/5`);
   });
 });

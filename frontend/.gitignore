@@ -1,0 +1,30 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+bun.lockb
+
+# Build
+node_modules
+.DS_Store
+.nyc_output/
+.vite
+dist
+dist-ssr
+coverage
+coverage-*
+*.local
+
+# Cypress
+__tests__/output/
+cypress
+
+# Playwright
+.nyc_output_playwright/
+playwright-report/
+playwright/.cache/
+test-results/

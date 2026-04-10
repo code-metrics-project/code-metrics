@@ -1,6 +1,7 @@
 import { TGate, TMergeRules, TQualityGate, TQualityGateManifest, TQualityGateOutput } from "../../model/qualityGates";
 import { error } from "../../utils/logger/logger";
 import { QualityGatesConfig } from "../../model/config/quality-gates-config";
+import { VcsService } from "../codeManagement/vcsService";
 
 export function parseManifest(file: string) {
   try {
@@ -24,7 +25,7 @@ const fillMissingPhases = (environments: string[], qualityGates: { [key: string]
     acc[key] = environments.map((phase) => {
       return {
         phase,
-        gates: value.filter((gate) => gate.phase === phase)
+        gates: value.filter((gate) => gate.phase === phase),
       };
     });
     return acc;
@@ -34,11 +35,13 @@ const fillMissingPhases = (environments: string[], qualityGates: { [key: string]
 };
 
 export function enrichManifest(
+  vcs: VcsService,
+  workloadId: string,
   repo: string,
   repoLink: string,
   manifest: TQualityGateManifest,
   rules: TMergeRules[],
-  qualityGatesConfig: QualityGatesConfig
+  qualityGatesConfig: QualityGatesConfig,
 ): TQualityGateOutput {
   /**
    * Github uses the job name as the only connection point between a workflow and a required status check
@@ -48,6 +51,8 @@ export function enrichManifest(
    */
   manifest.services.forEach((service) => {
     service["quality-gates"].forEach((qualityGate) => {
+      qualityGate.config.fileURL = vcs.buildFileLink(workloadId, repo, "main", qualityGate.config.file);
+
       if (!rules) return;
 
       const ruleNames = rules.map((rule) => rule.name);
@@ -64,14 +69,14 @@ export function enrichManifest(
       ...service,
       ["quality-gates"]: fillMissingPhases(
         qualityGatesConfig.environments,
-        fillMissingQualityGates(qualityGatesConfig.gates, service["quality-gates"])
-      )
+        fillMissingQualityGates(qualityGatesConfig.gates, service["quality-gates"]),
+      ),
     };
   });
 
   return {
     repo,
     repoLink,
-    services
+    services,
   };
 }

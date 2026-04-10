@@ -1,4 +1,4 @@
-import axios from "@/utils/axios";
+import { client } from "@/utils/apiClient";
 import { truncateDateOnly } from "@/utils/date";
 import { RunResult, type RunWithMetadata } from "@/model/runs";
 import { PIPELINE_DEPLOYMENTS, PIPELINE_RUN, PIPELINE_RUNS } from "@/utils/urls";
@@ -37,7 +37,7 @@ export async function fetchForDateRange(
   startDate: Date,
   endDate: Date,
 ): Promise<RunRow[]> {
-  const response = await axios.get(PIPELINE_RUNS, {
+  const response = await client.get<RunWithMetadata[]>(PIPELINE_RUNS, {
     params: {
       workloads: workloads.join(","),
       stageId,
@@ -65,7 +65,7 @@ export async function fetchRunById(
   jobName: string,
   runId: string,
 ): Promise<RunWithMetadata> {
-  const response = await axios.get(PIPELINE_RUN, {
+  const response = await client.get<RunWithMetadata>(PIPELINE_RUN, {
     params: {
       workloadId,
       stageId,
@@ -79,7 +79,7 @@ export async function fetchRunById(
 }
 
 export async function lookupDeploymentRuns(input: RunWithMetadata): Promise<RunWithMetadata[]> {
-  const response = await axios.get(PIPELINE_DEPLOYMENTS, {
+  const response = await client.get<RunWithMetadata[]>(PIPELINE_DEPLOYMENTS, {
     params: {
       workloadId: input.workloadId,
       stageId: input.stageId,

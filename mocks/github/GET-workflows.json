@@ -1,5 +1,5 @@
 {
-  "total_count": 2,
+  "total_count": 3,
   "workflows": [
     {
       "id": 161335,
@@ -9,9 +9,9 @@
       "state": "active",
       "created_at": "2020-01-08T23:48:37.000-08:00",
       "updated_at": "2020-01-08T23:50:21.000-08:00",
-      "url": "https://api.github.com/repos/octo-org/octo-repo/actions/workflows/161335",
-      "html_url": "https://github.com/octo-org/octo-repo/blob/master/.github/workflows/161335",
-      "badge_url": "https://github.com/octo-org/octo-repo/workflows/CI/badge.svg"
+      "url": "https://api.github.com/repos/octocat/hello-world/actions/workflows/161335",
+      "html_url": "https://github.com/octocat/hello-world/blob/master/.github/workflows/161335",
+      "badge_url": "https://github.com/octocat/hello-world/workflows/CI/badge.svg"
     },
     {
       "id": 269289,
@@ -21,9 +21,21 @@
       "state": "active",
       "created_at": "2020-01-08T23:48:37.000-08:00",
       "updated_at": "2020-01-08T23:50:21.000-08:00",
-      "url": "https://api.github.com/repos/octo-org/octo-repo/actions/workflows/269289",
-      "html_url": "https://github.com/octo-org/octo-repo/blob/master/.github/workflows/269289",
-      "badge_url": "https://github.com/octo-org/octo-repo/workflows/Linter/badge.svg"
+      "url": "https://api.github.com/repos/octocat/hello-world/actions/workflows/269289",
+      "html_url": "https://github.com/octocat/hello-world/blob/master/.github/workflows/269289",
+      "badge_url": "https://github.com/octocat/hello-world/workflows/Linter/badge.svg"
+    },
+    {
+      "id": 269290,
+      "node_id": "MDE4OldvcmtmbG93IFBsYXRmb3JtMjY5Mjkw",
+      "name": "Platform",
+      "path": ".github/workflows/platform.yaml",
+      "state": "active",
+      "created_at": "2020-01-08T23:48:37.000-08:00",
+      "updated_at": "2020-01-08T23:50:21.000-08:00",
+      "url": "https://api.github.com/repos/octocat/hello-world/actions/workflows/269290",
+      "html_url": "https://github.com/octocat/hello-world/blob/master/.github/workflows/269290",
+      "badge_url": "https://github.com/octocat/hello-world/workflows/Platform/badge.svg"
     }
   ]
 }

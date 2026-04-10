@@ -6,6 +6,7 @@ import vue from "@vitejs/plugin-vue";
 import vuetify from "vite-plugin-vuetify";
 
 const isProdBuild = process.env.NODE_ENV === "production";
+const isTest = process.env.VITEST === "true";
 const enableCoverage = process.env.COVERAGE_ENABLED === "true";
 
 const viteHost = process.env.VITE_HOST || "code-metrics.localhost";
@@ -13,7 +14,7 @@ const apiTarget = process.env.API_TARGET || "http://localhost:3000";
 
 const plugins = [vue()];
 
-if (isProdBuild) {
+if (isProdBuild || isTest) {
   plugins.push(
     ...vuetify({
       styles: {
@@ -74,6 +75,12 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
+    setupFiles: [fileURLToPath(new URL("./src/test/setup.ts", import.meta.url))],
+    server: {
+      deps: {
+        inline: ["vuetify", "@mdi/font"],
+      },
+    },
     coverage: {
       provider: "v8",
       reporter: ["json", "html", "lcov", "text"],

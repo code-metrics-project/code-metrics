@@ -9,33 +9,42 @@ on:
 jobs:
   test-oidc:
     runs-on: ubuntu-latest
+    container:
+      image: ${{ fromJSON(inputs.vars).playwrightContainerImage }}
     if: ${{ fromJSON(inputs.vars).authComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     timeout-minutes: 20
     permissions:
       contents: read
+    env:
+      COVERAGE_ENABLED: "false"
+      COVERAGE_PROFILE: "oidc"
+      TMPDIR: /github/home/tmp
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      - name: Install container prerequisites
+        run: |
+          apt-get update
+          apt-get install -y unzip lsof
+          mkdir -p "$TMPDIR" "$HOME/.imposter"
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: "/backend/.nvmrc"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
 
       - name: Setup Imposter
         uses: imposter-project/imposter-github-action/setup@v0.6.1
 
-      - name: Start Mocks
-        uses: imposter-project/imposter-github-action/start-mocks@v0.6.1
-        with:
-          config-dir: "./mocks"
-          engine-type: "golang"
-          version: "1.6.1"
-          recursive-config-scan: "true"
-
       - name: Restore backend node_modules cache
         id: cache-backend-nm-oidc
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: backend/node_modules
           key: ${{ runner.os }}-backend-nm-${{ hashFiles('backend/package-lock.json') }}
@@ -44,93 +53,42 @@ jobs:
         working-directory: ./backend
         run: npm ci
 
-      - name: Configure Backend for OIDC
-        working-directory: ./backend
-        run: |
-          cp .env.template .env
-          echo "AUTHENTICATOR_IMPL=oidc" >> .env
-          echo "OIDC_ISSUER_BASE_URL=http://localhost:8080" >> .env
-          echo "OIDC_CLIENT_ID=codemetrics" >> .env
-          echo "OIDC_CLIENT_SECRET=changeme" >> .env
-          echo "DATASTORE_IMPL=inmem" >> .env
-          # Set UI_BASE_URL and CORS_ORIGIN to localhost:3001 instead of code-metrics.localhost:3001
-          sed -i 's|UI_BASE_URL=http://code-metrics.localhost:3001|UI_BASE_URL=http://localhost:3001|g' .env
-          sed -i 's|CORS_ORIGIN=https://code-metrics.localhost:3001|CORS_ORIGIN=http://localhost:3001|g' .env
-          echo "Backend configured for OIDC authentication"
-
-      - name: Setup Configuration Directory
-        run: |
-          export CONFIG_DIR=$(mktemp -d -t code-metrics-config-XXXXXX)
-          echo "CONFIG_DIR=$CONFIG_DIR" >> $GITHUB_ENV
-          cp backend/config/examples/remote-config.yaml "$CONFIG_DIR/remote-config.yaml"
-          cp backend/config/examples/workload-config.yaml "$CONFIG_DIR/workload-config.yaml"
-          cp backend/config/examples/secrets.yaml.example "$CONFIG_DIR/secrets.yaml"
-          cp mocks/config/pipeline-config.yaml "$CONFIG_DIR/pipeline-config.yaml"
-          cp mocks/config/license.yaml "$CONFIG_DIR/license.yaml"
-
-          echo "Configuration files prepared in $CONFIG_DIR"
-          ls -la "$CONFIG_DIR"
-
-      - name: Start Backend
-        working-directory: ./backend
-        run: |
-          mkdir -p logs
-          npm run dev > logs/backend.log 2>&1 &
-          echo "Backend PID: $!" > logs/backend.pid
-          echo "Waiting for backend to start..."
-          # Wait for backend to be ready
-          timeout 60 bash -c 'until curl -s http://localhost:3000/api/health/readiness --fail > /dev/null; do sleep 2; echo "Waiting for backend..."; done'
-          echo "Backend is running"
-
-      - name: Restore UI node_modules cache
-        id: cache-ui-nm-oidc
-        uses: actions/cache@v4
+      - name: Restore Frontend node_modules cache
+        id: cache-frontend-nm-oidc
+        uses: actions/cache@v5
         with:
           path: |
-            ui/node_modules
-            ~/.cache/Cypress
-          key: ${{ runner.os }}-ui-cypress-${{ hashFiles('ui/package-lock.json') }}
+            frontend/node_modules
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-frontend-bun-${{ hashFiles('frontend/bun.lock') }}
           restore-keys: |
-            ${{ runner.os }}-ui-nm-${{ hashFiles('ui/package-lock.json') }}
+            ${{ runner.os }}-frontend-bun-${{ hashFiles('frontend/bun.lock') }}
       - name: Install Frontend Dependencies
-        if: steps.cache-ui-nm-oidc.outputs.cache-hit != 'true'
-        working-directory: ./ui
-        run: npm ci
+        if: steps.cache-frontend-nm-oidc.outputs.cache-hit != 'true'
+        working-directory: ./frontend
+        run: bun install --frozen-lockfile
 
-      - name: Start Frontend
-        working-directory: ./ui
-        run: |
-          npm run dev &
-          echo "Waiting for frontend to start..."
-          # Wait for frontend to be ready
-          timeout 60 bash -c 'until curl -s http://localhost:3001 > /dev/null; do sleep 2; echo "Waiting for frontend..."; done'
-          echo "Frontend is running"
+      - name: Run Playwright Tests (OIDC)
+        working-directory: ./scripts
+        run: ./validate-test_e2e_mocks.sh --auth-mode oidc --skip-install
 
-      - name: Run Cypress Tests
-        working-directory: ./ui
-        run: npm run test:e2e:oidc
+      - name: Upload OIDC test coverage report files
+        if: ${{ env.COVERAGE_ENABLED == 'true' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-frontend--oidc
+          path: frontend/coverage-frontend--oidc
+          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
 
       - name: Collect Artifacts on Failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-oidc-artifacts
           path: |
-            ui/__tests__/output
+            frontend/__tests__/output
             backend/logs
           if-no-files-found: ignore
-
-      - name: Cleanup
-        if: always()
-        run: |
-          echo "Stopping backend"
-          pkill -f "node.*backend" || true
-
-      - name: Stop Mocks
-        if: always()
-        uses: imposter-project/imposter-github-action/stop-mocks@v0.6.1
-        with:
-          engine-type: "golang"
 
   test-keycloak:
     runs-on: ubuntu-latest
@@ -138,192 +96,159 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+    env:
+      COVERAGE_ENABLED: "false"
+      COVERAGE_PROFILE: "keycloak"
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: "/backend/.nvmrc"
 
-      - name: Start Keycloak
-        run: |
-          docker compose -f compose/docker-compose-keycloak.yaml --project-directory . up -d
-          echo "Waiting for Keycloak to start..."
-          # Wait for Keycloak to be ready
-          timeout 120 bash -c 'until curl -s http://localhost:8086/realms/master > /dev/null; do sleep 2; echo "Waiting for Keycloak..."; done'
-          echo "Keycloak is running"
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
 
       - name: Setup Imposter
         uses: imposter-project/imposter-github-action/setup@v0.6.1
 
-      - name: Start Mocks
-        uses: imposter-project/imposter-github-action/start-mocks@v0.6.1
-        with:
-          config-dir: "./mocks"
-          engine-type: "golang"
-          version: "1.6.1"
-          recursive-config-scan: "true"
-
       - name: Restore backend node_modules cache
         id: cache-backend-nm-keycloak
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: backend/node_modules
           key: ${{ runner.os }}-backend-nm-${{ hashFiles('backend/package-lock.json') }}
+
       - name: Install Backend Dependencies
         if: steps.cache-backend-nm-keycloak.outputs.cache-hit != 'true'
         working-directory: ./backend
         run: npm ci
 
-      - name: Configure Backend for OIDC
-        working-directory: ./backend
-        run: |
-          cp .env.template .env
-          echo "AUTHENTICATOR_IMPL=oidc" >> .env
-          echo "OIDC_ISSUER_BASE_URL=http://localhost:8086/realms/codemetrics" >> .env
-          echo "OIDC_CLIENT_ID=codemetrics" >> .env
-          echo "OIDC_CLIENT_SECRET=changeme" >> .env
-          echo "DATASTORE_IMPL=inmem" >> .env
-          # Set UI_BASE_URL and CORS_ORIGIN to localhost:3001 instead of code-metrics.localhost:3001
-          sed -i 's|UI_BASE_URL=http://code-metrics.localhost:3001|UI_BASE_URL=http://localhost:3001|g' .env
-          sed -i 's|CORS_ORIGIN=https://code-metrics.localhost:3001|CORS_ORIGIN=http://localhost:3001|g' .env
-          echo "Backend configured for OIDC authentication"
-
-      - name: Setup Configuration Directory
-        run: |
-          export CONFIG_DIR=$(mktemp -d -t code-metrics-config-XXXXXX)
-          echo "CONFIG_DIR=$CONFIG_DIR" >> $GITHUB_ENV
-          cp backend/config/examples/remote-config.yaml "$CONFIG_DIR/remote-config.yaml"
-          cp backend/config/examples/workload-config.yaml "$CONFIG_DIR/workload-config.yaml"
-          cp backend/config/examples/secrets.yaml.example "$CONFIG_DIR/secrets.yaml"
-          cp mocks/config/pipeline-config.yaml "$CONFIG_DIR/pipeline-config.yaml"
-          cp mocks/config/license.yaml "$CONFIG_DIR/license.yaml"
-
-          echo "Configuration files prepared in $CONFIG_DIR"
-          ls -la "$CONFIG_DIR"
-
-      - name: Start Backend
-        working-directory: ./backend
-        run: |
-          mkdir -p logs
-          npm run dev > logs/backend.log 2>&1 &
-          echo "Backend PID: $!" > logs/backend.pid
-          echo "Waiting for backend to start..."
-          # Wait for backend to be ready
-          timeout 60 bash -c 'until curl -s http://localhost:3000/api/health/readiness --fail > /dev/null; do sleep 2; echo "Waiting for backend..."; done'
-          echo "Backend is running"
-
-      - name: Restore UI node_modules cache
-        id: cache-ui-nm-keycloak
-        uses: actions/cache@v4
+      - name: Restore Frontend node_modules cache
+        id: cache-frontend-nm-keycloak
+        uses: actions/cache@v5
         with:
           path: |
-            ui/node_modules
-            ~/.cache/Cypress
-          key: ${{ runner.os }}-ui-cypress-${{ hashFiles('ui/package-lock.json') }}
+            frontend/node_modules
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-frontend-bun-${{ hashFiles('frontend/bun.lock') }}
           restore-keys: |
-            ${{ runner.os }}-ui-nm-${{ hashFiles('ui/package-lock.json') }}
+            ${{ runner.os }}-frontend-bun-${{ hashFiles('frontend/bun.lock') }}
       - name: Install Frontend Dependencies
-        if: steps.cache-ui-nm-keycloak.outputs.cache-hit != 'true'
-        working-directory: ./ui
-        run: npm ci
+        if: steps.cache-frontend-nm-keycloak.outputs.cache-hit != 'true'
+        working-directory: ./frontend
+        run: bun install --frozen-lockfile
 
-      - name: Start Frontend
-        working-directory: ./ui
-        run: |
-          npm run dev &
-          echo "Waiting for frontend to start..."
-          # Wait for frontend to be ready
-          timeout 60 bash -c 'until curl -s http://localhost:3001 > /dev/null; do sleep 2; echo "Waiting for frontend..."; done'
-          echo "Frontend is running"
+      - name: Install Playwright browsers
+        working-directory: ./frontend
+        run: bunx playwright install --with-deps
 
-      - name: Run Cypress Tests
-        working-directory: ./ui
-        run: npm run test:e2e:keycloak
+      - name: Run Playwright Tests (Keycloak)
+        working-directory: ./scripts
+        run: ./validate-test_e2e_mocks.sh --auth-mode keycloak --skip-install
+
+      - name: Upload Keycloak test coverage report files
+        if: ${{ env.COVERAGE_ENABLED == 'true' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-frontend--keycloak
+          path: frontend/coverage-frontend--keycloak
+          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
 
       - name: Collect Artifacts on Failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-keycloak-artifacts
           path: |
-            ui/__tests__/output
+            frontend/__tests__/output
             backend/logs
           if-no-files-found: ignore
 
-      - name: Cleanup
-        if: always()
-        run: |
-          echo "Stopping backend"
-          pkill -f "node.*backend" || true
-          docker compose -f compose/docker-compose-keycloak.yaml --project-directory . down || true
-
-      - name: Stop Mocks
-        if: always()
-        uses: imposter-project/imposter-github-action/stop-mocks@v0.6.1
-        with:
-          engine-type: "golang"
-
   test-e2e:
-    # This job has high resource requirements and should be run on a larger instance.
-    # Large instances are more expensive, so we use them sparingly.
     runs-on: ubuntu-latest
-    if: ${{ always() && !failure() && !cancelled() && (fromJSON(inputs.vars).uiComponents != 0 || fromJSON(inputs.vars).backendComponents != 0 || fromJSON(inputs.vars).githubComponents != 0 || startsWith(github.ref, 'refs/tags/')) }}
+    container:
+      image: ${{ fromJSON(inputs.vars).playwrightContainerImage }}
+    if: ${{ always() && !failure() && !cancelled() && (fromJSON(inputs.vars).frontendComponents != 0 || fromJSON(inputs.vars).backendComponents != 0 || fromJSON(inputs.vars).githubComponents != 0 || startsWith(github.ref, 'refs/tags/')) }}
     timeout-minutes: 20
     permissions:
       contents: read
     env:
       COVERAGE_ENABLED: "false"
+      COVERAGE_PROFILE: "e2e"
+      TMPDIR: /github/home/tmp
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+
+      - name: Install container prerequisites
+        run: |
+          apt-get update
+          apt-get install -y unzip lsof
+          mkdir -p "$TMPDIR" "$HOME/.imposter"
+
+      - uses: actions/setup-node@v6
         with:
           node-version-file: "/backend/.nvmrc"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
+
+      - name: Install Imposter
+        uses: imposter-project/imposter-github-action/setup@v0.6.1
+
       - name: Restore backend node_modules cache
         id: cache-backend-nm-e2e
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: backend/node_modules
           key: ${{ runner.os }}-backend-nm-${{ hashFiles('backend/package-lock.json') }}
+
       - name: Install backend dependencies
         if: steps.cache-backend-nm-e2e.outputs.cache-hit != 'true'
         working-directory: backend
         run: npm ci
-      - name: Restore UI node_modules cache
-        id: cache-ui-nm-e2e
-        uses: actions/cache@v4
+
+      - name: Restore Frontend node_modules cache
+        id: cache-frontend-nm-e2e
+        uses: actions/cache@v5
         with:
           path: |
-            ui/node_modules
-            ~/.cache/Cypress
-          key: ${{ runner.os }}-ui-cypress-${{ hashFiles('ui/package-lock.json') }}
+            frontend/node_modules
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-frontend-bun-${{ hashFiles('frontend/bun.lock') }}
           restore-keys: |
-            ${{ runner.os }}-ui-nm-${{ hashFiles('ui/package-lock.json') }}
-      - name: Install UI dependencies
-        if: steps.cache-ui-nm-e2e.outputs.cache-hit != 'true'
-        working-directory: ui
-        run: npm ci
-      - name: Install Imposter
-        uses: imposter-project/imposter-github-action/setup@v0.6.1
-      - name: E2E test UI with mock backend
+            ${{ runner.os }}-frontend-bun-${{ hashFiles('frontend/bun.lock') }}
+
+      - name: Install Frontend Dependencies
+        if: steps.cache-frontend-nm-e2e.outputs.cache-hit != 'true'
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: E2E test frontend with mock backend
         env:
           MOCKS_PRINT_LOG_ON_CRASH: "true"
           MOCKS_VERBOSE: "false"
         working-directory: scripts
-        run: ./validate-test_e2e_mocks.sh --skip-install
+        run: ./validate-test_e2e_mocks.sh --auth-mode file --skip-install
+
       - name: Upload E2E test run generated media
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-test-media
-          path: ui/__tests__/output
+          path: frontend/__tests__/output
           retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
+
       - name: Upload E2E test coverage report files
         if: ${{ env.COVERAGE_ENABLED == 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: coverage-ui--e2e
-          path: ui/coverage-ui--e2e
+          name: coverage-frontend--e2e
+          path: frontend/coverage-frontend--e2e
           retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}

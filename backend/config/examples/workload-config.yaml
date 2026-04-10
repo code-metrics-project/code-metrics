@@ -2,232 +2,194 @@
 version: "2.0"
 
 workloads:
-- id: athena
-  name: "Athena team"
-  codeManagement:
-    type: azure
-    serverId: mock-azure
-    projectName: athena
-    repoGroups:
-      backend:
-        components:
-        - repo: /spring-.*/
-      frontend:
-        sonarTags:
-        - fe
-      platform:
-        components:
-        - repo: /.*_platform/
-        - repo: /.*_infrastructure/
-  pipelines:
-    type: azure
-    serverId: mock-azure
-    projectName: athena
-    jobGroups:
-      backend:
-        jobNames:
-        - /spring-.*/
-      frontend:
-        jobNames:
-        - fe
-      platform:
-        jobNames:
-        - /.*_platform/
-        - /.*_infrastructure/
-    stages:
-      - stageId: azure-deployment-pipeline
-  codeAnalysis:
-    type: sonar
-    serverId: mock-sonar
-    mappings:
-      - key: petclinic
-        vcsRepoName: spring-petclinic
-  projectManagement:
-    type: jira
-    serverId: mock-jira
-    projectName: DEV
-    teamFilterJql: '"Team name[Dropdown]" in ("Athena")'
-  incidents:
-    type: jira
-    serverId: mock-jira
-    projectName: INCIDENT
-    teamFilterJql: '"Team name[Dropdown]" in ("Athena")'
+  - id: athena
+    name: "Athena"
+    tags:
+        department: sales
+    codeManagement:
+      type: azure
+      serverId: mock-azure
+      projectName: athena
+      repoGroups:
+        backend:
+          components:
+            - repo: /spring-.*/
+        frontend:
+          sonarTags:
+            - fe
+        platform:
+          components:
+            - repo: /.*_platform/
+            - repo: /.*_infrastructure/
+        monorepos:
+          components:
+            - name: web-a
+              repo: athena_ui_subject_portal
+              paths: ["/web-a"]
+            - name: web-b
+              repo: athena_ui_subject_portal
+              paths: ["/web-b"]
+    codeAnalysis:
+      type: sonar
+      serverId: mock-sonar
+      mappings:
+        - key: petclinic
+          vcsRepoName: spring-petclinic
+    pipelines:
+      type: azure
+      serverId: mock-azure
+      projectName: athena
+      jobGroups:
+        backend:
+          jobNames:
+            - /spring-.*/
+        frontend:
+          jobNames:
+            - fe
+        platform:
+          jobNames:
+            - /.*_platform/
+            - /.*_infrastructure/
+      stages:
+        - stageId: azure-deployment-pipeline
+    projectManagement:
+      type: azure
+      serverId: mock-azure
+      projectName: ADOMockProject
+      team: ADOMock
+      ticketTypes:
+        - Bug
+        - Task
+        - User Story
+        - Defect
+        - Issue
+    incidents:
+      type: azure
+      serverId: mock-azure
+      projectName: ADOMockProject
+      team: ADOMock name[Dropdown]" in ("Athena")'
 
-- id: gaia
-  codeManagement:
-    type: github
-    serverId: mock-github
-    projectName: gaia
-    repoGroups:
-      backend:
-        components:
-          - repo: /octocat.*/
-      frontend:
-        sonarTags:
-          - fe
-      platform:
-        components:
-          - repo: /.*_platform/
-          - repo: /.*_infrastructure/
-  codeAnalysis:
-    type: sonar
-    serverId: mock-sonar
-  pipelines:
-    type: github
-    serverId: mock-github
-    projectName: gaia
-    jobGroups:
-      backend:
-        jobNames:
-          - /.*/
-      frontend:
-        jobNames:
-          - fe
-      platform:
-        jobNames:
-          - /.*_platform/
-          - /.*_infrastructure/
-    stages:
-      - stageId: azure-deployment-pipeline
-  projectManagement:
-    type: jira
-    serverId: mock-jira
-    teamFilterJql: '"Team name[Dropdown]" in ("Gaia")'
-    projectName: DEV
-    prodFilterJql: '"Project Environment[Dropdown]" = PROD'
-  incidents:
-    type: servicenow
-    serverId: mock-servicenow
-    tableName: incident
-  qualityGates:
-    id: default
-    version: 0.1.0
+  - id: gaia
+    name: "Gaia"
+    tags:
+      department: sales
+    codeManagement:
+      type: github
+      serverId: mock-github
+      projectName: gaia
+      repoGroups:
+        backend:
+          components:
+            - repo: /hello-world/
+              name: octo-backend
+              paths: ["/backend"]
+        frontend:
+          components:
+            - repo: /hello-world/
+              name: octo-frontend
+              paths: ["/frontend"]
+        platform:
+          components:
+            - repo: /hello-world/
+              name: octo-platform
+              paths: ["/platform"]
+    codeAnalysis:
+      type: sonar
+      serverId: mock-sonar
+    pipelines:
+      type: github
+      serverId: mock-github
+      projectName: gaia
+      jobGroups:
+        backend:
+          jobNames:
+            - CI
+        frontend:
+          jobNames:
+            - Linter
+        platform:
+          jobNames:
+            - Platform
+      stages:
+        - stageId: github-deployment-pipeline
+    projectManagement:
+      type: github
+      serverId: mock-github
+      owner: "octocat"  
+      repo: "hello-world"
+      stateFilter: "all"
+      issueTypes:
+        - bug
+        - enhancement
+        - feature
+      labelMapping:
+        "priority:high": "High"
+        "priority:medium": "Medium"
+        "priority:low": "Low"
+    incidents:
+      type: github
+      serverId: mock-github
+      owner: octocat
+      repo: hello-world
+      stateFilter: all
+      issueTypes:
+        - issue
+      labelMapping:
+        "priority:high": "High"
+        "priority:medium": "Medium"
+        "priority:low": "Low"
+    qualityGates:
+      id: default
+      version: "0.1.0"
 
-# TBA with application feature
-# - id: hermes
-#   name: "Hermes team"
-#   codeManagement:
-#     type: github
-#     serverId: example-github
-#     projectName: my-organization
-#     repoGroups:
-#       backend:
-#         components:
-#           - repo: /api-.*/
-#           - repo: /service-.*/
-#       frontend:
-#         components:
-#           - repo: /ui-.*/
-#           - repo: /web-.*/
-#   codeAnalysis:
-#     type: sonar
-#     serverId: mock-sonar
-#   pipelines:
-#     type: github
-#     serverId: example-github
-#     projectName: my-organization
-#     jobGroups:
-#       backend:
-#         jobNames:
-#           - /api-.*/
-#           - /service-.*/
-#       frontend:
-#         jobNames:
-#           - /ui-.*/
-#           - /web-.*/
-#     stages:
-#       - stageId: github-deployment-action
-#   projectManagement:
-#     type: github
-#     serverId: example-github
-#     owner: "my-organization"
-#     repo: "project-issues"
-#     ticketTypes:
-#       - "bug"
-#       - "feature"
-#       - "enhancement"
-#       - "task"
-#     ticketPriorities:
-#       - "low"
-#       - "medium"
-#       - "high"
-#       - "critical"
-#     stateFilter: "all"
-#     labelMapping:
-#       "priority/low": "Low"
-#       "priority/medium": "Medium"
-#       "priority/high": "High"
-#       "priority/critical": "Critical"
-#       "type/bug": "Bug"
-#       "type/feature": "Feature"
-#       "type/enhancement": "Enhancement"
-#       "type/task": "Task"
-#   incidents:
-#     type: github
-#     serverId: example-github
-#     owner: "my-organization"
-#     repo: "incidents"
-#     ticketTypes:
-#       - "incident"
-#       - "outage"
-#       - "service-disruption"
-#     ticketPriorities:
-#       - "Critical"
-#       - "High"
-#       - "Medium"
-#       - "Low"
-#     stateFilter: "all"
-#     labelMapping:
-#       "severity/critical": "Critical"
-#       "severity/high": "High"
-#       "severity/medium": "Medium"
-#       "severity/low": "Low"
-
-# TBA with application feature
-# - id: apollo
-#   name: "Apollo team (GitHub Enterprise)"
-#   codeManagement:
-#     type: github
-#     serverId: example-github-enterprise
-#     projectName: enterprise-org
-#     repoGroups:
-#       backend:
-#         components:
-#           - repo: /backend-.*/
-#       frontend:
-#         components:
-#           - repo: /frontend-.*/
-#   codeAnalysis:
-#     type: sonar
-#     serverId: mock-sonar
-#   pipelines:
-#     type: github
-#     serverId: example-github-enterprise
-#     projectName: enterprise-org
-#     jobGroups:
-#       backend:
-#         jobNames:
-#           - /backend-.*/
-#       frontend:
-#         jobNames:
-#           - /frontend-.*/
-#     stages:
-#       - stageId: github-deployment-action
-#   projectManagement:
-#     type: github
-#     serverId: example-github-enterprise
-#     owner: "enterprise-org"
-#     repo: "team-issues"
-#     ticketTypes:
-#       - "issue"
-#       - "bug"
-#       - "feature"
-#     stateFilter: "all"
-#   incidents:
-#     type: github
-#     serverId: example-github-enterprise
-#     owner: "enterprise-org"
-#     repo: "production-incidents"
-#     ticketTypes:
-#       - "incident"
-#     stateFilter: "all"
+  - id: icarus
+    tags:
+      department: finance
+    codeManagement:
+      type: azure
+      serverId: mock-azure
+      projectName: icarus
+      repoGroups:
+        backend:
+          components:
+            - repo: /spring-.*/
+        frontend:
+          sonarTags:
+            - fe
+        platform:
+          components:
+            - repo: /.*_platform/
+            - repo: /.*_infrastructure/
+    codeAnalysis:
+      type: sonar
+      serverId: mock-sonar
+      mappings:
+        - key: petclinic
+          vcsRepoName: spring-petclinic
+    pipelines:
+      type: azure
+      serverId: mock-azure
+      projectName: athena
+      jobGroups:
+        backend:
+          jobNames:
+            - /spring-.*/
+        frontend:
+          jobNames:
+            - fe
+        platform:
+          jobNames:
+            - /.*_platform/
+            - /.*_infrastructure/
+      stages:
+        - stageId: azure-deployment-pipeline
+    projectManagement:
+      type: jira
+      serverId: mock-jira
+      teamFilterJql: '"Team name[Dropdown]" in ("Icarus")'
+      projectName: DEV
+      prodFilterJql: '"Project Environment[Dropdown]" = PROD'
+    incidents:
+      type: servicenow
+      serverId: mock-servicenow
+      tableName: incident

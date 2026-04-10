@@ -14,6 +14,7 @@ import { redactAndRenderAsJson } from "../utils/logger/redact";
 import { isStrictMode } from "../utils/strict";
 import { getConfigItem } from "./sources/source";
 import { QualityGatesConfigWrapper } from "../model/config/quality-gates-config";
+import { RBACConfigWrapper } from "../model/config/rbac-config";
 
 let cachedConfig: ConfigHolder;
 
@@ -34,6 +35,7 @@ export const loadConfig = async (overrides?: {
   workloadConfig?: WorkloadConfigWrapper;
   pipelineConfig?: StageConfigWrapper;
   qualityGatesConfig?: QualityGatesConfigWrapper;
+  rbacConfig?: RBACConfigWrapper;
 }) => {
   const configDirs = getConfigDirs(overrides?.dir);
   logger(`Loading from configuration dir: ${configDirs}`);
@@ -68,6 +70,15 @@ export const loadConfig = async (overrides?: {
           "quality-gates-config",
           { required: false, resolveSecrets: true },
           { stages: [] },
+        )),
+
+      rbacConfig:
+        overrides?.rbacConfig ??
+        (await readConfig<RBACConfigWrapper>(
+          configDirs,
+          "rbac",
+          { required: false },
+          { rbac: [] },
         )),
     };
     cachedConfig = applyDefaults(polyfillLegacyConfig(loadedConfig));
@@ -174,12 +185,18 @@ export const mergeConfigs = <T>(configs: T[]): T => {
           merged[propName] = arr as T[Extract<keyof T, string>];
         }
         arr.push(...prop);
-      } else {
+      } else if (isMergeableObject(merged[propName]) && isMergeableObject(prop)) {
         merged[propName] = _merge(merged[propName], prop);
+      } else {
+        merged[propName] = prop;
       }
     }
   }
   return merged;
+};
+
+const isMergeableObject = (value: unknown): value is Record<string, unknown> => {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 };
 
 /**

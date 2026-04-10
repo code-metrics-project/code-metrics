@@ -42,7 +42,7 @@
 import { computed, ref } from "vue";
 import { OperationState } from "@/utils/ui";
 import WorkloadNames from "@/components/inputs/WorkloadNames.vue";
-import axios from "@/utils/axios";
+import { client } from "@/utils/apiClient";
 import { VULNERABILITIES } from "@/utils/urls";
 import DatePicker from "@/components/DatePicker.vue";
 import { getTodayDateOnly } from "@/utils/date";
@@ -82,7 +82,7 @@ const upload = async () => {
         repoName: repoName.value,
         reportDate: reportDate.value, //truncateDateOnly(reportDate.value),
       };
-      const response = await axios.post(VULNERABILITIES, reader.result, {
+      const response = await client.post(VULNERABILITIES, reader.result, {
         headers: {
           "Content-Type": "application/json", //"application/sarif+json",
         },

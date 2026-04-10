@@ -55,8 +55,8 @@ codeManagement:
         authMethod: GITHUB_APP
         githubApp:
           appId: "${secret.GITHUB_APP_ID}"
-          privateKey: "${secret.GITHUB_APP_PRIVATE_KEY}"
           installationId: "${secret.GITHUB_APP_INSTALLATION_ID}"
+          privateKey: "${secret.GITHUB_APP_PRIVATE_KEY}"
         branches:
           - main
           - develop
@@ -86,8 +86,8 @@ pipelines:
         authMethod: GITHUB_APP
         githubApp:
           appId: "${secret.GITHUB_APP_ID}"
-          privateKey: "${secret.GITHUB_APP_PRIVATE_KEY}"
           installationId: "${secret.GITHUB_APP_INSTALLATION_ID}"
+          privateKey: "${secret.GITHUB_APP_PRIVATE_KEY}"
         branches:
           - main
           - develop
@@ -116,6 +116,56 @@ ticketManagement:
             - 2
             - 3
             - 4
+      - id: mock-azure
+        url: http://localhost:8080
+        apiKey: ""
+        authMethod: BEARER_TOKEN
+        defaults:
+          ticketTypes:
+            - Bug
+          ticketPriorities:
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
+  github:
+    servers:
+      # Example using Personal Access Token (Bearer Token) authentication
+      - id: mock-github
+        url: http://localhost:8080
+        apiKey: ""
+        authMethod: BEARER_TOKEN
+        defaults:
+          owner: "mock-organization"
+          repo: "mock-repo"
+          ticketTypes:
+            - Bug
+            - Enhancement
+            - Feature
+          ticketPriorities:
+            - High
+            - Medium
+            - Low
+      # Example using GitHub App authentication (recommended for organizations)
+      - id: example-github-app
+        url: https://api.github.com
+        authMethod: GITHUB_APP
+        githubApp:
+          appId: "${secret.GITHUB_APP_ID}"
+          privateKey: "${secret.GITHUB_APP_PRIVATE_KEY}"
+          installationId: "${secret.GITHUB_APP_INSTALLATION_ID}"
+        defaults:
+          owner: "example-organization"
+          repo: "example-repo"
+          ticketTypes:
+            - Bug
+            - Enhancement
+            - Feature
+          ticketPriorities:
+            - High
+            - Medium
+            - Low
   jira:
     servers:
       - id: example-jira-1
@@ -152,13 +202,15 @@ ticketManagement:
         defaults:
           ticketTypes:
             - Bug
+            - DevBug
+            - StaticBug
+            - OpsBug
           ticketPriorities:
             - Lowest
             - Low
             - Medium
             - High
             - Highest
-
   servicenow:
     servers:
       - id: mock-servicenow

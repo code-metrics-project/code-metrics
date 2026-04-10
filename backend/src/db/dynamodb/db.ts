@@ -6,12 +6,13 @@ import {
   DescribeTimeToLiveCommand,
   DynamoDBClient,
   GetItemCommand,
+  ListTablesCommand,
   PutItemCommand,
   ScanCommand,
   TimeToLiveStatus,
   UpdateTimeToLiveCommand,
 } from "@aws-sdk/client-dynamodb";
-import { AbstractDatastore, DatastoreCollection, EXPIRY_FIELD, QueryFilter } from "../api";
+import { AbstractDatastore, DatastoreAdmin, DatastoreCollection, EXPIRY_FIELD, QueryFilter } from "../api";
 import { error, logger, verbose } from "../../utils/logger/logger";
 import { AttributeValue } from "@aws-sdk/client-dynamodb/dist-types/models/models_0";
 import { sleep } from "../../utils/math";
@@ -40,6 +41,7 @@ let client: DynamoDBClient;
 
 /**
  * Invoke once.
+ * Supports local testing with LocalStack by setting AWS_ENDPOINT_URL environment variable.
  */
 export const initDynamoDB = async () => {
   const region = getConfigItem("AWS_REGION");
@@ -54,7 +56,16 @@ export const initDynamoDB = async () => {
   config = {
     tablePrefix,
   };
-  client = new DynamoDBClient({ region });
+
+  const endpointUrl = getConfigItem("AWS_ENDPOINT_URL");
+  client = new DynamoDBClient({
+    region,
+    ...(endpointUrl && { endpoint: endpointUrl }),
+  });
+
+  if (endpointUrl) {
+    verbose(`DynamoDB using custom endpoint: ${endpointUrl}`);
+  }
 };
 
 type CacheKey = {
@@ -328,3 +339,121 @@ export class DynamoDatastore extends AbstractDatastore<QueryFilter, DynamoTable>
     logger(`Enabled TTL for table: ${table.tableName}`);
   };
 }
+
+/**
+ * Convert a display name (prefix stripped) to the full DynamoDB table name.
+ */
+const toFullTableName = (name: string) => `${config.tablePrefix}_${name}`;
+
+/**
+ * Strip the configured table prefix from a full DynamoDB table name.
+ * If the name does not start with the prefix, it is returned as-is.
+ */
+const stripPrefix = (fullName: string) => {
+  const prefix = `${config.tablePrefix}_`;
+  return fullName.startsWith(prefix) ? fullName.slice(prefix.length) : fullName;
+};
+
+export const dynamoAdmin: DatastoreAdmin = {
+  listCollections: async () => {
+    const prefix = `${config.tablePrefix}_`;
+    const tableNames: string[] = [];
+    let exclusiveStartTableName: string | undefined;
+
+    do {
+      const command = new ListTablesCommand({
+        ExclusiveStartTableName: exclusiveStartTableName,
+      });
+      const response = await client.send(command);
+      const names = response.TableNames ?? [];
+      for (const name of names) {
+        if (name.startsWith(prefix)) {
+          tableNames.push(stripPrefix(name));
+        }
+      }
+      exclusiveStartTableName = response.LastEvaluatedTableName;
+    } while (exclusiveStartTableName);
+
+    return tableNames;
+  },
+
+  collectionExists: async (name: string) => {
+    const tableName = toFullTableName(name);
+    const command = new DescribeTableCommand({ TableName: tableName });
+    try {
+      const response = await client.send(command);
+      return response.Table?.TableName === tableName;
+    } catch (e) {
+      if (e.name === "ResourceNotFoundException") {
+        return false;
+      }
+      throw e;
+    }
+  },
+
+  countItems: async (name: string) => {
+    const tableName = toFullTableName(name);
+    let count = 0;
+    let exclusiveStartKey: Record<string, any> | undefined;
+
+    do {
+      const command = new ScanCommand({
+        TableName: tableName,
+        Select: "COUNT",
+        ExclusiveStartKey: exclusiveStartKey,
+      });
+      try {
+        const response = await client.send(command);
+        count += response.Count ?? 0;
+        exclusiveStartKey = response.LastEvaluatedKey;
+      } catch (e) {
+        if (e.name === "ResourceNotFoundException") {
+          return 0;
+        }
+        throw e;
+      }
+    } while (exclusiveStartKey);
+
+    return count;
+  },
+
+  emptyCollection: async (name: string) => {
+    const tableName = toFullTableName(name);
+
+    // DynamoDB has no "truncate" — we must scan all keys then batch-delete.
+    let exclusiveStartKey: Record<string, any> | undefined;
+
+    do {
+      const scanCommand = new ScanCommand({
+        TableName: tableName,
+        ProjectionExpression: "CacheKey",
+        ExclusiveStartKey: exclusiveStartKey,
+      });
+
+      let scanResponse;
+      try {
+        scanResponse = await client.send(scanCommand);
+      } catch (e) {
+        if (e.name === "ResourceNotFoundException") {
+          return;
+        }
+        throw e;
+      }
+
+      const items = scanResponse.Items ?? [];
+      // BatchWriteItem supports max 25 items per request
+      for (let i = 0; i < items.length; i += 25) {
+        const batch = items.slice(i, i + 25);
+        const deleteRequests = batch.map((item) => ({
+          DeleteRequest: { Key: { CacheKey: item.CacheKey } },
+        }));
+        const batchCommand = new BatchWriteItemCommand({
+          RequestItems: { [tableName]: deleteRequests },
+        });
+        await client.send(batchCommand);
+      }
+
+      exclusiveStartKey = scanResponse.LastEvaluatedKey;
+    } while (exclusiveStartKey);
+  },
+};

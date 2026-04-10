@@ -3,7 +3,7 @@ import { useDialogStore } from "@/store/dialog";
 import { useAuthStore } from "@/store/auth";
 import { getTokenExpiry, getTokenTtl, isTokenExpired } from "@/utils/auth";
 import { verbose } from "@/utils/logger";
-import { getTimeSinceLastRequest } from "@/utils/axios.ts";
+import { getTimeSinceLastRequest } from "@/utils/apiClient";
 
 /**
  * Composable to show a dialog when the user has been inactive for too long.

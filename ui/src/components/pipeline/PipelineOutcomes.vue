@@ -29,7 +29,7 @@
           <v-card variant="flat">
             <v-card-title class="text-center">{{ outcomes.key }}</v-card-title>
             <v-card-item>
-              <div class="text-h4 text-center">{{ Math.round(outcomes.success) }}%</div>
+              <div class="text-h4 text-center pipeline-success-rate">{{ Math.round(outcomes.success) }}%</div>
               <DoughnutChart :chart-data="outcomes.chartData" />
             </v-card-item>
             <v-card-actions class="mt-0">

@@ -1,4 +1,4 @@
-import { AbstractDatastore, DatastoreCollection, DatastoreConfig, EXPIRY_FIELD, QueryFilter } from "../api";
+import { AbstractDatastore, DatastoreAdmin, DatastoreCollection, DatastoreConfig, EXPIRY_FIELD, QueryFilter } from "../api";
 import { isMatch, cloneDeep } from "lodash/lang";
 import { error, verbose } from "../../utils/logger/logger";
 
@@ -98,6 +98,26 @@ export class InMemoryDatastore extends AbstractDatastore<QueryFilter, InMemoryCo
     }
   };
 }
+
+export const inMemoryAdmin: DatastoreAdmin = {
+  listCollections: async () => Object.keys(store),
+
+  collectionExists: async (name: string) => name in store,
+
+  countItems: async (name: string) => {
+    const col = store[name];
+    if (!col) return 0;
+    const items = await col.listItems();
+    return items.length;
+  },
+
+  emptyCollection: async (name: string) => {
+    const col = store[name];
+    if (col) {
+      await col.deleteAll();
+    }
+  },
+};
 
 export const testables = {
   clearState: () => {

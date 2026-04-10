@@ -37,13 +37,13 @@ def generate_docker_matrix(vars_json, is_tag, repo_owner):
             "cacheMode": "max"
         })
 
-    # 2. UI
-    if should_build("ui"):
+    # 2. Frontend
+    if should_build("frontend"):
         matrix.append({
-            "name": "ui",
-            "context": "./ui",
-            "file": "docker/Dockerfile.ui",
-            "imageName": "code-metrics-ui",
+            "name": "frontend",
+            "context": "./frontend",
+            "file": "docker/Dockerfile.frontend",
+            "imageName": "code-metrics-frontend",
             "buildArgs": f"IMGREPO={repo_url}",
             "cacheMode": "min"
         })
@@ -105,6 +105,17 @@ def generate_docker_matrix(vars_json, is_tag, repo_owner):
             "imageName": "code-metrics-docs",
             "buildArgs": f"DOCSDIR=docs\nIMGREPO={repo_url}",
             "cacheMode": "none"
+        })
+
+    # 8. UI
+    if should_build("ui"):
+        matrix.append({
+            "name": "ui",
+            "context": "./ui",
+            "file": "docker/Dockerfile.ui",
+            "imageName": "code-metrics-ui",
+            "buildArgs": f"IMGREPO={repo_url}",
+            "cacheMode": "min"
         })
 
     return matrix

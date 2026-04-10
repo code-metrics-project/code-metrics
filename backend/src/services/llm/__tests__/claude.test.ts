@@ -1,11 +1,10 @@
 import { ClaudeLlmService } from "../claude";
 import * as configMapping from "../../../config/configMapping";
+import { LlmProviderTypes } from "../../../model/config/common";
 
 // Mock the config mapping module
 jest.mock("../../../config/configMapping");
-const mockGetAllLlmConfig = configMapping.getAllLlmConfig as jest.MockedFunction<
-  typeof configMapping.getAllLlmConfig
->;
+const mockGetAllLlmConfig = configMapping.getAllLlmConfig as jest.MockedFunction<typeof configMapping.getAllLlmConfig>;
 
 // Mock logger to avoid console output during tests
 jest.mock("../../../utils/logger/logger", () => ({
@@ -22,7 +21,7 @@ describe("ClaudeLlmService", () => {
   describe("constructor", () => {
     it("should use API key from remote config when available", () => {
       mockGetAllLlmConfig.mockReturnValue({
-        type: "claude" as const,
+        type: LlmProviderTypes.CLAUDE,
         claude: {
           server: {
             id: "test-claude",
@@ -41,7 +40,7 @@ describe("ClaudeLlmService", () => {
 
     it("should use custom URL from remote config", () => {
       mockGetAllLlmConfig.mockReturnValue({
-        type: "claude" as const,
+        type: LlmProviderTypes.CLAUDE,
         claude: {
           server: {
             id: "test-claude",
@@ -57,7 +56,7 @@ describe("ClaudeLlmService", () => {
 
     it("should use default URL when not provided in remote config", () => {
       mockGetAllLlmConfig.mockReturnValue({
-        type: "claude" as const,
+        type: LlmProviderTypes.CLAUDE,
         claude: {
           server: {
             id: "test-claude",
@@ -72,7 +71,7 @@ describe("ClaudeLlmService", () => {
 
     it("should use default model when not provided in remote config", () => {
       mockGetAllLlmConfig.mockReturnValue({
-        type: "claude" as const,
+        type: LlmProviderTypes.CLAUDE,
         claude: {
           server: {
             id: "test-claude",
@@ -87,7 +86,7 @@ describe("ClaudeLlmService", () => {
 
     it("should prefer constructor parameters over remote config", () => {
       mockGetAllLlmConfig.mockReturnValue({
-        type: "claude" as const,
+        type: LlmProviderTypes.CLAUDE,
         claude: {
           server: {
             id: "test-claude",
@@ -115,7 +114,7 @@ describe("ClaudeLlmService", () => {
 
     it("should handle empty claude config gracefully", () => {
       mockGetAllLlmConfig.mockReturnValue({
-        type: "claude" as const,
+        type: LlmProviderTypes.CLAUDE,
       });
 
       const service = new ClaudeLlmService();
@@ -136,7 +135,7 @@ describe("ClaudeLlmService", () => {
   describe("generateChangesSummary", () => {
     it("should return default message when no changes provided", async () => {
       mockGetAllLlmConfig.mockReturnValue({
-        type: "claude" as const,
+        type: LlmProviderTypes.CLAUDE,
         claude: {
           server: {
             id: "test-claude",
@@ -148,6 +147,31 @@ describe("ClaudeLlmService", () => {
       const service = new ClaudeLlmService();
       const result = await service.generateChangesSummary([]);
       expect(result).toBe("No changes found for this period.");
+    });
+
+    it("should include locale-code language instruction in generated prompt", async () => {
+      mockGetAllLlmConfig.mockReturnValue({
+        type: LlmProviderTypes.CLAUDE,
+        claude: {
+          server: {
+            id: "test-claude",
+            apiKey: "test-key",
+          },
+        },
+      });
+
+      const service = new ClaudeLlmService();
+      const sendMessageSpy = jest.spyOn(service, "sendMessage").mockResolvedValue("Resumen");
+
+      await service.generateChangesSummary(
+        [{ repo: "repo-a", message: "Fix issue", links: { issueId: "PROJ-1", issueType: "Bug" } }],
+        "es-ES",
+      );
+
+      expect(sendMessageSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Respond in the language indicated by this BCP-47 locale code: "es".'),
+        300,
+      );
     });
   });
 });

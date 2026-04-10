@@ -1,7 +1,6 @@
-import axios from "@/utils/axios";
+import { client } from "@/utils/apiClient";
 import { type MetricEntry } from "@/model/metrics";
 import { type RawQuery, TransformTypes } from "@/model/query";
-import { type AxiosResponse } from "axios";
 import { QueryName } from "@/queries/queries";
 
 type PredictionRequest = {
@@ -16,7 +15,7 @@ export async function predict(inputQueries: RawQuery[], labelQuery: RawQuery): P
   if (labelQuery.queryName === QueryName.BugsNew) {
     labelQuery.transforms = [{ transform: TransformTypes.RollingAverages, args: { days: 7 } }];
   }
-  const response = await axios.post<any, AxiosResponse, PredictionRequest>("/api/prediction/linear", {
+  const response = await client.post<NamedQueryResults, any, PredictionRequest>("/api/prediction/linear", {
     inputQueries,
     labelQuery,
   });

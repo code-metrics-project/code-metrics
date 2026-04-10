@@ -121,6 +121,14 @@ describe("Azure VCS integration", () => {
     expect(link).toBe(`${mockServer.baseUrl()}/athena/_git/pet-project`);
   });
 
+  it(`generates a valid file link`, () => {
+    const vcs = getVcsForWorkload(workload);
+
+    const workloadId: WorkloadId = "athena";
+    const link = vcs.buildFileLink(workloadId, "pet-project", "main", ".github/workflows/test.yml");
+    expect(link).toBe(`${mockServer.baseUrl()}/athena/_git/pet-project/.github/workflows/test.yml`);
+  });
+
   it(`generates a valid commit link`, () => {
     const vcs = getVcsForWorkload(workload);
 

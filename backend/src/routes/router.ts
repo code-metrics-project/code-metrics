@@ -4,6 +4,7 @@ import { error } from "../utils/logger/logger";
 import { requiresLicense } from "../license/validate";
 import { requiresConfig } from "../config/config";
 import { TokenTypes } from "../auth/tokens";
+import { requiresRole } from "../middleware/requiresRole";
 
 export type HttpMethod = "get" | "post" | "put" | "delete";
 
@@ -14,6 +15,12 @@ export type RouteOptions = {
    * The types of tokens that can be used to access this route.
    */
   tokenTypes?: TokenTypes[];
+
+  /**
+   * Roles required to access this route. If specified, the authenticated
+   * user must have at least one of the listed roles.
+   */
+  requiredRoles?: string[];
 }
 
 /**
@@ -59,7 +66,9 @@ export class SecureRouter {
     ...handlers: AsyncHandler<R>[]
   ) => {
     const trappedHandlers = handlers.map((h) => trapping(h));
-    this.app[method](path, requiresLicense, requiresConfig, requiresAuth(routeOptions.tokenTypes), ...trappedHandlers);
+    const roleMiddleware = (routeOptions.requiredRoles ?? []).map((role) => requiresRole(role));
+    const tokenTypes = routeOptions.tokenTypes ?? ["access_token", "long_lived_access_token"];
+    this.app[method](path, requiresLicense, requiresConfig, requiresAuth(tokenTypes), ...roleMiddleware, ...trappedHandlers);
   };
 
   /**

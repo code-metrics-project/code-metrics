@@ -1,4 +1,4 @@
-import { MongoDatastore, initMongoDb } from "../db";
+import { MongoDatastore, initMongoDb, mongoAdmin } from "../db";
 import { DatastoreConfig, DO_NOT_EXPIRE, EXPIRY_FIELD } from "../../api";
 import { overrideConfigItem } from "../../../config/sources/source";
 
@@ -8,6 +8,8 @@ const mockCreateCollection = jest.fn();
 const mockCollection = jest.fn();
 const mockIndexExists = jest.fn();
 const mockCreateIndex = jest.fn();
+const mockCountDocuments = jest.fn();
+const mockDeleteMany = jest.fn();
 
 const mockDb = jest.fn().mockReturnValue({
   listCollections: mockListCollections,
@@ -150,5 +152,64 @@ describe("MongoDatastore", () => {
       expect(result).toBe("ok");
       expect(mockCreateIndex).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe("MongoAdmin", () => {
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    overrideConfigItem("DATABASE_URI", "mongodb://localhost:27017");
+    overrideConfigItem("DATABASE_NAME", "test-db");
+    await initMongoDb();
+  });
+
+  it("should list all collections", async () => {
+    const mockToArray = jest.fn().mockResolvedValue([{ name: "col1" }, { name: "col2" }]);
+    mockListCollections.mockReturnValue({ toArray: mockToArray });
+
+    const result = await mongoAdmin.listCollections();
+    expect(result).toEqual(["col1", "col2"]);
+    expect(mockListCollections).toHaveBeenCalledWith({}, { nameOnly: true });
+  });
+
+  it("should return empty array when no collections exist", async () => {
+    const mockToArray = jest.fn().mockResolvedValue([]);
+    mockListCollections.mockReturnValue({ toArray: mockToArray });
+
+    const result = await mongoAdmin.listCollections();
+    expect(result).toEqual([]);
+  });
+
+  it("should check collection existence — exists", async () => {
+    const mockCursor = { hasNext: jest.fn().mockResolvedValue(true), close: jest.fn() };
+    mockListCollections.mockReturnValue(mockCursor);
+
+    const result = await mongoAdmin.collectionExists("myCol");
+    expect(result).toBe(true);
+    expect(mockListCollections).toHaveBeenCalledWith({ name: "myCol" });
+  });
+
+  it("should check collection existence — does not exist", async () => {
+    const mockCursor = { hasNext: jest.fn().mockResolvedValue(false), close: jest.fn() };
+    mockListCollections.mockReturnValue(mockCursor);
+
+    const result = await mongoAdmin.collectionExists("missing");
+    expect(result).toBe(false);
+  });
+
+  it("should count items in a collection", async () => {
+    mockCountDocuments.mockResolvedValue(42);
+    mockCollection.mockReturnValue({ countDocuments: mockCountDocuments });
+
+    const result = await mongoAdmin.countItems("myCol");
+    expect(result).toBe(42);
+  });
+
+  it("should empty a collection", async () => {
+    mockDeleteMany.mockResolvedValue({ deletedCount: 5 });
+    mockCollection.mockReturnValue({ deleteMany: mockDeleteMany });
+
+    await mongoAdmin.emptyCollection("myCol");
+    expect(mockDeleteMany).toHaveBeenCalledWith({});
   });
 });

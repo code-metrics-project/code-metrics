@@ -22,6 +22,7 @@ import {
   RepoChange,
   RepoChangeSummary,
   PREventDetail,
+  CommitFileChanges,
 } from "../../model/vcs";
 import { provideDatastore } from "../../db/factory";
 import { getAllCodeManagementUrls, getAllRemoteConfig, getWorkloadById } from "../../config/configMapping";
@@ -257,6 +258,46 @@ class AdoVcsService implements VcsService {
       );
     } catch (err) {
       throw new Error(`ADO error ${err}`);
+    }
+  };
+
+  getPRsInDateRange = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repositoryName: string,
+    startDate: Date,
+    endDate: Date,
+    limit?: number,
+  ): Promise<CompletePrInfo[]> => {
+    try {
+      const gitApi = await this.#getConnection(workloadId).getGitApi();
+
+      const prs = await this.#fetchAllPullRequests(
+        gitApi,
+        repositoryName,
+        { status: PullRequestStatus.Completed },
+        vcsProjectName,
+        limit,
+      );
+
+      const prsInRange = prs.filter((pr) => {
+        if (!pr.closedDate) return false;
+        const closedDate = new Date(pr.closedDate);
+        return closedDate >= startDate && closedDate <= endDate;
+      });
+
+      logger(`Found ${prsInRange.length} PRs in date range for ${vcsProjectName}/${repositoryName}`);
+
+      return await Promise.all(
+        prsInRange.map((pr) =>
+          this.#getCompletePRInformation(gitApi, workloadId, vcsProjectName, repositoryName, {
+            issueId: "",
+            pr,
+          }),
+        ),
+      );
+    } catch (err) {
+      throw new Error(`ADO.getPRsInDateRange error ${err}`);
     }
   };
 
@@ -571,7 +612,18 @@ class AdoVcsService implements VcsService {
     vcsProjectName: string,
     repoName: string,
   ): Promise<TMergeRules[]> => {
-    throw new Error("Fetching merge rules is not implemented.");
+    throw new Error("Fetching merge rules is not implemented");
+  };
+
+  getCommitFileChanges = async (
+    _workloadId: WorkloadId,
+    _vcsProjectName: string,
+    _repositoryName: string,
+    _branches: string[],
+    _start: string,
+    _end: string,
+  ): Promise<CommitFileChanges[]> => {
+    throw new Error("getCommitFileChanges not implemented for Azure - use getPRsInDateRange");
   };
 
   buildCommitLink = (change: RepoChange, workloadId: WorkloadId): string =>
@@ -582,4 +634,7 @@ class AdoVcsService implements VcsService {
 
   buildRepoLink = (workloadId: WorkloadId, repoName: string): string =>
     `${getAllCodeManagementUrls()[workloadId]}/_git/${repoName}`;
+
+  buildFileLink = (workloadId: WorkloadId, repoName: string, branch, path): string =>
+    `${this.buildRepoLink(workloadId, repoName)}/${path}`;
 }

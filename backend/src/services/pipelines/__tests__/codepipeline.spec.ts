@@ -132,8 +132,8 @@ describe(`Codepipeline Pipelines integration`, () => {
 
     const propValue = await codepipeline.getPipelineRunProperty(
       workload.id,
-      "octo-org",
-      "octo-repo",
+      "octocat",
+      "hello-world",
       "3137f7cb-7cf7-039j-s83l-d7eu3EXAMPLE",
       "$.pipelineExecution.artifactRevisions[0].revisionId",
     );
@@ -146,7 +146,13 @@ describe(`Codepipeline Pipelines integration`, () => {
 
     const startDate = new Date("2020-01-22");
     const endDate = new Date("2020-01-22");
-    const runs = await codepipeline.getRunsForJobs(workload.id, ["FirstPipeline", "SecondPipeline"], [], startDate, endDate);
+    const runs = await codepipeline.getRunsForJobs(
+      workload.id,
+      ["FirstPipeline", "SecondPipeline"],
+      [],
+      startDate,
+      endDate,
+    );
 
     expect(runs).toHaveLength(4);
     expect(runs[0].workloadId).toBe("athena");

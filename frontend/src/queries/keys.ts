@@ -1,0 +1,15 @@
+export const QUERY_KEYS = {
+  CHANGES: "changes",
+  CHANGES_SUMMARY: "changes-summary",
+  CODE_HOTSPOTS: "code-hotspots",
+  DASHBOARD: "dashboard",
+  DASHBOARDS: "dashboards",
+  DEPENDENCY_ALERTS: "dependency-alerts",
+  ISSUE_TYPES: "issue-types",
+  PIPELINE_RUN: "pipeline-run",
+  PIPELINE_RUNS: "pipeline-runs",
+  QUALITY_GATES: "quality-gates",
+  QUERY: "query",
+  TEMPORAL_COUPLING: "temporal-coupling",
+  WORKLOADS: "workloads",
+} as const;

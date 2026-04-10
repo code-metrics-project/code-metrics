@@ -42,8 +42,8 @@ describe("Repositories page", () => {
   it("Shows workload-filtered repositories", () => {
     cy.login();
     cy.visit(buildPath(Paths.WorkloadRepositories, { workloadId: "athena" }));
-    cy.contains("Repositories - Athena team");
-    cy.contains("Repositories in the Athena team workload.");
+    cy.contains("Repositories - Athena");
+    cy.contains("Repositories in the Athena workload.");
 
     // workload column should not be present when filtered
     cy.get("#repositories-table").should("not.contain", "Workload");

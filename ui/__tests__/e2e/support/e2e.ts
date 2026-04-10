@@ -15,8 +15,4 @@
 
 // Import commands.js using ES2015 syntax:
 import "./commands";
-
-// Only import code coverage support when COVERAGE_ENABLED is set
-if (Cypress.env("COVERAGE_ENABLED") === "true") {
-  import("@cypress/code-coverage/support");
-}
+import "@cypress/code-coverage/support";

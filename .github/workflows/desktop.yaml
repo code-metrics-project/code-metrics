@@ -21,13 +21,13 @@ jobs:
       run:
         working-directory: desktop
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: "/desktop/.nvmrc"
       - name: Restore backend NPM cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.npm
           key: npm-${{ github.run_id }}
@@ -41,16 +41,16 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libnss3 libxss1 libasound2t64 fakeroot rpm
 
       - name: Download Backend Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: backend
           path: backend/dist
 
-      - name: Download UI Artifact
-        uses: actions/download-artifact@v4
+      - name: Download Frontend Artifact
+        uses: actions/download-artifact@v8
         with:
-          name: ui
-          path: ui/dist
+          name: frontend
+          path: frontend/dist
 
       - name: Prepare and Build Desktop
         run: |
@@ -67,7 +67,7 @@ jobs:
         run: npm run ${{ matrix.buildScript }}
 
       - name: Upload Desktop artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: desktop-${{ matrix.platform }}
           path: |

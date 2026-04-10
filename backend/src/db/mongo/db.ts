@@ -1,5 +1,5 @@
 import { Collection, Db, Document, Filter, MongoClient } from "mongodb";
-import { AbstractDatastore, DatastoreCollection, EXPIRY_FIELD, QueryFilter } from "../api";
+import { AbstractDatastore, DatastoreAdmin, DatastoreCollection, EXPIRY_FIELD, QueryFilter } from "../api";
 import { error, logger, verbose, warn } from "../../utils/logger/logger";
 import { getConfigItem } from "../../config/sources/source";
 
@@ -143,3 +143,30 @@ export class MongoDatastore extends AbstractDatastore<Filter<Document>, MongoCol
     }
   };
 }
+
+export const mongoAdmin: DatastoreAdmin = {
+  listCollections: async () => {
+    const db = client.db(config.name);
+    const cursor = db.listCollections({}, { nameOnly: true });
+    const collections = await cursor.toArray();
+    return collections.map((c) => c.name);
+  },
+
+  collectionExists: async (name: string) => {
+    const db = client.db(config.name);
+    const cursor = db.listCollections({ name });
+    const result = await cursor.hasNext();
+    await cursor.close();
+    return result;
+  },
+
+  countItems: async (name: string) => {
+    const db = client.db(config.name);
+    return db.collection(name).countDocuments();
+  },
+
+  emptyCollection: async (name: string) => {
+    const db = client.db(config.name);
+    await db.collection(name).deleteMany({});
+  },
+};

@@ -13,7 +13,7 @@
 
 <script lang="ts">
 import DynamicQuery from "@/components/DynamicQuery.vue";
-import { addAuthQueryParam } from "@/utils/axios";
+import { addAuthQueryParam } from "@/utils/apiClient";
 import { CODE_ANALYSIS_METRIC_HISTORY_CSV, getApiBaseUrl } from "@/utils/urls";
 import { logger } from "@/utils/logger";
 import { QueryName } from "@/queries/queries";

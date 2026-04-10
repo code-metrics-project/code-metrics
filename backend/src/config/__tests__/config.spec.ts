@@ -196,6 +196,24 @@ describe("mergeConfigs", () => {
     expect(merged[3].id).toBe("item4");
     expect(merged[3].nested.property).toBe("prop4");
   });
+
+  it("should replace scalar values when merging", () => {
+    type ScalarConfig = {
+      email: string;
+      key: string;
+    };
+
+    const configs: ScalarConfig[] = [
+      { email: "first@example.com", key: "first-token" },
+      { email: "second@example.com", key: "second-token" },
+    ];
+
+    const merged = mergeConfigs(configs);
+
+    expect(merged.email).toBe("second@example.com");
+    expect(merged.key).toBe("second-token");
+    expect(typeof merged.key).toBe("string");
+  });
 });
 
 describe("applyWorkloadDefaults", () => {

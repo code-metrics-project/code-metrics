@@ -229,3 +229,32 @@ const buildBehaviour = (config: DatastoreConfig, date?: Date): CacheBehaviour =>
 const defaultCacheValidator = (item: any | null): boolean => {
   return item !== undefined && item !== null;
 };
+
+/**
+ * Administrative interface for inspecting and managing the physical
+ * storage collections/tables that back the datastore. Operates at
+ * the storage-engine level, bypassing application-level storeId
+ * abstraction.
+ */
+export type DatastoreAdmin = {
+  /**
+   * List the names of all physical collections/tables in the storage engine.
+   */
+  listCollections(): Promise<string[]>;
+
+  /**
+   * Check whether a specific collection/table exists.
+   */
+  collectionExists(name: string): Promise<boolean>;
+
+  /**
+   * Count the number of items in a collection/table.
+   * This may be an expensive operation depending on the backend.
+   */
+  countItems(name: string): Promise<number>;
+
+  /**
+   * Delete all items in a collection/table, leaving the collection itself intact.
+   */
+  emptyCollection(name: string): Promise<void>;
+};

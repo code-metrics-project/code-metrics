@@ -75,8 +75,19 @@ const fetchPipelineRunsInternal = async (
       stageId: args.stageId,
     });
 
-    const actorType = args.actorType ?? ActorType.All;
-    const filtered = actorFilter(actorType, result);
+    // Normalize actorType to match ActorType enum (case-insensitive)
+    let normalizedActorType: ActorType = ActorType.All;
+    if (args.actorType) {
+      const typeUpper = args.actorType.toUpperCase();
+      for (const [key, value] of Object.entries(ActorType)) {
+        if (value.toUpperCase() === typeUpper) {
+          normalizedActorType = value as ActorType;
+          break;
+        }
+      }
+    }
+
+    const filtered = actorFilter(normalizedActorType, result);
 
     logger(`Retrieved ${filtered.length} pipeline runs for workloads: ${args.workloads}`);
     return groupRuns(filtered, valueFormat);

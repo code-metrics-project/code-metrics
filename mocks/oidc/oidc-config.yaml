@@ -2,8 +2,8 @@
 plugin: oidc-server
 
 # Provides endpoints:
-#   /.well-known/openid-configuration
-#   /.well-known/jwks.json
+#   /oidc/.well-known/openid-configuration
+#   /oidc/.well-known/jwks.json
 #   /oidc/authorize
 #   /oidc/token
 #   /oidc/userinfo

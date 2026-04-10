@@ -3,19 +3,20 @@ import { logger, error as logError, verbose } from "../../utils/logger/logger";
 import { LlmService, registerLlm } from "./llmService";
 import { LlmProviderTypes } from "../../model/config/common";
 import { getAllLlmConfig } from "../../config/configMapping";
+import { getLanguagePromptInstruction } from "./language";
 
-export interface ClaudeMessage {
+export type ClaudeMessage = {
   role: "user" | "assistant";
   content: string;
 }
 
-export interface ClaudeRequest {
+export type ClaudeRequest = {
   model: string;
   max_tokens: number;
   messages: ClaudeMessage[];
 }
 
-export interface ClaudeResponse {
+export type ClaudeResponse = {
   id: string;
   type: string;
   role: string;
@@ -119,7 +120,7 @@ export class ClaudeLlmService implements LlmService {
   /**
    * Generate an executive summary from a list of changes
    */
-  async generateChangesSummary(changes: any[]): Promise<string> {
+  async generateChangesSummary(changes: any[], language?: string): Promise<string> {
     if (changes.length === 0) {
       return "No changes found for this period.";
     }
@@ -167,7 +168,9 @@ Please provide a concise executive summary (2-3 sentences) that:
 
 Do not include a title. Do not list individual changes. Focus on the overall narrative.`;
 
-    return this.sendMessage(prompt, 300);
+    const promptWithLanguage = `${prompt}\n\n${getLanguagePromptInstruction(language)}`;
+
+    return this.sendMessage(promptWithLanguage, 300);
   }
 }
 

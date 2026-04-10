@@ -3,6 +3,7 @@ import { type BitbucketServerConnection, createBitbuckerServerConnection } from 
 import { DatedMetricEntry } from "../../model/metrics";
 import { logger, verbose, warn } from "../../utils/logger/logger";
 import {
+  CommitFileChanges,
   CompletePrInfo,
   PREvent,
   PREventDetail,
@@ -19,6 +20,7 @@ import { MILLIS_PER_DAY, truncateDateOnly } from "../../utils/date";
 import { getDataForDateRange } from "../dateWalker";
 import { WorkloadId } from "../../model/config/workload-config";
 import { CodeManagementTypes } from "../../model/config/common";
+import { TMergeRules } from "../../model/qualityGates";
 
 const COLLECTION_NAME_REPO_COMMITS = "repo-commits";
 const COLLECTION_NAME_REPO_CHANGES = "repo-changes";
@@ -194,6 +196,104 @@ class BitbucketServerVcsService implements VcsService {
     } catch (err) {
       throw new Error(`Bitbucket Server error ${err}`);
     }
+  };
+
+  getPRsInDateRange = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repositoryName: string,
+    startDate: Date,
+    endDate: Date,
+    limit?: number,
+  ): Promise<CompletePrInfo[]> => {
+    try {
+      const connection = this.#getConnection(workloadId);
+      let prs: Awaited<ReturnType<typeof connection.projects.repos.pullRequests.get>> = [];
+
+      try {
+        const mergedPullRequests = await connection.projects.repos.pullRequests.get({
+          projectKey: vcsProjectName,
+          repositorySlug: repositoryName,
+          state: "MERGED",
+        });
+        prs = mergedPullRequests.filter(({ closedDate }) => {
+          const completedDate = new Date(closedDate);
+          return completedDate >= startDate && completedDate <= endDate;
+        });
+        if (limit) prs = prs.slice(0, limit);
+      } catch (err) {
+        warn(`Error retrieving list of PRs (Bitbucket Server): ${err}`);
+      }
+
+      const completePrs: CompletePrInfo[] = await Promise.all(
+        prs.map(async (pr) => {
+          const filesChanged = await listPullRequestFiles(connection, vcsProjectName, repositoryName, `${pr.id}`);
+          return {
+            pr: {
+              id: pr.id,
+              title: pr.title,
+              workloadId,
+              vcsProjectName,
+              repositoryName,
+            },
+            issueId: "",
+            filesChanged,
+          };
+        }),
+      );
+
+      return completePrs;
+    } catch (err) {
+      throw new Error(`BitbucketServer.getPRsInDateRange error ${err}`);
+    }
+  };
+
+  getCommitFileChanges = async (
+    workloadId: WorkloadId,
+    vcsProjectName: string,
+    repositoryName: string,
+    branches: string[],
+    start: string,
+    end: string,
+  ): Promise<CommitFileChanges[]> => {
+    const connection = this.#getConnection(workloadId);
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const allCommitChanges: CommitFileChanges[] = [];
+    const processedCommits = new Set<string>();
+
+    for (const branch of branches) {
+      try {
+        const commits = await connection.projects.repos.commits.get({
+          projectKey: vcsProjectName,
+          repositorySlug: repositoryName,
+          since: startDate,
+          until: endDate,
+        });
+
+        for (const commit of commits) {
+          if (processedCommits.has(commit.id)) continue;
+          processedCommits.add(commit.id);
+
+          const changes = await connection.projects.repos.commit.changes.get({
+            projectKey: vcsProjectName,
+            repositorySlug: repositoryName,
+            commitId: commit.id,
+          });
+
+          const filePaths = changes.map((change) => change.path.toString);
+
+          allCommitChanges.push({
+            commitId: commit.id,
+            filePaths,
+          });
+        }
+      } catch (err) {
+        warn(`Bitbucket Server fetch commits failed ${branch}: ${err}`);
+      }
+    }
+
+    return allCommitChanges;
   };
 
   fetchChangesInDateRange = async (
@@ -509,6 +609,9 @@ class BitbucketServerVcsService implements VcsService {
 
   buildRepoLink = (workloadId: WorkloadId, repoName: string): string =>
     `${getAllCodeManagementUrls()[workloadId]}/${repoName}`;
+
+  buildFileLink = (workloadId: WorkloadId, repoName: string, branch: string, path: string): string =>
+    `${this.buildRepoLink(workloadId, repoName)}/${path}`;
 }
 
 export const testables = {

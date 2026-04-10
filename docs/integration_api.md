@@ -32,6 +32,8 @@ CodeMetrics uses Service Tokens for API authentication. These tokens provide sec
 
 ➡️ [Learn how to generate and use Service Tokens](./integration_api_authentication.md)
 
+➡️ [Manage Service Tokens via the Administration Portal](./service_tokens.md)
+
 ## API Endpoints
 
 The CodeMetrics API provides endpoints for:

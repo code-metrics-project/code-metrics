@@ -1,8 +1,9 @@
-import { AbstractDatastore, DatastoreCollection, DatastoreConfig, EXPIRY_FIELD, QueryFilter } from "../api";
+import { AbstractDatastore, DatastoreAdmin, DatastoreCollection, DatastoreConfig, EXPIRY_FIELD, QueryFilter } from "../api";
 import cloneDeep from "lodash/cloneDeep";
 import { error, logger, verbose } from "../../utils/logger/logger";
 import Datastore from "@seald-io/nedb";
 import path from "path";
+import fs from "fs";
 import { getConfigItem } from "../../config/sources/source";
 
 let dbDir: string | undefined;
@@ -130,3 +131,53 @@ export class NeDBCollection implements DatastoreCollection {
     });
   };
 }
+
+const NEDB_FILE_PREFIX = "code-metrics-";
+const NEDB_FILE_SUFFIX = ".db";
+
+export const nedbAdmin: DatastoreAdmin = {
+  listCollections: async () => {
+    if (!dbDir) {
+      // In-memory mode: return keys from the collections Map
+      return Array.from(collections.keys());
+    }
+    const entries = fs.readdirSync(dbDir);
+    return entries
+      .filter((f: string) => f.startsWith(NEDB_FILE_PREFIX) && f.endsWith(NEDB_FILE_SUFFIX))
+      .map((f: string) => f.slice(NEDB_FILE_PREFIX.length, -NEDB_FILE_SUFFIX.length));
+  },
+
+  collectionExists: async (name: string) => {
+    if (!dbDir) {
+      return collections.has(name);
+    }
+    const filePath = path.join(dbDir, `${NEDB_FILE_PREFIX}${name}${NEDB_FILE_SUFFIX}`);
+    return fs.existsSync(filePath);
+  },
+
+  countItems: async (name: string) => {
+    const db = collections.get(name);
+    if (!db) {
+      return 0;
+    }
+    return new Promise((resolve, reject) => {
+      db.count({}, (err: Error | null, count: number) => {
+        if (err) return reject(err);
+        resolve(count);
+      });
+    });
+  },
+
+  emptyCollection: async (name: string) => {
+    const db = collections.get(name);
+    if (!db) {
+      return;
+    }
+    return new Promise<void>((resolve, reject) => {
+      db.remove({}, { multi: true }, (err: Error | null) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
+  },
+};

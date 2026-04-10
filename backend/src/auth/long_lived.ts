@@ -93,7 +93,7 @@ export const generateLongLivedAccessToken = async (
  */
 export const validateLongLivedAccessToken = (
   jwt: TokenPayload,
-  callback: (valid: boolean, sub?: string) => void,
+  callback: (valid: boolean, sub?: string, roles?: string[]) => void,
 ) => {
   const tokenId = jwt.jti;
   if (!tokenId) {
@@ -111,7 +111,7 @@ export const validateLongLivedAccessToken = (
   }).then((tokenIdFound) => {
     if (tokenIdFound) {
       verbose(`Long-lived access token with ID ${tokenId} is valid`);
-      callback(true, jwt.sub);
+      callback(true, jwt.sub, jwt.roles);
     } else {
       warn(`Invalid long-lived access token ID: ${tokenId}`);
       callback(false);

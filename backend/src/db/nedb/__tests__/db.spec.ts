@@ -1,4 +1,4 @@
-import { initNeDB, NeDBDatastore } from "../db";
+import { initNeDB, NeDBDatastore, nedbAdmin } from "../db";
 import { EXPIRY_FIELD } from "../../api";
 import path from "path";
 import fs from "fs";
@@ -267,5 +267,101 @@ describe("NeDB", () => {
     expect(resultB).toMatchObject({ key: "b", value: 2 });
     expect(resultAshouldBeNull).toBeNull();
     expect(resultBshouldBeNull).toBeNull();
+  });
+});
+
+describe("NeDB Admin (file-based)", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "test-admin-db"));
+
+  let dbPath: string;
+  let store: NeDBDatastore;
+
+  beforeEach(() => {
+    dbPath = path.join(tempDir, `test-${Date.now()}-${Math.random()}`);
+    initNeDB(dbPath);
+    store = new NeDBDatastore(testConfigBase);
+  });
+
+  test("should list collections from filesystem", async () => {
+    await store.connect("cache-a", async (col) => {
+      await col.insertOne({ key: "x" }, { value: 1 });
+    });
+    await store.connect("cache-b", async (col) => {
+      await col.insertOne({ key: "y" }, { value: 2 });
+    });
+
+    const collections = await nedbAdmin.listCollections();
+    expect(collections.sort()).toEqual(["cache-a", "cache-b"]);
+  });
+
+  test("should report collection existence from filesystem", async () => {
+    await store.connect("real-col", async (col) => {
+      await col.insertOne({ key: "x" }, { value: 1 });
+    });
+
+    expect(await nedbAdmin.collectionExists("real-col")).toBe(true);
+    expect(await nedbAdmin.collectionExists("fake-col")).toBe(false);
+  });
+
+  test("should count items in a collection", async () => {
+    await store.connect("counted", async (col) => {
+      await col.insertOne({ key: "a" }, { value: 1 });
+      await col.insertOne({ key: "b" }, { value: 2 });
+    });
+
+    const count = await nedbAdmin.countItems("counted");
+    expect(count).toBe(2);
+  });
+
+  test("should return 0 for count on non-loaded collection", async () => {
+    const count = await nedbAdmin.countItems("unloaded");
+    expect(count).toBe(0);
+  });
+
+  test("should empty a collection", async () => {
+    await store.connect("toempty", async (col) => {
+      await col.insertOne({ key: "a" }, { value: 1 });
+      await col.insertOne({ key: "b" }, { value: 2 });
+    });
+
+    await nedbAdmin.emptyCollection("toempty");
+
+    const count = await nedbAdmin.countItems("toempty");
+    expect(count).toBe(0);
+  });
+
+  test("should not throw when emptying a non-loaded collection", async () => {
+    await expect(nedbAdmin.emptyCollection("unloaded")).resolves.toBeUndefined();
+  });
+});
+
+describe("NeDB Admin (in-memory)", () => {
+  let store: NeDBDatastore;
+
+  beforeEach(() => {
+    delete process.env.DATASTORE_PATH;
+    initNeDB();
+    store = new NeDBDatastore({
+      ...testConfigBase,
+      expiryEnabled: false,
+    });
+  });
+
+  test("should list collections from in-memory map", async () => {
+    await store.connect("mem-a", async (col) => {
+      await col.insertOne({ key: "x" }, { value: 1 });
+    });
+
+    const collections = await nedbAdmin.listCollections();
+    expect(collections).toContain("mem-a");
+  });
+
+  test("should report collection existence from in-memory map", async () => {
+    await store.connect("mem-exists", async (col) => {
+      await col.insertOne({ key: "x" }, { value: 1 });
+    });
+
+    expect(await nedbAdmin.collectionExists("mem-exists")).toBe(true);
+    expect(await nedbAdmin.collectionExists("nope")).toBe(false);
   });
 });

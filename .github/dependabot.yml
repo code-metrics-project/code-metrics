@@ -8,7 +8,7 @@ updates:
   - package-ecosystem: "docker"
     directory: "/docker"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     # Disable version updates for dependencies, but not security updates, per:
     # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
     open-pull-requests-limit: 0
@@ -27,7 +27,7 @@ updates:
     target-branch: "build/dependabot-test"
     directory: "/docker"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     # Disable version updates for dependencies, but not security updates, per:
     # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
     open-pull-requests-limit: 0
@@ -45,7 +45,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     # Disable version updates for dependencies, but not security updates, per:
     # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
     open-pull-requests-limit: 0
@@ -63,7 +63,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/backend"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     # Disable version updates for dependencies, but not security updates, per:
     # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
     open-pull-requests-limit: 0
@@ -79,10 +79,29 @@ updates:
         patterns:
           - "*"
       
+  - package-ecosystem: "bun"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    # Disable version updates for dependencies, but not security updates, per:
+    # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
+    open-pull-requests-limit: 0
+    labels:
+      - "dependencies"
+      - "frontend"
+      - "bun"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      bun-dependencies:
+        patterns:
+          - "*"
+
   - package-ecosystem: "npm"
     directory: "/ui"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     # Disable version updates for dependencies, but not security updates, per:
     # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
     open-pull-requests-limit: 0
@@ -101,7 +120,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/desktop"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     # Disable version updates for dependencies, but not security updates, per:
     # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
     open-pull-requests-limit: 0
@@ -120,7 +139,7 @@ updates:
   - package-ecosystem: "pip"
     directory: "/machinelearning"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     # Disable version updates for dependencies, but not security updates, per:
     # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
     open-pull-requests-limit: 0

@@ -12,6 +12,12 @@ jest.mock("../auth", () => ({
   }),
 }));
 
+jest.mock("../../services/rbac/rbacService", () => ({
+  getRBACService: () => ({
+    getRolesForUser: jest.fn(() => Promise.resolve([])),
+  }),
+}));
+
 process.env.ACCESS_TOKEN_SECRET = "testsecret";
 
 describe("tokens", () => {
@@ -26,7 +32,7 @@ describe("tokens", () => {
     const accessToken = testables.generateAccessToken("user");
     const callback = jest.fn();
     await validateAccessToken(["access_token"], accessToken.token, callback);
-    expect(callback).toHaveBeenCalledWith(true, "user");
+    expect(callback).toHaveBeenCalledWith(true, "user", undefined);
   });
 
   it("fails validation for a valid access token of the wrong type", async () => {

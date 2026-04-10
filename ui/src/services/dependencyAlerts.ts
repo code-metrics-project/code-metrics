@@ -1,5 +1,5 @@
 import type { Tags } from "@/model/tags";
-import axios from "@/utils/axios";
+import { client } from "@/utils/apiClient";
 
 export enum DependencySeverity {
   Critical = "critical",
@@ -76,7 +76,7 @@ export async function fetchDependencyAlerts(
     params.repoGroups = repoGroups.join(",");
   }
 
-  const response = await axios.get("/api/security/dependency-alerts", {
+  const response = await client.get<DependencyAlertsAnalysis[]>("/api/security/dependency-alerts", {
     params,
   });
 

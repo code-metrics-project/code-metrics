@@ -23,7 +23,7 @@ Mitigations are available within: [Threat Model Mitigations](./threat_model_miti
 		<tr>
 			<td>1A.2</td>
 			<td>Threat actor leverages cross site request forgery to gain a valid session as another user. </td>
-			<td>CSRF tokens do not appear to be in place. Could be implemented through Axios as a default header. However, notable that CodeMetrics uses JWTs as a bearer-authorisation header, therefore an attacker couldn't set this header without knowledge of the token, therefore CSRF attacks are well mitigated.</td>
+			<td>CSRF tokens do not appear to be in place. If required, they could be implemented through the shared HTTP client as a default header. However, notable that CodeMetrics uses JWTs as a bearer-authorisation header, therefore an attacker couldn't set this header without knowledge of the token, therefore CSRF attacks are well mitigated.</td>
 			<td>M1.2, M3.4, M3.13</td>
 		</tr>
 		<tr>

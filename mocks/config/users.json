@@ -1,7 +1,1 @@
-[
-  {
-    "name": "admin",
-    "password": "1253509b718dbbeafa4e028afc9a5f667fe17881fdd222e31559ae452029c3a0fe24075565673a9d9ccfd4564bf1a2b9374243ee19b9846256a9b0e260ea0bc0",
-    "salt": "0c62b823eb5b9699ff48c1d0c93816d0"
-  }
-]
+../../backend/config/examples/users.json

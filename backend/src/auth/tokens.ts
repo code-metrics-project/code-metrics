@@ -5,6 +5,7 @@ import { AuthenticationResult, getAuthenticator, UserData } from "./auth";
 import { validateLongLivedAccessToken } from "./long_lived";
 import ms from "ms";
 import { getConfigItem } from "../config/sources/source";
+import { getRBACService } from "../services/rbac/rbacService";
 
 export type SecurityTokens = {
   accessToken: string;
@@ -18,6 +19,11 @@ export type TokenPayload = JwtPayload & {
    * Type of the token, indicating its purpose.
    */
   token_type: TokenTypes;
+
+  /**
+   * Roles assigned to the user via RBAC.
+   */
+  roles?: string[];
 };
 
 export type GeneratedToken = {
@@ -66,12 +72,12 @@ const getCommonJwtClaims = (subject: string): SignOptions => ({
   subject,
 });
 
-const generateAccessToken = (subject: string) => {
-  return generateToken(subject, "access_token", accessTokenTtl);
+const generateAccessToken = (subject: string, roles?: string[]) => {
+  return generateToken(subject, "access_token", accessTokenTtl, roles);
 };
 
-const generateRefreshToken = (subject: string) => {
-  return generateToken(subject, "refresh_token", refreshTokenTtl);
+const generateRefreshToken = (subject: string, roles?: string[]) => {
+  return generateToken(subject, "refresh_token", refreshTokenTtl, roles);
 };
 
 /**
@@ -79,14 +85,15 @@ const generateRefreshToken = (subject: string) => {
  * @param subject
  * @param token_type
  * @param ttl
+ * @param roles
  */
-export const generateToken = (subject: string, token_type: TokenTypes, ttl: string): GeneratedToken => {
+export const generateToken = (subject: string, token_type: TokenTypes, ttl: string, roles?: string[]): GeneratedToken => {
   const issuedAt = new Date();
   const ttlMs = ms(ttl);
   const expires = new Date(issuedAt.getTime() + ttlMs);
 
   const commonClaims = getCommonJwtClaims(subject);
-  const token = jwt.sign({ token_type }, getTokenSecret(), {
+  const token = jwt.sign({ token_type, roles }, getTokenSecret(), {
     ...commonClaims,
     expiresIn: ttl,
   });
@@ -99,14 +106,15 @@ export const generateToken = (subject: string, token_type: TokenTypes, ttl: stri
 };
 
 const getSecurityTokens = (userData: UserData): SecurityTokens => {
-  const accessToken = generateAccessToken(userData.sub);
-  const refreshToken = generateRefreshToken(userData.sub);
+  const accessToken = generateAccessToken(userData.sub, userData.roles);
+  const refreshToken = generateRefreshToken(userData.sub, userData.roles);
   return { accessToken: accessToken.token, refreshToken: refreshToken.token };
 };
 
-const handleAuthResult = (result: AuthenticationResult) => {
+const handleAuthResult = async (result: AuthenticationResult) => {
   if (result.success) {
-    const userData = { sub: result.user.name };
+    const roles = await getRBACService().getRolesForUser(result.user.name);
+    const userData: UserData = { sub: result.user.name, roles };
     return getSecurityTokens(userData);
   }
 
@@ -140,7 +148,7 @@ export const generateSecurityTokensFromQuery = async (req: Request, res: Respons
 export const validateAccessToken = async (
   allowedTokenTypes: TokenTypes[],
   accessToken: string | undefined,
-  callback: (valid: boolean, sub?: string) => void,
+  callback: (valid: boolean, sub?: string, roles?: string[]) => void,
 ): Promise<void> => {
   if (!accessToken) {
     warn("No access token provided");
@@ -170,7 +178,7 @@ export const validateAccessToken = async (
       switch (decoded?.token_type) {
         case "access_token":
           verbose("Access token is valid");
-          callback(true, decoded.sub);
+          callback(true, decoded.sub, decoded.roles);
           break;
         case "long_lived_access_token":
           validateLongLivedAccessToken(decoded, callback);
@@ -207,7 +215,7 @@ export const refreshSecurityTokens = async (
       audience: AUD,
       issuer: ISS,
     },
-    (err, decoded: JwtPayload) => {
+    async (err, decoded: JwtPayload) => {
       if (err) {
         warn("Invalid refresh token", err);
         callback(null);
@@ -215,7 +223,9 @@ export const refreshSecurityTokens = async (
       }
 
       verbose("Generating new access token from refresh token");
-      const accessToken = generateAccessToken(decoded.sub);
+      // Re-fetch roles from the RBAC service to pick up any role changes
+      const roles = await getRBACService().getRolesForUser(decoded.sub);
+      const accessToken = generateAccessToken(decoded.sub, roles);
       const updated: SecurityTokens = {
         accessToken: accessToken.token,
 

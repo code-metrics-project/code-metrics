@@ -8,7 +8,7 @@ if [[ $# -lt 1 ]]; then
   exit 1
 fi
 
-cd "${ROOT_DIR}/helm"
+cd "${ROOT_DIR}/deployment/helm"
 mkdir -p dist
 
 CVERSION="$1"

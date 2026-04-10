@@ -157,7 +157,7 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, computed } from "vue";
-import axios from "@/utils/axios";
+import { client } from "@/utils/apiClient";
 import { Paths } from "@/router/paths";
 
 interface ServiceToken {
@@ -166,6 +166,10 @@ interface ServiceToken {
   expires: string;
   sub: string;
   createdBy: string;
+}
+
+interface CreateTokenResponse {
+  accessToken: string;
 }
 
 // Data
@@ -218,7 +222,7 @@ const breadcrumbItems = computed(() => [
 const loadTokens = async () => {
   loading.value = true;
   try {
-    const response = await axios.get("/api/tokens");
+    const response = await client.get<ServiceToken[]>("/api/tokens");
     tokens.value = response.data;
   } catch (error) {
     showSnackbar("Failed to load service tokens", "error");
@@ -233,7 +237,7 @@ const createToken = async () => {
 
   creating.value = true;
   try {
-    const response = await axios.post("/api/tokens", {
+    const response = await client.post<CreateTokenResponse>("/api/tokens", {
       subject: newTokenSubject.value,
     });
 
@@ -261,7 +265,7 @@ const revokeToken = async () => {
 
   revoking.value = true;
   try {
-    await axios.delete(`/api/tokens/${tokenToRevoke.value.tokenId}`);
+    await client.delete(`/api/tokens/${tokenToRevoke.value.tokenId}`);
 
     showRevokeDialog.value = false;
     tokenToRevoke.value = null;

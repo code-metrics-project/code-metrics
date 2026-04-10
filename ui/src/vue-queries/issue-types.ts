@@ -1,6 +1,6 @@
 import { useQuery, type QueryFunctionContext } from "@tanstack/vue-query";
 import { WORKLOAD_ISSUE_TYPES } from "@/utils/urls";
-import axios from "@/utils/axios";
+import { client } from "@/utils/apiClient";
 import type { Ref } from "vue";
 import { KEYS } from "./keys";
 import { toValue } from "vue";
@@ -19,7 +19,7 @@ async function runQuery({ queryKey }: QueryFunctionContext<IssueTypesQueryKey>) 
     return [];
   }
 
-  const response = await axios.get<IssueTypesResponse>(WORKLOAD_ISSUE_TYPES(workloadId));
+  const response = await client.get<IssueTypesResponse>(WORKLOAD_ISSUE_TYPES(workloadId));
   return response.data.issueTypes;
 }
 

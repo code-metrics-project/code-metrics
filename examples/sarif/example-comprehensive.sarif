@@ -1,0 +1,487 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "SecurityScanner",
+          "version": "2.5.0",
+          "informationUri": "https://example.com/security-scanner",
+          "rules": [
+            {
+              "id": "SEC-001",
+              "name": "SqlInjection",
+              "shortDescription": {
+                "text": "SQL Injection vulnerability detected"
+              },
+              "fullDescription": {
+                "text": "The application is vulnerable to SQL injection attacks. User input is directly concatenated into SQL queries without proper sanitization or parameterization."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": ["security", "sql-injection", "cwe-89"],
+                "precision": "high"
+              }
+            },
+            {
+              "id": "SEC-002",
+              "name": "CrossSiteScripting",
+              "shortDescription": {
+                "text": "Cross-Site Scripting (XSS) vulnerability"
+              },
+              "fullDescription": {
+                "text": "User-controlled data is rendered in HTML without proper encoding, allowing attackers to inject malicious scripts."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": ["security", "xss", "cwe-79"],
+                "precision": "high"
+              }
+            },
+            {
+              "id": "SEC-003",
+              "name": "HardcodedCredentials",
+              "shortDescription": {
+                "text": "Hard-coded credentials detected"
+              },
+              "fullDescription": {
+                "text": "Credentials such as passwords, API keys, or tokens are hard-coded in the source code, which poses a security risk."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": ["security", "credentials", "cwe-798"],
+                "precision": "medium"
+              }
+            },
+            {
+              "id": "SEC-004",
+              "name": "InsecureDeserialization",
+              "shortDescription": {
+                "text": "Insecure deserialization"
+              },
+              "fullDescription": {
+                "text": "The application deserializes data from untrusted sources without validation, potentially allowing code execution."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": ["security", "deserialization", "cwe-502"],
+                "precision": "medium"
+              }
+            },
+            {
+              "id": "SEC-005",
+              "name": "WeakCryptography",
+              "shortDescription": {
+                "text": "Weak cryptographic algorithm"
+              },
+              "fullDescription": {
+                "text": "The code uses a weak or deprecated cryptographic algorithm that is vulnerable to attacks."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": ["security", "cryptography", "cwe-327"],
+                "precision": "high"
+              }
+            },
+            {
+              "id": "SEC-006",
+              "name": "PathTraversal",
+              "shortDescription": {
+                "text": "Path traversal vulnerability"
+              },
+              "fullDescription": {
+                "text": "User input is used to construct file paths without proper validation, allowing access to unauthorized files."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": ["security", "path-traversal", "cwe-22"],
+                "precision": "high"
+              }
+            },
+            {
+              "id": "SEC-007",
+              "name": "InformationExposure",
+              "shortDescription": {
+                "text": "Sensitive information exposure"
+              },
+              "fullDescription": {
+                "text": "The application exposes sensitive information such as stack traces, database errors, or system details."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "tags": ["security", "information-disclosure", "cwe-209"],
+                "precision": "medium"
+              }
+            },
+            {
+              "id": "SEC-008",
+              "name": "MissingSecurityHeaders",
+              "shortDescription": {
+                "text": "Missing security headers"
+              },
+              "fullDescription": {
+                "text": "The application does not set important security-related HTTP headers like Content-Security-Policy or X-Frame-Options."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "tags": ["security", "http-headers", "best-practice"],
+                "precision": "medium"
+              }
+            },
+            {
+              "id": "SEC-009",
+              "name": "InsecureRandomness",
+              "shortDescription": {
+                "text": "Use of insecure random number generator"
+              },
+              "fullDescription": {
+                "text": "The code uses a non-cryptographically secure random number generator for security-sensitive operations."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "tags": ["security", "randomness", "cwe-338"],
+                "precision": "high"
+              }
+            },
+            {
+              "id": "SEC-010",
+              "name": "CommandInjection",
+              "shortDescription": {
+                "text": "Command injection vulnerability"
+              },
+              "fullDescription": {
+                "text": "User input is passed to system commands without proper sanitization, allowing arbitrary command execution."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": ["security", "command-injection", "cwe-78"],
+                "precision": "high"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "SEC-001",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "SQL query constructed using unsanitized user input from request parameter 'userId'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/api/users.ts",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 42,
+                  "startColumn": 15,
+                  "endLine": 42,
+                  "endColumn": 58
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SEC-002",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": {
+            "text": "User-supplied data rendered without HTML encoding in template"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/components/UserProfile.tsx",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 128,
+                  "startColumn": 9,
+                  "endLine": 128,
+                  "endColumn": 45
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SEC-003",
+          "ruleIndex": 2,
+          "level": "error",
+          "message": {
+            "text": "Hard-coded API key found in source code"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/config/api.ts",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 21,
+                  "endLine": 8,
+                  "endColumn": 67
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SEC-010",
+          "ruleIndex": 9,
+          "level": "error",
+          "message": {
+            "text": "Command constructed with user input without proper escaping"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/utils/backup.ts",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 67,
+                  "startColumn": 5,
+                  "endLine": 67,
+                  "endColumn": 48
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SEC-004",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Deserializing data from untrusted source without validation"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/services/cache.ts",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 93,
+                  "startColumn": 12,
+                  "endLine": 93,
+                  "endColumn": 37
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SEC-005",
+          "ruleIndex": 4,
+          "level": "warning",
+          "message": {
+            "text": "Use of MD5 hashing algorithm, which is cryptographically broken"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/auth/password.ts",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 25,
+                  "startColumn": 18,
+                  "endLine": 25,
+                  "endColumn": 36
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SEC-006",
+          "ruleIndex": 5,
+          "level": "warning",
+          "message": {
+            "text": "File path constructed from user input without validation"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/api/files.ts",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 156,
+                  "startColumn": 20,
+                  "endLine": 156,
+                  "endColumn": 52
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SEC-005",
+          "ruleIndex": 4,
+          "level": "warning",
+          "message": {
+            "text": "Using DES encryption algorithm, which has a small key size and is vulnerable"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/crypto/encryption.ts",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 34,
+                  "startColumn": 25,
+                  "endLine": 34,
+                  "endColumn": 48
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SEC-007",
+          "ruleIndex": 6,
+          "level": "note",
+          "message": {
+            "text": "Detailed error message including stack trace exposed to users"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/middleware/errorHandler.ts",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 18,
+                  "startColumn": 7,
+                  "endLine": 21,
+                  "endColumn": 8
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SEC-008",
+          "ruleIndex": 7,
+          "level": "note",
+          "message": {
+            "text": "Missing Content-Security-Policy header"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server/app.ts",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 45,
+                  "startColumn": 1,
+                  "endLine": 67,
+                  "endColumn": 3
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SEC-009",
+          "ruleIndex": 8,
+          "level": "note",
+          "message": {
+            "text": "Math.random() used for session token generation; use crypto.randomBytes() instead"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/auth/session.ts",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 72,
+                  "startColumn": 22,
+                  "endLine": 72,
+                  "endColumn": 37
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SEC-008",
+          "ruleIndex": 7,
+          "level": "note",
+          "message": {
+            "text": "Missing X-Frame-Options header allows clickjacking attacks"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server/app.ts",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 45,
+                  "startColumn": 1,
+                  "endLine": 67,
+                  "endColumn": 3
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "versionControlProvenance": [
+        {
+          "repositoryUri": "https://github.com/example-corp/secure-app",
+          "revisionId": "a7f3c9d2e1b8f4c6a5d3e2f1b9c8d7e6f5a4b3c2",
+          "branch": "main",
+          "mappedTo": {
+            "uriBaseId": "SRCROOT"
+          }
+        }
+      ]
+    }
+  ]
+}

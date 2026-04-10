@@ -3,6 +3,7 @@ import { logger, error as logError, verbose } from "../../utils/logger/logger";
 import { LlmService, registerLlm } from "./llmService";
 import { LlmProviderTypes } from "../../model/config/common";
 import { getAllLlmConfig } from "../../config/configMapping";
+import { getLanguagePromptInstruction } from "./language";
 
 /**
  * Service for interacting with Google Gemini API
@@ -59,7 +60,7 @@ export class GeminiLlmService implements LlmService {
   /**
    * Generate an executive summary from a list of changes
    */
-  async generateChangesSummary(changes: any[]): Promise<string> {
+  async generateChangesSummary(changes: any[], language?: string): Promise<string> {
     if (changes.length === 0) {
       return "No changes found for this period.";
     }
@@ -107,7 +108,9 @@ Please provide a concise executive summary (2-3 sentences) that:
 
 Do not include a title. Do not list individual changes. Focus on the overall narrative.`;
 
-    return this.sendMessage(prompt);
+    const promptWithLanguage = `${prompt}\n\n${getLanguagePromptInstruction(language)}`;
+
+    return this.sendMessage(promptWithLanguage);
   }
 }
 

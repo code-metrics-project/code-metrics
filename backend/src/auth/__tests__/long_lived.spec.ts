@@ -113,7 +113,7 @@ describe("long_lived", () => {
       await new Promise(resolve => setTimeout(resolve, 50));
 
       // Now that the implementation is fixed, validation should work correctly
-      expect(callback).toHaveBeenCalledWith(true, "testuser");
+      expect(callback).toHaveBeenCalledWith(true, "testuser", undefined);
     });
 
     it("should reject a token without jti", () => {
@@ -191,7 +191,7 @@ describe("long_lived", () => {
       const callback1 = jest.fn();
       validateLongLivedAccessToken(jwt, callback1);
       await new Promise(resolve => setTimeout(resolve, 50));
-      expect(callback1).toHaveBeenCalledWith(true, "testuser");
+      expect(callback1).toHaveBeenCalledWith(true, "testuser", undefined);
 
       const revokeResult = await revokeLongLivedAccessToken("test-token-id-revoke-validate");
       expect(revokeResult).toBe(true);

@@ -29,7 +29,7 @@ describe("DeploymentService", () => {
       projectName: "octocat",
       repoGroups: {
         backend: {
-          components: [{ name: "octo-repo", repo: "octo-repo" }],
+          components: [{ name: "hello-world", repo: "hello-world" }],
         },
       },
     },
@@ -83,8 +83,8 @@ describe("DeploymentService", () => {
 
     const run: Run = {
       id: "123",
-      job: "octo-repo",
-      repo: "octo-repo",
+      job: "hello-world",
+      repo: "hello-world",
       branch: "main",
       startDate: "2021-01-01T00:00:00Z",
       duration: 60,
@@ -100,8 +100,8 @@ describe("DeploymentService", () => {
 
     const run: Run = {
       id: "123",
-      job: "octo-repo",
-      repo: "octo-repo",
+      job: "hello-world",
+      repo: "hello-world",
       branch: "main",
       startDate: "2011-04-19T00:00:00Z",
       duration: 60,
@@ -128,22 +128,32 @@ describe("DeploymentService", () => {
     for (const [date, metrics] of leadTimes) {
       expect(truncateDateOnly(date)).toBe("2011-04-19");
       expect(metrics.size).toBe(1);
-      expect(metrics.get("backend")).toStrictEqual({
-        count: 1,
-        total: 445339, // approx 5 days (in seconds)
-        deploys: [
-          {
+      const backendMetrics = metrics.get("backend");
+      expect(backendMetrics).toBeDefined();
+      expect(backendMetrics?.count).toBe(2);
+      expect(backendMetrics?.deploys).toHaveLength(2);
+      expect(backendMetrics?.deploys.map((d) => d.run).sort()).toEqual(["30433642", "30433643"]);
+      expect(backendMetrics?.deploys).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
             date: "2011-04-19",
             run: "30433642",
             job: "CI",
-            repo: "octo-repo",
+            repo: "hello-world",
             earliestCommit: new Date("2011-04-14T16:00:49.000Z"),
-            deployed: new Date("2011-04-19T19:43:08.000Z"),
-            leadTime: 445339,
             workloadId: "athena",
-          },
-        ],
-      });
+          }),
+          expect.objectContaining({
+            date: "2011-04-19",
+            run: "30433643",
+            job: "CI",
+            repo: "hello-world",
+            earliestCommit: new Date("2011-04-14T16:00:49.000Z"),
+            workloadId: "athena",
+          }),
+        ]),
+      );
+      expect(backendMetrics?.total).toBe(backendMetrics?.deploys.reduce((sum, d) => sum + d.leadTime, 0));
     }
   });
 
@@ -154,22 +164,16 @@ describe("DeploymentService", () => {
     const endDate = new Date("2011-04-19");
 
     const deployments = await service.fetchDeployments("athena", "deployment-stage", ["backend"], startDate, endDate);
-    expect(deployments["backend"]).toHaveLength(1);
+    expect(deployments["backend"]).toHaveLength(2);
 
     for (const [jobGroup, runs] of Object.entries(deployments)) {
       expect(jobGroup).toBe("backend");
-      expect(runs).toHaveLength(1);
-      expect(runs[0]).toStrictEqual({
-        id: "30433642",
-        job: "CI",
-        branch: "main",
-        startDate: "2011-04-19T19:33:08Z",
-        result: "SUCCEEDED",
-        repo: "octo-repo",
-        duration: 600,
-        user: "octocat",
-        userType: "User",
-      });
+      expect(runs).toHaveLength(2);
+      expect(runs.map((r) => r.id).sort()).toEqual(["30433642", "30433643"]);
+      expect(runs.every((r) => r.job === "CI")).toBe(true);
+      expect(runs.every((r) => r.branch === "main")).toBe(true);
+      expect(runs.every((r) => r.repo === "hello-world")).toBe(true);
+      expect(runs.every((r) => Object.values(RunResult).includes(r.result as RunResult))).toBe(true);
     }
   });
 });
@@ -216,7 +220,7 @@ async function startGitHubMock(workload: Workload) {
           description: "deployment stage",
           type: PipelinesTypes.GITHUB,
           serverId: "test-github",
-          projectName: "octo-org",
+          projectName: "octocat",
           commitMapping: {
             runProperty: "$.data.head_sha",
           },

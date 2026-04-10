@@ -9,7 +9,7 @@ export type LlmService = {
   /**
    * Generate an executive summary from a list of changes
    */
-  generateChangesSummary(changes: any[]): Promise<string>;
+  generateChangesSummary(changes: any[], language?: string): Promise<string>;
 };
 
 const builders: Record<string, () => LlmService> = {};

@@ -2,7 +2,7 @@ import {
   getQualityGatesByWorkloadId,
   getWorkloadById,
   listRepoGroups,
-  listWorkloadIds
+  listWorkloadIds,
 } from "../../config/configMapping";
 import { verbose, warn } from "../../utils/logger/logger";
 import { getReposForWorkloadId } from "../../utils/repos";
@@ -35,7 +35,15 @@ const getQualityGate = async (workload: Workload, repo: string): Promise<TQualit
     }
 
     const rules = await vcs.fetchMergeRules(workloadId, workload.codeManagement.projectName, repo);
-    const qualityGate = enrichManifest(repo, repoLink, manifest, rules, getQualityGatesByWorkloadId(workloadId));
+    const qualityGate = enrichManifest(
+      vcs,
+      workloadId,
+      repo,
+      repoLink,
+      manifest,
+      rules,
+      getQualityGatesByWorkloadId(workloadId),
+    );
 
     verbose(`Fetched quality gate manifest for repo ${repo} in workload ${workloadId}:`, qualityGate);
     return qualityGate;

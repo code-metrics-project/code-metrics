@@ -57,24 +57,33 @@ class TestGenerateMatrix(unittest.TestCase):
         self.assertEqual(matrix[0]["name"], "ui")
         self.assertEqual(matrix[0]["cacheMode"], "min")
 
+    def test_docker_matrix_frontend_change(self):
+        """Test frontend change triggers frontend image."""
+        vars_json = {"frontendComponents": 1}
+        matrix = generate_matrix.generate_docker_matrix(vars_json, is_tag=False, repo_owner="owner")
+        self.assertEqual(len(matrix), 1)
+        self.assertEqual(matrix[0]["name"], "frontend")
+        self.assertEqual(matrix[0]["cacheMode"], "min")
+
     def test_docker_matrix_docker_change_triggers_all(self):
         """Test dockerComponents change triggers all images."""
         vars_json = {"dockerComponents": 1}
         matrix = generate_matrix.generate_docker_matrix(vars_json, is_tag=False, repo_owner="owner")
         
-        # Expect api, ui, mocks, promosite, ml, docs. Jenkins is conditional on examples or docker_jenkins.
+        # Expect api, frontend, ui, mocks, promosite, ml, docs. Jenkins is conditional on examples or docker_jenkins.
         # Check should_build logic for jenkins: if should_build("jenkins") -> true if dockerComponents=1.
-        # Checks: backend, ui, mocks, jenkins, promosite, machinelearning, docs.
-        # Total should be 7.
+        # Checks: backend, frontend, ui, mocks, jenkins, promosite, machinelearning, docs.
+        # Total should be 8.
         names = [m["name"] for m in matrix]
         self.assertIn("api", names)
+        self.assertIn("frontend", names)
         self.assertIn("ui", names)
         self.assertIn("mocks", names)
         self.assertIn("jenkins", names)
         self.assertIn("promosite", names)
         self.assertIn("machinelearning", names)
         self.assertIn("docs", names)
-        self.assertEqual(len(matrix), 7)
+        self.assertEqual(len(matrix), 8)
 
     def test_docker_matrix_jenkins_triggers(self):
         """Test specific jenkins triggers."""

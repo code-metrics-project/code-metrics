@@ -33,7 +33,7 @@
 
 <script lang="ts">
 // @ts-nocheck
-import axios from "@/utils/axios";
+import { client } from "@/utils/apiClient";
 import { METRIC_BREAKDOWN } from "@/utils/urls";
 import { logger } from "@/utils/logger";
 import { getMetricSuffix, getMetricTitle, categoriseCoverage, MetricValueCategory } from "@/utils/metricDisplay";
@@ -103,7 +103,7 @@ export default {
       this.busy = true;
       this.runToggleLabel = "Running Breakdown...";
       try {
-        const response = await axios.get(METRIC_BREAKDOWN, {
+        const response = await client.get(METRIC_BREAKDOWN, {
           params: {
             workload: this.workload,
             repo: this.repo,

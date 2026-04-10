@@ -1,4 +1,4 @@
-import axios from "@/utils/axios";
+import { client } from "@/utils/apiClient";
 import { truncateDateOnly } from "@/utils/date";
 import { type EnrichedRepoChange } from "@/model/vcs";
 import { REPO_CHANGES, REPO_CHANGES_SUMMARY } from "@/utils/urls";
@@ -21,7 +21,7 @@ export async function fetchForDateRange(
   startDate: Date,
   endDate: Date,
 ): Promise<ChangeRow[]> {
-  const response = await axios.get(REPO_CHANGES, {
+  const response = await client.get<EnrichedRepoChange[]>(REPO_CHANGES, {
     params: {
       workloads: workloads.join(","),
       repoGroups: repoGroups.join(","),
@@ -83,7 +83,7 @@ export async function fetchSummary(
   startDate: Date,
   endDate: Date,
 ): Promise<string> {
-  const response = await axios.get<ChangesSummaryResponse>(REPO_CHANGES_SUMMARY, {
+  const response = await client.get<ChangesSummaryResponse>(REPO_CHANGES_SUMMARY, {
     params: {
       workloads: workloads.join(","),
       repoGroups: repoGroups.join(","),

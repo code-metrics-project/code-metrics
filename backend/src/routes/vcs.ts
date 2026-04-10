@@ -15,6 +15,15 @@ export type RepoChangesRequest = {
   endDate?: string;
 };
 
+export type RepoChangesSummaryResponse = {
+  summary: string;
+  code?: "NO_CHANGES";
+};
+
+type RepoChangesSummaryRequest = RepoChangesRequest & {
+  language?: string;
+};
+
 type ArgParseResult<ReturnType> = { error: Error; result: null } | { error: null; result: ReturnType };
 
 export const vcsRepoChanges = async (request: Request, response: Response<RepoChange[]>) => {
@@ -139,16 +148,12 @@ const parseRepoGroups = (args: Record<string, any>): string[] => {
   }
 };
 
-export type RepoChangesSummaryResponse = {
-  summary: string;
-};
-
 // Generate AI summary of repository changes
 export const vcsRepoChangesSummary = async (
   request: Request,
   response: Response<RepoChangesSummaryResponse>,
 ): Promise<void> => {
-  const args = request.query as RepoChangesRequest;
+  const args = request.query as RepoChangesSummaryRequest;
 
   const { error, result: workloadIds } = getWorkloadIdsFromArgs(args);
   if (error) {
@@ -163,13 +168,22 @@ export const vcsRepoChangesSummary = async (
   }
 
   const endDate = (args?.endDate as string) ?? truncateDateOnly(new Date());
+  const language = args?.language;
 
   // Fetch the changes
   const changes = await fetchRepoChanges(workloadIds, repoGroups, new Date(startDate), new Date(endDate), true);
 
+  if (changes.length === 0) {
+    response.send({
+      summary: "",
+      code: "NO_CHANGES",
+    });
+    return;
+  }
+
   // Generate LLM summary
   const llmService = getLlmService();
-  const summary = await llmService.generateChangesSummary(changes);
+  const summary = await llmService.generateChangesSummary(changes, language);
 
   response.send({ summary });
 };

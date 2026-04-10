@@ -76,6 +76,12 @@ If you are using [Keycloak](https://www.keycloak.org/) as your identity provider
 
 See the [Keycloak Direct Grant Authentication](./authentication_keycloak.md) documentation for more information.
 
+## Authorization and roles
+
+Once a user has authenticated, you can control which features they can access by assigning them roles. See the [Authorization (RBAC)](./authorization.md) documentation for details.
+
+---
+
 ## Automatic Login
 
 The Frontend supports automatically logging in a generic user via config.

@@ -57,7 +57,7 @@ describe("GithubTicketService Unit Tests", () => {
         type: "github",
         serverId: "test-github",
         owner: "octocat",
-        repo: "Hello-World",
+        repo: "hello-world",
         ticketTypes: ["bug", "enhancement", "feature"],
         ticketPriorities: ["priority:low", "priority:medium", "priority:high"],
         stateFilter: "all",
@@ -133,12 +133,12 @@ describe("GithubTicketService Unit Tests", () => {
 
     it("should build correct URL for GitHub.com", () => {
       const result = service.buildTicketLink("test-workload", "123");
-      expect(result).toBe("https://github.com/octocat/Hello-World/issues/123");
+      expect(result).toBe("https://github.com/octocat/hello-world/issues/123");
     });
 
     it("should build correct URL with # prefix", () => {
       const result = service.buildTicketLink("test-workload", "#123");
-      expect(result).toBe("https://github.com/octocat/Hello-World/issues/123");
+      expect(result).toBe("https://github.com/octocat/hello-world/issues/123");
     });
 
     it("should handle GitHub Enterprise URLs", () => {
@@ -155,7 +155,7 @@ describe("GithubTicketService Unit Tests", () => {
       });
 
       const result = service.buildTicketLink("test-workload", "123");
-      expect(result).toBe("https://github.enterprise.com/octocat/Hello-World/issues/123");
+      expect(result).toBe("https://github.enterprise.com/octocat/hello-world/issues/123");
     });
 
     it("should return empty string for missing server config", () => {
@@ -221,7 +221,7 @@ describe("GithubTicketService Unit Tests", () => {
       });
 
       const result = service.buildTicketLink("test-workload", "123");
-      expect(result).toBe("https://github.com/octocat/Hello-World/issues/123");
+      expect(result).toBe("https://github.com/octocat/hello-world/issues/123");
     });
   });
 
@@ -278,7 +278,7 @@ describe("GithubTicketService Unit Tests", () => {
               created_at: "2023-01-15T00:00:00Z",
               closed_at: null,
               labels: [{ name: "bug" }],
-              html_url: "https://github.com/octocat/Hello-World/issues/1",
+              html_url: "https://github.com/octocat/hello-world/issues/1",
             },
           ],
         };
@@ -360,7 +360,7 @@ describe("GithubTicketService Unit Tests", () => {
               created_at: "2023-01-15T00:00:00Z",
               closed_at: null,
               labels: [{ name: "bug" }, { name: "priority:high" }],
-              html_url: "https://github.com/octocat/Hello-World/issues/1",
+              html_url: "https://github.com/octocat/hello-world/issues/1",
             },
           ],
         };

@@ -248,7 +248,7 @@ beforeAll(async () => {
           description: "GitHub build stage",
           type: PipelinesTypes.GITHUB,
           serverId: "example",
-          projectName: "octo-org",
+          projectName: "octocat",
           commitMapping: {
             runProperty: "$.data.head_sha",
           },
@@ -331,7 +331,7 @@ describe("config mapping", () => {
       codeManagement: {
         type: CodeManagementTypes.GITHUB,
         serverId: "example",
-        projectName: "octo-org",
+        projectName: "octocat",
         repoGroups: {
           backend: {
             components: [{ name: "api", repo: "api" }],

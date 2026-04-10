@@ -28,6 +28,11 @@ export type RepoChangeSummary = {
   changes: FileChanges[];
 };
 
+export type CommitFileChanges = {
+  commitId: string;
+  filePaths: string[];
+};
+
 export type PREvent = {
   workloadId: WorkloadId;
   projectName: string;

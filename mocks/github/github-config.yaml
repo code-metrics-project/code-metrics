@@ -14,7 +14,7 @@ resources:
   - method: get
     path: /orgs/{org}/repos
     queryParams:
-      type: 'private'
+      type: "private"
     response:
       content: "[]"
 
@@ -38,10 +38,26 @@ resources:
     response:
       file: GET-commitPulls.json
 
+  # Closed PR listing is used by PR Open Time + PR Size queries.
+  # Keep existing static fixture for other /pulls consumers, but provide
+  # a dedicated handler for `state=closed` so date-based queries always return data.
+  - method: get
+    path: /repos/{owner}/{repo}/pulls
+    queryParams:
+      state: "closed"
+    response:
+      scriptFile: GET-pullRequests-closed.js
+
   - method: get
     path: /repos/{owner}/{repo}/pulls
     response:
       file: GET-pullRequests.json
+
+  # PR detail endpoint used by PR Size query (Octokit: pulls.get)
+  - method: get
+    path: /repos/{owner}/{repo}/pulls/{pull_number}
+    response:
+      scriptFile: GET-pullRequest.js
 
   - method: get
     path: /repos/{owner}/{repo}/pulls/{pull_number}/commits
@@ -61,13 +77,13 @@ resources:
   - method: get
     path: /repos/{owner}/{repo}/actions/runs
     response:
-      file: GET-workflowRuns.json
+      scriptFile: GET-workflowRuns.js
 
   - method: get
     path: /repos/{owner}/{repo}/actions/runs/{run_id}
     response:
-      file: GET-workflowRun.json
-  
+      scriptFile: GET-workflowRun.js
+
   - method: get
     path: /repos/{owner}/{repo}/actions/runs/{run_id}/timing
     response:

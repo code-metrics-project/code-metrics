@@ -11,32 +11,38 @@ jobs:
     timeout-minutes: 12
     permissions:
       contents: read
-    if: ${{ fromJSON(inputs.vars).uiComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
+    if: ${{ fromJSON(inputs.vars).frontendComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version-file: "/ui/.nvmrc"
-      - name: Cache UI node_modules
-        id: cache-ui-nm
-        uses: actions/cache@v4
+          node-version-file: "/frontend/.nvmrc"
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          path: ui/node_modules
-          key: ${{ runner.os }}-ui-nm-${{ hashFiles('ui/package-lock.json') }}
-      - name: Install UI dependencies
-        if: steps.cache-ui-nm.outputs.cache-hit != 'true'
-        working-directory: ui
-        run: npm ci
-      - name: Unit test UI
-        working-directory: ui
-        run: npm run test:unit:coverage
-      - name: Upload UI unit test coverage report files
-        uses: actions/upload-artifact@v4
+          bun-version: "latest"
+      - name: Cache frontend node_modules
+        id: cache-frontend-nm
+        uses: actions/cache@v5
         with:
-          name: coverage-ui--unit
-          path: ui/coverage-ui--unit
+          path: |
+            frontend/node_modules
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-frontend-bun-${{ hashFiles('frontend/bun.lock') }}
+      - name: Install frontend dependencies
+        if: steps.cache-frontend-nm.outputs.cache-hit != 'true'
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+      - name: Unit test frontend
+        working-directory: frontend
+        run: bun run test:unit:coverage
+      - name: Upload frontend unit test coverage report files
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-frontend--unit
+          path: frontend/coverage-frontend--unit
           retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
 
   build-frontend:
@@ -45,20 +51,93 @@ jobs:
     timeout-minutes: 12
     permissions:
       contents: read
+    if: ${{ fromJSON(inputs.vars).frontendComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: "/frontend/.nvmrc"
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
+      - name: Cache frontend node_modules
+        id: cache-frontend-nm
+        uses: actions/cache@v5
+        with:
+          path: |
+            frontend/node_modules
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-frontend-bun-${{ hashFiles('frontend/bun.lock') }}
+      - name: Install frontend dependencies
+        if: steps.cache-frontend-nm.outputs.cache-hit != 'true'
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+      - name: Build frontend
+        working-directory: frontend
+        run: bun run build
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend
+          path: frontend/dist
+          retention-days: 1
+
+  test-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
     if: ${{ fromJSON(inputs.vars).uiComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: "/ui/.nvmrc"
       - name: Cache UI node_modules
         id: cache-ui-nm
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ui/node_modules
-          key: ${{ runner.os }}-ui-nm-${{ hashFiles('ui/package-lock.json') }}
+          key: ${{ runner.os }}-ui-npm-${{ hashFiles('ui/package-lock.json') }}
+      - name: Install UI dependencies
+        if: steps.cache-ui-nm.outputs.cache-hit != 'true'
+        working-directory: ui
+        run: npm ci
+      - name: Unit test UI
+        working-directory: ui
+        run: npm run test:unit:coverage
+      - name: Upload UI unit test coverage report files
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-ui--unit
+          path: ui/coverage-ui--unit
+          retention-days: ${{ fromJSON(inputs.vars).coverageRetention }}
+
+  build-ui:
+    runs-on: ubuntu-latest
+    needs: test-ui
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    if: ${{ fromJSON(inputs.vars).uiComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: "/ui/.nvmrc"
+      - name: Cache UI node_modules
+        id: cache-ui-nm
+        uses: actions/cache@v5
+        with:
+          path: ui/node_modules
+          key: ${{ runner.os }}-ui-npm-${{ hashFiles('ui/package-lock.json') }}
       - name: Install UI dependencies
         if: steps.cache-ui-nm.outputs.cache-hit != 'true'
         working-directory: ui
@@ -67,7 +146,7 @@ jobs:
         working-directory: ui
         run: npm run build
       - name: Upload UI artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ui
           path: ui/dist

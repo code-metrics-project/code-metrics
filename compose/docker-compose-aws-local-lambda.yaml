@@ -1,0 +1,140 @@
+# Docker Compose overlay for MiniStack Lambda testing.
+#
+# The base compose file already uses MiniStack for the local AWS emulator.
+# This overlay adds the Lambda deployment sidecars used for full deployed-Lambda
+# validation, while keeping the same service name for compatibility
+# with existing scripts and config.
+#
+# Usage:
+#   docker-compose -f compose/docker-compose-aws-local.yaml -f compose/docker-compose-aws-local-lambda.yaml --project-directory . up --build
+#
+# This configuration:
+# - Builds and deploys the CodeMetrics Lambda function to MiniStack
+# - Sets up API Gateway to expose the Lambda function
+# - Configures DynamoDB tables for the datastore
+# - Pre-populates Secrets Manager with test secrets
+#
+# After startup, the API will be available at:
+#   http://localhost:4566/restapis/<api-id>/local/_user_request_/
+#
+# Or use the function URL (if configured):
+#   http://localhost:4566/2015-03-31/functions/codemetrics-api/invocations
+
+services:
+  # Lambda deployment service - builds and deploys the function
+  lambda-deployer:
+    image: amazon/aws-cli:latest
+    depends_on:
+      aws-local:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ENDPOINT_URL: http://aws-local:4566
+    volumes:
+      - "../backend/dist:/lambda-code:ro"
+      - "./aws-local-init:/scripts:ro"
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Waiting for Local AWS to be ready..."
+        sleep 5
+
+        echo "Creating Lambda function..."
+        cd /lambda-code
+
+        # Create zip if not exists
+        if [ ! -f /tmp/lambda.zip ]; then
+          echo "Creating Lambda deployment package..."
+          zip -r /tmp/lambda.zip . -x "*.map" -x "*.ts"
+        fi
+
+        # Create the Lambda function
+        aws lambda create-function \
+          --function-name codemetrics-api \
+          --runtime nodejs20.x \
+          --handler index.handler \
+          --role arn:aws:iam::000000000000:role/lambda-role \
+          --zip-file fileb:///tmp/lambda.zip \
+          --timeout 180 \
+          --memory-size 1024 \
+          --environment "Variables={DATASTORE_IMPL=dynamodb,SECRET_RESOLVER_IMPL=secretsmanager,AWS_ENDPOINT_URL=http://aws-local:4566,INVOCATION_MODE=serve-api}" \
+          --endpoint-url http://aws-local:4566 \
+          2>/dev/null || echo "Lambda function may already exist"
+
+        # Create function URL for easy access
+        aws lambda create-function-url-config \
+          --function-name codemetrics-api \
+          --auth-type NONE \
+          --endpoint-url http://aws-local:4566 \
+          2>/dev/null || echo "Function URL may already exist"
+
+        # Create API Gateway REST API
+        echo "Creating API Gateway..."
+        API_ID=$$(aws apigateway create-rest-api \
+          --name codemetrics-api \
+          --endpoint-url http://aws-local:4566 \
+          --query 'id' --output text 2>/dev/null || echo "")
+
+        if [ -n "$$API_ID" ]; then
+          echo "API Gateway created with ID: $$API_ID"
+          
+          # Get root resource
+          ROOT_ID=$$(aws apigateway get-resources \
+            --rest-api-id $$API_ID \
+            --endpoint-url http://aws-local:4566 \
+            --query 'items[0].id' --output text)
+          
+          # Create proxy resource
+          RESOURCE_ID=$$(aws apigateway create-resource \
+            --rest-api-id $$API_ID \
+            --parent-id $$ROOT_ID \
+            --path-part "{proxy+}" \
+            --endpoint-url http://aws-local:4566 \
+            --query 'id' --output text)
+          
+          # Create ANY method
+          aws apigateway put-method \
+            --rest-api-id $$API_ID \
+            --resource-id $$RESOURCE_ID \
+            --http-method ANY \
+            --authorization-type NONE \
+            --endpoint-url http://aws-local:4566
+          
+          # Set up Lambda integration
+          aws apigateway put-integration \
+            --rest-api-id $$API_ID \
+            --resource-id $$RESOURCE_ID \
+            --http-method ANY \
+            --type AWS_PROXY \
+            --integration-http-method POST \
+            --uri "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:codemetrics-api/invocations" \
+            --endpoint-url http://aws-local:4566
+          
+          # Deploy API
+          aws apigateway create-deployment \
+            --rest-api-id $$API_ID \
+            --stage-name local \
+            --endpoint-url http://aws-local:4566
+          
+          echo ""
+          echo "=========================================="
+          echo "Lambda deployment complete!"
+          echo "API Gateway URL: http://localhost:4566/restapis/$$API_ID/local/_user_request_/"
+          echo "=========================================="
+        fi
+
+        echo "Lambda deployer finished."
+
+  # UI service configured to use Lambda backend
+  ui:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.ui
+    ports:
+      - "3001:80"
+    environment:
+      API_BASE_URL: http://localhost:4566
+    depends_on:
+      - lambda-deployer

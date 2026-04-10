@@ -30,7 +30,7 @@ const workload: Workload = {
     type: TicketManagementTypes.GITHUB,
     serverId: "test-github",
     owner: "octocat",
-    repo: "Hello-World",
+    repo: "hello-world",
     ticketTypes: ["bug", "enhancement"],
     stateFilter: "all",
   },

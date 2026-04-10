@@ -32,6 +32,10 @@ A metric showing the amount of change in a repository.
 
 Identifies files that are frequently changed in relation to project issues. These are potential hotspots that may need attention or refactoring.
 
+### [Temporal coupling](./query_temporal_coupling.md)
+
+Identifies files that frequently change together in pull requests. This analysis helps reveal hidden dependencies and areas of the codebase that are tightly coupled.
+
 ### [Bugs and escaped bugs](./query_bugs.md)
 
 Bugs/defects from the ALM tool, such as Jira. Helpful to correlate against other software quality metrics.

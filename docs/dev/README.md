@@ -11,6 +11,10 @@ If you're new to the project (or otherwise interested in how we do things), this
 Here are the key resources for contributors:
 
 - [Standards and Patterns](./standards_patterns.md) - Our coding standards, architectural patterns, and development norms for both frontend and backend
+- [Testing Guide](./testing.md) - Running unit tests, integration tests, and LocalStack AWS testing
+- [Datastores for Development](./datastores.md) - Local datastore workflows, DynamoDB with LocalStack, and debugging datastore state during development
+- [Lambda for Development](./lambda.md) - LocalStack-based Lambda packaging, deployment, and invocation workflows for contributors
+- [Secrets for Development](./secrets.md) - LocalStack-based Secrets Manager setup and test secret workflows for contributors
 - [Architecture](../architecture.md) - The system architecture and integration points
 - [Mocks](../../mocks/README.md) - Information about the mock services for testing and development
 - [Release Process](./release.md) - How we handle versioning, releases, and changelogs

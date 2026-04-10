@@ -116,7 +116,7 @@ describe(`Dynatrace Pipelines integration`, () => {
     const endDate = new Date("2011-04-19");
     const builds = await dynatrace.getRunsForProject(
       workload.id,
-      ["octo-org"],
+      ["octocat"],
       "spring-petclinic",
       ["main"],
       startDate,
@@ -132,7 +132,7 @@ describe(`Dynatrace Pipelines integration`, () => {
 
     const propValue = await dynatrace.getPipelineRunProperty(
       workload.id,
-      "octo-org",
+      "octocat",
       "spring-petclinic",
       "30433642",
       "$.commit-sha",

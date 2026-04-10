@@ -1,4 +1,4 @@
-import axios from "@/utils/axios";
+import { client } from "@/utils/apiClient";
 import { DASHBOARDS, DASHBOARD } from "@/utils/urls";
 import { type TDashboardItem } from "@/components/dashboard/Dashboard.interface";
 
@@ -14,9 +14,9 @@ export type TDashboard = {
 };
 
 export function getDashboards() {
-  return axios.get<TDashboardOptions>(DASHBOARDS);
+  return client.get<TDashboardOptions>(DASHBOARDS);
 }
 
 export function getDashboard(id: string) {
-  return axios.get<TDashboard>(DASHBOARD(id));
+  return client.get<TDashboard>(DASHBOARD(id));
 }

@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { liveness, readiness } from "./routes/health";
 import { manageCache } from "./routes/system";
 import { findCodeHotspots } from "./routes/codeHotspots";
+import { findTemporalCoupling } from "./routes/temporalCoupling";
 import { getIssueTypes } from "./routes/issueTypes";
 import { fetchBugHistory } from "./routes/tickets";
 import { fileMetricBreakdown } from "./routes/codeAnalysisBreakdown";
@@ -71,6 +72,13 @@ import { initGithubDependencyAlerts } from "./services/dependencyAlerts/github";
 import { initNoopDependencyAlerts } from "./services/dependencyAlerts/noop";
 import { initClaudeLlm } from "./services/llm/claude";
 import { initGeminiLlm } from "./services/llm/gemini";
+import { areAccessLogsEnabled } from "./utils/accessLogging";
+import {
+  countDatastoreItems,
+  datastoreExists,
+  emptyDatastore,
+  listDatastores,
+} from "./routes/admin/datastores";
 
 const CONFIG_REFRESH_MS = getConfigItemAsNumber("CONFIG_REFRESH_MS", 30000);
 const configReloadFlag = getConfigItemAsBoolean("CONFIG_AUTO_RELOAD");
@@ -146,7 +154,9 @@ const initApi = async (): Promise<Express> => {
   registerTransforms();
 
   const app = express();
-  app.use(morgan("combined"));
+  if (areAccessLogsEnabled()) {
+    app.use(morgan("combined"));
+  }
   app.use(cookieParser());
 
   const authenticator = getAuthenticator();
@@ -187,9 +197,10 @@ const addRoutes = (router: SecureRouter) => {
   router.addUnauthenticatedRoute("get", "/api/logout", logout);
 
   // service token endpoints can't be used with service tokens themselves; we only allow access tokens.
-  router.addRouteWithOptions("post", "/api/tokens", { tokenTypes: ["access_token"] }, generateServiceToken);
-  router.addRouteWithOptions("get", "/api/tokens", { tokenTypes: ["access_token"] }, listServiceTokenIds);
-  router.addRouteWithOptions("delete", "/api/tokens/:tokenId", { tokenTypes: ["access_token"] }, revokeServiceToken);
+  // additionally, these routes require the 'admin' role.
+  router.addRouteWithOptions("post", "/api/tokens", { tokenTypes: ["access_token"], requiredRoles: ["admin"] }, generateServiceToken);
+  router.addRouteWithOptions("get", "/api/tokens", { tokenTypes: ["access_token"], requiredRoles: ["admin"] }, listServiceTokenIds);
+  router.addRouteWithOptions("delete", "/api/tokens/:tokenId", { tokenTypes: ["access_token"], requiredRoles: ["admin"] }, revokeServiceToken);
 
   // config
   router.addUnauthenticatedRoute("get", "/api/system/bootstrap", fetchBootstrap);
@@ -228,6 +239,10 @@ const addRoutes = (router: SecureRouter) => {
   // analysis
   router.addRoute("post", "/api/analysis/code-hotspots", findCodeHotspots);
 
+  doIfFeatureActive(Features.temporalCoupling, () => {
+    router.addRoute("post", "/api/analysis/temporal-coupling", findTemporalCoupling);
+  });
+
   // query
   router.addRoute("post", "/api/query", executeQuery);
 
@@ -245,6 +260,13 @@ const addRoutes = (router: SecureRouter) => {
   // security
   router.addRoute("post", "/api/security/vulnerabilities", persistVulnerabilities);
   router.addRoute("get", "/api/security/dependency-alerts", getDependencyAlerts);
+
+  // admin - datastores
+  // these routes require the 'admin' role, but can be used with any token type (including service tokens).
+  router.addRouteWithOptions("get", "/api/datastores", { requiredRoles: ["admin"] }, listDatastores);
+  router.addRouteWithOptions("get", "/api/datastores/exists", { requiredRoles: ["admin"] }, datastoreExists);
+  router.addRouteWithOptions("get", "/api/datastores/count", { requiredRoles: ["admin"] }, countDatastoreItems);
+  router.addRouteWithOptions("post", "/api/datastores/empty", { requiredRoles: ["admin"] }, emptyDatastore);
 };
 
 export const bootstrap = async () => {

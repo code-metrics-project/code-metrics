@@ -1,6 +1,6 @@
 import { useQuery, type QueryFunctionContext } from "@tanstack/vue-query";
 import { QUALITY_GATES } from "@/utils/urls";
-import axios from "@/utils/axios";
+import { client } from "@/utils/apiClient";
 import type { Ref } from "vue";
 import { KEYS } from "./keys";
 import type { VariantType } from "@/utils/colours";
@@ -20,6 +20,7 @@ export type TQualityGate = {
   phase: "pre-merge";
   config: {
     file: string;
+    fileURL: string;
     path: string;
     name: string;
   };
@@ -58,7 +59,7 @@ type QualityGatesKey = [string, QualityGatesRequest];
 async function runQuery({ queryKey }: QueryFunctionContext<QualityGatesKey>) {
   const [_key, query] = queryKey;
 
-  const response = await axios.post(QUALITY_GATES, query);
+  const response = await client.post(QUALITY_GATES, query);
 
   const culprits = response.data as TQualityGateManifest[];
 

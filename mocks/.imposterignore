@@ -1,3 +1,5 @@
+dashboard-config.yaml
+dashboard-config.json
 pipeline-config.yaml
 quality-gates-config.yaml
 remote-config.yaml

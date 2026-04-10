@@ -8,7 +8,7 @@ The core of the optimization strategy is the `set_vars.py` script, which compare
 
 ### `set_vars.py`
 
-This script runs early in the `ci.yaml` workflow. It:
+This script runs in the `setup` job in `ci.yaml`. It:
 
 1.  Analyzes `git diff` for modified files.
 2.  Maps modified files to component keys defined in `change_detection_config.json`.
@@ -55,10 +55,24 @@ Keys like `.github` can be mapped to _all_ components to ensure that infrastruct
 
 ### Core Pipeline
 
-- **`ci.yaml`**: The main orchestrator. Triggered on Pull Request and Push. It calculates changed components and calls other reusable workflows.
-- **`validate.yaml`**: runs Unit Tests, Linting, and E2E tests. This is the "Gatekeeper" workflow that must pass before builds occur.
+- **`ci.yaml`**: The main orchestrator. Triggered on Pull Request and Push. It starts with a `setup` job that calculates changed components, generates matrices, and validates config before calling reusable workflows.
+- **`validate.yaml`**: runs Unit Tests, Linting, E2E tests, and MiniStack-backed backend integration validation. The shared Playwright E2E workflow runs the non-Docker auth/browser paths inside the official Playwright container image, while the Keycloak path stays on the host runner so it can orchestrate Docker Compose locally. Deployed Node.js Lambda validation is restored in CI on MiniStack using the existing Lambda packaging flow. This is the "Gatekeeper" workflow that must pass before builds occur.
 - **`docker.yaml`**: Builds and pushes Docker images. This runs _after_ validation in the release flow, or independently for Dockerfile-only changes.
 - **`cd.yaml`**: Handles deployment artefacts after successful builds.
+
+### Frontend/UI Build Behavior
+
+- **`frontend.yaml`** now runs separate jobs for:
+  - React frontend app in `frontend/` (triggered by `frontendComponents`)
+  - Legacy Vue UI app in `ui/` (triggered by `uiComponents`)
+- Desktop packaging consumes the `frontend` build artifact.
+- Public/private release packaging continues to publish the `ui` release asset from the `ui/` application.
+
+### Desktop Build Behavior
+
+- Desktop builds are controlled via `desktopComponents` and the generated `desktopMatrix`.
+- On tags, Windows/macOS/Linux desktop builds run.
+- On non-tag branches, desktop changes trigger Linux desktop builds.
 
 ### Helper Workflows
 

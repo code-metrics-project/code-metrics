@@ -39,7 +39,7 @@ Resources:
           Priority: 0
           Statement:
             IPSetReferenceStatement:
-              ARN: !GetAtt IPAllowlist.Arn
+              Arn: !GetAtt IPAllowlist.Arn
           Action:
             Allow: {}
           VisibilityConfig:

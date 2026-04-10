@@ -33,7 +33,7 @@ function randomRange(min, max) {
 
 // Generate a fixed number of issues by default, or vary by repo
 let issueCount;
-if (repo === "Hello-World") {
+if (repo.toLowerCase() === "hello-world") {
   // Use a fixed number for specific repos to ensure consistency
   issueCount = 12;
 } else {
@@ -303,21 +303,21 @@ function generateIssues(count) {
     // Filter by state
     if (state !== "all") {
       fallbackIssues = fallbackIssues.filter(
-        (issue) => (state === "open" && issue.state === "open") || (state === "closed" && issue.state === "closed")
+        (issue) => (state === "open" && issue.state === "open") || (state === "closed" && issue.state === "closed"),
       );
     }
 
     // Filter by type (GitHub native issue types mapped to labels)
     if (typeFilter) {
       fallbackIssues = fallbackIssues.filter((issue) =>
-        issue.labels.some((label) => label.name.toLowerCase() === typeFilter.toLowerCase())
+        issue.labels.some((label) => label.name.toLowerCase() === typeFilter.toLowerCase()),
       );
     }
 
     // Filter by labels
     if (labelsFilter && labelsFilter.length > 0) {
       fallbackIssues = fallbackIssues.filter((issue) =>
-        issue.labels.some((label) => labelsFilter.includes(label.name.toLowerCase()))
+        issue.labels.some((label) => labelsFilter.includes(label.name.toLowerCase())),
       );
     }
 

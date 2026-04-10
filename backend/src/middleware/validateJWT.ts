@@ -26,9 +26,9 @@ const validateJWT = async (allowedTokenTypes: TokenTypes[], req, res, next): Pro
   }
 
   const formattedAccessToken = accessToken.replace("Bearer ", "").trim();
-  await validateAccessToken(allowedTokenTypes, formattedAccessToken, (isValid, sub) => {
+  await validateAccessToken(allowedTokenTypes, formattedAccessToken, (isValid, sub, roles) => {
     if (isValid) {
-      (req as AuthenticatedRequest).user = { name: sub };
+      (req as AuthenticatedRequest).user = { name: sub, roles };
       return next();
     }
     unauthorised(res);

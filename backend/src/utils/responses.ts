@@ -21,6 +21,10 @@ export const unauthorised = (res: Response) => {
   res.status(401).send();
 };
 
+export const forbidden = (res: Response) => {
+  res.status(403).send();
+};
+
 export const notFound = (res: Response, body: ErrorBody | undefined) => {
   res.status(404).send(body);
 };

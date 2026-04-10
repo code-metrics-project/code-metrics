@@ -1,16 +1,21 @@
 import {
   BaseDatastoreConfig,
   Datastore,
+  DatastoreAdmin,
   DatastoreCollection,
   DatastoreConfig,
   DO_NOT_EXPIRE,
   QueryFilter,
 } from "./api";
 import { InMemoryDatastore } from "./inmem/db";
+import { inMemoryAdmin } from "./inmem/db";
 import { initMongoDb, MongoDatastore } from "./mongo/db";
+import { mongoAdmin } from "./mongo/db";
 import { logger, verbose } from "../utils/logger/logger";
 import { DynamoDatastore, initDynamoDB } from "./dynamodb/db";
+import { dynamoAdmin } from "./dynamodb/db";
 import { initNeDB, NeDBDatastore } from "./nedb/db";
+import { nedbAdmin } from "./nedb/db";
 import { getConfigItemAsBoolean, getConfigItem } from "../config/sources/source";
 
 const isAutoCreateEnabled = () => getConfigItemAsBoolean("DATASTORE_AUTO_CREATE", true);
@@ -20,7 +25,7 @@ export type DatastoreFactory = (config: DatastoreConfig) => Datastore<any, any>;
 const isCacheEnabled = () => getConfigItemAsBoolean("LOOKUP_CACHE_ENABLED");
 export const IN_MEMORY_DATASTORE = "inmem";
 
-const registered: Record<string, { init: () => Promise<void>; factory: DatastoreFactory }> = {};
+const registered: Record<string, { init: () => Promise<void>; factory: DatastoreFactory; admin?: DatastoreAdmin }> = {};
 let defaultFactoryName: string;
 
 const impls: Record<string, Datastore<any, any>> = {};
@@ -30,8 +35,9 @@ export const registerDatastore = (
   init: () => Promise<void>,
   factory: DatastoreFactory,
   isDefault = false,
+  admin?: DatastoreAdmin,
 ) => {
-  registered[name] = { init, factory };
+  registered[name] = { init, factory, admin };
   if (isDefault) {
     defaultFactoryName = name;
   }
@@ -59,6 +65,15 @@ export const provideDatastore = <F extends QueryFilter, C extends DatastoreColle
     impls[storeId] = impl;
   }
   return impl as any as Datastore<F, C>;
+};
+
+/**
+ * Provide the {@link DatastoreAdmin} for the currently configured datastore implementation.
+ * Returns `undefined` if the active implementation has no admin registered.
+ */
+export const provideDatastoreAdmin = (): DatastoreAdmin | undefined => {
+  const { implName } = getImplementation();
+  return registered[implName]?.admin;
 };
 
 const getImplementation = () => {
@@ -109,6 +124,7 @@ const registerFactories = () => {
     () => Promise.resolve(),
     (config) => new InMemoryDatastore(config),
     true,
+    inMemoryAdmin,
   );
   registerDatastore(
     "localdb",
@@ -116,6 +132,8 @@ const registerFactories = () => {
       await initNeDB();
     },
     (config) => new NeDBDatastore(config),
+    false,
+    nedbAdmin,
   );
   registerDatastore(
     "dynamodb",
@@ -123,6 +141,8 @@ const registerFactories = () => {
       await initDynamoDB();
     },
     (config) => new DynamoDatastore(config),
+    false,
+    dynamoAdmin,
   );
   registerDatastore(
     "mongodb",
@@ -130,5 +150,7 @@ const registerFactories = () => {
       await initMongoDb();
     },
     (config) => new MongoDatastore(config),
+    false,
+    mongoAdmin,
   );
 };

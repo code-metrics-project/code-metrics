@@ -13,6 +13,7 @@ import { getConfigItem } from "../config/sources/source";
 
 export type Principal = {
   name: string;
+  roles?: string[];
 };
 
 export type AuthenticationResult = {
@@ -22,6 +23,7 @@ export type AuthenticationResult = {
 
 export type UserData = {
   sub: string;
+  roles?: string[];
 };
 
 export type Authenticator = {

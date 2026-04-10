@@ -99,7 +99,7 @@ describe(`Jenkins CICD integration`, () => {
     const builds = await jenkins.getRunsForProject(
       workload.id,
       ["Athena_platform"],
-      "octo-repo",
+      "hello-world",
       ["main"],
       startDate,
       endDate,
@@ -114,7 +114,7 @@ describe(`Jenkins CICD integration`, () => {
     const jenkins = getPipelinesForWorkload(workload, "jenkins-build-stage");
 
     const jobNames = await jenkins.discoverJobNames(workload, { jobGroup: "backend" });
-    expect(jobNames).toEqual(["Athena_platform" ]);
+    expect(jobNames).toEqual(["Athena_platform"]);
   });
 
   it("gets runs for jobs", async () => {

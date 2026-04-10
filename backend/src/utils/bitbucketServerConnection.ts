@@ -83,6 +83,12 @@ type Commit = {
   message: string;
 };
 
+type Change = {
+  path: {
+    toString: string;
+  };
+};
+
 export type BitbucketServerConnection = {
   projects: {
     repos: {
@@ -96,6 +102,9 @@ export type BitbucketServerConnection = {
 
       commit: {
         get: (options: ProjectKey & RepositorySlug & CommitId) => Promise<Commit>;
+        changes: {
+          get: (options: ProjectKey & RepositorySlug & CommitId) => Promise<Change[]>;
+        };
       };
 
       commits: {
@@ -221,6 +230,19 @@ export function createBitbuckerServerConnection(options: ClientOptions): Bitbuck
                 agent,
               },
             );
+          },
+
+          changes: {
+            async get(request) {
+              return paginate<Change>(
+                `${options.baseUrl}/rest/api/latest/projects/${request.projectKey}/repos/${request.repositorySlug}/commits/${request.commitId}/changes`,
+                {
+                  method: "GET",
+                  headers,
+                  agent,
+                },
+              );
+            },
           },
         },
 

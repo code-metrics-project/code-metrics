@@ -21,9 +21,9 @@ LABEL org.opencontainers.image.source=https://github.com/code-metrics-project/re
 # Copy built files
 COPY --from=build /usr/src/app/backend/dist ./backend/dist
 
-ENV CONFIG_DIR "/backend/config"
+ENV CONFIG_DIR="/backend/config"
 # set to "2" for verbose logging
-ENV LOG_LEVEL "1"
+ENV LOG_LEVEL="1"
 
 # RUN
 WORKDIR /backend

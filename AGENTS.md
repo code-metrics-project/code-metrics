@@ -2,6 +2,8 @@
 
 This document serves as a meta-documentation and definitive guide for AI agents working on the CodeMetrics codebase. It outlines the system architecture, component technologies, and strict directives that must be followed.
 
+`.AGENTS_LOCAL.md` - If the file is found, this primary context file can be used to override the default behavior of the agents, it is ignored by git as it may have information specific to the local environment or user. Please check for this file which may contain specifics around the developer's personal coding workflow and further expectations on running and testing the application setup while performing code delivery as an agent.
+
 ## Architecture & Components
 
 The CodeMetrics repository is a monorepo containing the following key software components:
@@ -14,7 +16,7 @@ The CodeMetrics repository is a monorepo containing the following key software c
   - _Tech_: Dockerfiles.
 - **`examples`** (`examples`): Demo configurations and Jenkins integration.
   - _Tech_: Jenkinsfile, YAML configs.
-- **`helm`** (`helm`): Kubernetes deployment charts.
+- **`helm`** (`deployment/helm`): Kubernetes deployment charts.
   - _Tech_: Helm Charts.
 - **`machinelearning`** (`machinelearning`): Machine Learning models and pipelines.
   - _Tech_: Python, UV (package manager).
@@ -30,7 +32,7 @@ The CodeMetrics repository is a monorepo containing the following key software c
   - _Tech_: Markdown, Pandoc, PDF generation.
 - **`tools`** (`tools`): Standalone utilities.
   - _Tech_: Node.js (`mergecoverage`), Go (`userconfig`).
-- **`ui`** (`ui`): Frontend Dashboard.
+- **`frontend`** (`frontend`): Frontend web application.
   - _Tech_: React, TypeScript, Vite.
 
 ## Directives for Agents
@@ -97,7 +99,3 @@ cd mcp
 npm run build
 node dist/index.js --http --port=3210
 ```
-
-### 6. Overrides
-
-`.AGENTS_LOCAL.md` - This file can be used to override the default behavior of the agents, it is ignored by git as it may have information specific to the local environment or user. Please check for this file which may contain specifics around the developer's personal coding workflow and further expectations on running and testing the application setup while performing code delivery as an agent.

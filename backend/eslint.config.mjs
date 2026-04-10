@@ -1,6 +1,7 @@
 import eslint from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import unusedImports from "eslint-plugin-unused-imports";
 
 export default tseslint.config(
   {
@@ -19,6 +20,7 @@ export default tseslint.config(
   {
     plugins: {
       "@typescript-eslint": tseslint.plugin,
+      "unused-imports": unusedImports,
     },
     files: ["**/*.js", "**/*.ts"],
     languageOptions: {
@@ -37,6 +39,17 @@ export default tseslint.config(
       "@typescript-eslint/consistent-type-definitions": ["warn", "type"],
       // Prevent direct console usage - use logger utilities instead
       "no-console": "error",
+      "@typescript-eslint/no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+        },
+      ],
     },
   },
   // Allow console in test files and logger utilities

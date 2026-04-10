@@ -17,6 +17,7 @@ import {
 import { JobNameMapping, Workload, WorkloadConfigWrapper, WorkloadId } from "../model/config/workload-config";
 import { QualityGatesConfig } from "../model/config/quality-gates-config";
 import { Tags } from "../model/tags";
+import { RBACConfigWrapper } from "../model/config/rbac-config";
 
 const DEFAULT_TICKET_PRIORITIES = ["Lowest", "Low", "Medium", "High", "Highest"];
 
@@ -301,3 +302,8 @@ export const getWorkloadsWithTags = (tags: Tags): WorkloadId[] => {
       return w.id;
     });
 };
+
+/**
+ * Get the RBAC configuration, containing user-to-role mappings.
+ */
+export const getRBACConfig = (): RBACConfigWrapper => getConfig().rbacConfig ?? { rbac: [] };
