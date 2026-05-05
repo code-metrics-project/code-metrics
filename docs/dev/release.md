@@ -3,7 +3,7 @@
 The following artifacts are produced as part of a release:
 
 - ZIP archives, including Lambda function and static website (frontend and backend)
-- Frontend ZIP artifacts: `codemetrics-frontend.zip` (new frontend) and `codemetrics-ui.zip` (legacy UI)
+- Frontend ZIP artifacts: `codemetrics-frontend.zip` (new frontend) and `codemetrics-ui.zip` (CodeMetrics Classic UI)
 - Docker images (frontend, backend and mocks)
 - Documentation website
 
@@ -49,9 +49,9 @@ Run the release prep script:
 ```
 
 > Release type should be one of `major`, `minor` or `patch`, per [Semver](https://semver.org/).
-> 
+>
 > For example:
-> 
+>
 > ```bash
 > ./scripts/prep_release.sh minor
 > ```
@@ -95,18 +95,21 @@ If you don't want to use the automated release process, use the following steps.
 Before you start, check all the tests pass:
 
 Backend:
+
 ```bash
 $ cd $PROJECT_ROOT/backend
 $ npm test && npm run test:integration && npm run test:slow
 ```
 
 Frontend:
+
 ```bash
 cd $PROJECT_ROOT/frontend
 npm run test:unit
 ```
 
 Integration:
+
 ```bash
 ./scripts/validate-test_e2e_mocks.sh
 ```
@@ -116,7 +119,7 @@ Integration:
 Update the `version` field in `backend/package.json`.
 
 > Notes:
-> 
+>
 > - we need to keep the version in backend/package.json up to date with the release
 > - this only works when we build a production version of the app
 > - UI package version is ignored
@@ -137,7 +140,7 @@ For example:
 
     1.2.3
 
-Push your tag to GitHub. The CI/CD pipeline will test the application components, then build and push the Docker images.  
+Push your tag to GitHub. The CI/CD pipeline will test the application components, then build and push the Docker images.
 
 #### Step 4: Create a GitHub release
 
@@ -176,6 +179,6 @@ The release process involves copying the release name, body and its assets form 
 The public release includes both frontend website assets:
 
 - `codemetrics-frontend.zip` (new frontend)
-- `codemetrics-ui.zip` (legacy UI)
+- `codemetrics-ui.zip` (CodeMetrics Classic UI)
 
 To initiate the public release from the main project repository, run the `public-release` [GitHub Actions workflow](https://github.com/DeloitteDigitalUK/code-metrics/actions/workflows/public-release.yaml).

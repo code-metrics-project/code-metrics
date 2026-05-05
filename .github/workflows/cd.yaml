@@ -23,10 +23,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      # fetch-depth: 0 is required to fetch full history and all tags so that
+      # the changelog script can walk commits between the previous and current tag.
+      # Do not change this to a shallow clone (fetch-depth: 1) or omit fetch-depth.
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Fetch tags
-        run: git fetch --tags --force
+        with:
+          fetch-depth: 0
       - name: Generate CHANGELOG
         id: changelog
         run: |

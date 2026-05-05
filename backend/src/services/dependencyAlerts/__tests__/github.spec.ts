@@ -5,6 +5,9 @@ import { loadConfig } from "../../../config/config";
 import { ConfigVersion } from "../../../model/config/base";
 import { Workload } from "../../../model/config/workload-config";
 import { CodeManagementTypes, TicketManagementTypes } from "../../../model/config/common";
+import { AuthMethod } from "../../../model/config/remote-config";
+import * as githubAppAuth from "../../auth/github-app";
+import { Octokit } from "@octokit/rest";
 
 const workload: Workload = {
   id: "athena",
@@ -213,6 +216,128 @@ describe("GithubDependencyAlertsService", () => {
       expect(anotherPackage.totalAlerts).toBe(1);
       expect(anotherPackage.openAlerts).toBe(1);
       expect(anotherPackage.mediumCount).toBe(1);
+    });
+  });
+
+  describe("getConnection", () => {
+    const githubAppWorkload: Workload = {
+      id: "athena-app",
+      codeManagement: {
+        type: CodeManagementTypes.GITHUB,
+        serverId: "test-github-app",
+        projectName: "DeloitteDigitalUK",
+        repoGroups: {},
+      },
+      projectManagement: {
+        type: TicketManagementTypes.JIRA,
+        serverId: "test-jira",
+        tableName: undefined,
+      },
+      incidents: {
+        type: TicketManagementTypes.JIRA,
+        serverId: "test-jira",
+        tableName: undefined,
+      },
+    } as any;
+
+    beforeEach(async () => {
+      await loadConfig({
+        remoteConfig: {
+          version: ConfigVersion.V2_0,
+          codeManagement: {
+            github: {
+              servers: [
+                {
+                  id: "test-github-app",
+                  url: "http://localhost:8080",
+                  branches: ["main"],
+                  authMethod: AuthMethod.GITHUB_APP,
+                  githubApp: {
+                    appId: "test-app-id",
+                    privateKey: "-----BEGIN RSA PRIVATE KEY-----\ntest-key\n-----END RSA PRIVATE KEY-----",
+                    installationId: "12345",
+                  },
+                },
+              ],
+            },
+          },
+          codeAnalysis: {},
+          pipelines: {},
+          ticketManagement: {},
+        },
+        workloadConfig: {
+          version: ConfigVersion.V2_0,
+          workloads: [githubAppWorkload],
+        },
+      });
+    });
+
+    it("should use GitHub App authentication when authMethod is GITHUB_APP", () => {
+      const mockOctokit = {} as Octokit;
+      const createGitHubAppOctokitSpy = jest
+        .spyOn(githubAppAuth, "createGitHubAppOctokit")
+        .mockReturnValue(mockOctokit);
+
+      const service = getDependencyAlertsForWorkloadId("athena-app");
+      // Reset connections to force re-creation
+      (service as any).connections = new Map();
+
+      (service as any).getConnection("athena-app");
+
+      expect(createGitHubAppOctokitSpy).toHaveBeenCalledWith(
+        {
+          appId: "test-app-id",
+          privateKey: "-----BEGIN RSA PRIVATE KEY-----\ntest-key\n-----END RSA PRIVATE KEY-----",
+          installationId: "12345",
+        },
+        "http://localhost:8080",
+      );
+
+      createGitHubAppOctokitSpy.mockRestore();
+    });
+
+    it("should use PAT authentication when authMethod is BEARER_TOKEN", async () => {
+      await loadConfig({
+        remoteConfig: {
+          version: ConfigVersion.V2_0,
+          codeManagement: {
+            github: {
+              servers: [
+                {
+                  id: "test-github-pat",
+                  url: "http://localhost:8080",
+                  branches: ["main"],
+                  authMethod: AuthMethod.BEARER_TOKEN,
+                  apiKey: "test-pat-token",
+                },
+              ],
+            },
+          },
+          codeAnalysis: {},
+          pipelines: {},
+          ticketManagement: {},
+        },
+        workloadConfig: {
+          version: ConfigVersion.V2_0,
+          workloads: [
+            {
+              ...githubAppWorkload,
+              id: "athena-pat",
+              codeManagement: { ...githubAppWorkload.codeManagement, serverId: "test-github-pat" },
+            },
+          ],
+        },
+      });
+
+      const createGitHubAppOctokitSpy = jest.spyOn(githubAppAuth, "createGitHubAppOctokit");
+
+      const service = getDependencyAlertsForWorkloadId("athena-pat");
+      (service as any).connections = new Map();
+      (service as any).getConnection("athena-pat");
+
+      expect(createGitHubAppOctokitSpy).not.toHaveBeenCalled();
+
+      createGitHubAppOctokitSpy.mockRestore();
     });
   });
 });

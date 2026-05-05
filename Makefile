@@ -326,6 +326,9 @@ clean-threatmodel:
 
 update-githubcss: threatmodel/github.css
 
+scp:
+	scp-cli scan . --export mermaid
+
 threatmodel/github.css:
 	wget -O threatmodel/github.css https://raw.githubusercontent.com/simov/markdown-viewer/master/themes/github.css
 

@@ -127,7 +127,7 @@ GitHub Apps provide several advantages over Personal Access Tokens:
 - **Fine-grained permissions**: Only grant specific permissions needed
 - **Audit trail**: Clear visibility of app actions in GitHub audit logs
 
-For detailed setup instructions, see the [GitHub App Authentication Guide](./authentication_github_app.md).
+For detailed setup instructions, see the [GitHub App Authentication Guide](./config_code_management_github.md).
 
 #### Configuration
 

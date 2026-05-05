@@ -38,7 +38,7 @@ The CodeMetrics Promo Site is a modern, high-performance website built using [As
 
 ### Prerequisites
 
-- Node.js version: ^18.17.1 || ^20.3.0 || >= 21.0.0
+- Node.js version: >= 22.0.0
 - npm (Node Package Manager)
 
 ### Installation
@@ -107,8 +107,8 @@ The site is configured for static deployment and can be hosted on any static hos
 
 ### Core Dependencies
 
-- Astro v5.8.2
-- Tailwind CSS v3.4.1
+- Astro
+- Tailwind CSS
 - Various Astro integrations for RSS, sitemap, and analytics
 
 ### Development Dependencies

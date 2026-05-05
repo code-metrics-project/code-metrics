@@ -86,7 +86,7 @@ unzip codemetrics-frontend.zip
 cd codemetrics-frontend
 ```
 
-> Legacy fallback: if needed, `codemetrics-ui.zip` is also available.
+> CodeMetrics Classic fallback: if needed, `codemetrics-ui.zip` is also available.
 
 3. Configure the API endpoint:
 

@@ -3,7 +3,9 @@
     <v-container>
       <v-row>
         <v-col class="py-8">
-          <h2 class="text-h2 pb-4">CodeMetrics</h2>
+          <h2 class="text-h2 pb-4">
+            CodeMetrics <span class="home-classic-pill text-h5 font-italic">Classic UI</span>
+          </h2>
           <p class="text-body-1 py-1">
             CodeMetrics is a system to help you gain deep insights into the quality of your software products. It draws
             on metrics about your source code, your CI/CD pipeline and your tickets (such as bugs/defects).
@@ -62,3 +64,15 @@
 <script lang="ts" setup>
 import { Paths } from "@/router/paths";
 </script>
+
+<style scoped>
+.home-classic-pill {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 2px 12px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  line-height: 1.2;
+}
+</style>

@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
-Description: SAM template for deploying CodeMetrics static web assets
+Description: SAM template for deploying CodeMetrics Classic UI static web assets
 
 Parameters:
   DomainName:
@@ -15,7 +15,7 @@ Resources:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties:
       CloudFrontOriginAccessIdentityConfig:
-        Comment: !Sub '${DomainName} CloudFront OAI'
+        Comment: !Sub "${DomainName} CloudFront OAI"
 
   WebsiteBucket:
     Type: AWS::S3::Bucket
@@ -44,25 +44,25 @@ Resources:
             Action: s3:GetObject
             Principal:
               CanonicalUser: !GetAtt CFOriginAccessIdentity.S3CanonicalUserId
-            Resource: !Sub 'arn:aws:s3:::${WebsiteBucket}/*'
+            Resource: !Sub "arn:aws:s3:::${WebsiteBucket}/*"
 
   CFDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
         Enabled: true
-        Comment: !Sub 'Distribution for ${DomainName}'
+        Comment: !Sub "Distribution for ${DomainName}"
         HttpVersion: http2
-        PriceClass: 'PriceClass_All'
+        PriceClass: "PriceClass_All"
         WebACLId: !Ref CloudFrontWebACL
         DefaultRootObject: index.html
         Origins:
-          - Id: !Sub 'S3-${DomainName}'
-            DomainName: !Sub '${DomainName}.s3-${AWS::Region}.amazonaws.com'
+          - Id: !Sub "S3-${DomainName}"
+            DomainName: !Sub "${DomainName}.s3-${AWS::Region}.amazonaws.com"
             S3OriginConfig:
-              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${CFOriginAccessIdentity}'
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CFOriginAccessIdentity}"
         DefaultCacheBehavior:
-          TargetOriginId: !Sub 'S3-${DomainName}'
+          TargetOriginId: !Sub "S3-${DomainName}"
           Compress: true
           MinTTL: 0
           MaxTTL: 60

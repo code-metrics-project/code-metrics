@@ -1,0 +1,168 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/krackenservices/scp-definition/main/spec/scp.schema.json
+scp: "0.1.0"
+
+system:
+  urn: "urn:scp:codemetrics:backend-api"
+  name: "Code Metrics Backend API"
+  description: "Express REST API that integrates with SDLC systems (ADO, Jira, SonarQube) to provide code metrics and quality analysis"
+  classification:
+    tier: 1
+    domain: "backend"
+    tags:
+      - "api"
+      - "rest"
+      - "nodejs"
+
+ownership:
+  team: "backend-team"
+  contacts:
+    - type: "email"
+      ref: "mailto:code-metrics@example.com"
+
+provides:
+  - capability: "rest-api"
+    type: "rest"
+    contract:
+      type: "openapi"
+      ref: "./src/openapi/openapi.yaml"
+    sla:
+      availability: "99.9%"
+      latency_p99_ms: 500
+
+depends:
+  - system: "urn:scp:codemetrics:database"
+    capability: "data-storage"
+    type: "data"
+    criticality: "required"
+    failure_mode: "fail-fast"
+    timeout_ms: 5000
+  # Machine Learning
+  - system: "urn:scp:codemetrics:mlapi"
+    capability: "ml-predictions"
+    type: "rest"
+    criticality: "degraded"
+    failure_mode: "fallback"
+    timeout_ms: 3000
+  # Code Analysis
+  - system: "urn:scp:external:sonarqube"
+    capability: "code-quality-analysis"
+    type: "rest"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 10000
+  # Code Management
+  - system: "urn:scp:external:azure-devops"
+    capability: "code-management"
+    type: "rest"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 10000
+  - system: "urn:scp:external:github"
+    capability: "code-management"
+    type: "rest"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 10000
+  - system: "urn:scp:external:gitlab"
+    capability: "code-management"
+    type: "rest"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 10000
+  - system: "urn:scp:external:bitbucket-cloud"
+    capability: "code-management"
+    type: "rest"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 10000
+  - system: "urn:scp:external:bitbucket-server"
+    capability: "code-management"
+    type: "rest"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 10000
+  # Pipelines
+  - system: "urn:scp:external:jenkins"
+    capability: "ci-cd-pipelines"
+    type: "rest"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 10000
+  - system: "urn:scp:external:aws-codepipeline"
+    capability: "ci-cd-pipelines"
+    type: "rest"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 10000
+  - system: "urn:scp:external:dynatrace"
+    capability: "observability-metrics"
+    type: "rest"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 10000
+  # Ticket Management 
+  - system: "urn:scp:external:jira"
+    capability: "issue-tracking"
+    type: "rest"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 10000
+  - system: "urn:scp:external:servicenow"
+    capability: "incident-management"
+    type: "rest"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 10000
+  # Authentication
+  - system: "urn:scp:external:oidc-provider"
+    capability: "authentication"
+    type: "rest"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 5000
+  - system: "urn:scp:external:aws-cognito"
+    capability: "authentication"
+    type: "rest"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 5000
+  - system: "urn:scp:external:ldap"
+    capability: "authentication"
+    type: "data"
+    criticality: "optional"
+    failure_mode: "fallback"
+    timeout_ms: 5000
+
+constraints:
+  security:
+    authentication: ["jwt", "api-key", "basic"]
+    encryption:
+      in_transit: true
+  operational:
+    max_replicas: 10
+    min_replicas: 2
+
+runtime:
+  environments:
+    production:
+      otel_service_name: "code-metrics-api"
+      endpoints:
+        - "https://api.code-metrics.example.com"
+    development:
+      otel_service_name: "code-metrics-api-dev"
+      endpoints:
+        - "http://localhost:3000"
+
+failure_modes:
+  - mode: "database-unavailable"
+    impact: "total-outage"
+    detection: "health-check"
+    recovery: "manual"
+    degraded_behavior: "API returns 503 Service Unavailable"
+    mttr_target_minutes: 15
+  - mode: "ml-api-unavailable"
+    impact: "degraded-experience"
+    detection: "health-check"
+    recovery: "auto-failover"
+    degraded_behavior: "Prediction endpoints return cached or fallback data"
+    mttr_target_minutes: 5

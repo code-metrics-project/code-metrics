@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/krackenservices/scp-definition/main/spec/scp.schema.json
+scp: "0.1.0"
+
+system:
+  urn: "urn:scp:codemetrics:web-ui"
+  name: "Code Metrics Web UI"
+  description: "Vue.js web frontend providing user interface for code metrics visualization and analysis"
+  classification:
+    tier: 2
+    domain: "presentation"
+    tags:
+      - "user-facing"
+      - "web"
+      - "vue"
+
+ownership:
+  team: "frontend-team"
+  contacts:
+    - type: "email"
+      ref: "mailto:code-metrics@example.com"
+provides:
+  - capability: "web-ui"
+    type: "rest"
+    sla:
+      availability: "99.9%"
+      latency_p99_ms: 200
+
+depends:
+  - system: "urn:scp:codemetrics:backend-api"
+    capability: "rest-api"
+    type: "rest"
+    criticality: "required"
+    failure_mode: "fail-fast"
+    timeout_ms: 5000
+
+runtime:
+  environments:
+    production:
+      otel_service_name: "code-metrics-ui"
+      endpoints:
+        - "https://code-metrics.example.com"
+    development:
+      otel_service_name: "code-metrics-ui-dev"
+      endpoints:
+        - "http://localhost:3001"
+
+failure_modes:
+  - mode: "api-unavailable"
+    impact: "total-outage"
+    detection: "health-check"
+    recovery: "manual"
+    degraded_behavior: "Shows error message to user"
+    mttr_target_minutes: 15

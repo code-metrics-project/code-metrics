@@ -1,6 +1,6 @@
-# code-metrics frontend
+# CodeMetrics Classic UI
 
-This app is developed to help with easily relating JIRA information to ADO PRs so that we can get code related metrics based on JIRA tickets.
+This app is the CodeMetrics Classic UI, developed to help with easily relating JIRA information to ADO PRs so that we can get code related metrics based on JIRA tickets.
 
 ## Before you start
 

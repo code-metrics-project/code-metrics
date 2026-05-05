@@ -18,6 +18,8 @@ import {
   DependencyAlertsService,
   registerDependencyAlerts,
 } from "./dependencyAlertsService";
+import { AuthMethod } from "../../model/config/remote-config";
+import { createGitHubAppOctokit } from "../auth/github-app";
 
 const EXPIRY_SECONDS: number = getConfigItemAsNumber("DEPENDENCY_CACHE_EXPIRY_SECONDS", 60 * 60 * 6);
 
@@ -53,10 +55,14 @@ export class GithubDependencyAlertsService implements DependencyAlertsService {
       if (!server) {
         throw new Error(`No GitHub server configuration found named: ${serverId}`);
       }
-      connection = new Octokit({
-        auth: server.apiKey,
-        baseUrl: server.url,
-      });
+      if (server.authMethod === AuthMethod.GITHUB_APP && server.githubApp) {
+        connection = createGitHubAppOctokit(server.githubApp, server.url);
+      } else {
+        connection = new Octokit({
+          auth: server.apiKey,
+          baseUrl: server.url,
+        });
+      }
       this.connections.set(workloadId, connection);
     }
     return connection;

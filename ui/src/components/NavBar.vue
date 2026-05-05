@@ -1,15 +1,16 @@
 <template>
   <div>
     <v-app-bar app color="dark">
-      <router-link :to="Paths.Home">
+      <router-link :to="Paths.Home" class="brand-link">
         <v-img
-          alt="CodeMetrics logo"
+          alt="CodeMetrics Classic UI logo"
           class="shrink ml-3 mr-2"
           contain
           :src="`/assets/img/codemetrics_small_title.png`"
           transition="scale-transition"
           width="200"
         />
+        <span class="brand-classic-pill text-h6 font-italic">Classic UI</span>
       </router-link>
 
       <v-spacer />
@@ -65,3 +66,29 @@ async function onLogout() {
 }
 const drawer = ref(false);
 </script>
+
+<style scoped>
+.brand-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.brand-link:visited,
+.brand-link:hover,
+.brand-link:active,
+.brand-link:focus {
+  text-decoration: none;
+}
+
+.brand-classic-pill {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  padding: 2px 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  color: rgb(var(--v-theme-on-dark));
+  text-decoration: none;
+}
+</style>

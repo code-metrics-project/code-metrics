@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
-Description: SAM template for deploying CodeMetrics static web assets
+Description: SAM template for deploying CodeMetrics Classic UI static web assets
 
 Parameters:
   DomainName:
@@ -17,7 +17,7 @@ Resources:
       Addresses: !Ref AllowedIPs
       Name: "CloudFrontAllowlist"
       IPAddressVersion: "IPV4"
-      Description: !Sub 'IP allowlist for ${DomainName}'
+      Description: !Sub "IP allowlist for ${DomainName}"
       Scope: "CLOUDFRONT"
 
   CloudFrontWebACL:
@@ -25,7 +25,7 @@ Resources:
     Properties:
       Name: cloudfront-acl
       Scope: "CLOUDFRONT"
-      Description: !Sub 'Web ACL for ${DomainName}.'
+      Description: !Sub "Web ACL for ${DomainName}."
       DefaultAction:
         Block:
           CustomResponse:

@@ -47,13 +47,14 @@ GitHub Apps offer several advantages over Personal Access Tokens (PATs):
 
 Configure the following **Repository permissions**:
 
-| Permission        | Access Level | Purpose                                             |
-| ----------------- | ------------ | --------------------------------------------------- |
-| **Issues**        | Read         | Fetch GitHub Issues for project/incident management |
-| **Metadata**      | Read         | Access basic repository information                 |
-| **Actions**       | Read         | Access GitHub Actions workflow runs (optional)      |
-| **Contents**      | Read         | Access repository files and commits (optional)      |
-| **Pull requests** | Read         | Link issues to pull requests (optional)             |
+| Permission              | Access Level | Purpose                                             |
+| ----------------------- | ------------ | --------------------------------------------------- |
+| **Issues**              | Read         | Fetch GitHub Issues for project/incident management |
+| **Metadata**            | Read         | Access basic repository information                 |
+| **Dependabot alerts**   | Read         | Access Dependabot dependency alerts                 |
+| **Actions**             | Read         | Access GitHub Actions workflow runs (optional)      |
+| **Contents**            | Read         | Access repository files and commits (optional)      |
+| **Pull requests**       | Read         | Link issues to pull requests (optional)             |
 
 Configure the following **Organization permissions** (if applicable):
 

@@ -1,4 +1,4 @@
-# CodeMetrics UI static web deployment
+# CodeMetrics Classic UI static web deployment
 
 ## Build
 

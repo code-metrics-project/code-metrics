@@ -1,0 +1,49 @@
+flowchart LR
+
+    %% Systems
+    backend_api[["🔴 Code Metrics Backend API"]]
+    database["Database"]
+    mlapi["🟡 Code Metrics ML API"]
+    sonarqube["Sonarqube"]
+    azure_devops["Azure Devops"]
+    github["Github"]
+    gitlab["Gitlab"]
+    bitbucket_cloud["Bitbucket Cloud"]
+    bitbucket_server["Bitbucket Server"]
+    jenkins["Jenkins"]
+    aws_codepipeline["Aws Codepipeline"]
+    dynatrace["Dynatrace"]
+    jira["Jira"]
+    servicenow["Servicenow"]
+    oidc_provider["Oidc Provider"]
+    aws_cognito["Aws Cognito"]
+    ldap["Ldap"]
+    desktop_app["🟡 Code Metrics Desktop App"]
+    web_ui["🟡 Code Metrics Web UI"]
+    mcp_server["Code Metrics MCP Server"]
+
+    %% Dependencies
+    backend_api -->|data-storage| database
+    backend_api -->|ml-predictions| mlapi
+    backend_api -->|code-quality-analysis| sonarqube
+    backend_api -->|code-management| azure_devops
+    backend_api -->|code-management| github
+    backend_api -->|code-management| gitlab
+    backend_api -->|code-management| bitbucket_cloud
+    backend_api -->|code-management| bitbucket_server
+    backend_api -->|ci-cd-pipelines| jenkins
+    backend_api -->|ci-cd-pipelines| aws_codepipeline
+    backend_api -->|observability-metrics| dynatrace
+    backend_api -->|issue-tracking| jira
+    backend_api -->|incident-management| servicenow
+    backend_api -->|authentication| oidc_provider
+    backend_api -->|authentication| aws_cognito
+    backend_api -->|authentication| ldap
+    desktop_app -->|rest-api| backend_api
+    desktop_app -->|web-ui| web_ui
+    mcp_server -->|rest-api| backend_api
+    web_ui -->|rest-api| backend_api
+
+    %% Styling
+    classDef critical fill:#ff6b6b,stroke:#333,stroke-width:2px
+    class backend_api critical

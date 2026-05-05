@@ -47,7 +47,7 @@ The frontend web UI is a static site, so can be hosted anywhere. You can find th
 
 Download the `codemetrics-frontend.zip` file and host it on a static site. You will need to set the `apiBaseUrl` variable in `config.json` to point to the API endpoint.
 
-> Legacy fallback: if needed, `codemetrics-ui.zip` is also available.
+> CodeMetrics Classic fallback: if needed, `codemetrics-ui.zip` is also available.
 
 ### Example
 

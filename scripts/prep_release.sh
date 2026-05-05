@@ -8,6 +8,12 @@ else
   RELEASE_TYPE="$1"
 fi
 
+if ! command -v node &>/dev/null; then
+  # shellcheck source=/dev/null
+  source "${NVM_DIR:-$HOME/.nvm}/nvm.sh"
+  nvm use 20
+fi
+
 cd "$( git rev-parse --show-toplevel )/backend"
 
 npm version "$RELEASE_TYPE"

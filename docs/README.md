@@ -81,6 +81,8 @@ This documentation is intended for people deploying and configuring CodeMetrics.
 - [Caching](./caching.md)
 - [Secrets management](./secret_management.md)
 - [Authentication](./authentication.md)
+- [Configure code management](./config_code_management.md)
+  - [GitHub](./config_code_management_github.md)
 - [Configure workloads](./config_workloads.md)
 - [Configure deployments](./config_deployments.md)
 - [Configure project management (bugs)](./config_project_management.md)
