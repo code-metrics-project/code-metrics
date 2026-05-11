@@ -3,8 +3,10 @@ import {
   lookupJobGroupForJobName,
   listNormalisedJobGroupsForWorkload,
   filterJobsByJobGroup,
+  resolveJobGroupPatterns,
 } from "../jobs";
 import { determineJobGroups, determineJobNames, getWorkloadById } from "../../config/configMapping";
+import { warn } from "../logger/logger";
 
 // Mock the config mapping module
 jest.mock("../../config/configMapping");
@@ -12,6 +14,7 @@ jest.mock("../../config/configMapping");
 // Mock the logger module
 jest.mock("../logger/logger", () => ({
   logger: jest.fn(),
+  warn: jest.fn(),
 }));
 
 const mockGetWorkloadById = getWorkloadById as jest.MockedFunction<typeof getWorkloadById>;
@@ -468,6 +471,96 @@ describe("jobs", () => {
       expect(result).toBe("custom-default");
     });
 
+    it("should find the correct job group using the jobs format", () => {
+      mockGetWorkloadById.mockReturnValue({
+        id: "test-workload",
+        pipelines: {
+          jobNameMapping: "none" as any,
+          jobGroups: {
+            "backend": {
+              jobs: [{ name: "api-service" }, { name: "worker-service" }],
+            },
+            "frontend": {
+              jobs: [{ name: "web-app" }],
+            },
+          },
+        },
+        codeManagement: {
+          repoGroups: {},
+        },
+      } as any);
+
+      expect(lookupJobGroupForJobName("test-workload", "worker-service")).toBe("backend");
+      expect(lookupJobGroupForJobName("test-workload", "web-app")).toBe("frontend");
+    });
+
+    it("should match regex patterns in the jobs format", () => {
+      mockGetWorkloadById.mockReturnValue({
+        id: "test-workload",
+        pipelines: {
+          jobNameMapping: "none" as any,
+          jobGroups: {
+            "backend": {
+              jobs: [{ name: "/spring-.*/" }],
+            },
+          },
+        },
+        codeManagement: {
+          repoGroups: {},
+        },
+      } as any);
+
+      expect(lookupJobGroupForJobName("test-workload", "spring-petclinic")).toBe("backend");
+      expect(lookupJobGroupForJobName("test-workload", "other-service")).toBe("unknown");
+    });
+
+    it("should respect exclude in the jobs format", () => {
+      mockGetWorkloadById.mockReturnValue({
+        id: "test-workload",
+        pipelines: {
+          jobNameMapping: "none" as any,
+          jobGroups: {
+            "backend": {
+              jobs: [{ name: "/spring-.*/" }, { name: "spring-legacy", exclude: true }],
+            },
+          },
+        },
+        codeManagement: {
+          repoGroups: {},
+        },
+      } as any);
+
+      expect(lookupJobGroupForJobName("test-workload", "spring-petclinic")).toBe("backend");
+      expect(lookupJobGroupForJobName("test-workload", "spring-legacy")).toBe("unknown");
+    });
+
+    it("should resolve fromRepoGroup in the jobs format", () => {
+      mockGetWorkloadById.mockReturnValue({
+        id: "test-workload",
+        pipelines: {
+          jobNameMapping: "none" as any,
+          jobGroups: {
+            "monorepos": {
+              jobs: [{ fromRepoGroup: "monorepos" }],
+            },
+          },
+        },
+        codeManagement: {
+          repoGroups: {
+            monorepos: {
+              components: [
+                { name: "web-a", repo: "ui-portal" },
+                { name: "web-b", repo: "ui-portal" },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      expect(lookupJobGroupForJobName("test-workload", "ui-portal")).toBe("monorepos");
+      expect(lookupJobGroupForJobName("test-workload", "other-repo")).toBe("unknown");
+    });
+
     it("should work with RepoName jobNameMapping", () => {
       mockGetWorkloadById.mockReturnValue({
         id: "test-workload",
@@ -762,6 +855,477 @@ describe("jobs", () => {
       const result = filterJobsByJobGroup("test-workload", allJobNames, "special");
       
       expect(result).toEqual(["job[1]"]);
+    });
+
+    it("should exclude jobs using the new jobs format with exclude flag", () => {
+      mockGetWorkloadById.mockReturnValue({
+        id: "test-workload",
+        pipelines: {
+          jobNameMapping: "none" as any,
+          jobGroups: {
+            "all": {
+              jobs: [
+                { name: "/.+/" },
+                { name: "Dependabot Updates", exclude: true },
+              ],
+            },
+          },
+        },
+        codeManagement: {
+          repoGroups: {},
+        },
+      } as any);
+
+      const allJobNames = ["CI", "Linter", "Dependabot Updates", "Deploy"];
+      const result = filterJobsByJobGroup("test-workload", allJobNames, "all");
+
+      expect(result).toEqual(["CI", "Linter", "Deploy"]);
+    });
+
+    it("should exclude jobs matching a regex pattern", () => {
+      mockGetWorkloadById.mockReturnValue({
+        id: "test-workload",
+        pipelines: {
+          jobNameMapping: "none" as any,
+          jobGroups: {
+            "all": {
+              jobs: [
+                { name: "/.+/" },
+                { name: "/Dependabot.*/", exclude: true },
+              ],
+            },
+          },
+        },
+        codeManagement: {
+          repoGroups: {},
+        },
+      } as any);
+
+      const allJobNames = ["CI", "Dependabot Updates", "Dependabot Security"];
+      const result = filterJobsByJobGroup("test-workload", allJobNames, "all");
+
+      expect(result).toEqual(["CI"]);
+    });
+
+    it("should support combining legacy jobNames with new jobs format", () => {
+      mockGetWorkloadById.mockReturnValue({
+        id: "test-workload",
+        pipelines: {
+          jobNameMapping: "none" as any,
+          jobGroups: {
+            "mixed": {
+              jobNames: ["/.+/"],
+              jobs: [
+                { name: "Dependabot Updates", exclude: true },
+              ],
+            },
+          },
+        },
+        codeManagement: {
+          repoGroups: {},
+        },
+      } as any);
+
+      const allJobNames = ["CI", "Linter", "Dependabot Updates"];
+      const result = filterJobsByJobGroup("test-workload", allJobNames, "mixed");
+
+      expect(result).toEqual(["CI", "Linter"]);
+    });
+
+    it("should apply excludes across all groups when no jobGroup filter specified", () => {
+      mockGetWorkloadById.mockReturnValue({
+        id: "test-workload",
+        pipelines: {
+          jobNameMapping: "none" as any,
+          jobGroups: {
+            "group1": {
+              jobs: [
+                { name: "/.+/" },
+                { name: "Dependabot Updates", exclude: true },
+              ],
+            },
+          },
+        },
+        codeManagement: {
+          repoGroups: {},
+        },
+      } as any);
+
+      const allJobNames = ["CI", "Dependabot Updates", "Deploy"];
+      const result = filterJobsByJobGroup("test-workload", allJobNames, "");
+
+      expect(result).toEqual(["CI", "Deploy"]);
+    });
+
+    it("should filter jobs using fromRepoGroup to resolve include patterns", () => {
+      mockGetWorkloadById.mockReturnValue({
+        id: "test-workload",
+        pipelines: {
+          jobNameMapping: "none" as any,
+          jobGroups: {
+            backend: {
+              jobs: [{ fromRepoGroup: "backend" }],
+            },
+          },
+        },
+        codeManagement: {
+          repoGroups: {
+            backend: {
+              components: [
+                { repo: "api1", name: "api1" },
+                { repo: "api2", name: "api2" },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      const allJobNames = ["api1", "api2", "frontend-app"];
+      const result = filterJobsByJobGroup("test-workload", allJobNames, "backend");
+
+      expect(result).toEqual(["api1", "api2"]);
+    });
+
+    it("should exclude jobs using fromRepoGroup as exclude patterns", () => {
+      mockGetWorkloadById.mockReturnValue({
+        id: "test-workload",
+        pipelines: {
+          jobNameMapping: "none" as any,
+          jobGroups: {
+            all: {
+              jobs: [
+                { name: "/.+/" },
+                { fromRepoGroup: "bots", exclude: true },
+              ],
+            },
+          },
+        },
+        codeManagement: {
+          repoGroups: {
+            bots: {
+              components: [{ repo: "dependabot", name: "dependabot" }],
+            },
+          },
+        },
+      } as any);
+
+      const allJobNames = ["api1", "api2", "dependabot"];
+      const result = filterJobsByJobGroup("test-workload", allJobNames, "all");
+
+      expect(result).toEqual(["api1", "api2"]);
+    });
+
+    it("should filter jobs using repo to match a specific job name", () => {
+      mockGetWorkloadById.mockReturnValue({
+        id: "test-workload",
+        pipelines: {
+          jobNameMapping: "none" as any,
+          jobGroups: {
+            backend: {
+              jobs: [{ repo: "api1" }, { repo: "api2" }],
+            },
+          },
+        },
+        codeManagement: {
+          repoGroups: {},
+        },
+      } as any);
+
+      const allJobNames = ["api1", "api2", "frontend-app"];
+      const result = filterJobsByJobGroup("test-workload", allJobNames, "backend");
+
+      expect(result).toEqual(["api1", "api2"]);
+    });
+
+    it("should filter jobs using componentName to resolve repo as job name", () => {
+      mockGetWorkloadById.mockReturnValue({
+        id: "test-workload",
+        pipelines: {
+          jobNameMapping: "none" as any,
+          jobGroups: {
+            backend: {
+              jobs: [{ componentName: "api" }],
+            },
+          },
+        },
+        codeManagement: {
+          repoGroups: {
+            backend: {
+              components: [
+                { name: "api", repo: "api-service" },
+                { name: "worker", repo: "worker-service" },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      const allJobNames = ["api-service", "worker-service", "frontend-app"];
+      const result = filterJobsByJobGroup("test-workload", allJobNames, "backend");
+
+      expect(result).toEqual(["api-service"]);
+    });
+  });
+
+  describe("resolveJobGroupPatterns", () => {
+    it("should return include patterns from legacy jobNames", () => {
+      const result = resolveJobGroupPatterns({ jobNames: ["CI", "/.*-api/"] });
+
+      expect(result).toEqual({
+        includePatterns: ["CI", "/.*-api/"],
+        excludePatterns: [],
+      });
+    });
+
+    it("should return include and exclude patterns from jobs", () => {
+      const result = resolveJobGroupPatterns({
+        jobs: [
+          { name: "/.+/" },
+          { name: "Dependabot Updates", exclude: true },
+        ],
+      });
+
+      expect(result).toEqual({
+        includePatterns: ["/.+/"],
+        excludePatterns: ["Dependabot Updates"],
+      });
+    });
+
+    it("should merge legacy jobNames and new jobs format", () => {
+      const result = resolveJobGroupPatterns({
+        jobNames: ["CI"],
+        jobs: [
+          { name: "Deploy" },
+          { name: "Dependabot Updates", exclude: true },
+        ],
+      });
+
+      expect(result).toEqual({
+        includePatterns: ["CI", "Deploy"],
+        excludePatterns: ["Dependabot Updates"],
+      });
+    });
+
+    it("should return empty arrays when no patterns configured", () => {
+      const result = resolveJobGroupPatterns({});
+
+      expect(result).toEqual({
+        includePatterns: [],
+        excludePatterns: [],
+      });
+    });
+
+    it("should resolve fromRepoGroup to repo values as include patterns", () => {
+      const workload = {
+        codeManagement: {
+          repoGroups: {
+            backend: {
+              components: [{ repo: "api1", name: "api1" }, { repo: "api2", name: "api2" }],
+            },
+          },
+        },
+      } as any;
+
+      const result = resolveJobGroupPatterns(
+        { jobs: [{ fromRepoGroup: "backend" }] },
+        workload,
+      );
+
+      expect(result).toEqual({
+        includePatterns: ["api1", "api2"],
+        excludePatterns: [],
+      });
+    });
+
+    it("should resolve fromRepoGroup to repo values as exclude patterns when exclude is true", () => {
+      const workload = {
+        codeManagement: {
+          repoGroups: {
+            backend: {
+              components: [{ repo: "api1", name: "api1" }, { repo: "api2", name: "api2" }],
+            },
+          },
+        },
+      } as any;
+
+      const result = resolveJobGroupPatterns(
+        {
+          jobs: [
+            { name: "/.+/" },
+            { fromRepoGroup: "backend", exclude: true },
+          ],
+        },
+        workload,
+      );
+
+      expect(result).toEqual({
+        includePatterns: ["/.+/"],
+        excludePatterns: ["api1", "api2"],
+      });
+    });
+
+    it("should return empty patterns and log warning when fromRepoGroup references unknown group", () => {
+      const mockWarn = warn as jest.MockedFunction<typeof warn>;
+      const workload = {
+        id: "test-workload",
+        codeManagement: { repoGroups: {} },
+      } as any;
+
+      const result = resolveJobGroupPatterns(
+        { jobs: [{ fromRepoGroup: "non-existent" }] },
+        workload,
+      );
+
+      expect(result).toEqual({
+        includePatterns: [],
+        excludePatterns: [],
+      });
+      expect(mockWarn).toHaveBeenCalledWith(
+        expect.stringContaining("non-existent"),
+      );
+      expect(mockWarn).toHaveBeenCalledWith(
+        expect.stringContaining("test-workload"),
+      );
+    });
+
+    it("should return empty patterns when fromRepoGroup is referenced but workload not provided", () => {
+      const result = resolveJobGroupPatterns({ jobs: [{ fromRepoGroup: "backend" }] });
+
+      expect(result).toEqual({
+        includePatterns: [],
+        excludePatterns: [],
+      });
+    });
+
+    it("should resolve repo to a single include pattern", () => {
+      const result = resolveJobGroupPatterns({
+        jobs: [{ repo: "my-api" }],
+      });
+
+      expect(result).toEqual({
+        includePatterns: ["my-api"],
+        excludePatterns: [],
+      });
+    });
+
+    it("should resolve repo as an exclude pattern when exclude is true", () => {
+      const result = resolveJobGroupPatterns({
+        jobs: [
+          { name: "/.+/" },
+          { repo: "my-api", exclude: true },
+        ],
+      });
+
+      expect(result).toEqual({
+        includePatterns: ["/.+/"],
+        excludePatterns: ["my-api"],
+      });
+    });
+
+    it("should resolve componentName to the matching component's repo", () => {
+      const workload = {
+        codeManagement: {
+          repoGroups: {
+            backend: {
+              components: [
+                { name: "api", repo: "my-api-repo" },
+                { name: "worker", repo: "my-worker-repo" },
+              ],
+            },
+          },
+        },
+      } as any;
+
+      const result = resolveJobGroupPatterns(
+        { jobs: [{ componentName: "api" }] },
+        workload,
+      );
+
+      expect(result).toEqual({
+        includePatterns: ["my-api-repo"],
+        excludePatterns: [],
+      });
+    });
+
+    it("should resolve componentName as an exclude pattern when exclude is true", () => {
+      const workload = {
+        codeManagement: {
+          repoGroups: {
+            backend: {
+              components: [
+                { name: "api", repo: "my-api-repo" },
+              ],
+            },
+          },
+        },
+      } as any;
+
+      const result = resolveJobGroupPatterns(
+        {
+          jobs: [
+            { name: "/.+/" },
+            { componentName: "api", exclude: true },
+          ],
+        },
+        workload,
+      );
+
+      expect(result).toEqual({
+        includePatterns: ["/.+/"],
+        excludePatterns: ["my-api-repo"],
+      });
+    });
+
+    it("should return empty patterns and log warning when componentName does not exist", () => {
+      const mockWarn = warn as jest.MockedFunction<typeof warn>;
+      const workload = {
+        id: "test-workload",
+        codeManagement: {
+          repoGroups: {
+            backend: {
+              components: [{ name: "api", repo: "my-api" }],
+            },
+          },
+        },
+      } as any;
+
+      const result = resolveJobGroupPatterns(
+        { jobs: [{ componentName: "non-existent" }] },
+        workload,
+      );
+
+      expect(result).toEqual({
+        includePatterns: [],
+        excludePatterns: [],
+      });
+      expect(mockWarn).toHaveBeenCalledWith(
+        expect.stringContaining("non-existent"),
+      );
+    });
+
+    it("should find componentName across multiple repo groups", () => {
+      const workload = {
+        codeManagement: {
+          repoGroups: {
+            backend: {
+              components: [{ name: "api", repo: "api-repo" }],
+            },
+            frontend: {
+              components: [{ name: "web", repo: "web-repo" }],
+            },
+          },
+        },
+      } as any;
+
+      const result = resolveJobGroupPatterns(
+        { jobs: [{ componentName: "web" }] },
+        workload,
+      );
+
+      expect(result).toEqual({
+        includePatterns: ["web-repo"],
+        excludePatterns: [],
+      });
     });
   });
 });

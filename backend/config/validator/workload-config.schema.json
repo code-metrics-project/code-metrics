@@ -31,13 +31,47 @@
       },
       "required": ["repo"]
     },
+    "JobSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "fromRepoGroup": { "type": "string" },
+        "repo": { "type": "string" },
+        "componentName": { "type": "string" },
+        "exclude": { "type": "boolean" }
+      },
+      "allOf": [
+        {
+          "anyOf": [
+            { "required": ["name"] },
+            { "required": ["fromRepoGroup"] },
+            { "required": ["repo"] },
+            { "required": ["componentName"] }
+          ]
+        },
+        {
+          "not": {
+            "allOf": [
+              { "required": ["fromRepoGroup"] },
+              { "anyOf": [{ "required": ["repo"] }, { "required": ["componentName"] }] }
+            ]
+          }
+        }
+      ]
+    },
     "JobGroup": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "jobNames": {
+          "description": "Deprecated: use 'jobs' instead.",
           "type": "array",
           "items": { "type": "string" }
+        },
+        "jobs": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/JobSpec" }
         }
       }
     },

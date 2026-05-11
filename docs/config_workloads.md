@@ -87,8 +87,8 @@ workloads:
       projectName: code-metrics-user-org
       jobGroups:
         CodeMetrics:
-          jobNames:
-            - code-metrics
+          jobs:
+            - name: code-metrics
     projectManagement:
       type: jira
       serverId: mock-jira
@@ -99,6 +99,131 @@ workloads:
 
 > **Note**
 > Repository group names, such as `backend` are arbitrary. You can name these groups whatever you like.
+
+### Excluding specific pipeline jobs
+
+You can exclude specific jobs from a job group using the `jobs` format with the `exclude` flag. This is useful when you want to include all jobs except certain ones, without having to list every job individually.
+
+```yaml
+workloads:
+  - id: team-athena
+    # ...
+    pipelines:
+      type: github
+      serverId: example-github
+      projectName: athena
+      jobGroups:
+        all:
+          jobs:
+            # include all jobs matching a regex
+            - name: /.+/
+            # exclude a specific job by name
+            - name: Dependabot Updates
+              exclude: true
+```
+
+> **Note**
+> Job entries support exact strings and regular expressions (wrapped in slashes, e.g. `/Dependabot.*/`).
+
+### Referencing a repo group in pipeline job specs
+
+Instead of specifying job names individually, you can reference a repo group defined in `codeManagement` using `fromRepoGroup`. This causes the repo names in that group to be used as job name patterns, keeping pipeline and repo configuration in sync automatically.
+
+```yaml
+workloads:
+  - id: athena
+    codeManagement:
+      type: github
+      serverId: foo
+      repoGroups:
+        backend:
+          components:
+            - repo: api1
+            - repo: api2
+    pipelines:
+      type: jenkins
+      serverId: example
+      jobGroups:
+        backend:
+          jobs:
+            - fromRepoGroup: backend
+```
+
+`fromRepoGroup` also supports `exclude: true` to exclude the repos in a group:
+
+```yaml
+jobGroups:
+  all:
+    jobs:
+      # include everything
+      - name: /.+/
+      # then exclude any job that matches a repo in the 'bots' group
+      - fromRepoGroup: bots
+        exclude: true
+```
+
+> **Note**
+> Each `jobs` entry must specify at least one of `name`, `fromRepoGroup`, `repo`, or `componentName`. `fromRepoGroup` is mutually exclusive with `repo` and `componentName`.
+
+### Scoping job groups to specific repositories
+
+You can scope a job group to a specific repository using `repo` or `componentName` instead of `fromRepoGroup`. This is useful when a job group should target a single known repository, without needing to define a full repo group.
+
+**Using `repo`** — specify the repository name directly:
+
+```yaml
+jobGroups:
+  backend:
+    jobs:
+      - repo: my-api
+      - repo: my-worker
+```
+
+**Using `componentName`** — look up the repository by the component name defined in `codeManagement.repoGroups`:
+
+```yaml
+workloads:
+  - id: athena
+    codeManagement:
+      type: github
+      serverId: foo
+      repoGroups:
+        backend:
+          components:
+            - name: api
+              repo: my-api
+    pipelines:
+      type: github
+      serverId: foo
+      jobGroups:
+        backend:
+          jobs:
+            # resolves to the repo whose component name is 'api'
+            - componentName: api
+```
+
+Both `repo` and `componentName` support `exclude: true`.
+
+#### Behaviour by pipeline provider
+
+| Provider | Effect of `repo` / `componentName` |
+|----------|-------------------------------------|
+| **GitHub** | Scopes which repositories are scanned for workflows. An optional `name` field filters which workflow names to include within those repos. |
+| **Azure DevOps** | Used as a job name pattern (since ADO job names are repository names). |
+| **Jenkins** | Used as a job name pattern matched against pipeline display names. |
+| **Dynatrace** | Used as a job name pattern matched against metric dimension values. |
+| **CodePipeline** | Used as a job name pattern matched against pipeline names. |
+
+For GitHub, combining `repo` with a `name` filter allows targeting a specific workflow within a repository:
+
+```yaml
+jobGroups:
+  backend:
+    jobs:
+      # fetch only the 'CI' workflow from 'my-api'
+      - repo: my-api
+        name: CI
+```
 
 Here is how you might recreate the previous configuration, by using regular expressions to match repository names:
 

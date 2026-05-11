@@ -29,6 +29,9 @@ jobs:
       - name: Install MCP dependencies
         run: npm ci
 
+      - name: Test MCP server
+        run: npm run test
+
       - name: Build MCP server
         run: npm run build
 

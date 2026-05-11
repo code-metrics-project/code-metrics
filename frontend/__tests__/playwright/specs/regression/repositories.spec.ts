@@ -42,7 +42,7 @@ test.describe("Repositories page", () => {
 
   test("Shows workload-filtered repositories", async ({ page, helpers }) => {
     await helpers.login();
-    await page.goto(`${Paths.WorkloadRepositories}?workloadId=athena`);
+    await page.goto(Paths.WorkloadRepositories.replace(":workloadId", "athena"));
     // Wait for any heading to be visible to ensure page loaded
     await expect(page.getByRole("heading", { name: /Repositories/i }).first()).toBeVisible({ timeout: 15000 });
     await helpers.checkFooter();
@@ -85,7 +85,7 @@ test.describe("Repositories page", () => {
 
   test("Shows breadcrumbs for workload view", async ({ page, helpers }) => {
     await helpers.login();
-    await page.goto(buildPath(Paths.WorkloadRepositories, { workloadId: "athena" }));
+    await page.goto(Paths.WorkloadRepositories.replace(":workloadId", "athena"));
     await expect(page.locator("a").filter({ hasText: "Workloads" })).toHaveAttribute("href", "/workload");
     await expect(page.getByRole("link", { name: "Athena", exact: true })).toHaveAttribute("href", "/workload/athena");
     await helpers.checkFooter();

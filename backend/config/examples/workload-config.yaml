@@ -41,15 +41,18 @@ workloads:
       projectName: athena
       jobGroups:
         backend:
-          jobNames:
-            - /spring-.*/
+          jobs:
+            - name: /spring-.*/
         frontend:
-          jobNames:
-            - fe
+          jobs:
+            - name: fe
         platform:
-          jobNames:
-            - /.*_platform/
-            - /.*_infrastructure/
+          jobs:
+            - name: /.*_platform/
+            - name: /.*_infrastructure/
+        monorepos:
+          jobs:
+            - fromRepoGroup: monorepos
       stages:
         - stageId: azure-deployment-pipeline
     projectManagement:
@@ -102,14 +105,15 @@ workloads:
       projectName: gaia
       jobGroups:
         backend:
-          jobNames:
-            - CI
+          jobs:
+            - name: CI
         frontend:
-          jobNames:
-            - Linter
+          jobs:
+            - name: Linter
         platform:
-          jobNames:
-            - Platform
+          jobs:
+            - name: /.+/
+            - { name: "Dependabot Updates", exclude: true }
       stages:
         - stageId: github-deployment-pipeline
     projectManagement:
@@ -172,15 +176,14 @@ workloads:
       projectName: athena
       jobGroups:
         backend:
-          jobNames:
-            - /spring-.*/
+          jobs:
+            - name: /spring-.*/
         frontend:
-          jobNames:
-            - fe
+          jobs:
+            - name: fe
         platform:
-          jobNames:
-            - /.*_platform/
-            - /.*_infrastructure/
+          jobs:
+            - fromRepoGroup: platform
       stages:
         - stageId: azure-deployment-pipeline
     projectManagement:

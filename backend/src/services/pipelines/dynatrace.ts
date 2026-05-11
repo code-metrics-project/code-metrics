@@ -5,7 +5,7 @@ import { getRelativeDate, truncateDateOnly } from "../../utils/date";
 import { provideDatastore } from "../../db/factory";
 import { getDataForDateRange, StorableLike } from "../dateWalker";
 import { jsonPathQuery } from "../../utils/json";
-import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName } from "../../utils/jobs";
+import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName, resolveJobGroupPatterns } from "../../utils/jobs";
 import { DynatraceServer } from "../../model/config/remote-config";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { getAllPipelinesConfig, getWorkloadById } from "../../config/configMapping";
@@ -225,12 +225,8 @@ class DynatracePipelinesService extends AbstractPipelinesService {
 
     // TODO discover via API and filter using 'filterJobsByJobGroup' as jobName can be a regex
 
-    if (filter.jobGroup) {
-      return jobGroups[filter.jobGroup]?.jobNames ?? [];
-    } else {
-      // return all job names
-      return Object.values(jobGroups).flatMap((group) => group.jobNames);
-    }
+    const groups = filter.jobGroup ? [jobGroups[filter.jobGroup]].filter(Boolean) : Object.values(jobGroups);
+    return groups.flatMap((group) => resolveJobGroupPatterns(group, workload).includePatterns);
   };
 
   buildRunLink = (workloadId: string, jobName: string, runId: string): string => {

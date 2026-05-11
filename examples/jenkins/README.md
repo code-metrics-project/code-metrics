@@ -39,8 +39,8 @@ workloads:
       serverId: example-jenkins
       jobGroups:
         backend:
-          jobNames:
-            - pipeline
+          jobs:
+            - name: pipeline
     codeManagement:
       # ... other config
     codeAnalysis:

@@ -199,12 +199,3 @@ To manage costs:
 - **[Secret Management](./secret_management.md)**: Securely storing API keys
 - **[Features](./features.md)**: Overview of AI Agents feature support
 
-## Future Enhancements
-
-Potential future enhancements to AI Summaries may include:
-
-- Support for additional AI providers
-- Custom summary templates and prompts
-- Summary caching to reduce API costs
-- Configurable summary length and detail level
-- Integration with other views beyond repository changes

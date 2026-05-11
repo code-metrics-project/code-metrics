@@ -33,7 +33,8 @@ export enum Paths {
   WorkloadPipelineRun = "/workload/pipeline-run",
   WorkloadPipelineRuns = "/workload/pipeline-runs",
   WorkloadQualityGates = "/workload/:workloadId/quality-gates",
-  WorkloadRepositories = "/workload/repositories",
+  WorkloadRepositories = "/workload/:workloadId/repositories",
+  WorkloadRepository = "/workload/:workloadId/repositories/:repoGroup/:repoName",
   Workloads = "/workload",
 
   Unauthorised = "/unauthorised",

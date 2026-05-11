@@ -129,3 +129,10 @@ export function getRepositoryDetails(workloadId?: string): RepositoryDetail[] {
 
   return repositories;
 }
+
+/**
+ * Get a single repository by workload ID and repository name.
+ */
+export function getRepositoryDetail(workloadId: string, repoName: string): RepositoryDetail | undefined {
+  return getRepositoryDetails(workloadId).find((r) => r.name === repoName);
+}

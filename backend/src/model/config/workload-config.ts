@@ -193,11 +193,52 @@ export type RepoGroup = {
   sonarTags?: string[];
 };
 
+export type JobSpec = {
+  /**
+   * The job/workflow name or pattern. Patterns wrapped in slashes are treated as regular expressions.
+   * For GitHub: filters workflows by name within the resolved repo set.
+   * Either `name` or `fromRepoGroup` must be specified, but not both (unless `repo` or `componentName` is also set).
+   */
+  name?: string;
+
+  /**
+   * Resolves job name patterns from the repos in the named repo group.
+   * For non-GitHub pipelines: each repo's `repo` value is used as a job name pattern.
+   * For GitHub pipelines: specifies which repos to fetch workflows from.
+   * Mutually exclusive with `repo` and `componentName`.
+   */
+  fromRepoGroup?: string;
+
+  /**
+   * For GitHub pipelines: fetch workflows only from this specific repository.
+   * Mutually exclusive with `fromRepoGroup`.
+   */
+  repo?: string;
+
+  /**
+   * For GitHub pipelines: fetch workflows only from the repo whose component name matches this value.
+   * Mutually exclusive with `fromRepoGroup`.
+   */
+  componentName?: string;
+
+  /**
+   * If true, jobs matching this spec are excluded from the group.
+   */
+  exclude?: boolean;
+};
+
 export type JobGroup = {
   /**
-   * Important: these strings are actually regular expressions
+   * Legacy format: a list of job name patterns (strings).
+   * Patterns wrapped in slashes are treated as regular expressions.
    */
   jobNames?: string[];
+
+  /**
+   * New format: a list of job specs with optional exclude flag.
+   * Both `jobNames` and `jobs` can be used together; they are merged.
+   */
+  jobs?: JobSpec[];
 };
 
 export type RepoCodeAnalysisMapping = {

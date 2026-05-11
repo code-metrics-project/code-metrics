@@ -148,6 +148,26 @@ describe(`GitHub Pipelines integration`, () => {
     expect(jobNames).toEqual(["CI"]);
   });
 
+  it(`lists all workflow names for a repo group using fromRepoGroup`, async () => {
+    const github = getPipelinesForWorkload(workload, "github-build-stage");
+
+    const workloadWithFromRepoGroup: Workload = {
+      ...workload,
+      pipelines: {
+        ...workload.pipelines,
+        jobGroups: {
+          backend: {
+            jobs: [{ fromRepoGroup: "backend" }],
+          },
+        },
+      },
+    };
+
+    const jobNames = await github.discoverJobNames(workloadWithFromRepoGroup, { jobGroup: "backend" });
+    // fromRepoGroup scopes repos to the 'backend' group (hello-world) and returns all workflows
+    expect(jobNames).toEqual(["CI", "Linter", "Platform"]);
+  });
+
   it(`returns no job names for nonexistent job group`, async () => {
     const codepipeline = getPipelinesForWorkload(workload, "github-build-stage");
 

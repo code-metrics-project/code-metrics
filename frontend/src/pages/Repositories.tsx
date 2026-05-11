@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useI18n } from "@/hooks/useI18n";
-import { useSearchParams, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,29 +11,36 @@ import { Search, ExternalLink, Activity, Play } from "lucide-react";
 import { Paths } from "@/router/paths";
 import { buildPath } from "@/utils/path";
 import { getRepositoryDetails, getWorkloadDetail, getWorkloadName } from "@/services/workload";
+import { RepoGroups } from "@/components/inputs/RepoGroups";
 
 export default function Repositories() {
   const { t } = useI18n();
-  const [searchParams] = useSearchParams();
-  const workloadId = searchParams.get("workloadId");
+  const { workloadId } = useParams<{ workloadId?: string }>();
   const [search, setSearch] = useState("");
+  const [selectedRepoGroups, setSelectedRepoGroups] = useState<string[]>([]);
 
   // Get repositories from config, optionally filtered by workload
   const repositories = useMemo(() => {
     return getRepositoryDetails(workloadId || undefined);
   }, [workloadId]);
 
-  // Apply search filter
+  // Apply search and repo group filters
   const filteredRepos = useMemo(() => {
-    if (!search) return repositories;
-    const searchLower = search.toLowerCase();
-    return repositories.filter(
-      (repo) =>
-        repo.name.toLowerCase().includes(searchLower) ||
-        repo.workloadName.toLowerCase().includes(searchLower) ||
-        repo.repoGroups.some((g) => g.toLowerCase().includes(searchLower))
-    );
-  }, [repositories, search]);
+    let results = repositories;
+    if (selectedRepoGroups.length > 0) {
+      results = results.filter((repo) => repo.repoGroups.some((g) => selectedRepoGroups.includes(g)));
+    }
+    if (search) {
+      const searchLower = search.toLowerCase();
+      results = results.filter(
+        (repo) =>
+          repo.name.toLowerCase().includes(searchLower) ||
+          repo.workloadName.toLowerCase().includes(searchLower) ||
+          repo.repoGroups.some((g) => g.toLowerCase().includes(searchLower))
+      );
+    }
+    return results;
+  }, [repositories, search, selectedRepoGroups]);
 
   // Get workload details for title/description if filtered by workload
   const workloadDetail = useMemo(() => {
@@ -73,14 +80,19 @@ export default function Repositories() {
       </section>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="relative mb-6 max-w-md">
-          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-          <Input
-            placeholder={t("pages:repositories.searchPlaceholder")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-          />
+        <div className="mb-6 flex flex-wrap items-end gap-4">
+          <div className="min-w-56">
+            <RepoGroups onChange={setSelectedRepoGroups} />
+          </div>
+          <div className="relative max-w-md flex-1">
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+            <Input
+              placeholder={t("pages:repositories.searchPlaceholder")}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
 
         <Card>
@@ -102,15 +114,25 @@ export default function Repositories() {
                 {filteredRepos.map((repo) => (
                   <TableRow key={repo.name}>
                     <TableCell className="font-medium">
-                      <a
-                        href={repo.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary inline-flex items-center gap-1 hover:underline"
-                      >
-                        {repo.name}
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
+                      <div className="inline-flex items-center gap-2">
+                        <Link
+                          to={`/workload/${repo.workloadId}/repositories/${encodeURIComponent(repo.repoGroups[0] ?? "")}/${encodeURIComponent(repo.name)}`}
+                          className="text-primary hover:underline"
+                        >
+                          {repo.name}
+                        </Link>
+                        {repo.url && (
+                          <a
+                            href={repo.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground hover:text-primary"
+                            aria-label={t("pages:repositories.openInSourceControl")}
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
                     </TableCell>
                     {!workloadId && (
                       <TableCell>

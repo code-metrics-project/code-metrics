@@ -175,8 +175,8 @@ code-metrics-api:
           #  serverId: example-jenkins
           #  jobGroups:
           #    backend:
-          #      jobNames:
-          #        - pipeline
+          #      jobs:
+          #        - name: pipeline
 
         - id: gaia
           codeManagement:

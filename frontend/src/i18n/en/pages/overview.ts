@@ -66,6 +66,19 @@ const overview = {
       action: "View Repositories",
     },
   },
+  repository: {
+    title: "Repository",
+    notFound: "Repository not found",
+    workloadLabel: "Workload",
+    repoGroupsLabel: "Repo Groups",
+    openRepo: "Open repository",
+    coverageTrendTitle: "Code Coverage ({{days}} days)",
+    locChartTitle: "Lines of Code ({{days}} days)",
+    complexityChartTitle: "Cyclomatic Complexity ({{days}} days)",
+    churnChartTitle: "Repo Churn ({{days}} days)",
+    pipelineSuccessTitle: "Pipeline Success Rate ({{days}} days, main branch)",
+    vulnerabilitiesChartTitle: "Vulnerabilities ({{days}} days)",
+  },
   repositories: {
     title: "Repositories",
     description: "Overview of all repositories.",
@@ -84,6 +97,7 @@ const overview = {
     },
     buttonPipelineHealth: "Pipeline Health",
     buttonPipelineRuns: "Pipeline Runs",
+    openInSourceControl: "Open in source control",
   },
   home: {
     title: "Home",

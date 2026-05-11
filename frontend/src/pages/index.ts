@@ -15,6 +15,7 @@ export { default as QualityGates } from "./QualityGates";
 export { default as Security } from "./Security";
 export { default as DependencyAlerts } from "./DependencyAlerts";
 export { default as Repositories } from "./Repositories";
+export { default as Repository } from "./Repository";
 export { default as Narratives } from "./Narratives";
 export { default as Dashboards } from "./Dashboards";
 export { default as Explore } from "./Explore";

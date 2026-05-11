@@ -227,7 +227,7 @@ export default function Workload() {
               </Link>
             </Button>
             <Button variant="secondary" asChild className="bg-card hover:bg-accent border-border/50 border shadow-sm">
-              <Link to={`${Paths.WorkloadRepositories}?workloadId=${workloadId}`}>
+              <Link to={Paths.WorkloadRepositories.replace(":workloadId", workloadId!)}>
                 {t("pages:workload.repositories")}
               </Link>
             </Button>

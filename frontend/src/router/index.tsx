@@ -25,6 +25,7 @@ const QualityGates = lazy(() => import("@/pages/QualityGates"));
 const Security = lazy(() => import("@/pages/Security"));
 const DependencyAlerts = lazy(() => import("@/pages/DependencyAlerts"));
 const Repositories = lazy(() => import("@/pages/Repositories"));
+const Repository = lazy(() => import("@/pages/Repository"));
 const Narratives = lazy(() => import("@/pages/Narratives"));
 const Dashboards = lazy(() => import("@/pages/Dashboards"));
 const Explore = lazy(() => import("@/pages/Explore"));
@@ -279,6 +280,14 @@ const routes: RouteObject[] = [
         element: (
           <PageLoader>
             <Repositories />
+          </PageLoader>
+        ),
+      },
+      {
+        path: Paths.WorkloadRepository,
+        element: (
+          <PageLoader>
+            <Repository />
           </PageLoader>
         ),
       },

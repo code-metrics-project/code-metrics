@@ -7,8 +7,10 @@ import { truncateDateOnly } from "../../utils/date";
 import { provideDatastore } from "../../db/factory";
 import { getDataForDateRange, StorableLike } from "../dateWalker";
 import { jsonPathQuery } from "../../utils/json";
-import { filterJobsByJobGroup, lookupJobGroupForJobName } from "../../utils/jobs";
-import { Workload, WorkloadId } from "../../model/config/workload-config";
+import { lookupJobGroupForJobName } from "../../utils/jobs";
+import { Workload, WorkloadId, JobGroup, JobSpec } from "../../model/config/workload-config";
+import uniq from "lodash/uniq";
+import { matchOrEquals } from "../../utils/matchers";
 
 import { StageConfig } from "../../model/config/pipeline-config";
 import { mapJobNameUsingStageConfig } from "./common";
@@ -303,20 +305,76 @@ class GithubPipelinesService extends AbstractPipelinesService {
 
   discoverJobNames = async (workload: Workload, filter: PipelinesServiceJobNameFilter): Promise<string[]> => {
     const vcs = getVcsForWorkload(workload);
-    const repos = filter.repoName ? [filter.repoName] : await vcs.getReposForProject(workload.id, this.stage.projectName);
+    const allRepos = filter.repoName
+      ? [filter.repoName]
+      : await vcs.getReposForProject(workload.id, this.stage.projectName);
 
-    const allWorkflowNames: string[] = [];
-    for (const repoName of repos) {
-      try {
-        const workflowNames = await this.getWorkflowNames(workload.id, this.stage.projectName, repoName);
-        allWorkflowNames.push(...workflowNames);
-        verbose("Fetched workflow names", { repoName, workflowNames });
-      } catch (e) {
-        warn(`Failed to fetch workflow names for repo ${repoName} - skipping: ${e.message}`);
+    // Lazy-load and cache workflow names per repo
+    const workflowCache: Record<string, string[]> = {};
+    const getWorkflows = async (repo: string): Promise<string[]> => {
+      if (!(repo in workflowCache)) {
+        try {
+          workflowCache[repo] = await this.getWorkflowNames(workload.id, this.stage.projectName, repo);
+          verbose("Fetched workflow names", { repo, workflowNames: workflowCache[repo] });
+        } catch (e) {
+          warn(`Failed to fetch workflow names for repo ${repo} - skipping: ${e.message}`);
+          workflowCache[repo] = [];
+        }
+      }
+      return workflowCache[repo];
+    };
+
+    const jobGroup = workload.pipelines.jobGroups?.[filter.jobGroup];
+
+    if (!jobGroup) {
+      if (filter.jobGroup) {
+        // Group name was specified but does not exist in config - return nothing
+        logger(`No job group '${filter.jobGroup}' configured for: ${workload.id}`);
+        return [];
+      }
+      // No group filter - return all workflow names from all repos
+      const allWorkflowNames: string[] = [];
+      for (const repo of allRepos) {
+        allWorkflowNames.push(...(await getWorkflows(repo)));
+      }
+      const result = uniq(allWorkflowNames);
+      logger(`Matched ${result.length} Github workflows for: ${workload.id}/${filter.jobGroup}`);
+      return result;
+    }
+
+    const fetchSpecs = resolveJobGroupForGitHub(jobGroup, workload);
+    const includeSpecs = fetchSpecs.filter((s) => !s.exclude);
+    const excludeSpecs = fetchSpecs.filter((s) => s.exclude);
+
+    // Collect included workflow names
+    const includedNames: string[] = [];
+    for (const spec of includeSpecs) {
+      const repos = spec.repos !== null ? allRepos.filter((r) => spec.repos!.includes(r)) : allRepos;
+      for (const repo of repos) {
+        const names = await getWorkflows(repo);
+        const matched =
+          spec.workflowNamePattern !== undefined
+            ? names.filter((n) => matchOrEquals(spec.workflowNamePattern!, n))
+            : names;
+        includedNames.push(...matched);
       }
     }
 
-    const jobNames = filterJobsByJobGroup(workload.id, allWorkflowNames, filter.jobGroup);
+    // Collect excluded workflow names
+    const excluded = new Set<string>();
+    for (const spec of excludeSpecs) {
+      const repos = spec.repos !== null ? allRepos.filter((r) => spec.repos!.includes(r)) : allRepos;
+      for (const repo of repos) {
+        const names = await getWorkflows(repo);
+        const matched =
+          spec.workflowNamePattern !== undefined
+            ? names.filter((n) => matchOrEquals(spec.workflowNamePattern!, n))
+            : names;
+        matched.forEach((n) => excluded.add(n));
+      }
+    }
+
+    const jobNames = uniq(includedNames.filter((n) => !excluded.has(n)));
     logger(`Matched ${jobNames.length} Github workflows for: ${workload.id}/${filter.jobGroup}`);
     return jobNames;
   };
@@ -372,4 +430,104 @@ const convertConclusionToResult = (conclusion: WorkflowRunConclusion): RunResult
       warn(`Unsupported build result: ${conclusion}`);
       return null;
   }
+};
+
+/**
+ * Represents the resolved fetch specification for a single GitHub job spec,
+ * indicating which repos to fetch workflows from and an optional workflow name filter.
+ */
+type GitHubJobFetchSpec = {
+  /**
+   * The repos to fetch workflows from. `null` means fetch from all repos in the project.
+   */
+  repos: string[] | null;
+
+  /**
+   * If set, only include workflows whose name matches this pattern.
+   * Patterns wrapped in slashes are treated as regular expressions.
+   */
+  workflowNamePattern?: string;
+
+  /**
+   * If true, workflows matching this spec should be excluded from the result.
+   */
+  exclude: boolean;
+};
+
+/**
+ * Resolves a JobGroup into a list of GitHubJobFetchSpecs.
+ *
+ * Interprets `fromRepoGroup`, `repo`, and `componentName` as repo-scoping mechanisms,
+ * and `name` as a workflow name filter within those repos.
+ *
+ * Exported for testing.
+ */
+export const resolveJobGroupForGitHub = (jobGroup: JobGroup, workload?: Workload): GitHubJobFetchSpec[] => {
+  const specs: GitHubJobFetchSpec[] = [];
+
+  // Legacy format: each jobName is a workflow name filter across all repos
+  if (jobGroup.jobNames) {
+    for (const name of jobGroup.jobNames) {
+      specs.push({ repos: null, workflowNamePattern: name, exclude: false });
+    }
+  }
+
+  if (jobGroup.jobs) {
+    for (const job of jobGroup.jobs) {
+      const spec = resolveJobSpecForGitHub(job, workload);
+      if (spec) {
+        specs.push(spec);
+      }
+    }
+  }
+
+  return specs;
+};
+
+/**
+ * Resolves a single JobSpec into a GitHubJobFetchSpec.
+ * Returns null if the spec cannot be resolved (e.g. unknown fromRepoGroup).
+ */
+const resolveJobSpecForGitHub = (job: JobSpec, workload?: Workload): GitHubJobFetchSpec | null => {
+  const exclude = job.exclude ?? false;
+
+  // Determine repo scope
+  let repos: string[] | null = null;
+
+  if (job.fromRepoGroup !== undefined) {
+    const repoGroup = workload?.codeManagement?.repoGroups?.[job.fromRepoGroup];
+    if (!repoGroup) {
+      warn(
+        `Job spec references fromRepoGroup '${job.fromRepoGroup}' which does not exist` +
+          (workload ? ` in workload '${workload.id}'` : "") +
+          `. Check your workload config's codeManagement.repoGroups.`,
+      );
+      return null;
+    }
+    repos = repoGroup.components?.map((c) => c.repo) ?? [];
+  } else if (job.repo !== undefined) {
+    repos = [job.repo];
+  } else if (job.componentName !== undefined) {
+    // Search all repo groups for a component with this name
+    const allComponents = Object.values(workload?.codeManagement?.repoGroups ?? {}).flatMap(
+      (rg) => rg.components ?? [],
+    );
+    const component = allComponents.find((c) => c.name === job.componentName);
+    if (!component) {
+      warn(
+        `Job spec references componentName '${job.componentName}' which does not exist` +
+          (workload ? ` in workload '${workload.id}'` : "") +
+          `. Check your workload config's codeManagement.repoGroups components.`,
+      );
+      return null;
+    }
+    repos = [component.repo];
+  }
+  // else repos remains null = all repos
+
+  return {
+    repos,
+    workflowNamePattern: job.name,
+    exclude,
+  };
 };
