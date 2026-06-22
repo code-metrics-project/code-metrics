@@ -16,7 +16,7 @@ import { logger } from "./utils/logger/logger";
 import { getPipelineDeployments, getPipelineRun, getPipelineRunRedirect, getPipelineRuns } from "./routes/pipelines";
 import { getDependencyAlerts } from "./routes/dependencyAlerts";
 import { fetchBootstrap, fetchConfig } from "./routes/config";
-import { loadConfig } from "./config/config";
+import { hasWorkloads, loadConfig, onConfigChange, ensureConfigLoaded } from "./config/config";
 import { initAdoPipelines } from "./services/pipelines/azure";
 import { initGithubPipelines } from "./services/pipelines/github";
 import { initJenkinsPipelines } from "./services/pipelines/jenkins";
@@ -66,29 +66,36 @@ import {
 import { SecureRouter } from "./routes/router";
 import { InvocationMode } from "./model/global";
 import { fetchQualityGates } from "./routes/qualityGates";
-import { getConfigItem, getConfigItemAsBoolean, getConfigItemAsNumber } from "./config/sources/source";
+import { getEnvConfigItem, getEnvConfigItemAsNumber } from "./config/sources/source";
 import { buildOpenAPIValidator, openAPIErrorHandler } from "./middleware/openAPIValidator";
 import { initGithubDependencyAlerts } from "./services/dependencyAlerts/github";
 import { initNoopDependencyAlerts } from "./services/dependencyAlerts/noop";
 import { initClaudeLlm } from "./services/llm/claude";
 import { initGeminiLlm } from "./services/llm/gemini";
 import { areAccessLogsEnabled } from "./utils/accessLogging";
-import {
-  countDatastoreItems,
-  datastoreExists,
-  emptyDatastore,
-  listDatastores,
-} from "./routes/admin/datastores";
+import { countDatastoreItems, datastoreExists, emptyDatastore, listDatastores } from "./routes/admin/datastores";
+import { checkRemoteConnections } from "./routes/admin/remoteConnections";
 
-const CONFIG_REFRESH_MS = getConfigItemAsNumber("CONFIG_REFRESH_MS", 30000);
-const configReloadFlag = getConfigItemAsBoolean("CONFIG_AUTO_RELOAD");
+const LAZY_LOAD_CONFIG_DISABLED = getEnvConfigItem("LAZY_LOAD_CONFIG_DISABLED") === "true";
+
+let servicesInitialised = false;
 
 /**
- * Wrapper to load configuration files, initialise services and connections.
+ * Initialise all services when workloads are available.
+ * Can be called multiple times - will only initialise once.
  */
-const initServices = async (): Promise<void> => {
-  await loadConfig();
-  await initDatastore();
+const initialiseServices = async (): Promise<void> => {
+  if (servicesInitialised) {
+    logger("Services already initialised, skipping");
+    return;
+  }
+
+  if (!hasWorkloads()) {
+    logger("No workloads configured - skipping service initialisation");
+    return;
+  }
+
+  logger("Initialising services for workloads...");
   await initVcsProviders();
   initProjectMgmtProviders();
   initPipelineProviders();
@@ -96,9 +103,23 @@ const initServices = async (): Promise<void> => {
   initIncidentMgmtProviders();
   initDependencyAlertsProviders();
   initLlmProviders();
+  servicesInitialised = true;
+  logger("Services initialised successfully");
+};
 
-  if (configReloadFlag) {
-    logger(`Reloading config in ${CONFIG_REFRESH_MS / 1000}s`);
+/**
+ * Wrapper to load configuration files and initialise services.
+ */
+const initServices = async (): Promise<void> => {
+  await initDatastore();
+
+  if (LAZY_LOAD_CONFIG_DISABLED) {
+    // Eager loading: load config now
+    await loadConfig();
+    await initialiseServices();
+  } else {
+    // Lazy loading: just attempt to load, services init via callback
+    await ensureConfigLoaded();
   }
 };
 
@@ -149,6 +170,20 @@ const initLlmProviders = () => {
   initGeminiLlm();
 };
 
+/**
+ * Middleware to ensure configuration is loaded before handling requests.
+ * Checks cache TTL and reloads if expired.
+ */
+const ensureConfigMiddleware = async (req, res, next) => {
+  try {
+    await ensureConfigLoaded();
+    next();
+  } catch (e) {
+    logger("Failed to ensure config loaded", e);
+    next(e);
+  }
+};
+
 const initApi = async (): Promise<Express> => {
   registerQueries();
   registerTransforms();
@@ -161,6 +196,11 @@ const initApi = async (): Promise<Express> => {
 
   const authenticator = getAuthenticator();
   await authenticator.initialise(app);
+
+  // Ensure config is loaded on every request (with TTL caching)
+  if (!LAZY_LOAD_CONFIG_DISABLED) {
+    app.use(ensureConfigMiddleware);
+  }
 
   if (!global.isLambda) {
     const corsOrigin = getCorsOrigin();
@@ -198,9 +238,24 @@ const addRoutes = (router: SecureRouter) => {
 
   // service token endpoints can't be used with service tokens themselves; we only allow access tokens.
   // additionally, these routes require the 'admin' role.
-  router.addRouteWithOptions("post", "/api/tokens", { tokenTypes: ["access_token"], requiredRoles: ["admin"] }, generateServiceToken);
-  router.addRouteWithOptions("get", "/api/tokens", { tokenTypes: ["access_token"], requiredRoles: ["admin"] }, listServiceTokenIds);
-  router.addRouteWithOptions("delete", "/api/tokens/:tokenId", { tokenTypes: ["access_token"], requiredRoles: ["admin"] }, revokeServiceToken);
+  router.addRouteWithOptions(
+    "post",
+    "/api/tokens",
+    { tokenTypes: ["access_token"], requiredRoles: ["admin"] },
+    generateServiceToken,
+  );
+  router.addRouteWithOptions(
+    "get",
+    "/api/tokens",
+    { tokenTypes: ["access_token"], requiredRoles: ["admin"] },
+    listServiceTokenIds,
+  );
+  router.addRouteWithOptions(
+    "delete",
+    "/api/tokens/:tokenId",
+    { tokenTypes: ["access_token"], requiredRoles: ["admin"] },
+    revokeServiceToken,
+  );
 
   // config
   router.addUnauthenticatedRoute("get", "/api/system/bootstrap", fetchBootstrap);
@@ -267,12 +322,26 @@ const addRoutes = (router: SecureRouter) => {
   router.addRouteWithOptions("get", "/api/datastores/exists", { requiredRoles: ["admin"] }, datastoreExists);
   router.addRouteWithOptions("get", "/api/datastores/count", { requiredRoles: ["admin"] }, countDatastoreItems);
   router.addRouteWithOptions("post", "/api/datastores/empty", { requiredRoles: ["admin"] }, emptyDatastore);
+
+  // admin - remote connections
+  router.addRouteWithOptions(
+    "get",
+    "/api/admin/remote-connections",
+    { requiredRoles: ["admin"] },
+    checkRemoteConnections,
+  );
 };
 
 export const bootstrap = async () => {
+  // Register callback to initialise services when workloads appear
+  onConfigChange(async () => {
+    logger("Config changed, checking if services need initialisation...");
+    await validateLicense();
+    await initialiseServices();
+  });
+
   await validateLicense();
   await initServices();
-  if (configReloadFlag) setInterval(initServices, CONFIG_REFRESH_MS);
 };
 
 export const startApi = async (): Promise<Express> => {
@@ -280,9 +349,9 @@ export const startApi = async (): Promise<Express> => {
   if (global.isLambda) {
     logger(`CodeMetrics API ready`);
   } else {
-    const listenPort = getConfigItemAsNumber("PORT", 3000);
+    const listenPort = getEnvConfigItemAsNumber("PORT", 3000);
     const listenHost =
-      global.invocationMode === InvocationMode.DesktopMode ? "localhost" : getConfigItem("ADDR", "0.0.0.0");
+      global.invocationMode === InvocationMode.DesktopMode ? "localhost" : getEnvConfigItem("ADDR", "0.0.0.0");
 
     app.listen(listenPort, listenHost, () => {
       logger(`CodeMetrics API listening on ${listenHost}:${listenPort}`);

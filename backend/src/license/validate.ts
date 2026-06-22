@@ -46,9 +46,16 @@ export const validateLicense = async (dir?: string): Promise<boolean> => {
   verbose(`Loading license file from ${configDirs}`);
   try {
     const license = await readConfig<LicenseWrapper>(configDirs, "license", {
-      required: true,
+      required: false,
       resolveSecrets: true,
     });
+
+    if (!license) {
+      warn("No license file found - running in unlicensed mode");
+      licenceValidated = false;
+      return false;
+    }
+
     try {
       const valid = await verifyJwt(license.key, publicKey, LICENSE_AUD, LICENSE_ISS, license.email);
       if (valid) {
@@ -66,17 +73,18 @@ export const validateLicense = async (dir?: string): Promise<boolean> => {
       }
     }
   } catch (e) {
+    licenceValidated = false;
     if (isStrictMode()) {
       throw e;
     } else {
-      warn("License missing, most routes will be unavailable", e);
+      warn("License validation failed", e);
       return false;
     }
   }
 };
 
 export const isLicensed = async () => {
-  if (licenceValidated) return true;
+  // Always re-validate to support hot-reloading of license files
   return validateLicense();
 };
 

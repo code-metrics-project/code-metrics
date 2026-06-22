@@ -1,6 +1,6 @@
 import { Octokit } from "@octokit/rest";
 import { uniq } from "lodash/fp";
-import { registerVcs, VcsService } from "./vcsService";
+import { registerVcs, registerVcsConnectionChecker, VcsService } from "./vcsService";
 import {
   FileChanges,
   PREvent,
@@ -15,19 +15,20 @@ import {
 import { DatedMetricEntry } from "../../model/metrics";
 import { getAllCodeManagementConfig, getAllCodeManagementUrls, getWorkloadById } from "../../config/configMapping";
 import { logger, verbose, warn, error } from "../../utils/logger/logger";
-import { AuthMethod } from "../../model/config/remote-config";
+import { AuthMethod, CodeManagementServer, RemoteServer } from "../../model/config/remote-config";
 import { createGitHubAppOctokit } from "../auth/github-app";
 import { MILLIS_PER_DAY, truncateDateOnly } from "../../utils/date";
 import { provideDatastore } from "../../db/factory";
 import { StorableLike, getDataForDateRange } from "../dateWalker";
 import { WorkloadId } from "../../model/config/workload-config";
 import { CodeManagementTypes } from "../../model/config/common";
-import { getConfigItemAsNumber } from "../../config/sources/source";
+import { getEnvConfigItemAsNumber } from "../../config/sources/source";
 import { TMergeRules } from "../../model/qualityGates";
+import { ConnectionCheckResult } from "../../model/remote-connection-status";
 
 const COLLECTION_NAME_REPO_COMMITS = "repo-commits";
 const COLLECTION_NAME_REPO_CHANGES = "repo-changes";
-const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600)!;
+const EXPIRY_SECONDS = getEnvConfigItemAsNumber("EXPIRY_SECONDS", 3600);
 
 type GithubItemFilter = {
   projectName: string;
@@ -39,7 +40,111 @@ type ChangesQueryResult = StorableLike & GithubItemFilter & { changes: RepoChang
 
 type repoTypes = "all" | "public" | "private" | "forks" | "sources" | "member";
 
-export const initGithubVcs = () => registerVcs(CodeManagementTypes.GITHUB, () => new GithubVcsService());
+/**
+ * Check connectivity to a GitHub server by calling the rate limit endpoint.
+ */
+const checkGithubConnection = async (server: RemoteServer): Promise<ConnectionCheckResult> => {
+  const startTime = Date.now();
+  const codeManagementServer = server as CodeManagementServer;
+  const url = codeManagementServer.url || "https://api.github.com";
+
+  try {
+    // Create an Octokit instance with the server's credentials
+    let octokit: Octokit;
+    if (codeManagementServer.authMethod === AuthMethod.GITHUB_APP && codeManagementServer.githubApp) {
+      octokit = createGitHubAppOctokit(codeManagementServer.githubApp, url);
+    } else {
+      octokit = new Octokit({
+        auth: codeManagementServer.apiKey,
+        baseUrl: url,
+        request: { timeout: 5000 }, // 5 second timeout
+      });
+    }
+
+    // Call the rate limit endpoint as a lightweight health check
+    const rateLimitResponse = await octokit.rest.rateLimit.get();
+
+    // Check if rate limit has been reached
+    const coreRateLimit = rateLimitResponse.data.resources.core;
+    if (coreRateLimit.remaining === 0) {
+      const resetDate = new Date(coreRateLimit.reset * 1000);
+      return {
+        id: server.id,
+        category: "codeManagement",
+        type: CodeManagementTypes.GITHUB,
+        url,
+        status: "rateLimited",
+        statusDetail: `Rate limit reached (${coreRateLimit.limit} requests). Resets at ${resetDate.toISOString()}`,
+        responseTimeMs: Date.now() - startTime,
+      };
+    }
+
+    return {
+      id: server.id,
+      category: "codeManagement",
+      type: CodeManagementTypes.GITHUB,
+      url,
+      status: "connected",
+      responseTimeMs: Date.now() - startTime,
+    };
+  } catch (err: any) {
+    const responseTimeMs = Date.now() - startTime;
+
+    // Classify the error
+    // GitHub returns 403 for both auth errors and rate limit errors
+    if (err.status === 403 && err.message && err.message.toLowerCase().includes("rate limit")) {
+      return {
+        id: server.id,
+        category: "codeManagement",
+        type: CodeManagementTypes.GITHUB,
+        url,
+        status: "rateLimited",
+        statusDetail: `HTTP 403: ${err.message}`,
+        responseTimeMs,
+      };
+    }
+
+    if (err.status === 401 || err.status === 403) {
+      return {
+        id: server.id,
+        category: "codeManagement",
+        type: CodeManagementTypes.GITHUB,
+        url,
+        status: "unauthorised",
+        statusDetail: `HTTP ${err.status}: ${err.message}`,
+        responseTimeMs,
+      };
+    }
+
+    if (err.status && err.status >= 400) {
+      return {
+        id: server.id,
+        category: "codeManagement",
+        type: CodeManagementTypes.GITHUB,
+        url,
+        status: "error",
+        statusDetail: `HTTP ${err.status}: ${err.message}`,
+        responseTimeMs,
+      };
+    }
+
+    // Network errors (ECONNREFUSED, ETIMEDOUT, DNS failures, etc.)
+    return {
+      id: server.id,
+      category: "codeManagement",
+      type: CodeManagementTypes.GITHUB,
+      url,
+      status: "unreachable",
+      statusDetail: err.code || err.message,
+      responseTimeMs,
+    };
+  }
+};
+
+export const initGithubVcs = () => {
+  registerVcs(CodeManagementTypes.GITHUB, () => new GithubVcsService());
+  registerVcsConnectionChecker(CodeManagementTypes.GITHUB, checkGithubConnection);
+};
 
 /**
  * Finds the PR that was merged earliest.
@@ -587,12 +692,12 @@ class GithubVcsService implements VcsService {
         let resp: { name }[];
 
         if (isGitHubApp) {
-          // For GitHub Apps, use listReposAccessibleToInstallation
-          const installationRepos = await connection.apps.listReposAccessibleToInstallation({
+          // For GitHub Apps, use listReposAccessibleToInstallation with pagination
+          const allInstallationRepos = await connection.paginate(connection.apps.listReposAccessibleToInstallation, {
             per_page: 100,
           });
           // Filter by organization and extract repository names
-          resp = installationRepos.data.repositories
+          resp = allInstallationRepos
             .filter((repo) => repo.owner.login === vcsProject)
             .map((repo) => ({ name: repo.name }));
         } else {

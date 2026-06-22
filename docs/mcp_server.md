@@ -20,7 +20,7 @@ This allows AI assistants to help you analyze code quality, DORA metrics, pipeli
 Before setting up the MCP server, ensure you have:
 
 1. **A running CodeMetrics instance** - Either locally or deployed to an accessible environment
-2. **Node.js installed** - Version 18 or higher
+2. **Node.js installed** - Version 20 or higher
 3. **A Service Token** - For authenticating to the CodeMetrics API
 
 ## Step 1: Obtain a Service Token
@@ -432,7 +432,7 @@ chmod 600 .env
 **Solutions**:
 
 - Check for port conflicts (default: 3210)
-- Verify Node.js version (requires v18+)
+- Verify Node.js version (requires v20+)
 - Review server logs for error messages
 - Ensure dependencies are installed: `npm install`
 

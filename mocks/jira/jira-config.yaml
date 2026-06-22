@@ -6,6 +6,14 @@ system:
       preloadFile: "historic/bugs.json"
 
 resources:
+# Health check endpoint for connection checker
+- path: /rest/api/2/serverInfo
+  method: get
+  response:
+    statusCode: 200
+    content: |
+      { "baseUrl": "http://mocks:8080", "version": "9.0.0", "versionNumbers": [9, 0, 0], "serverTitle": "Mock Jira" }
+
 # Deprecated endpoint
 - path: /rest/api/2/search
   method: get

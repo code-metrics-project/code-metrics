@@ -149,12 +149,24 @@ function configure_backend_env() {
 function wait_for_http_url() {
   local readiness_url="$1"
   local service_name="$2"
+  local timeout_seconds="${3:-60}"
+  local elapsed_seconds=0
 
   echo "Waiting for ${service_name} to come up on ${readiness_url}..."
-  while ! curl -fsS "${readiness_url}" >/dev/null; do
+  while [[ "${elapsed_seconds}" -lt "${timeout_seconds}" ]]; do
+    if curl -fsS "${readiness_url}" >/dev/null 2>&1; then
+      echo "${service_name} is up and running"
+      return 0
+    fi
     sleep 1
+    elapsed_seconds=$((elapsed_seconds + 1))
+    if ((elapsed_seconds % 10 == 0)); then
+      echo "Still waiting for ${service_name} (${elapsed_seconds}/${timeout_seconds}s)..."
+    fi
   done
-  echo "${service_name} is up and running"
+
+  echo "${service_name} did not become ready within ${timeout_seconds}s at ${readiness_url}" >&2
+  return 1
 }
 
 function start_keycloak_if_required() {
@@ -170,23 +182,33 @@ function start_keycloak_if_required() {
   cd "${ROOT_DIR}"
   docker compose -f compose/docker-compose-keycloak.yaml --project-directory . up -d
 
-  wait_for_http_url "${KEYCLOAK_HEALTHCHECK_URL}" "Keycloak"
+  if ! wait_for_http_url "${KEYCLOAK_HEALTHCHECK_URL}" "Keycloak" 120; then
+    echo "Keycloak container status:" >&2
+    docker compose -f compose/docker-compose-keycloak.yaml --project-directory . ps >&2 || true
+    echo "Keycloak logs:" >&2
+    docker compose -f compose/docker-compose-keycloak.yaml --project-directory . logs keycloak >&2 || true
+    return 1
+  fi
 }
 
 function start_mocks() {
   cd "${MOCKS_DIR}"
   imposter up -r --log-level warn &
 
-  wait_for_http_url "http://localhost:8080/system/status" "Mocks"
+  wait_for_http_url "http://localhost:8080/system/status" "Mocks" 60
 }
 
 function start_backend() {
   cd "${BACKEND_DIR}"
   mkdir -p logs
-  npm run dev > logs/backend.log 2>&1 &
+  npm run copy-dev-license-pubkey && npm run build && npm run start > logs/backend.log 2>&1 &
   BACKEND_NPM_PID="$!"
 
-  wait_for_http_url "http://localhost:3000/api/health/readiness" "Backend"
+  if ! wait_for_http_url "http://localhost:3000/api/health/readiness" "Backend" 90; then
+    echo "Backend logs:" >&2
+    cat logs/backend.log >&2 || true
+    return 1
+  fi
 }
 
 function resolve_test_command() {

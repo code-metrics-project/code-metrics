@@ -1,10 +1,47 @@
 plugin: rest
 
 resources:
+  # Health check endpoint for connection checker
+  - method: get
+    path: /rate_limit
+    response:
+      statusCode: 200
+      content: |
+        {
+          "resources": {
+            "core": { "limit": 5000, "remaining": 5000, "reset": 0 }
+          },
+          "rate": { "limit": 5000, "remaining": 5000, "reset": 0 }
+        }
+
+  # GitHub App authentication endpoints
+  - method: get
+    path: /app
+    response:
+      scriptFile: GET-app-authenticated.js
+
+  - method: post
+    path: /app/installations/{installation_id}/access_tokens
+    response:
+      file: POST-access-tokens.json
+
+  - method: get
+    path: /installation/repositories
+    response:
+      scriptFile: GET-installation-repos.js
+
+  # PAT authentication endpoints
   - method: get
     path: /orgs/{org}/issue-types
     response:
       scriptFile: GET-issue-types.js
+
+  - method: get
+    path: /orgs/{org}/repos
+    queryParams:
+      type: "all"
+    response:
+      scriptFile: GET-repos-paginated.js
 
   - method: get
     path: /orgs/{org}/repos
@@ -26,7 +63,7 @@ resources:
   - method: get
     path: /repos/{owner}/{repo}/commits
     response:
-      file: GET-commits.json
+      scriptFile: GET-commits.js
 
   - method: get
     path: /repos/{owner}/{repo}/commits/{ref}
@@ -36,7 +73,7 @@ resources:
   - method: get
     path: /repos/{owner}/{repo}/commits/{commit_sha}/pulls
     response:
-      file: GET-commitPulls.json
+      scriptFile: GET-commitPulls.js
 
   # Closed PR listing is used by PR Open Time + PR Size queries.
   # Keep existing static fixture for other /pulls consumers, but provide
@@ -51,7 +88,7 @@ resources:
   - method: get
     path: /repos/{owner}/{repo}/pulls
     response:
-      file: GET-pullRequests.json
+      scriptFile: GET-pullRequests.js
 
   # PR detail endpoint used by PR Size query (Octokit: pulls.get)
   - method: get

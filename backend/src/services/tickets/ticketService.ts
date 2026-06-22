@@ -2,6 +2,9 @@ import { TicketManagementTypes } from "../../model/config/common";
 import { LightweightIssue } from "../../model/tickets";
 import { TicketManagementServer } from "../../model/config/remote-config";
 import { Workload, WorkloadId, WorkloadTicketConfig } from "../../model/config/workload-config";
+import { ConnectionChecker, ConnectionCheckResult } from "../../model/remote-connection-status";
+import { getAllTicketManagementConfig } from "../../config/configMapping";
+import { verbose, logger } from "../../utils/logger/logger";
 
 export enum TimeRangeMode {
   CreatedWithinRange,
@@ -67,4 +70,56 @@ export type TicketConfigManager<C extends WorkloadTicketConfig, I> = {
   getWorkloadConfig(workloadId: WorkloadId): C;
   getServerDefaults(workloadId: WorkloadId): I;
   getServerConfig(serverType: TicketManagementTypes, workloadId: WorkloadId): TicketManagementServer;
+};
+
+// Connection checker registry
+const checkers: Record<string, ConnectionChecker> = {};
+
+/**
+ * Register a connection checker for a Ticket Management provider type.
+ * This allows checking connectivity to the remote server.
+ */
+export const registerTicketConnectionChecker = (type: TicketManagementTypes, checker: ConnectionChecker) => {
+  verbose(`Registered ticket management connection checker for: ${type}`);
+  checkers[type] = checker;
+};
+
+/**
+ * Check connectivity to all configured ticket management servers.
+ * Returns connection status for each server (excludes 'none' type).
+ */
+export const checkTicketConnections = async (): Promise<ConnectionCheckResult[]> => {
+  const config = getAllTicketManagementConfig();
+  const results: ConnectionCheckResult[] = [];
+
+  // Collect all servers from all ticket management types
+  const checks: Promise<ConnectionCheckResult>[] = [];
+  for (const [providerType, providerConfig] of Object.entries(config)) {
+    if (!providerConfig?.servers) continue;
+    if (providerType === TicketManagementTypes.NONE) continue; // Skip noop implementations
+
+    const checker = checkers[providerType];
+    if (!checker) {
+      // No checker registered for this type
+      continue;
+    }
+
+    for (const server of providerConfig.servers) {
+      checks.push(checker(server));
+    }
+  }
+
+  // Run all checks in parallel
+  const settled = await Promise.allSettled(checks);
+
+  for (const result of settled) {
+    if (result.status === "fulfilled") {
+      results.push(result.value);
+    } else {
+      // If a checker itself throws, log the error
+      logger(`Ticket management connection check failed with uncaught error: ${result.reason}`);
+    }
+  }
+
+  return results;
 };

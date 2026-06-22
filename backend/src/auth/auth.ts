@@ -9,7 +9,7 @@ import { authenticate } from "../routes/authentication";
 import { getOidcAuthenticator } from "./impl/oidc";
 import { success } from "../utils/responses";
 import { SecureRouter } from "../routes/router";
-import { getConfigItem } from "../config/sources/source";
+import { getEnvConfigItem } from "../config/sources/source";
 
 export type Principal = {
   name: string;
@@ -43,7 +43,7 @@ let authenticator: Authenticator;
  */
 export const getAuthenticator = (): Authenticator => {
   if (!authenticator) {
-    const implName = getConfigItem("AUTHENTICATOR_IMPL", DEFAULT_AUTHENTICATOR_IMPL);
+    const implName = getEnvConfigItem("AUTHENTICATOR_IMPL", DEFAULT_AUTHENTICATOR_IMPL);
     switch (implName) {
       case "cognito":
         authenticator = getCognitoAuthenticator();

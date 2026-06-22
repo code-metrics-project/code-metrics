@@ -1,9 +1,11 @@
 import fetch from "node-fetch";
 import { logger, error as logError, verbose } from "../../utils/logger/logger";
-import { LlmService, registerLlm } from "./llmService";
+import { LlmService, registerLlm, registerLlmConnectionChecker } from "./llmService";
 import { LlmProviderTypes } from "../../model/config/common";
 import { getAllLlmConfig } from "../../config/configMapping";
 import { getLanguagePromptInstruction } from "./language";
+import { ConnectionCheckResult } from "../../model/remote-connection-status";
+import { LlmServer, RemoteServer } from "../../model/config/remote-config";
 
 export type ClaudeMessage = {
   role: "user" | "assistant";
@@ -166,7 +168,9 @@ Please provide a concise executive summary (2-3 sentences) that:
 2. Mentions any notable patterns (e.g., types of work: bugs, features, refactoring)
 3. Keeps it high-level and suitable for stakeholders
 
-Do not include a title. Do not list individual changes. Focus on the overall narrative.`;
+Do not include a title. Do not list individual changes. Focus on the overall narrative.
+
+Suggest three actions for the user to take based on the data.`;
 
     const promptWithLanguage = `${prompt}\n\n${getLanguagePromptInstruction(language)}`;
 
@@ -175,9 +179,105 @@ Do not include a title. Do not list individual changes. Focus on the overall nar
 }
 
 /**
+ * Check connectivity to Claude API by calling the models endpoint.
+ */
+const checkClaudeConnection = async (server: RemoteServer): Promise<ConnectionCheckResult> => {
+  const startTime = Date.now();
+  const llmServer = server as LlmServer;
+  const baseUrl = llmServer.url || "https://api.anthropic.com";
+  const url = `${baseUrl}/v1/models`;
+
+  if (!llmServer.apiKey) {
+    return {
+      id: server.id,
+      category: "llm",
+      type: LlmProviderTypes.CLAUDE,
+      url: baseUrl,
+      status: "unconfigured",
+      statusDetail: "No API key configured",
+    };
+  }
+
+  try {
+    // Call the models endpoint to check connectivity
+    const response = await fetch(url, {
+      headers: {
+        "x-api-key": llmServer.apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      signal: AbortSignal.timeout(5000), // 5 second timeout
+    });
+
+    const responseTimeMs = Date.now() - startTime;
+
+    if (response.ok) {
+      return {
+        id: server.id,
+        category: "llm",
+        type: LlmProviderTypes.CLAUDE,
+        url: baseUrl,
+        status: "connected",
+        responseTimeMs,
+      };
+    }
+
+    // Handle HTTP error responses
+    if (response.status === 429) {
+      const retryAfter = response.headers.get("retry-after");
+      const detail = retryAfter ? `Rate limited. Retry after ${retryAfter} seconds` : "Rate limited";
+      return {
+        id: server.id,
+        category: "llm",
+        type: LlmProviderTypes.CLAUDE,
+        url: baseUrl,
+        status: "rateLimited",
+        statusDetail: detail,
+        responseTimeMs,
+      };
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      return {
+        id: server.id,
+        category: "llm",
+        type: LlmProviderTypes.CLAUDE,
+        url: baseUrl,
+        status: "unauthorised",
+        statusDetail: `HTTP ${response.status}: ${response.statusText}`,
+        responseTimeMs,
+      };
+    }
+
+    return {
+      id: server.id,
+      category: "llm",
+      type: LlmProviderTypes.CLAUDE,
+      url: baseUrl,
+      status: "error",
+      statusDetail: `HTTP ${response.status}: ${response.statusText}`,
+      responseTimeMs,
+    };
+  } catch (err: any) {
+    const responseTimeMs = Date.now() - startTime;
+
+    // Network errors (ECONNREFUSED, ETIMEDOUT, DNS failures, AbortError, etc.)
+    return {
+      id: server.id,
+      category: "llm",
+      type: LlmProviderTypes.CLAUDE,
+      url: baseUrl,
+      status: "unreachable",
+      statusDetail: err.name || err.code || err.message,
+      responseTimeMs,
+    };
+  }
+};
+
+/**
  * Initialize and register the Claude LLM provider
  */
 export function initClaudeLlm(): void {
   registerLlm(LlmProviderTypes.CLAUDE, () => new ClaudeLlmService());
+  registerLlmConnectionChecker(LlmProviderTypes.CLAUDE, checkClaudeConnection);
   verbose("Claude LLM provider registered");
 }

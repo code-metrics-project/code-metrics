@@ -16,13 +16,13 @@ import { DynamoDatastore, initDynamoDB } from "./dynamodb/db";
 import { dynamoAdmin } from "./dynamodb/db";
 import { initNeDB, NeDBDatastore } from "./nedb/db";
 import { nedbAdmin } from "./nedb/db";
-import { getConfigItemAsBoolean, getConfigItem } from "../config/sources/source";
+import { getEnvConfigItemAsBoolean, getEnvConfigItem } from "../config/sources/source";
 
-const isAutoCreateEnabled = () => getConfigItemAsBoolean("DATASTORE_AUTO_CREATE", true);
+const isAutoCreateEnabled = () => getEnvConfigItemAsBoolean("DATASTORE_AUTO_CREATE", true);
 
 export type DatastoreFactory = (config: DatastoreConfig) => Datastore<any, any>;
 
-const isCacheEnabled = () => getConfigItemAsBoolean("LOOKUP_CACHE_ENABLED");
+const isCacheEnabled = () => getEnvConfigItemAsBoolean("LOOKUP_CACHE_ENABLED");
 export const IN_MEMORY_DATASTORE = "inmem";
 
 const registered: Record<string, { init: () => Promise<void>; factory: DatastoreFactory; admin?: DatastoreAdmin }> = {};
@@ -79,7 +79,7 @@ export const provideDatastoreAdmin = (): DatastoreAdmin | undefined => {
 const getImplementation = () => {
   let implName: string;
   if (isCacheEnabled()) {
-    implName = getConfigItem("DATASTORE_IMPL", defaultFactoryName);
+    implName = getEnvConfigItem("DATASTORE_IMPL", defaultFactoryName);
   } else {
     implName = IN_MEMORY_DATASTORE;
   }

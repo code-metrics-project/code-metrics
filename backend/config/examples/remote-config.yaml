@@ -197,7 +197,7 @@ ticketManagement:
             - Highest
       - id: mock-jira
         url: http://localhost:8080
-        apiKey: ""
+        apiKey: "123"
         authMethod: BEARER_TOKEN
         defaults:
           ticketTypes:

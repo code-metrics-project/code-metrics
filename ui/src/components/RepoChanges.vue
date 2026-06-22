@@ -54,7 +54,7 @@
           <v-alert v-if="aiSummaryError" type="warning" variant="tonal" class="mb-0">
             {{ aiSummaryError }}
           </v-alert>
-          <p v-else-if="aiSummary" class="text-body-1 mb-0">{{ aiSummary }}</p>
+          <div v-else-if="aiSummary" class="text-body-1 mb-0 ai-summary-content" v-html="aiSummaryHtml"></div>
           <p v-else-if="aiSummaryLoading" class="text-body-2 mb-0 text-medium-emphasis">Generating summary...</p>
         </v-card-text>
       </v-card>
@@ -171,8 +171,10 @@ import ModalQuery from "@/components/query/ModalQuery.vue";
 import { QueryName } from "@/queries/queries";
 import { ChartType } from "@/chart/chart-types";
 import { getConfig } from "@/utils/config";
+import MarkdownIt from "markdown-it";
 
 const API_BATCH_DAYS = 7;
+const md = new MarkdownIt();
 
 const TABLE_HEADERS = [
   {
@@ -273,6 +275,9 @@ export default {
     },
     operationState(): OperationState {
       return this.busy ? OperationState.Busy : OperationState.Idle;
+    },
+    aiSummaryHtml(): string {
+      return this.aiSummary ? md.render(this.aiSummary) : "";
     },
   },
 
@@ -440,5 +445,78 @@ export default {
 .title__content,
 .message__content {
   white-space: pre-line;
+}
+
+.ai-summary-content :deep(h1),
+.ai-summary-content :deep(h2),
+.ai-summary-content :deep(h3),
+.ai-summary-content :deep(h4),
+.ai-summary-content :deep(h5),
+.ai-summary-content :deep(h6) {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.ai-summary-content :deep(h1) {
+  font-size: 1.5em;
+}
+
+.ai-summary-content :deep(h2) {
+  font-size: 1.3em;
+}
+
+.ai-summary-content :deep(h3) {
+  font-size: 1.1em;
+}
+
+.ai-summary-content :deep(p) {
+  margin-bottom: 0.5em;
+}
+
+.ai-summary-content :deep(ul),
+.ai-summary-content :deep(ol) {
+  margin-left: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.ai-summary-content :deep(li) {
+  margin-bottom: 0.25em;
+}
+
+.ai-summary-content :deep(code) {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.ai-summary-content :deep(pre) {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 1em;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin-bottom: 0.5em;
+}
+
+.ai-summary-content :deep(pre code) {
+  background-color: transparent;
+  padding: 0;
+}
+
+.ai-summary-content :deep(strong) {
+  font-weight: 600;
+}
+
+.ai-summary-content :deep(em) {
+  font-style: italic;
+}
+
+.ai-summary-content :deep(blockquote) {
+  border-left: 4px solid rgba(0, 0, 0, 0.1);
+  padding-left: 1em;
+  margin-left: 0;
+  margin-bottom: 0.5em;
+  color: rgba(0, 0, 0, 0.6);
 }
 </style>

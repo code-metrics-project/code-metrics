@@ -11,7 +11,7 @@ import { getCodeAnalysisForWorkloadId } from "./codeAnalysisService";
 import { RepoCodeAnalysisKey } from "../../utils/repos";
 import { roundTo } from "../../utils/math";
 import { WorkloadId } from "../../model/config/workload-config";
-import { getConfigItemAsNumber } from "../../config/sources/source";
+import { getEnvConfigItemAsNumber } from "../../config/sources/source";
 
 export type WorkloadRepo = {
   workloadId: string;
@@ -28,8 +28,8 @@ export type RepoNameHolder = {
 
 export type CodeAnalysisIdentifier = RepoGroupHolder | RepoNameHolder;
 
-const coverageDangerThreshold = getConfigItemAsNumber("COVERAGE_THRESHOLD_DANGER", 30);
-const coverageWarningThreshold = getConfigItemAsNumber("COVERAGE_THRESHOLD_WARNING", 80);
+const coverageDangerThreshold = getEnvConfigItemAsNumber("COVERAGE_THRESHOLD_DANGER", 30);
+const coverageWarningThreshold = getEnvConfigItemAsNumber("COVERAGE_THRESHOLD_WARNING", 80);
 
 const processAggregate = async (
   workloads: string[] | undefined,

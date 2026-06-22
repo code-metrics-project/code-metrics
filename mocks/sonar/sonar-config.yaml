@@ -8,6 +8,14 @@ system:
       preloadFile: "historic/ncloc.json"
 
 resources:
+  # Health check endpoint for connection checker
+  - path: /api/system/status
+    method: GET
+    response:
+      statusCode: 200
+      content: |
+        { "id": "mock-sonar", "version": "10.0", "status": "UP" }
+
   - path: /api/measures/search_history
     method: GET
     queryParams:

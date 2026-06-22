@@ -3,7 +3,7 @@
 Generates predictions based on one or two input datasets.
 
 > **Warning**
-> Prediction is an experimental feature.
+> Prediction is an experimental feature and may be removed or changed in a future release. For other machine learning capabilities, see [Machine Learning](./machine_learning.md).
 
 ## Enabling the feature
 

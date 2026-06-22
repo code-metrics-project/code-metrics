@@ -16,6 +16,14 @@ interceptors:
     content: Invalid Media Type
 
 resources:
+# Health check endpoint for connection checker
+- method: GET
+  path: /api/now/table/sys_properties
+  response:
+    statusCode: 200
+    content: |
+      { "result": [{ "name": "mock.property", "value": "mock-value" }] }
+
 - method: GET
   path: /api/now/table/incident
   queryParams:

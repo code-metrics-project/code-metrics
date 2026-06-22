@@ -73,10 +73,10 @@ let highestIssueId = 10000;
 // whether to look up historic bugs
 let useHistoric;
 if (adoProjectName === "DEV") {
-  console.log("Using historic bug data");
+  console.debug("Using historic bug data");
   useHistoric = true;
 } else {
-  console.log("Generating synthetic bug data");
+  console.debug("Generating synthetic bug data");
   useHistoric = false;
 }
 
@@ -214,6 +214,6 @@ function lookupHistoric(date) {
   const dayIdx = Math.max(0, historic.length - 1 - daysAgo);
   const bugs = historic[dayIdx];
 
-  console.log(`${date} bugs: ${bugs}`);
+  console.debug(`${date} bugs: ${bugs}`);
   return bugs;
 }

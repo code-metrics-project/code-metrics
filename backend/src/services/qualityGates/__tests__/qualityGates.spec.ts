@@ -15,8 +15,8 @@ jest.mock("../../../config/sources/source");
 
 describe("qualityGates", () => {
   beforeEach(() => {
-    // Mock getConfigItemAsNumber for threshold values
-    jest.spyOn(source, "getConfigItemAsNumber").mockImplementation((key, defaultValue) => defaultValue);
+    // Mock getEnvConfigItemAsNumber for threshold values
+    jest.spyOn(source, "getEnvConfigItemAsNumber").mockImplementation((key, defaultValue) => defaultValue);
   });
 
   afterEach(() => {
@@ -326,7 +326,7 @@ describe("qualityGates", () => {
     describe("getQualityGate", () => {
       beforeEach(() => {
         jest.clearAllMocks();
-        jest.spyOn(source, "getConfigItemAsNumber").mockImplementation((key, defaultValue) => defaultValue);
+        jest.spyOn(source, "getEnvConfigItemAsNumber").mockImplementation((key, defaultValue) => defaultValue);
       });
 
       it("should fetch and construct quality gate for a repo through getQualityGates", async () => {
@@ -419,7 +419,7 @@ describe("qualityGates", () => {
     describe("getQualityGates", () => {
       beforeEach(() => {
         jest.clearAllMocks();
-        jest.spyOn(source, "getConfigItemAsNumber").mockImplementation((key, defaultValue) => defaultValue);
+        jest.spyOn(source, "getEnvConfigItemAsNumber").mockImplementation((key, defaultValue) => defaultValue);
       });
 
       it("should fetch quality gates for provided workload IDs", async () => {

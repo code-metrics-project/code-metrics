@@ -1,6 +1,6 @@
 import { MongoDatastore, initMongoDb, mongoAdmin } from "../db";
 import { DatastoreConfig, DO_NOT_EXPIRE, EXPIRY_FIELD } from "../../api";
-import { overrideConfigItem } from "../../../config/sources/source";
+import { overrideEnvConfigItem } from "../../../config/sources/source";
 
 // Mock mongodb
 const mockListCollections = jest.fn();
@@ -48,8 +48,8 @@ const buildConfig = (overrides: Partial<DatastoreConfig> = {}): DatastoreConfig 
 describe("MongoDatastore", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
-    overrideConfigItem("DATABASE_URI", "mongodb://localhost:27017");
-    overrideConfigItem("DATABASE_NAME", "test-db");
+    overrideEnvConfigItem("DATABASE_URI", "mongodb://localhost:27017");
+    overrideEnvConfigItem("DATABASE_NAME", "test-db");
     await initMongoDb();
 
     // Reset mock implementations
@@ -119,10 +119,7 @@ describe("MongoDatastore", () => {
       const result = await ds.connect("testCollection", async () => "ok");
 
       expect(result).toBe("ok");
-      expect(mockCreateIndex).toHaveBeenCalledWith(
-        { [EXPIRY_FIELD]: 1 },
-        { expireAfterSeconds: 0, name: "expiry" },
-      );
+      expect(mockCreateIndex).toHaveBeenCalledWith({ [EXPIRY_FIELD]: 1 }, { expireAfterSeconds: 0, name: "expiry" });
     });
 
     it("should warn but not throw when autoCreate is false and expiry index does not exist", async () => {
@@ -136,9 +133,7 @@ describe("MongoDatastore", () => {
 
       expect(result).toBe("ok");
       expect(mockCreateIndex).not.toHaveBeenCalled();
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringContaining("DATASTORE_AUTO_CREATE is disabled"),
-      );
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining("DATASTORE_AUTO_CREATE is disabled"));
     });
 
     it("should not create expiry index when it already exists", async () => {
@@ -158,8 +153,8 @@ describe("MongoDatastore", () => {
 describe("MongoAdmin", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
-    overrideConfigItem("DATABASE_URI", "mongodb://localhost:27017");
-    overrideConfigItem("DATABASE_NAME", "test-db");
+    overrideEnvConfigItem("DATABASE_URI", "mongodb://localhost:27017");
+    overrideEnvConfigItem("DATABASE_NAME", "test-db");
     await initMongoDb();
   });
 

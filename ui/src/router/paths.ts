@@ -37,4 +37,5 @@ export enum Paths {
 
   AdminHome = "/admin",
   AdminTokens = "/admin/tokens",
+  AdminRemoteConnections = "/admin/remote-connections",
 }

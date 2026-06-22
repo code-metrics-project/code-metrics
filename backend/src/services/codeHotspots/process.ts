@@ -7,9 +7,9 @@ import { findCodeHotspotsForPRs } from "./analyse";
 import { error, logger } from "../../utils/logger/logger";
 import { getComponentsForWorkload } from "../../utils/repos";
 import { SoftwareComponent, WorkloadId } from "../../model/config/workload-config";
-import { getConfigItemAsNumber } from "../../config/sources/source";
+import { getEnvConfigItemAsNumber } from "../../config/sources/source";
 
-const TICKETMAP_MAX: number = getConfigItemAsNumber("CODE_HOTSPOTS_TICKETMAP_MAX", 50);
+const TICKETMAP_MAX = getEnvConfigItemAsNumber("CODE_HOTSPOTS_TICKETMAP_MAX", 50);
 
 const getPathChecks = (repoGroup: string): string[] => {
   // FIXME externalise

@@ -7,15 +7,15 @@ import {
   CognitoUserSession,
   ICognitoUserPoolData,
 } from "amazon-cognito-identity-js";
-import { getConfigItem } from "../../config/sources/source";
+import { getEnvConfigItem } from "../../config/sources/source";
 
 let cognitoUserPoolData: ICognitoUserPoolData;
 
 const getCognitoConfig = (): ICognitoUserPoolData => {
   if (!cognitoUserPoolData) {
     cognitoUserPoolData = {
-      UserPoolId: getConfigItem("COGNITO_USER_POOL_ID"),
-      ClientId: getConfigItem("COGNITO_CLIENT_ID"),
+      UserPoolId: getEnvConfigItem("COGNITO_USER_POOL_ID"),
+      ClientId: getEnvConfigItem("COGNITO_CLIENT_ID"),
     };
   }
   return cognitoUserPoolData;

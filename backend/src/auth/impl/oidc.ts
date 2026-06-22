@@ -15,16 +15,16 @@ import {
 } from "openid-client";
 import { readEncryptedCookie, writeEncryptedCookie } from "../../utils/cookies";
 import { SecureRouter } from "../../routes/router";
-import { getConfigItem } from "../../config/sources/source";
+import { getEnvConfigItem } from "../../config/sources/source";
 
-const OIDC_ISSUER_BASE_URL = getConfigItem("OIDC_ISSUER_BASE_URL");
-const OIDC_CLIENT_ID = getConfigItem("OIDC_CLIENT_ID");
-const OIDC_CLIENT_SECRET: string = getConfigItem("OIDC_CLIENT_SECRET", "");
-const OIDC_USER_CLAIM: string = getConfigItem("OIDC_USER_CLAIM", "sub");
-const OIDC_SCOPES: string = getConfigItem("OIDC_SCOPES", "openid email");
-const OIDC_AUDIENCE: string | null = getConfigItem("OIDC_AUDIENCE");
-const OIDC_USE_PKCE: boolean = getConfigItem("OIDC_USE_PKCE") === "true";
-const OIDC_REDIRECT_URI: string | null = getConfigItem("OIDC_REDIRECT_URI");
+const OIDC_ISSUER_BASE_URL = getEnvConfigItem("OIDC_ISSUER_BASE_URL");
+const OIDC_CLIENT_ID = getEnvConfigItem("OIDC_CLIENT_ID");
+const OIDC_CLIENT_SECRET: string = getEnvConfigItem("OIDC_CLIENT_SECRET", "");
+const OIDC_USER_CLAIM: string = getEnvConfigItem("OIDC_USER_CLAIM", "sub");
+const OIDC_SCOPES: string = getEnvConfigItem("OIDC_SCOPES", "openid email");
+const OIDC_AUDIENCE: string | null = getEnvConfigItem("OIDC_AUDIENCE");
+const OIDC_USE_PKCE: boolean = getEnvConfigItem("OIDC_USE_PKCE") === "true";
+const OIDC_REDIRECT_URI: string | null = getEnvConfigItem("OIDC_REDIRECT_URI");
 
 const AUTH_PATH = "/api/oidc/auth";
 const REDIRECT_URI_PATH = "/login/callback";

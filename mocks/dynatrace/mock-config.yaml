@@ -1,6 +1,14 @@
 plugin: rest
 
 resources:
+  # Health check endpoint for connection checker
+  - path: /api/v2/metrics
+    method: GET
+    response:
+      statusCode: 200
+      content: |
+        { "metrics": [{ "metricId": "mock.metric", "displayName": "Mock Metric", "unit": "Count" }], "totalCount": 1 }
+
   - path: /api/v2/metrics/query
     method: GET
     response:

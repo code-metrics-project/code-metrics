@@ -1,13 +1,16 @@
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Paths } from "@/router/paths";
-import { AlertCircle, Home, RefreshCw } from "lucide-react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 
 export default function LicenseMissing() {
   const { t } = useI18n();
+
+  const handleRetry = () => {
+    // Navigate to root to reinitialise the app and check license again
+    window.location.href = window.location.origin;
+  };
 
   return (
     <div className="bg-background flex min-h-screen items-center justify-center">
@@ -25,18 +28,10 @@ export default function LicenseMissing() {
             </AlertDescription>
           </Alert>
 
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => window.location.reload()}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              {t("common:retry")}
-            </Button>
-            <Button asChild className="flex-1">
-              <Link to={Paths.Home}>
-                <Home className="mr-2 h-4 w-4" />
-                {t("nav:home")}
-              </Link>
-            </Button>
-          </div>
+          <Button className="w-full" onClick={handleRetry}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            {t("common:retry")}
+          </Button>
         </CardContent>
       </Card>
     </div>

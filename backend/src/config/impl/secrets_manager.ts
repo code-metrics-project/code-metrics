@@ -1,14 +1,14 @@
 import { SecretResolver } from "../secrets";
 import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
-import { getConfigItem } from "../sources/source";
+import { getEnvConfigItem } from "../sources/source";
 
 /**
  * Returns a {@link SecretResolver} that uses AWS Secrets Manager.
  * Supports local testing with LocalStack by setting AWS_ENDPOINT_URL environment variable.
  */
 export const getSecretsManagerResolver = (): SecretResolver => {
-  const region = getConfigItem("AWS_REGION");
-  const endpointUrl = getConfigItem("AWS_ENDPOINT_URL");
+  const region = getEnvConfigItem("AWS_REGION");
+  const endpointUrl = getEnvConfigItem("AWS_ENDPOINT_URL");
 
   const client = new SecretsManagerClient({
     region,

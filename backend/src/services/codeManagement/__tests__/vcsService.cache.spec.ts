@@ -1,4 +1,5 @@
 import { CachingVcsServiceImpl, VcsService } from "../vcsService";
+import { provideDatastore } from "../../../db/factory";
 import {
   CommitFileChanges,
   CompletePrInfo,
@@ -47,9 +48,11 @@ jest.mock("../../../db/factory", () => ({
 }));
 
 jest.mock("../../../config/sources/source", () => ({
-  getConfigItem: jest.fn(() => "true"),
-  getConfigItemAsNumber: jest.fn((_key: string, defaultValue: number) => defaultValue),
+  getEnvConfigItem: jest.fn(() => "true"),
+  getEnvConfigItemAsNumber: jest.fn((_key: string, defaultValue: number) => defaultValue),
 }));
+
+const mockedProvideDatastore = jest.mocked(provideDatastore);
 
 const createDelegate = (): VcsService => {
   const getPRsInDateRange = jest.fn<
@@ -84,6 +87,24 @@ const createDelegate = (): VcsService => {
 describe("CachingVcsServiceImpl temporal retrieval caching", () => {
   beforeEach(() => {
     cacheStore.clear();
+    mockedProvideDatastore.mockClear();
+  });
+
+  it("uses a single server-prefixed key for repo list caching", async () => {
+    const delegate = createDelegate();
+    const getReposForProject = jest.fn(async () => ["repo-a"]);
+    delegate.getReposForProject = getReposForProject;
+    const cachedVcs = new CachingVcsServiceImpl(delegate);
+
+    await cachedVcs.getReposForProject("workload-1", "athena");
+    await cachedVcs.getReposForProject("workload-1", "athena");
+
+    expect(getReposForProject).toHaveBeenCalledTimes(1);
+    expect(mockedProvideDatastore).toHaveBeenCalledWith("server-1.athena-vcs-cache", {
+      expireAfterSeconds: 21600,
+    });
+    expect(cacheStore.has(JSON.stringify({ key: "server-1.athena" }))).toBe(true);
+    expect(cacheStore.has(JSON.stringify({ key: "server-1.server-1.athena" }))).toBe(false);
   });
 
   it("caches PR retrieval per day for identical date range and repo", async () => {

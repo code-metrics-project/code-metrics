@@ -1,5 +1,5 @@
-import { getConfigItemAsBoolean } from "../config/sources/source";
+import { getEnvConfigItemAsBoolean } from "../config/sources/source";
 
 export const isStrictMode = (): boolean => {
-  return getConfigItemAsBoolean("STRICT_CONFIG_LOAD");
+  return getEnvConfigItemAsBoolean("STRICT_CONFIG_LOAD");
 };

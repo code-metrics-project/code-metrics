@@ -4,7 +4,7 @@ import path from "path";
 import { getConfigDirs, readConfig } from "../../config/config";
 import fs, { writeFile } from "fs/promises";
 import { logger, verbose } from "../../utils/logger/logger";
-import { getConfigItem } from "../../config/sources/source";
+import { getEnvConfigItem } from "../../config/sources/source";
 
 export const getFileStoredQueryService = (): StoredQueryService => new FileStoredQueryService();
 
@@ -84,7 +84,7 @@ export class FileStoredQueryService implements StoredQueryService {
 }
 
 const getStoredQueryDir = (configDirs: string[]): string => {
-  const STORED_QUERY_DIR = getConfigItem("STORED_QUERY_DIR");
+  const STORED_QUERY_DIR = getEnvConfigItem("STORED_QUERY_DIR");
   if (!STORED_QUERY_DIR) {
     // take last, giving precedence to the last directory
     return configDirs[configDirs.length - 1];

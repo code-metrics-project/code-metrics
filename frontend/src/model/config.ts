@@ -33,8 +33,10 @@ export interface BootstrapConfig {
     loginUrl?: string;
     store: AuthSessionStoreMethod;
   };
+  configCacheTtlMs?: number;
   features: FeatureConfig;
   hasConfig: boolean;
+  hasWorkloads?: boolean;
   isLicensed: boolean;
 }
 

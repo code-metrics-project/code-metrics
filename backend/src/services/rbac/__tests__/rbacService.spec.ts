@@ -11,7 +11,7 @@ jest.mock("../../../utils/logger/logger", () => ({
   error: jest.fn(),
 }));
 
-const mockGetConfigItem = source.getConfigItem as jest.MockedFunction<typeof source.getConfigItem>;
+const mockGetConfigItem = source.getEnvConfigItem as jest.MockedFunction<typeof source.getEnvConfigItem>;
 const mockGetFileRBACService = fileMod.getFileRBACService as jest.MockedFunction<typeof fileMod.getFileRBACService>;
 
 describe("getRBACService", () => {

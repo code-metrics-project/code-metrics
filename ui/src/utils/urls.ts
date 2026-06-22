@@ -24,5 +24,6 @@ export const PIPELINE_RUNS = "/api/pipeline/runs";
 export const PIPELINE_RUN = "/api/pipeline/run";
 export const PIPELINE_DEPLOYMENTS = "/api/pipeline/deployments";
 export const PIPELINE_RUN_REDIRECT = "/api/pipeline/redirect";
+export const ADMIN_REMOTE_CONNECTIONS = "/api/admin/remote-connections";
 
 export { getApiBaseUrl, setApiBaseUrl };

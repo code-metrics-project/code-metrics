@@ -3,6 +3,14 @@
 
 plugin: rest
 resources:
+  # Health check endpoint for connection checker
+  - method: get
+    path: /rest/api/1.0/projects
+    response:
+      statusCode: 200
+      content: |
+        { "size": 1, "limit": 1, "isLastPage": true, "values": [{ "key": "MOCK", "name": "Mock Project" }] }
+
   - method: get
     path: /rest/api/latest/projects/{workload}/repos
     response:

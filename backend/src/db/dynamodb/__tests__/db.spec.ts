@@ -1,6 +1,6 @@
 import { DynamoDatastore, initDynamoDB, dynamoAdmin } from "../db";
 import { DatastoreConfig, DO_NOT_EXPIRE } from "../../api";
-import { overrideConfigItem } from "../../../config/sources/source";
+import { overrideEnvConfigItem } from "../../../config/sources/source";
 
 // Mock the AWS SDK
 const mockSend = jest.fn();
@@ -35,8 +35,8 @@ const buildConfig = (overrides: Partial<DatastoreConfig> = {}): DatastoreConfig 
 describe("DynamoDatastore", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
-    overrideConfigItem("AWS_REGION", "us-east-1");
-    overrideConfigItem("DATABASE_NAME", "TestDB");
+    overrideEnvConfigItem("AWS_REGION", "us-east-1");
+    overrideEnvConfigItem("DATABASE_NAME", "TestDB");
     await initDynamoDB();
   });
 
@@ -62,9 +62,7 @@ describe("DynamoDatastore", () => {
 
     it("should throw an error when table does not exist and autoCreate is false", async () => {
       // DescribeTable -> not found
-      mockSend.mockRejectedValueOnce(
-        Object.assign(new Error("not found"), { name: "ResourceNotFoundException" }),
-      );
+      mockSend.mockRejectedValueOnce(Object.assign(new Error("not found"), { name: "ResourceNotFoundException" }));
 
       const ds = new DynamoDatastore(buildConfig({ autoCreate: false }));
       await expect(ds.connect("testTable", async () => "result")).rejects.toThrow(
@@ -111,8 +109,8 @@ describe("DynamoDatastore", () => {
 describe("DynamoAdmin", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
-    overrideConfigItem("AWS_REGION", "us-east-1");
-    overrideConfigItem("DATABASE_NAME", "TestDB");
+    overrideEnvConfigItem("AWS_REGION", "us-east-1");
+    overrideEnvConfigItem("DATABASE_NAME", "TestDB");
     await initDynamoDB();
   });
 
@@ -162,9 +160,7 @@ describe("DynamoAdmin", () => {
   });
 
   it("should check collection existence — does not exist", async () => {
-    mockSend.mockRejectedValueOnce(
-      Object.assign(new Error("not found"), { name: "ResourceNotFoundException" }),
-    );
+    mockSend.mockRejectedValueOnce(Object.assign(new Error("not found"), { name: "ResourceNotFoundException" }));
 
     const result = await dynamoAdmin.collectionExists("missing");
     expect(result).toBe(false);
@@ -181,9 +177,7 @@ describe("DynamoAdmin", () => {
   });
 
   it("should return 0 for count on non-existent table", async () => {
-    mockSend.mockRejectedValueOnce(
-      Object.assign(new Error("not found"), { name: "ResourceNotFoundException" }),
-    );
+    mockSend.mockRejectedValueOnce(Object.assign(new Error("not found"), { name: "ResourceNotFoundException" }));
 
     const result = await dynamoAdmin.countItems("missing");
     expect(result).toBe(0);
@@ -208,10 +202,7 @@ describe("DynamoAdmin", () => {
     // Scan returns 2 items
     mockSend
       .mockResolvedValueOnce({
-        Items: [
-          { CacheKey: { S: "key1" } },
-          { CacheKey: { S: "key2" } },
-        ],
+        Items: [{ CacheKey: { S: "key1" } }, { CacheKey: { S: "key2" } }],
         LastEvaluatedKey: undefined,
       })
       // BatchWriteItem succeeds
@@ -224,9 +215,7 @@ describe("DynamoAdmin", () => {
   });
 
   it("should not throw when emptying a non-existent table", async () => {
-    mockSend.mockRejectedValueOnce(
-      Object.assign(new Error("not found"), { name: "ResourceNotFoundException" }),
-    );
+    mockSend.mockRejectedValueOnce(Object.assign(new Error("not found"), { name: "ResourceNotFoundException" }));
 
     await expect(dynamoAdmin.emptyCollection("missing")).resolves.toBeUndefined();
   });

@@ -16,7 +16,7 @@ import serverlessExpress from "@codegenie/serverless-express";
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2, Context } from "aws-lambda";
 import express, { Express, Request, Response } from "express";
 import { DynamoDBClient, ListTablesCommand, DeleteTableCommand } from "@aws-sdk/client-dynamodb";
-import { overrideConfigItem } from "../config/sources/source";
+import { overrideEnvConfigItem } from "../config/sources/source";
 import { initDynamoDB, DynamoDatastore } from "../db/dynamodb/db";
 
 const AWS_LOCAL_ENDPOINT = "http://localhost:4566";
@@ -174,13 +174,13 @@ describe("Lambda + DynamoDB E2E Tests with Local AWS", () => {
     });
 
     // Override config for DynamoDB
-    overrideConfigItem("AWS_REGION", region);
-    overrideConfigItem("AWS_ENDPOINT_URL", endpointUrl);
-    overrideConfigItem("DATABASE_NAME", testTablePrefix);
-    overrideConfigItem("LOOKUP_CACHE_ENABLED", "true");
-    overrideConfigItem("DATASTORE_IMPL", "dynamodb");
-    overrideConfigItem("DATASTORE_AUTO_CREATE", "true");
-    overrideConfigItem("INVOCATION_MODE", "serve-api");
+    overrideEnvConfigItem("AWS_REGION", region);
+    overrideEnvConfigItem("AWS_ENDPOINT_URL", endpointUrl);
+    overrideEnvConfigItem("DATABASE_NAME", testTablePrefix);
+    overrideEnvConfigItem("LOOKUP_CACHE_ENABLED", "true");
+    overrideEnvConfigItem("DATASTORE_IMPL", "dynamodb");
+    overrideEnvConfigItem("DATASTORE_AUTO_CREATE", "true");
+    overrideEnvConfigItem("INVOCATION_MODE", "serve-api");
 
     // Initialize DynamoDB
     await initDynamoDB();

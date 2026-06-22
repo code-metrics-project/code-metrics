@@ -3,7 +3,7 @@ import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { getWorkloadById } from "../../config/configMapping";
 import { DependencyAlertsTypes } from "../../model/config/common";
 import { DependencyAlertsAnalysis, DependencySeverity } from "../../model/dependencyAlerts";
-import { getConfigItemAsNumber } from "../../config/sources/source";
+import { getEnvConfigItemAsNumber } from "../../config/sources/source";
 
 const builders: Record<string, () => DependencyAlertsService> = {};
 const instances: Record<string, DependencyAlertsService> = {};
@@ -43,10 +43,10 @@ const getDependencyAlerts = (type: string): DependencyAlertsService => {
 };
 
 export const DEPENDENCY_ALERTS_SLA_CONFIG: Record<DependencySeverity, number> = {
-  [DependencySeverity.Critical]: getConfigItemAsNumber("DEPENDENCY_ALERT_CRITICAL", 7),
-  [DependencySeverity.High]: getConfigItemAsNumber("DEPENDENCY_ALERT_HIGH", 14),
-  [DependencySeverity.Medium]: getConfigItemAsNumber("DEPENDENCY_ALERT_MEDIUM", 30),
-  [DependencySeverity.Low]: getConfigItemAsNumber("DEPENDENCY_ALERT_LOW", 60),
+  [DependencySeverity.Critical]: getEnvConfigItemAsNumber("DEPENDENCY_ALERT_CRITICAL", 7),
+  [DependencySeverity.High]: getEnvConfigItemAsNumber("DEPENDENCY_ALERT_HIGH", 14),
+  [DependencySeverity.Medium]: getEnvConfigItemAsNumber("DEPENDENCY_ALERT_MEDIUM", 30),
+  [DependencySeverity.Low]: getEnvConfigItemAsNumber("DEPENDENCY_ALERT_LOW", 60),
 };
 
 export type DependencyAlertsService = {

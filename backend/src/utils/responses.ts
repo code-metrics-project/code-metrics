@@ -1,8 +1,8 @@
 import { Response } from "express";
 import { logger } from "./logger/logger";
-import { getConfigItemAsBoolean } from "../config/sources/source";
+import { getEnvConfigItemAsBoolean } from "../config/sources/source";
 
-const shouldLogResponseBody = getConfigItemAsBoolean("LOG_RESPONSE_BODY");
+const shouldLogResponseBody = getEnvConfigItemAsBoolean("LOG_RESPONSE_BODY");
 
 type SuccessBody = {
   [key: string]: string;

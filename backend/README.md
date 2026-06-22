@@ -11,6 +11,14 @@ This app is developed to help with the integration and mapping of data between v
 
 To start the backend nodejs application locally, run `npm run dev`.
 
+### Configuration loading mode
+
+Configuration lazy loading is enabled by default.
+
+- Set `LAZY_LOAD_CONFIG_DISABLED=true` to disable lazy loading and force eager startup loading.
+- `CONFIG_CACHE_TTL_MS` controls refresh cadence only when lazy loading is enabled.
+- The bootstrap API (`/api/system/bootstrap`) returns `configCacheTtlMs=0` when lazy loading is disabled.
+
 When querying the various APIs to other systems, it can take a minute if JIRA or ADO for example are responding slowly; or if you've run a query that returns a very large number of results. It's recommended to test your queries on the relevant systems in the browser first (such as executing JQL in JIRA) to check you're getting the results you expect. In almost all cases you will want to time limit it (e.g. last 30 days).
 
 ## Test

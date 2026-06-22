@@ -9,7 +9,7 @@ const req = context.request;
 const component = req.queryParams.component;
 
 const reqFrom = req.queryParams.from || defaultStartDate;
-console.log(`Start date: ${reqFrom}`);
+console.debug(`Start date: ${reqFrom}`);
 const startDate = new Date(reqFrom);
 
 const reqMetrics = req.queryParams.metrics.split(",");
@@ -18,17 +18,17 @@ const measures = [];
 if (metricRequested("coverage")) {
   const coverage = genCoverage(startDate);
   measures.push({ metric: "coverage", history: coverage });
-  console.log(`Generated ${coverage.length} coverage entries for ${component}`);
+  console.debug(`Generated ${coverage.length} coverage entries for ${component}`);
 }
 if (metricRequested("lines_to_cover")) {
   const lines = genNcLoc(startDate);
   measures.push({ metric: "lines_to_cover", history: lines });
-  console.log(`Generated ${lines.length} lines_to_cover entries for ${component}`);
+  console.debug(`Generated ${lines.length} lines_to_cover entries for ${component}`);
 }
 if (metricRequested("ncloc")) {
   const ncloc = genNcLoc(startDate);
   measures.push({ metric: "ncloc", history: ncloc });
-  console.log(`Generated ${ncloc.length} ncloc entries for ${component}`);
+  console.debug(`Generated ${ncloc.length} ncloc entries for ${component}`);
 }
 
 const total = measures[0].length;
@@ -63,7 +63,7 @@ function genCoverage(startDate) {
     const cov = historicCoverage[dayIdx];
     const isoDate = date.toISOString();
 
-    console.log(`${isoDate} cov: ${cov}`);
+    console.debug(`${isoDate} cov: ${cov}`);
     coverage.push({ date: isoDate, value: cov.toString() });
   }
 
@@ -84,7 +84,7 @@ function genNcLoc(startDate) {
     const loc = historicNcloc[dayIdx];
     const isoDate = date.toISOString();
 
-    console.log(`${isoDate} loc: ${loc}`);
+    console.debug(`${isoDate} loc: ${loc}`);
     ncloc.push({ date: isoDate, value: loc.toString() });
   }
 

@@ -8,7 +8,7 @@ import {
   listWorkloads,
   getAllLlmConfig,
 } from "../config/configMapping";
-import { getConfig, hasConfig } from "../config/config";
+import { CONFIG_CACHE_TTL_MS, getConfig, hasConfig, hasWorkloads } from "../config/config";
 import { listActiveFeatures } from "../utils/features";
 import { getReposForWorkloadId } from "../utils/repos";
 import { getVcsForWorkload } from "../services/codeManagement/vcsService";
@@ -21,10 +21,14 @@ import {
   WorkloadMeta,
 } from "../model/config/system-config";
 import { isLicensed } from "../license/validate";
-import { getConfigItem } from "../config/sources/source";
+import { getEnvConfigItem } from "../config/sources/source";
 
 const authSessionStoreMethod: AuthSessionStoreMethod =
-  (getConfigItem("CLIENT_SESSION_STORE") as AuthSessionStoreMethod) || "cookie";
+  (getEnvConfigItem("CLIENT_SESSION_STORE") as AuthSessionStoreMethod) || "cookie";
+
+const getBootstrapConfigCacheTtlMs = (): number => {
+  return getEnvConfigItem("LAZY_LOAD_CONFIG_DISABLED") === "true" ? 0 : (CONFIG_CACHE_TTL_MS ?? 0);
+};
 
 /**
  * Check if LLM is configured by verifying that remote config has LLM settings
@@ -90,8 +94,10 @@ export const fetchBootstrap = async (_req: Request, res: Response<BootstrapConfi
       loginUrl: getAuthenticator().loginUrl,
       store: authSessionStoreMethod,
     },
+    configCacheTtlMs: getBootstrapConfigCacheTtlMs(),
     features: listActiveFeatures(),
     hasConfig: hasConfig(),
+    hasWorkloads: hasWorkloads(),
     isLicensed: await isLicensed(),
   };
   res.json(config);

@@ -1,8 +1,8 @@
 import Bottleneck from "bottleneck";
-import { getConfigItemAsNumber } from "../config/sources/source";
+import { getEnvConfigItemAsNumber } from "../config/sources/source";
 import { warn } from "../utils/logger/logger.js";
 
-const API_RETRY_LIMIT = getConfigItemAsNumber("API_RETRY_LIMIT", 5);
+const API_RETRY_LIMIT = getEnvConfigItemAsNumber("API_RETRY_LIMIT", 5);
 
 /**
  * Limit the concurrency of a function using a Bottleneck instance.

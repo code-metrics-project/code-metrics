@@ -1,7 +1,8 @@
 import Jenkins from "jenkins";
+import fetch from "node-fetch";
 import { Run, RunResult, RunWithMetadata } from "../../model/runs";
 import { getAllPipelinesConfig, getAllRemoteConfig, getWorkloadById } from "../../config/configMapping";
-import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines } from "./pipelinesService";
+import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines, registerPipelinesConnectionChecker } from "./pipelinesService";
 import { matchOrEquals } from "../../utils/matchers";
 import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName, resolveJobGroupPatterns } from "../../utils/jobs";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
@@ -10,6 +11,8 @@ import { jsonPathQuery } from "../../utils/json";
 import { StageConfig } from "../../model/config/pipeline-config";
 import { mapJobNamesUsingStageConfig, mapJobNameUsingStageConfig } from "./common";
 import { PipelinesTypes } from "../../model/config/common";
+import { ConnectionCheckResult } from "../../model/remote-connection-status";
+import { PipelinesServer, RemoteServer } from "../../model/config/remote-config";
 
 const JENKINS_BRANCH_PARAMETER = "BRANCH_NAME";
 
@@ -56,8 +59,82 @@ type TJenkinsBuild = {
   duration: number;
 };
 
-export const initJenkinsPipelines = () =>
+/**
+ * Check connectivity to Jenkins by calling the root API endpoint.
+ * Jenkins authentication is typically embedded in the URL.
+ */
+const checkJenkinsConnection = async (server: RemoteServer): Promise<ConnectionCheckResult> => {
+  const startTime = Date.now();
+  const pipelinesServer = server as PipelinesServer;
+  const url = pipelinesServer.url;
+
+  if (!url) {
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.JENKINS,
+      status: "unconfigured",
+      statusDetail: "No URL configured for this server",
+    };
+  }
+
+  try {
+    const response = await fetch(`${url}/api/json`, {
+      signal: AbortSignal.timeout(5000),
+    });
+
+    const responseTimeMs = Date.now() - startTime;
+
+    if (response.ok) {
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.JENKINS,
+        url,
+        status: "connected",
+        responseTimeMs,
+      };
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.JENKINS,
+        url,
+        status: "unauthorised",
+        statusDetail: `HTTP ${response.status}: ${response.statusText}`,
+        responseTimeMs,
+      };
+    }
+
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.JENKINS,
+      url,
+      status: "error",
+      statusDetail: `HTTP ${response.status}: ${response.statusText}`,
+      responseTimeMs,
+    };
+  } catch (err: any) {
+    const responseTimeMs = Date.now() - startTime;
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.JENKINS,
+      url,
+      status: "unreachable",
+      statusDetail: err.name || err.code || err.message,
+      responseTimeMs,
+    };
+  }
+};
+
+export const initJenkinsPipelines = () => {
   registerPipelines(PipelinesTypes.JENKINS, (config) => new JenkinsPipelinesService(config));
+  registerPipelinesConnectionChecker(PipelinesTypes.JENKINS, checkJenkinsConnection);
+};
 
 class JenkinsPipelinesService extends AbstractPipelinesService {
   private connections: Map<string, Jenkins>;

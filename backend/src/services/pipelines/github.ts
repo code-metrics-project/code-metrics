@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/rest";
-import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines } from "./pipelinesService";
+import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines, registerPipelinesConnectionChecker } from "./pipelinesService";
 import { ActorType, Run, RunResult, RunWithMetadata } from "../../model/runs";
 import { getAllPipelinesConfig, getWorkloadById } from "../../config/configMapping";
 import { logger, verbose, warn } from "../../utils/logger/logger";
@@ -15,13 +15,14 @@ import { matchOrEquals } from "../../utils/matchers";
 import { StageConfig } from "../../model/config/pipeline-config";
 import { mapJobNameUsingStageConfig } from "./common";
 import { PipelinesTypes } from "../../model/config/common";
-import { AuthMethod } from "../../model/config/remote-config";
+import { AuthMethod, PipelinesServer, RemoteServer } from "../../model/config/remote-config";
 import { createGitHubAppOctokit } from "../auth/github-app";
-import { getConfigItemAsNumber } from "../../config/sources/source";
+import { getEnvConfigItemAsNumber } from "../../config/sources/source";
 import { getVcsForWorkload } from "../codeManagement/vcsService";
+import { ConnectionCheckResult } from "../../model/remote-connection-status";
 
 const COLLECTION_NAME_PIPELINE_RUNS = "pipeline-executions";
-const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600);
+const EXPIRY_SECONDS = getEnvConfigItemAsNumber("EXPIRY_SECONDS", 3600);
 
 type GithubCacheItemFilter = {
   stageId: string;
@@ -77,8 +78,109 @@ type WorkflowsResponse = {
   workflows: Workflow[];
 };
 
-export const initGithubPipelines = () =>
+/**
+ * Check connectivity to GitHub by calling the rate limit endpoint.
+ */
+const checkGithubPipelinesConnection = async (server: RemoteServer): Promise<ConnectionCheckResult> => {
+  const startTime = Date.now();
+  const pipelinesServer = server as PipelinesServer;
+  const url = pipelinesServer.url || "https://api.github.com";
+
+  try {
+    let octokit: Octokit;
+    if (pipelinesServer.authMethod === AuthMethod.GITHUB_APP && pipelinesServer.githubApp) {
+      octokit = createGitHubAppOctokit(pipelinesServer.githubApp, url);
+    } else {
+      octokit = new Octokit({
+        auth: pipelinesServer.apiKey,
+        baseUrl: url,
+        request: { timeout: 5000 },
+      });
+    }
+
+    const rateLimitResponse = await octokit.rest.rateLimit.get();
+
+    // Check if rate limit has been reached
+    const coreRateLimit = rateLimitResponse.data.resources.core;
+    if (coreRateLimit.remaining === 0) {
+      const resetDate = new Date(coreRateLimit.reset * 1000);
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.GITHUB,
+        url,
+        status: "rateLimited",
+        statusDetail: `Rate limit reached (${coreRateLimit.limit} requests). Resets at ${resetDate.toISOString()}`,
+        responseTimeMs: Date.now() - startTime,
+      };
+    }
+
+    const responseTimeMs = Date.now() - startTime;
+
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.GITHUB,
+      url,
+      status: "connected",
+      responseTimeMs,
+    };
+  } catch (err: any) {
+    const responseTimeMs = Date.now() - startTime;
+
+    // GitHub returns 403 for both auth errors and rate limit errors
+    if (err.status === 403 && err.message && err.message.toLowerCase().includes("rate limit")) {
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.GITHUB,
+        url,
+        status: "rateLimited",
+        statusDetail: `HTTP 403: ${err.message}`,
+        responseTimeMs,
+      };
+    }
+
+    if (err.status === 401 || err.status === 403) {
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.GITHUB,
+        url,
+        status: "unauthorised",
+        statusDetail: `HTTP ${err.status}: ${err.message}`,
+        responseTimeMs,
+      };
+    }
+
+    if (err.status && err.status >= 400) {
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.GITHUB,
+        url,
+        status: "error",
+        statusDetail: `HTTP ${err.status}: ${err.message}`,
+        responseTimeMs,
+      };
+    }
+
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.GITHUB,
+      url,
+      status: "unreachable",
+      statusDetail: err.code || err.message,
+      responseTimeMs,
+    };
+  }
+};
+
+export const initGithubPipelines = () => {
   registerPipelines(PipelinesTypes.GITHUB, (stage) => new GithubPipelinesService(stage));
+  registerPipelinesConnectionChecker(PipelinesTypes.GITHUB, checkGithubPipelinesConnection);
+};
 
 class GithubPipelinesService extends AbstractPipelinesService {
   constructor(stage: StageConfig) {

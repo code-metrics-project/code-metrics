@@ -29,10 +29,10 @@ const top = parseInt(req.queryParams["$top"] || "100", 10);
 // whether to look up historic churn
 let useHistoric;
 if (repoName === "spring-petclinic") {
-  console.log("Using historic commit data");
+  console.debug("Using historic commit data");
   useHistoric = true;
 } else {
-  console.log("Generating synthetic commit data");
+  console.debug("Generating synthetic commit data");
   useHistoric = false;
 }
 
@@ -59,8 +59,71 @@ respond().withHeader("Content-Type", "application/json").withData(JSON.stringify
 
 function generateCommits(commitCount) {
   const commits = [];
+
+  // Arrays of varied data for realistic commits
+  const authors = [
+    { name: "Ada Lovelace", email: "ada.lovelace@example.com" },
+    { name: "Grace Hopper", email: "grace.hopper@example.com" },
+    { name: "Alan Turing", email: "alan.turing@example.com" },
+    { name: "Margaret Hamilton", email: "margaret.hamilton@example.com" },
+    { name: "Linus Torvalds", email: "linus.torvalds@example.com" },
+    { name: "Barbara Liskov", email: "barbara.liskov@example.com" },
+    { name: "Dennis Ritchie", email: "dennis.ritchie@example.com" },
+    { name: "Frances Allen", email: "frances.allen@example.com" },
+  ];
+
+  const commitTypes = [
+    { prefix: "feat", description: "add new feature" },
+    { prefix: "fix", description: "fix bug in" },
+    { prefix: "refactor", description: "refactor" },
+    { prefix: "docs", description: "update documentation for" },
+    { prefix: "test", description: "add tests for" },
+    { prefix: "chore", description: "update dependencies in" },
+    { prefix: "perf", description: "improve performance of" },
+    { prefix: "style", description: "format code in" },
+  ];
+
+  const components = [
+    "user authentication",
+    "payment processing",
+    "database queries",
+    "API endpoints",
+    "UI components",
+    "email notifications",
+    "data validation",
+    "error handling",
+    "logging system",
+    "caching layer",
+    "file uploads",
+    "search functionality",
+    "user profile",
+    "admin dashboard",
+    "reporting module",
+    "configuration loader",
+  ];
+
+  const issues = [
+    "PROJ-1001",
+    "PROJ-1002",
+    "PROJ-1003",
+    "PROJ-1004",
+    "PROJ-1005",
+    "BUG-501",
+    "BUG-502",
+    "BUG-503",
+    "FEAT-201",
+    "FEAT-202",
+    "FEAT-203",
+  ];
+
   for (let i = 0; i < commitCount; i++) {
     const gCommitId = random.uuid();
+
+    // Pick random author
+    const author = authors[Math.floor(Math.random() * authors.length)];
+
+    // Sometimes committer is same as author, sometimes different
+    const committer = Math.random() < 0.7 ? author : authors[Math.floor(Math.random() * authors.length)];
 
     // Generate realistic change counts that vary across Add/Edit/Delete
     // Most commits have more edits than adds/deletes
@@ -75,19 +138,28 @@ function generateCommits(commitCount) {
       .toTimeString()
       .slice(0, 8);
 
+    // Generate varied commit message
+    const commitType = commitTypes[Math.floor(Math.random() * commitTypes.length)];
+    const component = components[Math.floor(Math.random() * components.length)];
+
+    // 60% chance to include issue reference
+    const issueRef = Math.random() < 0.6 ? ` [${issues[Math.floor(Math.random() * issues.length)]}]` : "";
+
+    const comment = `${commitType.prefix}: ${commitType.description} ${component}${issueRef}`;
+
     commits.push({
       commitId: gCommitId,
       author: {
-        name: "Ada Lovelace",
-        email: "ada.lovelace@example.com",
+        name: author.name,
+        email: author.email,
         date: `${fromDateStr}T${randTime}Z`,
       },
       committer: {
-        name: "Grace Hopper",
-        email: "grace.hopper@example.com",
+        name: committer.name,
+        email: committer.email,
         date: `${fromDateStr}T${randTime}Z`,
       },
-      comment: "This is an example commit message.",
+      comment: comment,
       commentTruncated: true,
       changeCounts: {
         Add: addCount,
@@ -123,6 +195,6 @@ function lookupHistoric(date) {
   const dayIdx = Math.max(0, historic.length - 1 - daysAgo);
   const churn = historic[dayIdx];
 
-  console.log(`${date} churn: ${churn}`);
+  console.debug(`${date} churn: ${churn}`);
   return churn;
 }

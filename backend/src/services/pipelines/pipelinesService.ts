@@ -1,27 +1,75 @@
 import { Run, RunWithMetadata } from "../../model/runs";
 import { logger, verbose } from "../../utils/logger/logger";
-import {
-  getAllPipelinesConfig,
-  getServerConfig,
-  getWorkloadById,
-} from "../../config/configMapping";
+import { getAllPipelinesConfig, getServerConfig, getWorkloadById } from "../../config/configMapping";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { getDeploymentService } from "../deployment/deploymentService";
 import { StageConfig } from "../../model/config/pipeline-config";
 import { PipelinesTypes } from "../../model/config/common";
-import { getConfigItemAsBoolean } from "../../config/sources/source";
+import { getEnvConfigItemAsBoolean } from "../../config/sources/source";
 import { lookupJobGroupForJobName } from "../../utils/jobs";
 import { Datastore, DatastoreCollection, QueryFilter } from "../../db/api";
 import { provideDatastore } from "../../db/factory";
+import { ConnectionChecker, ConnectionCheckResult } from "../../model/remote-connection-status";
+import { logger as loggerFn } from "../../utils/logger/logger";
 
-const CACHE_PIPELINE_BUILDS = getConfigItemAsBoolean("CACHE_PIPELINE_BUILDS", true);
+const CACHE_PIPELINE_BUILDS = getEnvConfigItemAsBoolean("CACHE_PIPELINE_BUILDS", true);
 
 const builders: Record<string, (stage: StageConfig) => PipelinesService> = {};
 const instances: Record<string, PipelinesService> = {};
+const checkers: Record<string, ConnectionChecker> = {};
 
 export const registerPipelines = (type: PipelinesTypes, builder: (stage: StageConfig) => PipelinesService) => {
   verbose(`Registered pipeline implementation for: ${type}`);
   builders[type] = builder;
+};
+
+/**
+ * Register a connection checker for a Pipelines provider type.
+ * This allows checking connectivity to the remote server.
+ */
+export const registerPipelinesConnectionChecker = (type: PipelinesTypes, checker: ConnectionChecker) => {
+  verbose(`Registered pipelines connection checker for: ${type}`);
+  checkers[type] = checker;
+};
+
+/**
+ * Check connectivity to all configured pipeline servers.
+ * Returns connection status for each server (excludes 'none' type).
+ */
+export const checkPipelineConnections = async (): Promise<ConnectionCheckResult[]> => {
+  const config = getAllPipelinesConfig();
+  const results: ConnectionCheckResult[] = [];
+
+  // Collect all servers from all pipeline types
+  const checks: Promise<ConnectionCheckResult>[] = [];
+  for (const [providerType, providerConfig] of Object.entries(config)) {
+    if (!providerConfig?.servers) continue;
+    if (providerType === PipelinesTypes.NONE) continue; // Skip noop implementations
+
+    const checker = checkers[providerType];
+    if (!checker) {
+      // No checker registered for this type
+      continue;
+    }
+
+    for (const server of providerConfig.servers) {
+      checks.push(checker(server));
+    }
+  }
+
+  // Run all checks in parallel
+  const settled = await Promise.allSettled(checks);
+
+  for (const result of settled) {
+    if (result.status === "fulfilled") {
+      results.push(result.value);
+    } else {
+      // If a checker itself throws, log the error
+      loggerFn(`Pipelines connection check failed with uncaught error: ${result.reason}`);
+    }
+  }
+
+  return results;
 };
 
 export const getPipelinesForWorkload = (workload: Workload, stageId: string): PipelinesService =>
@@ -89,7 +137,6 @@ export type PipelinesService = {
     startDate: Date,
     endDate: Date,
   ): Promise<Run[]>;
-
 
   /**
    * Discover job names for a workload, optionally filtered by job group and/or repo name.

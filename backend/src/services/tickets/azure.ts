@@ -12,10 +12,10 @@ import { AzureTicketOptions, TicketManagementTypes } from "../../model/config/co
 import { truncateDateOnly } from "../../utils/date";
 import { Workload, WorkloadId, WorkloadTicketConfigAzure } from "../../model/config/workload-config";
 import Bottleneck from "bottleneck";
-import { getConfigItemAsNumber } from "../../config/sources/source";
+import { getEnvConfigItemAsNumber } from "../../config/sources/source";
 
 const MAX_RESULTS_PER_QUERY = 200;
-const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600);
+const EXPIRY_SECONDS = getEnvConfigItemAsNumber("EXPIRY_SECONDS", 3600);
 const ISSUE_PATTERN = /(?<!#)\d+/;
 
 // Azure DevOps WIQL has a hard limit of 20,000 work items per query
@@ -619,7 +619,7 @@ export class AdoTicketService implements TicketService {
    *
    * https://{{coreServer}}/{{organization}}/{{project}}/{{team}}/_apis/wit/wiql?api-version={{api-version}}&$top=100
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   fetchAllIssueRefsViaAPI = async (rawWiql: string, workloadId: string, _fields: string[] = []) => {
     const serverConfig = this.configManager.getServerConfig(TicketManagementTypes.AZURE, workloadId);
     const wiql = serverConfig.filter ? `${rawWiql} ${serverConfig.filter}` : rawWiql;

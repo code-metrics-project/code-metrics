@@ -1,21 +1,31 @@
-import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines } from "./pipelinesService";
+import {
+  AbstractPipelinesService,
+  PipelinesServiceJobNameFilter,
+  registerPipelines,
+  registerPipelinesConnectionChecker,
+} from "./pipelinesService";
 import { Run, RunResult, RunWithMetadata } from "../../model/runs";
 import { logger, verbose, warn } from "../../utils/logger/logger";
 import { getRelativeDate, truncateDateOnly } from "../../utils/date";
 import { provideDatastore } from "../../db/factory";
 import { getDataForDateRange, StorableLike } from "../dateWalker";
 import { jsonPathQuery } from "../../utils/json";
-import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName, resolveJobGroupPatterns } from "../../utils/jobs";
-import { DynatraceServer } from "../../model/config/remote-config";
+import {
+  listNormalisedJobGroupsForWorkload,
+  lookupJobGroupForJobName,
+  resolveJobGroupPatterns,
+} from "../../utils/jobs";
+import { DynatraceServer, RemoteServer } from "../../model/config/remote-config";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { getAllPipelinesConfig, getWorkloadById } from "../../config/configMapping";
 import { StageConfig } from "../../model/config/pipeline-config";
 import { mapJobNameUsingStageConfig } from "./common";
 import { PipelinesTypes } from "../../model/config/common";
-import { getConfigItemAsNumber } from "../../config/sources/source";
+import { getEnvConfigItemAsNumber } from "../../config/sources/source";
+import { ConnectionCheckResult } from "../../model/remote-connection-status";
 
 const COLLECTION_NAME = "dynatrace-events";
-const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600);
+const EXPIRY_SECONDS = getEnvConfigItemAsNumber("EXPIRY_SECONDS", 3600);
 const SEARCH_DAYS_BACK = 365;
 
 type DynatraceCacheItemFilter = {
@@ -105,8 +115,110 @@ class DynatraceClient {
   };
 }
 
-export const initDynatracePipelines = () =>
+/**
+ * Check connectivity to Dynatrace by calling the metrics endpoint.
+ */
+const checkDynatraceConnection = async (server: RemoteServer): Promise<ConnectionCheckResult> => {
+  const startTime = Date.now();
+  const pipelinesServer = server as DynatraceServer;
+  const url = pipelinesServer.url;
+
+  if (!url) {
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.DYNATRACE,
+      status: "unconfigured",
+      statusDetail: "No URL configured for this server",
+    };
+  }
+
+  if (!pipelinesServer.apiKey) {
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.DYNATRACE,
+      url,
+      status: "unconfigured",
+      statusDetail: "No API key configured",
+    };
+  }
+
+  try {
+    const response = await fetch(`${url}/api/v2/metrics?pageSize=1`, {
+      headers: {
+        "Api-Token": pipelinesServer.apiKey,
+        Accept: "application/json",
+      },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    const responseTimeMs = Date.now() - startTime;
+
+    if (response.ok) {
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.DYNATRACE,
+        url,
+        status: "connected",
+        responseTimeMs,
+      };
+    }
+
+    if (response.status === 429) {
+      const retryAfter = response.headers.get("retry-after");
+      const detail = retryAfter ? `Rate limited. Retry after ${retryAfter} seconds` : "Rate limited";
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.DYNATRACE,
+        url,
+        status: "rateLimited",
+        statusDetail: detail,
+        responseTimeMs,
+      };
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.DYNATRACE,
+        url,
+        status: "unauthorised",
+        statusDetail: `HTTP ${response.status}: ${response.statusText}`,
+        responseTimeMs,
+      };
+    }
+
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.DYNATRACE,
+      url,
+      status: "error",
+      statusDetail: `HTTP ${response.status}: ${response.statusText}`,
+      responseTimeMs,
+    };
+  } catch (err: any) {
+    const responseTimeMs = Date.now() - startTime;
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.DYNATRACE,
+      url,
+      status: "unreachable",
+      statusDetail: err.name || err.code || err.message,
+      responseTimeMs,
+    };
+  }
+};
+
+export const initDynatracePipelines = () => {
   registerPipelines(PipelinesTypes.DYNATRACE, (config) => new DynatracePipelinesService(config));
+  registerPipelinesConnectionChecker(PipelinesTypes.DYNATRACE, checkDynatraceConnection);
+};
 
 class DynatracePipelinesService extends AbstractPipelinesService {
   private datastore = provideDatastore("dynatrace-pipelines", { ttlIfToday: EXPIRY_SECONDS });

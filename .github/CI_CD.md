@@ -56,7 +56,7 @@ Keys like `.github` can be mapped to _all_ components to ensure that infrastruct
 ### Core Pipeline
 
 - **`ci.yaml`**: The main orchestrator. Triggered on Pull Request and Push. It starts with a `setup` job that calculates changed components, generates matrices, and validates config before calling reusable workflows.
-- **`validate.yaml`**: runs Unit Tests, Linting, E2E tests, and MiniStack-backed backend integration validation. The shared Playwright E2E workflow runs the non-Docker auth/browser paths inside the official Playwright container image, while the Keycloak path stays on the host runner so it can orchestrate Docker Compose locally. Deployed Node.js Lambda validation is restored in CI on MiniStack using the existing Lambda packaging flow. This is the "Gatekeeper" workflow that must pass before builds occur.
+- **`validate.yaml`**: runs Unit Tests, Linting, E2E tests, and MiniStack-backed backend integration validation. The shared Playwright E2E workflow runs the non-Docker auth/browser paths inside the official Playwright container image, while the Keycloak path stays on the host runner so it can orchestrate Docker Compose locally and uses the runner's system Chrome instead of downloading Playwright browsers. Deployed Node.js Lambda validation is restored in CI on MiniStack using the existing Lambda packaging flow. This is the "Gatekeeper" workflow that must pass before builds occur.
 - **`docker.yaml`**: Builds and pushes Docker images. This runs _after_ validation in the release flow, or independently for Dockerfile-only changes.
 - **`cd.yaml`**: Handles deployment artefacts after successful builds.
 

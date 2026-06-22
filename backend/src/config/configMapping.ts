@@ -27,13 +27,13 @@ const DEFAULT_TICKET_PRIORITIES = ["Lowest", "Low", "Medium", "High", "Highest"]
  * @returns Workload or null if not found
  */
 export const getWorkloadById = (id: WorkloadId): Workload | null =>
-  getConfig().workloadConfigs.workloads.find((workload) => workload.id === id);
+  getConfig().workloadConfigs?.workloads?.find((workload) => workload.id === id) || null;
 
 /**
  * Find all the workloads that have the given repo group.
  */
 export const getWorkloadsWithRepoGroup = (repoGroup: string): Workload[] =>
-  getConfig().workloadConfigs.workloads.filter((w) => Object.keys(w.codeManagement.repoGroups).includes(repoGroup));
+  getConfig().workloadConfigs?.workloads?.filter((w) => Object.keys(w.codeManagement.repoGroups).includes(repoGroup)) || [];
 
 export const getQualityGatesByIdAndVersion = (id: string, version: string) => {
   const qualityGatesConfigs = getConfig().qualityGatesConfigs["quality-gates"];
@@ -48,7 +48,7 @@ export const getQualityGatesByIdAndVersion = (id: string, version: string) => {
 
 export const getQualityGatesByWorkloadId = (id: WorkloadId): QualityGatesConfig => {
   const config = getConfig();
-  const qualityGatesMapping = config.workloadConfigs.workloads.find((workload) => workload.id === id).qualityGates;
+  const qualityGatesMapping = config.workloadConfigs?.workloads?.find((workload) => workload.id === id)?.qualityGates;
   if (!qualityGatesMapping) throw new Error(`No quality gates mapping defined for workload "${id}"`);
   const matchingQualityGatesConfig = getQualityGatesByIdAndVersion(qualityGatesMapping.id, qualityGatesMapping.version);
   return matchingQualityGatesConfig;
@@ -57,7 +57,7 @@ export const getQualityGatesByWorkloadId = (id: WorkloadId): QualityGatesConfig 
 /**
  * List all workloads in the configuration.
  */
-export const listWorkloads = (): Workload[] => getConfig().workloadConfigs.workloads;
+export const listWorkloads = (): Workload[] => getConfig().workloadConfigs?.workloads || [];
 
 /**
  * List all workload IDs in the configuration, sorted alphabetically.
@@ -72,7 +72,7 @@ export const listWorkloadIds = (): WorkloadId[] =>
  * or all workloads if no workload ID is provided.
  */
 export const listRepoGroups = (workload: Workload | null = null): string[] => {
-  const workloads = workload ? [workload] : getConfig().workloadConfigs.workloads;
+  const workloads = workload ? [workload] : (getConfig().workloadConfigs?.workloads || []);
   const allGroups = workloads.flatMap((w) => Object.keys(w.codeManagement.repoGroups));
 
   return uniq(allGroups).sort((a, b) => a.localeCompare(b));
@@ -83,7 +83,7 @@ export const listRepoGroups = (workload: Workload | null = null): string[] => {
  * or all workloads if no workload ID is provided.
  */
 export const listJobGroups = (workload: Workload | null = null): string[] => {
-  const workloads = workload ? [workload] : getConfig().workloadConfigs.workloads;
+  const workloads = workload ? [workload] : (getConfig().workloadConfigs?.workloads || []);
   const allGroups = workloads.map((w) => listNormalisedJobGroupsForWorkload(w)).flatMap((jg) => Object.keys(jg));
 
   return uniq(allGroups).sort((a, b) => a.localeCompare(b));
@@ -272,7 +272,7 @@ export const getServerConfig = <T extends RemoteServer>(servers: T[], serverId: 
  * List all unique tags pairs defined across all workloads.
  */
 export const listAllTagPairs = (): Record<string, string[]> => {
-  const workloads = getConfig().workloadConfigs.workloads;
+  const workloads = getConfig().workloadConfigs?.workloads || [];
   const tags: Record<string, string[]> = {};
   for (const w of workloads) {
     for (const [k, v] of Object.entries(w.tags ?? {})) {
@@ -294,8 +294,9 @@ export const listAllTagPairs = (): Record<string, string[]> => {
  * @param tags
  */
 export const getWorkloadsWithTags = (tags: Tags): WorkloadId[] => {
-  return getConfig()
-    .workloadConfigs.workloads.filter((w) => {
+  const workloads = getConfig().workloadConfigs?.workloads || [];
+  return workloads
+    .filter((w) => {
       return tags.find(({ key, value }) => w.tags?.[key] === value);
     })
     .map((w) => {

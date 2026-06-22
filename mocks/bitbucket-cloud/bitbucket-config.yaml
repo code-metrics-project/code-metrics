@@ -1,6 +1,14 @@
 plugin: rest
 
 resources:
+  # Health check endpoint for connection checker
+  - method: get
+    path: /user
+    response:
+      statusCode: 200
+      content: |
+        { "username": "mock-user", "display_name": "Mock User", "uuid": "{mock-uuid}" }
+
   - method: get
     path: /repositories/{workload}
     response:

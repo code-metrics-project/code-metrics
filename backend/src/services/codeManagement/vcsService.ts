@@ -14,11 +14,13 @@ import { provideDatastore } from "../../db/factory";
 import { PRECACHE_REPO_LIST, precacheRepoList } from "./precache";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { CodeManagementTypes } from "../../model/config/common";
-import { getConfigItem, getConfigItemAsNumber } from "../../config/sources/source";
+import { getEnvConfigItem, getEnvConfigItemAsNumber } from "../../config/sources/source";
 import { TMergeRules } from "../../model/qualityGates";
 import { DO_NOT_EXPIRE } from "../../db/api";
 import { truncateDateOnly } from "../../utils/date";
 import { getDataForDateRange, StorableLike } from "../dateWalker";
+import { ConnectionChecker, ConnectionCheckResult } from "../../model/remote-connection-status";
+import { getAllCodeManagementConfig } from "../../config/configMapping";
 
 type RepoList = {
   key: string;
@@ -41,7 +43,7 @@ type TemporalCommitItemFilter = {
 type TemporalPrDayEntry = StorableLike & TemporalPrItemFilter & { value: CompletePrInfo[] };
 type TemporalCommitDayEntry = StorableLike & TemporalCommitItemFilter & { value: CommitFileChanges[] };
 
-export const CACHE_REPO_LIST = getConfigItem("CACHE_REPO_LIST") !== "false";
+export const CACHE_REPO_LIST = getEnvConfigItem("CACHE_REPO_LIST") !== "false";
 const COLLECTION_NAME_COMMIT_PRS = "commit-prs";
 const COLLECTION_NAME_EARLIEST_COMMIT = "earliest-commits";
 const COLLECTION_NAME_VCS_CACHE = "vcs-cache";
@@ -53,11 +55,12 @@ const COLLECTION_NAME_COMMIT_FILE_CHANGES_BY_DAY = "commit-file-changes-by-day";
 /**
  * Cache for 6 hours by default.
  */
-const REPO_LIST_EXPIRY_SECONDS: number = getConfigItemAsNumber("REPO_LIST_EXPIRY_SECONDS", 21600)!;
+const REPO_LIST_EXPIRY_SECONDS = getEnvConfigItemAsNumber("REPO_LIST_EXPIRY_SECONDS", 21600);
 const TODAY_TTL_SECONDS = 1800;
 
 const builders: Record<string, () => VcsService> = {};
 const instances: Record<string, VcsService> = {};
+const checkers: Record<string, ConnectionChecker> = {};
 
 /**
  * This should be called after all VCS service instances have been registered.
@@ -70,6 +73,54 @@ export const initVcs = async () => {
 export const registerVcs = (type: CodeManagementTypes, builder: () => VcsService) => {
   verbose(`Registered VCS implementation for: ${type}`);
   builders[type] = builder;
+};
+
+/**
+ * Register a connection checker for a VCS provider type.
+ * This allows checking connectivity to the remote server.
+ */
+export const registerVcsConnectionChecker = (type: CodeManagementTypes, checker: ConnectionChecker) => {
+  verbose(`Registered VCS connection checker for: ${type}`);
+  checkers[type] = checker;
+};
+
+/**
+ * Check connectivity to all configured code management servers.
+ * Returns connection status for each server.
+ */
+export const checkVcsConnections = async (): Promise<ConnectionCheckResult[]> => {
+  const config = getAllCodeManagementConfig();
+  const results: ConnectionCheckResult[] = [];
+
+  // Collect all servers from all VCS types
+  const checks: Promise<ConnectionCheckResult>[] = [];
+  for (const [providerType, providerConfig] of Object.entries(config)) {
+    if (!providerConfig?.servers) continue;
+
+    const checker = checkers[providerType];
+    if (!checker) {
+      // No checker registered for this type (e.g. noop implementations)
+      continue;
+    }
+
+    for (const server of providerConfig.servers) {
+      checks.push(checker(server));
+    }
+  }
+
+  // Run all checks in parallel
+  const settled = await Promise.allSettled(checks);
+
+  for (const result of settled) {
+    if (result.status === "fulfilled") {
+      results.push(result.value);
+    } else {
+      // If a checker itself throws, create an error result
+      logger(`VCS connection check failed with uncaught error: ${result.reason}`);
+    }
+  }
+
+  return results;
 };
 
 export const getVcsForWorkload = (workload: Workload): VcsService => getVcs(workload.codeManagement.type);
@@ -521,13 +572,7 @@ const readThroughCacheSingleton = async <T>(
   if (!activeQuery) {
     activeQuery = (async () => {
       try {
-        return await findOrInsert(
-          workloadId,
-          compositeKey,
-          COLLECTION_NAME_VCS_CACHE,
-          REPO_LIST_EXPIRY_SECONDS,
-          populator,
-        );
+        return await findOrInsert(workloadId, key, COLLECTION_NAME_VCS_CACHE, REPO_LIST_EXPIRY_SECONDS, populator);
       } finally {
         vcsQueries.delete(compositeKey);
       }

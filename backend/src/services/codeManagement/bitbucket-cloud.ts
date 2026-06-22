@@ -1,5 +1,6 @@
 import { type APIClient, Bitbucket } from "bitbucket";
 import { AsyncResponse } from "bitbucket/lib/bitbucket";
+import fetch from "node-fetch";
 import { DatedMetricEntry } from "../../model/metrics";
 import { logger, warn } from "../../utils/logger/logger";
 import {
@@ -16,13 +17,107 @@ import { TMergeRules } from "../../model/qualityGates";
 import { provideDatastore } from "../../db/factory";
 import { getAllCodeManagementConfig, getAllCodeManagementUrls, getWorkloadById } from "../../config/configMapping";
 import { Datastore, DatastoreCollection, QueryFilter } from "../../db/api";
-import { registerVcs, VcsService } from "./vcsService";
+import { registerVcs, registerVcsConnectionChecker, VcsService } from "./vcsService";
 import { truncateDateOnly } from "../../utils/date";
 import { WorkloadId } from "../../model/config/workload-config";
 import { CodeManagementTypes } from "../../model/config/common";
+import { ConnectionCheckResult } from "../../model/remote-connection-status";
+import { CodeManagementServer, RemoteServer } from "../../model/config/remote-config";
 
-export const initBitbucketCloudVcs = () =>
+/**
+ * Check connectivity to Bitbucket Cloud by calling the user endpoint.
+ */
+const checkBitbucketCloudConnection = async (server: RemoteServer): Promise<ConnectionCheckResult> => {
+  const startTime = Date.now();
+  const codeManagementServer = server as CodeManagementServer;
+  const url = codeManagementServer.url || "https://api.bitbucket.org/2.0";
+
+  if (!codeManagementServer.username || !codeManagementServer.apiKey) {
+    return {
+      id: server.id,
+      category: "codeManagement",
+      type: CodeManagementTypes.BITBUCKET_CLOUD,
+      url,
+      status: "unconfigured",
+      statusDetail: "No username or API key configured",
+    };
+  }
+
+  try {
+    const authString = Buffer.from(`${codeManagementServer.username}:${codeManagementServer.apiKey}`).toString("base64");
+    const response = await fetch(`${url}/user`, {
+      headers: {
+        Authorization: `Basic ${authString}`,
+      },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    const responseTimeMs = Date.now() - startTime;
+
+    if (response.ok) {
+      return {
+        id: server.id,
+        category: "codeManagement",
+        type: CodeManagementTypes.BITBUCKET_CLOUD,
+        url,
+        status: "connected",
+        responseTimeMs,
+      };
+    }
+
+    if (response.status === 429) {
+      const retryAfter = response.headers.get("retry-after");
+      const detail = retryAfter ? `Rate limited. Retry after ${retryAfter} seconds` : "Rate limited";
+      return {
+        id: server.id,
+        category: "codeManagement",
+        type: CodeManagementTypes.BITBUCKET_CLOUD,
+        url,
+        status: "rateLimited",
+        statusDetail: detail,
+        responseTimeMs,
+      };
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      return {
+        id: server.id,
+        category: "codeManagement",
+        type: CodeManagementTypes.BITBUCKET_CLOUD,
+        url,
+        status: "unauthorised",
+        statusDetail: `HTTP ${response.status}: ${response.statusText}`,
+        responseTimeMs,
+      };
+    }
+
+    return {
+      id: server.id,
+      category: "codeManagement",
+      type: CodeManagementTypes.BITBUCKET_CLOUD,
+      url,
+      status: "error",
+      statusDetail: `HTTP ${response.status}: ${response.statusText}`,
+      responseTimeMs,
+    };
+  } catch (err: any) {
+    const responseTimeMs = Date.now() - startTime;
+    return {
+      id: server.id,
+      category: "codeManagement",
+      type: CodeManagementTypes.BITBUCKET_CLOUD,
+      url,
+      status: "unreachable",
+      statusDetail: err.name || err.code || err.message,
+      responseTimeMs,
+    };
+  }
+};
+
+export const initBitbucketCloudVcs = () => {
   registerVcs(CodeManagementTypes.BITBUCKET_CLOUD, () => new BitbucketCloudVcsService());
+  registerVcsConnectionChecker(CodeManagementTypes.BITBUCKET_CLOUD, checkBitbucketCloudConnection);
+};
 
 async function paginate<T, U extends { values?: U["values"] }>(
   connection: APIClient,

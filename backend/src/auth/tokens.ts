@@ -1,10 +1,11 @@
+import crypto from "node:crypto";
 import { Request, Response } from "express";
 import { verbose, warn } from "../utils/logger/logger";
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 import { AuthenticationResult, getAuthenticator, UserData } from "./auth";
 import { validateLongLivedAccessToken } from "./long_lived";
 import ms from "ms";
-import { getConfigItem } from "../config/sources/source";
+import { getEnvConfigItem } from "../config/sources/source";
 import { getRBACService } from "../services/rbac/rbacService";
 
 export type SecurityTokens = {
@@ -51,13 +52,13 @@ export type GeneratedToken = {
 const ISS = "code-metrics-tool";
 const AUD = "all";
 
-const accessTokenTtl = getConfigItem("ACCESS_TOKEN_TTL", "10m");
-const refreshTokenTtl = getConfigItem("REFRESH_TOKEN_TTL", "60m");
+const accessTokenTtl = getEnvConfigItem("ACCESS_TOKEN_TTL", "10m");
+const refreshTokenTtl = getEnvConfigItem("REFRESH_TOKEN_TTL", "60m");
 
 let tokenSecret: string;
 export const getTokenSecret = () => {
   if (!tokenSecret) {
-    tokenSecret = getConfigItem("ACCESS_TOKEN_SECRET");
+    tokenSecret = getEnvConfigItem("ACCESS_TOKEN_SECRET");
     if (!tokenSecret) {
       throw new Error("ACCESS_TOKEN_SECRET environment variable is required");
     }
@@ -87,7 +88,12 @@ const generateRefreshToken = (subject: string, roles?: string[]) => {
  * @param ttl
  * @param roles
  */
-export const generateToken = (subject: string, token_type: TokenTypes, ttl: string, roles?: string[]): GeneratedToken => {
+export const generateToken = (
+  subject: string,
+  token_type: TokenTypes,
+  ttl: string,
+  roles?: string[],
+): GeneratedToken => {
   const issuedAt = new Date();
   const ttlMs = ms(ttl);
   const expires = new Date(issuedAt.getTime() + ttlMs);
@@ -156,40 +162,35 @@ export const validateAccessToken = async (
     return;
   }
 
-  jwt.verify(
-    accessToken,
-    getTokenSecret(),
-    { audience: AUD, issuer: ISS },
-    (err, decoded: TokenPayload) => {
-      if (err) {
-        warn("Invalid access token:", err);
+  jwt.verify(accessToken, getTokenSecret(), { audience: AUD, issuer: ISS }, (err, decoded: TokenPayload) => {
+    if (err) {
+      warn("Invalid access token:", err);
+      callback(false);
+      return;
+    }
+
+    // is the token type allowed?
+    if (!decoded || !decoded.token_type || !allowedTokenTypes.includes(decoded.token_type)) {
+      warn(`Token type ${decoded?.token_type} is not allowed`);
+      callback(false);
+      return;
+    }
+
+    // validate the token based on its type
+    switch (decoded?.token_type) {
+      case "access_token":
+        verbose("Access token is valid");
+        callback(true, decoded.sub, decoded.roles);
+        break;
+      case "long_lived_access_token":
+        validateLongLivedAccessToken(decoded, callback);
+        break;
+      default:
+        warn(`Unexpected token type: ${decoded?.token_type}`);
         callback(false);
         return;
-      }
-
-      // is the token type allowed?
-      if (!decoded || !decoded.token_type || !allowedTokenTypes.includes(decoded.token_type)) {
-        warn(`Token type ${decoded?.token_type} is not allowed`);
-        callback(false);
-        return;
-      }
-
-      // validate the token based on its type
-      switch (decoded?.token_type) {
-        case "access_token":
-          verbose("Access token is valid");
-          callback(true, decoded.sub, decoded.roles);
-          break;
-        case "long_lived_access_token":
-          validateLongLivedAccessToken(decoded, callback);
-          break;
-        default:
-          warn(`Unexpected token type: ${decoded?.token_type}`);
-          callback(false);
-          return;
-      }
-    },
-  );
+    }
+  });
 };
 
 /**

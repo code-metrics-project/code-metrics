@@ -1,4 +1,10 @@
-import { LlmProviderTypes, AzureTicketOptions, GithubTicketOptions, JiraTicketOptions, ServiceNowTicketOptions } from "./common";
+import {
+  LlmProviderTypes,
+  AzureTicketOptions,
+  GithubTicketOptions,
+  JiraTicketOptions,
+  ServiceNowTicketOptions,
+} from "./common";
 import { VersionedConfig } from "./base";
 
 export type RemoteServerCategory = "codeAnalysis" | "codeManagement" | "pipelines" | "ticketManagement";

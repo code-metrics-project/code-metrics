@@ -2,9 +2,9 @@ import { CookieOptions, Request, Response } from "express";
 import { verbose } from "./logger/logger";
 import { decrypt, encrypt } from "./cryptoutil";
 import { getTokenSecret } from "../auth/tokens";
-import { getConfigItem } from "../config/sources/source";
+import { getEnvConfigItem } from "../config/sources/source";
 
-const COOKIE_SAME_SITE = getConfigItem("COOKIE_SAME_SITE");
+const COOKIE_SAME_SITE = getEnvConfigItem("COOKIE_SAME_SITE");
 
 /**
  * Writes an encrypted cookie to the response.

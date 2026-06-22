@@ -15,7 +15,7 @@ The following datastore implementations are supported:
 
 ## Configuration
 
-Configuration can be set using the `DATASTORE_IMPL` environment variable in backend, which accepts one of `inmem`, `mongodb` as values.
+Configuration can be set using the `DATASTORE_IMPL` environment variable in backend, which accepts one of `inmem`, `dynamodb`, `localdb`, `mongodb` as values.
 
     DATASTORE_IMPL=inmem
 
@@ -122,7 +122,7 @@ The MongoDB implementation uses an external MongoDB instance to store data. It r
 
 The following environment variables apply:
 
-    DATASTORE_IMPL=inmem
+    DATASTORE_IMPL=mongodb
     DATABASE_NAME=code-metrics
     DATABASE_URI=mongodb://code-metrics:changeme@localhost:27017
 

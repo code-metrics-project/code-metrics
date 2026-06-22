@@ -1,7 +1,7 @@
 import { Collection, Db, Document, Filter, MongoClient } from "mongodb";
 import { AbstractDatastore, DatastoreAdmin, DatastoreCollection, EXPIRY_FIELD, QueryFilter } from "../api";
 import { error, logger, verbose, warn } from "../../utils/logger/logger";
-import { getConfigItem } from "../../config/sources/source";
+import { getEnvConfigItem } from "../../config/sources/source";
 
 /**
  * MongoDB datastore.
@@ -25,11 +25,11 @@ let client: MongoClient;
  * Invoke once per https://mongodb.github.io/node-mongodb-native/driver-articles/mongoclient.html#mongoclient-connection-pooling
  */
 export const initMongoDb = async () => {
-  const dbUri = getConfigItem("DATABASE_URI");
+  const dbUri = getEnvConfigItem("DATABASE_URI");
   if (!dbUri) {
     throw new Error("DATABASE_URI must be set");
   }
-  let dbName = getConfigItem("DATABASE_NAME");
+  let dbName = getEnvConfigItem("DATABASE_NAME");
   if (!dbName) {
     logger(`Using default database name: ${DEFAULT_DATABASE_NAME}`);
     dbName = DEFAULT_DATABASE_NAME;
@@ -134,7 +134,9 @@ export class MongoDatastore extends AbstractDatastore<Filter<Document>, MongoCol
       verbose(`Expiry index ${EXPIRY_INDEX} already exists on collection: ${collectionName}`);
     } else {
       if (!this.config.autoCreate) {
-        warn(`Expiry index '${EXPIRY_INDEX}' does not exist on collection '${collectionName}' and DATASTORE_AUTO_CREATE is disabled. TTL expiration will not function until the index is created manually or DATASTORE_AUTO_CREATE is enabled.`);
+        warn(
+          `Expiry index '${EXPIRY_INDEX}' does not exist on collection '${collectionName}' and DATASTORE_AUTO_CREATE is disabled. TTL expiration will not function until the index is created manually or DATASTORE_AUTO_CREATE is enabled.`,
+        );
         return;
       }
       logger(`Creating expiry index '${EXPIRY_INDEX}' on collection: ${collectionName}`);

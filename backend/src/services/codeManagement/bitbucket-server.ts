@@ -1,4 +1,5 @@
 import parseGitDiff, { AnyFileChange } from "parse-git-diff";
+import fetch from "node-fetch";
 import { type BitbucketServerConnection, createBitbuckerServerConnection } from "../../utils/bitbucketServerConnection";
 import { DatedMetricEntry } from "../../model/metrics";
 import { logger, verbose, warn } from "../../utils/logger/logger";
@@ -15,18 +16,132 @@ import {
 import { provideDatastore } from "../../db/factory";
 import { getAllCodeManagementConfig, getAllCodeManagementUrls, getWorkloadById } from "../../config/configMapping";
 import { Datastore, DatastoreCollection, QueryFilter } from "../../db/api";
-import { registerVcs, VcsService } from "./vcsService";
+import { registerVcs, registerVcsConnectionChecker, VcsService } from "./vcsService";
 import { MILLIS_PER_DAY, truncateDateOnly } from "../../utils/date";
 import { getDataForDateRange } from "../dateWalker";
 import { WorkloadId } from "../../model/config/workload-config";
 import { CodeManagementTypes } from "../../model/config/common";
 import { TMergeRules } from "../../model/qualityGates";
+import { ConnectionCheckResult } from "../../model/remote-connection-status";
+import { AuthMethod, CodeManagementServer, RemoteServer } from "../../model/config/remote-config";
 
 const COLLECTION_NAME_REPO_COMMITS = "repo-commits";
 const COLLECTION_NAME_REPO_CHANGES = "repo-changes";
 
-export const initBitbucketServerVcs = () =>
+/**
+ * Check connectivity to Bitbucket Server by calling the projects endpoint.
+ */
+const checkBitbucketServerConnection = async (server: RemoteServer): Promise<ConnectionCheckResult> => {
+  const startTime = Date.now();
+  const codeManagementServer = server as CodeManagementServer;
+  const url = codeManagementServer.url;
+
+  if (!url) {
+    return {
+      id: server.id,
+      category: "codeManagement",
+      type: CodeManagementTypes.BITBUCKET_SERVER,
+      status: "unconfigured",
+      statusDetail: "No URL configured for this server",
+    };
+  }
+
+  if (!codeManagementServer.apiKey) {
+    return {
+      id: server.id,
+      category: "codeManagement",
+      type: CodeManagementTypes.BITBUCKET_SERVER,
+      url,
+      status: "unconfigured",
+      statusDetail: "No API key configured",
+    };
+  }
+
+  try {
+    let authHeader: string;
+    if (codeManagementServer.authMethod === AuthMethod.BEARER_TOKEN) {
+      authHeader = `Bearer ${codeManagementServer.apiKey}`;
+    } else {
+      const authString = Buffer.from(
+        `${codeManagementServer.username || ""}:${codeManagementServer.apiKey}`,
+      ).toString("base64");
+      authHeader = `Basic ${authString}`;
+    }
+
+    const response = await fetch(`${url}/rest/api/1.0/projects?limit=1`, {
+      headers: {
+        Authorization: authHeader,
+        Accept: "application/json",
+      },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    const responseTimeMs = Date.now() - startTime;
+
+    if (response.ok) {
+      return {
+        id: server.id,
+        category: "codeManagement",
+        type: CodeManagementTypes.BITBUCKET_SERVER,
+        url,
+        status: "connected",
+        responseTimeMs,
+      };
+    }
+
+    if (response.status === 429) {
+      const retryAfter = response.headers.get("retry-after");
+      const detail = retryAfter ? `Rate limited. Retry after ${retryAfter} seconds` : "Rate limited";
+      return {
+        id: server.id,
+        category: "codeManagement",
+        type: CodeManagementTypes.BITBUCKET_SERVER,
+        url,
+        status: "rateLimited",
+        statusDetail: detail,
+        responseTimeMs,
+      };
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      return {
+        id: server.id,
+        category: "codeManagement",
+        type: CodeManagementTypes.BITBUCKET_SERVER,
+        url,
+        status: "unauthorised",
+        statusDetail: `HTTP ${response.status}: ${response.statusText}`,
+        responseTimeMs,
+      };
+    }
+
+    return {
+      id: server.id,
+      category: "codeManagement",
+      type: CodeManagementTypes.BITBUCKET_SERVER,
+      url,
+      status: "error",
+      statusDetail: `HTTP ${response.status}: ${response.statusText}`,
+      responseTimeMs,
+    };
+  } catch (err: any) {
+    const responseTimeMs = Date.now() - startTime;
+    return {
+      id: server.id,
+      category: "codeManagement",
+      type: CodeManagementTypes.BITBUCKET_SERVER,
+      url,
+      status: "unreachable",
+      statusDetail: err.name || err.code || err.message,
+      responseTimeMs,
+    };
+  }
+};
+
+export const initBitbucketServerVcs = () => {
   registerVcs(CodeManagementTypes.BITBUCKET_SERVER, () => new BitbucketServerVcsService());
+  registerVcsConnectionChecker(CodeManagementTypes.BITBUCKET_SERVER, checkBitbucketServerConnection);
+};
 
 const listPullRequestFiles = async (
   connection: BitbucketServerConnection,

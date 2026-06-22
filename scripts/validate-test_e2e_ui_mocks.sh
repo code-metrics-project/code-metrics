@@ -101,7 +101,7 @@ function stop_backend() {
 
 function stop_mocks() {
   echo "Stopping mocks"
-  imposter down
+  imposter down || true
 }
 
 # Ensure stop_backend and stop_mocks are called on script exit even during failures

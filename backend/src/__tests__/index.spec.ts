@@ -16,8 +16,8 @@ type IndexMocks = {
   logger: jest.Mock;
   error: jest.Mock;
   verbose: jest.Mock;
-  getConfigItem: jest.Mock;
-  overrideConfigItem: jest.Mock;
+  getEnvConfigItem: jest.Mock;
+  overrideEnvConfigItem: jest.Mock;
 };
 
 const originalEnv = { ...process.env };
@@ -94,13 +94,13 @@ const loadIndex = async (options?: { lambdaTaskRoot?: string; invocationMode?: s
   const logger = jest.fn();
   const error = jest.fn();
   const verbose = jest.fn();
-  const getConfigItem = jest.fn().mockImplementation((key: string) => {
+  const getEnvConfigItem = jest.fn().mockImplementation((key: string) => {
     if (key === "INVOCATION_MODE") {
       return options?.invocationMode ?? "serve-api";
     }
     return undefined;
   });
-  const overrideConfigItem = jest.fn();
+  const overrideEnvConfigItem = jest.fn();
 
   jest.doMock("../app", () => ({
     bootstrap,
@@ -116,8 +116,8 @@ const loadIndex = async (options?: { lambdaTaskRoot?: string; invocationMode?: s
     verbose,
   }));
   jest.doMock("../config/sources/source", () => ({
-    getConfigItem,
-    overrideConfigItem,
+    getEnvConfigItem,
+    overrideEnvConfigItem,
   }));
 
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -137,8 +137,8 @@ const loadIndex = async (options?: { lambdaTaskRoot?: string; invocationMode?: s
       logger,
       error,
       verbose,
-      getConfigItem,
-      overrideConfigItem,
+      getEnvConfigItem,
+      overrideEnvConfigItem,
     } satisfies IndexMocks,
   };
 };
@@ -165,7 +165,7 @@ describe("index entrypoint", () => {
 
     expect(global.isLambda).toBe(true);
     expect(global.invocationMode).toBe("serve-api");
-    expect(mocks.overrideConfigItem).toHaveBeenCalledWith("CONFIG_DIR", "/var/task/config");
+    expect(mocks.overrideEnvConfigItem).toHaveBeenCalledWith("CONFIG_DIR", "/var/task/config");
     expect(mocks.verbose).toHaveBeenCalledWith("Running in AWS Lambda environment with task root:", "/var/task");
     expect(mocks.bootstrap).not.toHaveBeenCalled();
     expect(mocks.startApi).not.toHaveBeenCalled();
@@ -188,7 +188,7 @@ describe("index entrypoint", () => {
     });
 
     expect(global.isLambda).toBe(false);
-    expect(mocks.overrideConfigItem).not.toHaveBeenCalledWith("CONFIG_DIR", expect.anything());
+    expect(mocks.overrideEnvConfigItem).not.toHaveBeenCalledWith("CONFIG_DIR", expect.anything());
     expect(mocks.bootstrap).toHaveBeenCalledTimes(1);
     expect(mocks.startApi).toHaveBeenCalledTimes(1);
   });

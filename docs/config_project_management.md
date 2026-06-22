@@ -10,7 +10,7 @@ You can report on, query and analyse bugs/defect tickets you've logged in your p
 
 To configure bugs, you need to:
 
-- add your project management tool to the `ticketManagement` section of the [remote configuration](./config_project_management.md) file
+- add your project management tool to the `ticketManagement` section of the [remote configuration](./configuration.md) file
 - refer to the server ID and type within the `projectManagement` section of a workload configuration
 
 ---

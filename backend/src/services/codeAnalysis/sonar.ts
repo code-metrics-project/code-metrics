@@ -19,10 +19,12 @@ import {
   JsonMetricResponse,
   MetricHistoryRecord,
   registerCodeAnalysis,
+  registerCodeAnalysisConnectionChecker,
 } from "./codeAnalysisService";
 import { getConfig } from "../../config/config";
-import { AuthMethod, SonarServer } from "../../model/config/remote-config";
+import { AuthMethod, RemoteServer, SonarServer } from "../../model/config/remote-config";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
+import { ConnectionCheckResult } from "../../model/remote-connection-status";
 
 /**
  * Summarise the following metrics by adding an average or total.
@@ -68,7 +70,96 @@ type CodeAnalysisHistoryResponse = {
   measures: SonarMeasure[];
 };
 
-export const initSonar = () => registerCodeAnalysis(CodeAnalysisTypes.SONAR, () => new SonarCodeAnalysisService());
+/**
+ * Check connectivity to a SonarQube server by calling the system status endpoint.
+ */
+const checkSonarConnection = async (server: RemoteServer): Promise<ConnectionCheckResult> => {
+  const startTime = Date.now();
+  const sonarServer = server as SonarServer;
+  const url = sonarServer.url;
+
+  if (!url) {
+    return {
+      id: server.id,
+      category: "codeAnalysis",
+      type: CodeAnalysisTypes.SONAR,
+      status: "unconfigured",
+      statusDetail: "No URL configured for this server",
+    };
+  }
+
+  try {
+    // Build auth headers
+    let authHeader: string;
+    if (sonarServer.authMethod === AuthMethod.BEARER_TOKEN) {
+      authHeader = `Bearer ${sonarServer.apiKey}`;
+    } else {
+      // Basic auth with API key and trailing colon
+      const encodedAuth = Buffer.from(`${sonarServer.apiKey}:`).toString("base64");
+      authHeader = `Basic ${encodedAuth}`;
+    }
+
+    // Call the system status endpoint
+    const response = await fetch(`${url}/api/system/status`, {
+      headers: { Authorization: authHeader },
+      signal: AbortSignal.timeout(5000), // 5 second timeout
+    });
+
+    const responseTimeMs = Date.now() - startTime;
+
+    if (response.ok) {
+      return {
+        id: server.id,
+        category: "codeAnalysis",
+        type: CodeAnalysisTypes.SONAR,
+        url,
+        status: "connected",
+        responseTimeMs,
+      };
+    }
+
+    // Handle HTTP error responses
+    if (response.status === 401 || response.status === 403) {
+      return {
+        id: server.id,
+        category: "codeAnalysis",
+        type: CodeAnalysisTypes.SONAR,
+        url,
+        status: "unauthorised",
+        statusDetail: `HTTP ${response.status}: ${response.statusText}`,
+        responseTimeMs,
+      };
+    }
+
+    return {
+      id: server.id,
+      category: "codeAnalysis",
+      type: CodeAnalysisTypes.SONAR,
+      url,
+      status: "error",
+      statusDetail: `HTTP ${response.status}: ${response.statusText}`,
+      responseTimeMs,
+    };
+  } catch (err: any) {
+    const responseTimeMs = Date.now() - startTime;
+
+    // Network errors (ECONNREFUSED, ETIMEDOUT, DNS failures, AbortError, etc.)
+    return {
+      id: server.id,
+      category: "codeAnalysis",
+      type: CodeAnalysisTypes.SONAR,
+      url,
+      status: "unreachable",
+      statusDetail: err.name || err.code || err.message,
+      responseTimeMs,
+    };
+  }
+};
+
+export const initSonar = () => {
+  registerCodeAnalysis(CodeAnalysisTypes.SONAR, () => new SonarCodeAnalysisService());
+  registerCodeAnalysisConnectionChecker(CodeAnalysisTypes.SONAR, checkSonarConnection);
+};
 
 class SonarCodeAnalysisService implements CodeAnalysisService {
   async fetchMetricHistoryAsJson(

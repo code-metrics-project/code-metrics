@@ -1,17 +1,24 @@
-import { AbstractDatastore, DatastoreAdmin, DatastoreCollection, DatastoreConfig, EXPIRY_FIELD, QueryFilter } from "../api";
+import {
+  AbstractDatastore,
+  DatastoreAdmin,
+  DatastoreCollection,
+  DatastoreConfig,
+  EXPIRY_FIELD,
+  QueryFilter,
+} from "../api";
 import cloneDeep from "lodash/cloneDeep";
 import { error, logger, verbose } from "../../utils/logger/logger";
 import Datastore from "@seald-io/nedb";
 import path from "path";
 import fs from "fs";
-import { getConfigItem } from "../../config/sources/source";
+import { getEnvConfigItem } from "../../config/sources/source";
 
 let dbDir: string | undefined;
 const collections = new Map<string, Datastore>();
 
 export const initNeDB = async (filePath?: string): Promise<void> => {
   collections.clear();
-  dbDir = filePath ?? getConfigItem("DATASTORE_PATH");
+  dbDir = filePath ?? getEnvConfigItem("DATASTORE_PATH");
 };
 
 /**

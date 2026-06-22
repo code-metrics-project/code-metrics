@@ -12,7 +12,7 @@
  */
 
 import { DynamoDBClient, ListTablesCommand, DeleteTableCommand, DescribeTableCommand } from "@aws-sdk/client-dynamodb";
-import { overrideConfigItem } from "../../../config/sources/source";
+import { overrideEnvConfigItem } from "../../../config/sources/source";
 import { initDynamoDB, DynamoDatastore } from "../db";
 import { QueryFilter } from "../../api";
 
@@ -36,12 +36,12 @@ describeIfMiniStack("DynamoDB Datastore with MiniStack", () => {
     });
 
     // Override config for tests
-    overrideConfigItem("AWS_REGION", region);
-    overrideConfigItem("AWS_ENDPOINT_URL", endpointUrl);
-    overrideConfigItem("DATABASE_NAME", testTablePrefix);
-    overrideConfigItem("LOOKUP_CACHE_ENABLED", "true");
-    overrideConfigItem("DATASTORE_IMPL", "dynamodb");
-    overrideConfigItem("DATASTORE_AUTO_CREATE", "true");
+    overrideEnvConfigItem("AWS_REGION", region);
+    overrideEnvConfigItem("AWS_ENDPOINT_URL", endpointUrl);
+    overrideEnvConfigItem("DATABASE_NAME", testTablePrefix);
+    overrideEnvConfigItem("LOOKUP_CACHE_ENABLED", "true");
+    overrideEnvConfigItem("DATASTORE_IMPL", "dynamodb");
+    overrideEnvConfigItem("DATASTORE_AUTO_CREATE", "true");
 
     // Initialize DynamoDB module
     await initDynamoDB();

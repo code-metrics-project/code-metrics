@@ -1,6 +1,5 @@
 import { test, expect } from "../../fixtures";
 import { Paths } from "../../../../src/router/paths";
-import { buildPath } from "../../../../src/utils/path";
 
 test.describe("Repositories page", () => {
   test("Visits the repositories url from program", async ({ page, helpers }) => {
@@ -86,7 +85,11 @@ test.describe("Repositories page", () => {
   test("Shows breadcrumbs for workload view", async ({ page, helpers }) => {
     await helpers.login();
     await page.goto(Paths.WorkloadRepositories.replace(":workloadId", "athena"));
-    await expect(page.locator("a").filter({ hasText: "Workloads" })).toHaveAttribute("href", "/workload");
+    // Need to get "main" first because there is also a Workloads link in the nav bar.
+    await expect(page.getByRole("main").getByRole("link", { name: "Workloads", exact: true })).toHaveAttribute(
+      "href",
+      "/workload"
+    );
     await expect(page.getByRole("link", { name: "Athena", exact: true })).toHaveAttribute("href", "/workload/athena");
     await helpers.checkFooter();
   });

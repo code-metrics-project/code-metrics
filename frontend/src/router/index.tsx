@@ -44,6 +44,7 @@ const Admin = lazy(() => import("@/pages/admin/Admin"));
 const AdminTokens = lazy(() => import("@/pages/admin/Tokens"));
 const AdminDatastores = lazy(() => import("@/pages/admin/Datastores"));
 const AdminDatastoreDetail = lazy(() => import("@/pages/admin/DatastoreDetail"));
+const AdminRemoteConnections = lazy(() => import("@/pages/admin/RemoteConnections"));
 
 // Loading wrapper for suspense
 function PageLoader({ children }: { children: React.ReactNode }) {
@@ -382,6 +383,16 @@ const routes: RouteObject[] = [
           <RequireRole role="admin">
             <PageLoader>
               <AdminDatastores />
+            </PageLoader>
+          </RequireRole>
+        ),
+      },
+      {
+        path: Paths.AdminRemoteConnections,
+        element: (
+          <RequireRole role="admin">
+            <PageLoader>
+              <AdminRemoteConnections />
             </PageLoader>
           </RequireRole>
         ),

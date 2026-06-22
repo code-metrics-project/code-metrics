@@ -1,9 +1,10 @@
-import { getConfigItemAsNumber } from "../../config/sources/source";
+import { getEnvConfigItemAsNumber } from "../../config/sources/source";
 import { TQualityGateOutput } from "../../model/qualityGates";
 import { warn } from "../../utils/logger/logger.js";
 
-const qualityGateDangerThreshold = getConfigItemAsNumber("QUALITY_GATE_THRESHOLD_DANGER", 30);
-const qualityGateWarningThreshold = getConfigItemAsNumber("GUALITY_GATE_THRESHOLD_WARNING", 80);
+const qualityGateDangerThreshold = getEnvConfigItemAsNumber("QUALITY_GATE_THRESHOLD_DANGER", 30);
+const qualityGateWarningThreshold = getEnvConfigItemAsNumber("QUALITY_GATE_THRESHOLD_WARNING", 80);
+
 export const getVariant = (numerator?: number, denominator?: number): "success" | "warning" | "danger" | "no_data" => {
   if (typeof numerator !== "number" || typeof denominator !== "number" || denominator === 0) return "no_data";
 
@@ -17,6 +18,7 @@ export const getVariant = (numerator?: number, denominator?: number): "success" 
     return "danger";
   }
 };
+
 export const getWorstNumeratorAndDenominator = (repoGroup: string, repos: TQualityGateOutput[]) => {
   const repoScores = repos.map((repo) => {
     if (!repo.services) return { missing: 1 };

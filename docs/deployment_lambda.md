@@ -24,7 +24,7 @@ AWS Lambda provides a serverless deployment option for CodeMetrics, offering aut
 
 The Lambda deployment consists of:
 
-- **Backend API**: Node.js 20.x Lambda function handling all API requests
+- **Backend API**: Node.js 22.x Lambda function handling all API requests
 - **Frontend UI**: Static assets hosted on S3 and distributed via CloudFront
 - **Database**: MongoDB connection (external or MongoDB Atlas)
 - **Infrastructure**: SAM (Serverless Application Model) templates for provisioning
@@ -33,7 +33,7 @@ The Lambda deployment consists of:
 
 - [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) configured with appropriate credentials
 - [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) for infrastructure deployment
-- Node.js 20.x or later for runtime environment
+- Node.js 22.x or later for runtime environment
 - An AWS account with permissions to create Lambda functions, S3 buckets, CloudFront distributions, and API Gateway resources
 - A DynamoDB database (or, optionally, MongoDB such as AWS DocumentDB or MongoDB Atlas)
 
@@ -94,7 +94,7 @@ You can run periodic cache updates on AWS Lambda. See [Trigger a cache refresh](
 
 ---
 
-For LocalStack-based Lambda packaging, deployment, and testing during development, see [Lambda development with LocalStack](./dev/lambda.md).
+For MiniStack-based Lambda packaging, deployment, and testing during development, see [Lambda development with MiniStack](./dev/lambda.md).
 
 ---
 

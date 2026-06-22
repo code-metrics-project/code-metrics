@@ -138,16 +138,18 @@ jobs:
           key: ${{ runner.os }}-frontend-bun-${{ hashFiles('frontend/bun.lock') }}
           restore-keys: |
             ${{ runner.os }}-frontend-bun-${{ hashFiles('frontend/bun.lock') }}
+
       - name: Install Frontend Dependencies
         if: steps.cache-frontend-nm-keycloak.outputs.cache-hit != 'true'
         working-directory: ./frontend
         run: bun install --frozen-lockfile
 
-      - name: Install Playwright browsers
-        working-directory: ./frontend
-        run: bunx playwright install --with-deps
+      - name: Verify system Chrome
+        run: google-chrome --version
 
       - name: Run Playwright Tests (Keycloak)
+        env:
+          PLAYWRIGHT_CHROMIUM_CHANNEL: chrome
         working-directory: ./scripts
         run: ./validate-test_e2e_mocks.sh --auth-mode keycloak --skip-install
 

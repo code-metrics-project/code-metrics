@@ -26,6 +26,7 @@ export default {
   export: "Export",
   import: "Import",
   refresh: "Refresh",
+  reload: "Reload",
   retry: "Retry",
   selectAll: "Select All",
   deselectAll: "Deselect All",

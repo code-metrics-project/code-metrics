@@ -1,4 +1,8 @@
 export default {
+  configChangeBanner: {
+    title: "Configuration Updated",
+    message: "The application configuration has changed. Please reload to apply the updates.",
+  },
   codeHotspots: {
     title: "Code hotspots",
     description: "Identify files frequently changed in relation to project issues.",

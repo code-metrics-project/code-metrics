@@ -27,12 +27,13 @@ import {
 import { provideDatastore } from "../../db/factory";
 import { getAllCodeManagementUrls, getAllRemoteConfig, getWorkloadById } from "../../config/configMapping";
 import { Datastore, DatastoreCollection, QueryFilter } from "../../db/api";
-import { registerVcs, VcsService } from "./vcsService";
+import { registerVcs, registerVcsConnectionChecker, VcsService } from "./vcsService";
 import { StorableLike, getDataForDateRange } from "../dateWalker";
 import { WorkloadId } from "../../model/config/workload-config";
 import Bottleneck from "bottleneck";
 import { CodeManagementTypes } from "../../model/config/common";
-
+import { ConnectionCheckResult } from "../../model/remote-connection-status";
+import { CodeManagementServer, RemoteServer } from "../../model/config/remote-config";
 import { TMergeRules } from "../../model/qualityGates";
 
 const REFS_HEADS_STR = "refs/heads/";
@@ -49,7 +50,98 @@ type AdoItemFilter = {
   branch: string;
 };
 
-export const initAdoVcs = () => registerVcs(CodeManagementTypes.AZURE, () => new AdoVcsService());
+/**
+ * Check connectivity to an Azure DevOps server by attempting to list projects.
+ */
+const checkAzureVcsConnection = async (server: RemoteServer): Promise<ConnectionCheckResult> => {
+  const startTime = Date.now();
+  const codeManagementServer = server as CodeManagementServer;
+  const url = codeManagementServer.url;
+
+  if (!url) {
+    return {
+      id: server.id,
+      category: "codeManagement",
+      type: CodeManagementTypes.AZURE,
+      status: "unconfigured",
+      statusDetail: "No URL configured for this server",
+    };
+  }
+
+  try {
+    // Create a connection with a short timeout
+    const authHandler = getPersonalAccessTokenHandler(codeManagementServer.apiKey || "");
+    const connection = new WebApi(url, authHandler, { socketTimeout: 5000 });
+
+    // Try to get the core API and list projects as a health check
+    const coreApi = await connection.getCoreApi();
+    await coreApi.getProjects(undefined, 1);
+
+    return {
+      id: server.id,
+      category: "codeManagement",
+      type: CodeManagementTypes.AZURE,
+      url,
+      status: "connected",
+      responseTimeMs: Date.now() - startTime,
+    };
+  } catch (err: any) {
+    const responseTimeMs = Date.now() - startTime;
+
+    // Classify the error
+    if (err.statusCode === 429) {
+      return {
+        id: server.id,
+        category: "codeManagement",
+        type: CodeManagementTypes.AZURE,
+        url,
+        status: "rateLimited",
+        statusDetail: `HTTP 429: ${err.message || "Rate limited"}`,
+        responseTimeMs,
+      };
+    }
+
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      return {
+        id: server.id,
+        category: "codeManagement",
+        type: CodeManagementTypes.AZURE,
+        url,
+        status: "unauthorised",
+        statusDetail: `HTTP ${err.statusCode}: ${err.message || "Unauthorized"}`,
+        responseTimeMs,
+      };
+    }
+
+    if (err.statusCode && err.statusCode >= 400) {
+      return {
+        id: server.id,
+        category: "codeManagement",
+        type: CodeManagementTypes.AZURE,
+        url,
+        status: "error",
+        statusDetail: `HTTP ${err.statusCode}: ${err.message || "Server error"}`,
+        responseTimeMs,
+      };
+    }
+
+    // Network errors (ECONNREFUSED, ETIMEDOUT, DNS failures, etc.)
+    return {
+      id: server.id,
+      category: "codeManagement",
+      type: CodeManagementTypes.AZURE,
+      url,
+      status: "unreachable",
+      statusDetail: err.code || err.message,
+      responseTimeMs,
+    };
+  }
+};
+
+export const initAdoVcs = () => {
+  registerVcs(CodeManagementTypes.AZURE, () => new AdoVcsService());
+  registerVcsConnectionChecker(CodeManagementTypes.AZURE, checkAzureVcsConnection);
+};
 
 class AdoVcsService implements VcsService {
   private connections: Map<string, WebApi>;

@@ -10,7 +10,7 @@ import { error, logger, warn } from "../../utils/logger/logger";
 import { WorkloadId } from "../../model/config/workload-config";
 import { CodeManagementTypes, DependencyAlertsTypes } from "../../model/config/common";
 import { getReposForWorkloadId } from "../../utils/repos";
-import { getConfigItemAsNumber } from "../../config/sources/source";
+import { getEnvConfigItemAsNumber } from "../../config/sources/source";
 import { Datastore, DatastoreCollection } from "../../db/api";
 import { provideDatastore } from "../../db/factory";
 import {
@@ -21,14 +21,14 @@ import {
 import { AuthMethod } from "../../model/config/remote-config";
 import { createGitHubAppOctokit } from "../auth/github-app";
 
-const EXPIRY_SECONDS: number = getConfigItemAsNumber("DEPENDENCY_CACHE_EXPIRY_SECONDS", 60 * 60 * 6);
+const EXPIRY_SECONDS = getEnvConfigItemAsNumber("DEPENDENCY_CACHE_EXPIRY_SECONDS", 60 * 60 * 6);
 
 const COLLECTION_NAME = "alerts";
 
 type RepoDependencyAlertsFilter = {
   workloadId: WorkloadId;
   repo: string;
-}
+};
 
 type RepoDependencyAlerts = RepoDependencyAlertsFilter & {
   alerts: any[];

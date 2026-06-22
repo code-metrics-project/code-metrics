@@ -46,7 +46,20 @@ function BootstrapApp() {
       try {
         const webConfig = await fetchWebConfig();
         setApiBaseUrl(webConfig.apiBaseUrl);
-        await fetchSystemBootstrap();
+        const bootstrap = await fetchSystemBootstrap();
+
+        // Check license before proceeding
+        if (!bootstrap.isLicensed && window.location.pathname !== "/license/error") {
+          window.location.href = "/license/error";
+          return;
+        }
+
+        // Check config before proceeding
+        if (!bootstrap.hasConfig && window.location.pathname !== "/config/error") {
+          window.location.href = "/config/error";
+          return;
+        }
+
         if (isActive) {
           setStatus("ready");
         }

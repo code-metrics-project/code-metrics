@@ -13,7 +13,7 @@ import { AuthMethod, ServiceNowServer } from "../../model/config/remote-config";
 import { Workload, WorkloadId, WorkloadTicketConfigServiceNow } from "../../model/config/workload-config";
 import Bottleneck from "bottleneck";
 import { buildServerAuth, ServerAuth } from "../../utils/serverAuth";
-import { getConfigItemAsNumber } from "../../config/sources/source";
+import { getEnvConfigItemAsNumber } from "../../config/sources/source";
 
 type ServiceNowTicket = {
   number: string;
@@ -61,7 +61,7 @@ type ServiceNowQuery = {
 };
 
 const MAX_RESULTS_PER_QUERY = 100;
-const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600)!;
+const EXPIRY_SECONDS = getEnvConfigItemAsNumber("EXPIRY_SECONDS", 3600);
 const COLLECTION_NAME_ISSUES = "issues";
 
 const COMMON_FIELDS: (keyof ServiceNowTicket)[] = [

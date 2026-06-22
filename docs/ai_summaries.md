@@ -1,6 +1,6 @@
 # AI Summaries
 
-AI Summaries provide AI-generated executive summaries of repository changes, helping teams quickly understand development activity across workloads and repositories. This feature uses large language models (LLMs) to analyse commits, pull requests, and associated tickets to produce high-level insights.
+AI Summaries provide AI-generated executive summaries of repository changes, helping teams quickly understand development activity across workloads and repositories. This feature uses large language models (LLMs) to analyse commits, pull requests, and associated tickets to produce high-level insights — including a narrative summary and three suggested actions.
 
 > **AI Safety Notice**: AI assistants can make mistakes, produce incorrect outputs, or hallucinate information. Always verify the results returned by the AI assistant against your actual CodeMetrics data. Do not rely solely on AI-generated analysis for critical business decisions without independent verification. The AI assistant interprets your queries and constructs API calls, but may misunderstand your intent or present data incorrectly.
 
@@ -111,6 +111,7 @@ The AI-generated summary appears in a dedicated card with the following characte
 
 - **Visual Indicator**: Displayed with a lightbulb icon to indicate AI-generated content
 - **Executive Focus**: Summarises high-level themes and patterns across the changes
+- **Suggested Actions**: Includes three recommended actions based on the data
 - **Context-Aware**: Considers commit messages, pull request titles, and ticket information
 - **Language-Aware**: Summary generation uses the currently selected UI language
 - **Loading States**: Shows a progress indicator while the summary is being generated
@@ -122,6 +123,7 @@ The summary provides context on:
 - Bug fixes and improvements
 - Development themes and focus areas
 - Overall volume and nature of changes
+- Three suggested actions to act on the data
 
 ## Requirements
 
@@ -197,5 +199,5 @@ To manage costs:
 - **[Repository Changes Query](./queries.md)**: The underlying query that powers the changes view
 - **[Configuration](./configuration.md)**: General configuration guidance
 - **[Secret Management](./secret_management.md)**: Securely storing API keys
-- **[Features](./features.md)**: Overview of AI Agents feature support
+- **[Features](./features.md)**: Overview of AI Summaries feature support
 

@@ -7,10 +7,10 @@ import { provideDatastore } from "../../../db/factory";
 import { Datastore, DatastoreCollection } from "../../../db/api";
 import { truncateDateOnly } from "../../../utils/date";
 import { Workload, WorkloadId, WorkloadTicketConfigJira } from "../../../model/config/workload-config";
-import { getConfigItem, getConfigItemAsNumber } from "../../../config/sources/source";
+import { getEnvConfigItem, getEnvConfigItemAsNumber } from "../../../config/sources/source";
 import { createJiraClient, JiraClient, JiraClientType } from "./client";
 
-const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600);
+const EXPIRY_SECONDS = getEnvConfigItemAsNumber("EXPIRY_SECONDS", 3600);
 const COLLECTION_NAME_ISSUES = "issues";
 const ISSUE_PATTERN = /([A-Z][A-Z0-9]{1,4}-\d{1,6})/;
 
@@ -127,7 +127,7 @@ export class JiraTicketService implements TicketService {
    */
   private fetchAllIssuesViaAPI = async (rawJql: string, workloadId: WorkloadId, fields: string[] = []) => {
     if (!this.jiraClient) {
-      const clientVersion = getConfigItem("JIRA_CLIENT", JiraClientType.REST_API_V3_SEARCH_JQL) as JiraClientType;
+      const clientVersion = getEnvConfigItem("JIRA_CLIENT", JiraClientType.REST_API_V3_SEARCH_JQL) as JiraClientType;
       this.jiraClient = createJiraClient(this.configManager, clientVersion);
     }
     return this.jiraClient.fetchAllIssuesViaAPI(rawJql, workloadId, fields);

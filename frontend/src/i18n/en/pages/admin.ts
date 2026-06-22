@@ -14,6 +14,11 @@ const admin = {
         description: "View and manage physical storage collections and tables.",
         action: "Manage Data Stores",
       },
+      remoteConnections: {
+        title: "Remote Connections",
+        description: "View connection status for all configured remote servers and services.",
+        action: "View Connections",
+      },
     },
     tokens: {
       title: "Service Tokens",
@@ -101,6 +106,38 @@ const admin = {
           emptySuccess: "Collection emptied successfully",
           emptyError: "Failed to empty collection",
         },
+      },
+    },
+    remoteConnections: {
+      title: "Remote Connections",
+      description:
+        "Check connectivity to all configured remote servers and services. This dashboard displays real-time connection status for version control, pipelines, code analysis, ticket management, and LLM services.",
+      refresh: "Refresh",
+      lastChecked: "Last checked",
+      table: {
+        title: "Connection Status",
+        serverId: "Server ID",
+        category: "Category",
+        type: "Type",
+        url: "URL",
+        status: "Status",
+        detail: "Detail",
+        responseTime: "Response Time",
+      },
+      status: {
+        connected: "Connected",
+        unreachable: "Unreachable",
+        unauthorised: "Unauthorised",
+        error: "Error",
+        unconfigured: "Unconfigured",
+        rateLimited: "Rate Limited",
+      },
+      empty: {
+        title: "No remote connections configured",
+        description: "Configure remote servers in your remote-config.yaml file to see connection status.",
+      },
+      toast: {
+        loadError: "Failed to check remote connections",
       },
     },
   },

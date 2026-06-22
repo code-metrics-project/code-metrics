@@ -12,23 +12,109 @@ import { ConfigVersion, VersionedConfig } from "../model/config/base";
 import { StageConfigWrapper } from "../model/config/pipeline-config";
 import { redactAndRenderAsJson } from "../utils/logger/redact";
 import { isStrictMode } from "../utils/strict";
-import { getConfigItem } from "./sources/source";
+import { getEnvConfigItem, getEnvConfigItemAsNumber } from "./sources/source";
 import { QualityGatesConfigWrapper } from "../model/config/quality-gates-config";
 import { RBACConfigWrapper } from "../model/config/rbac-config";
 
-let cachedConfig: ConfigHolder;
+type CachedConfig = {
+  config: ConfigHolder;
+  loadedAt: number;
+  workloadCount: number;
+};
+
+type ConfigChangeCallback = () => Promise<void> | void;
+
+let cachedConfig: CachedConfig | null = null;
+const configChangeCallbacks: ConfigChangeCallback[] = [];
+let isReloading = false;
+
+export const CONFIG_CACHE_TTL_MS = getEnvConfigItemAsNumber("CONFIG_CACHE_TTL_MS", 30000); // 30s default
 
 export const clearCachedConfig = () => (cachedConfig = null);
 
-export const getConfig = (): Partial<ConfigHolder> => {
-  if (!cachedConfig) {
-    warn("No configuration has been loaded - call loadConfig() first");
-    return {};
-  }
-  return cachedConfig;
+/**
+ * Register a callback to be invoked when configuration changes.
+ * Useful for services that need to reinitialise when workloads appear.
+ */
+export const onConfigChange = (callback: ConfigChangeCallback): void => {
+  configChangeCallbacks.push(callback);
 };
 
+/**
+ * Get the cached configuration. Returns minimal config if not loaded.
+ * For fresh config, call ensureConfigLoaded() first.
+ */
+export const getConfig = (): Partial<ConfigHolder> => {
+  if (!cachedConfig) {
+    verbose("No configuration has been loaded yet - returning minimal config");
+    return createMinimalConfig();
+  }
+  return cachedConfig.config;
+};
+
+const isCacheExpired = (): boolean => {
+  if (!cachedConfig) return true;
+  const age = Date.now() - cachedConfig.loadedAt;
+  return age > CONFIG_CACHE_TTL_MS;
+};
+
+/**
+ * Ensure configuration is loaded and not expired.
+ * Call this before accessing config to get fresh data.
+ */
+export const ensureConfigLoaded = async (): Promise<void> => {
+  // Skip if cache is still valid
+  if (cachedConfig && !isCacheExpired()) {
+    return;
+  }
+
+  // Prevent concurrent reloads
+  if (isReloading) {
+    verbose("Config reload already in progress, skipping");
+    return;
+  }
+
+  try {
+    isReloading = true;
+    await loadConfig();
+  } finally {
+    isReloading = false;
+  }
+};
+
+const createEmptyRemoteConfig = (): RemoteConfigWrapper => ({
+  version: ConfigVersion.V2_0,
+  codeAnalysis: {},
+  codeManagement: {},
+  pipelines: {},
+  ticketManagement: {},
+});
+
+const createEmptyWorkloadConfig = (): WorkloadConfigWrapper => ({
+  version: ConfigVersion.V2_0,
+  workloads: [],
+});
+
+const createMinimalConfig = (): ConfigHolder => ({
+  metadata: { name: "code-metrics-backend", version: "dev" },
+  remoteConfigs: createEmptyRemoteConfig(),
+  workloadConfigs: createEmptyWorkloadConfig(),
+  pipelineConfigs: { stages: [] },
+  qualityGatesConfigs: { stages: [] },
+});
+
 let configLoaded = false;
+
+const notifyConfigChange = async (): Promise<void> => {
+  for (const callback of configChangeCallbacks) {
+    try {
+      await callback();
+    } catch (e) {
+      warn("Config change callback failed", e);
+    }
+  }
+};
+
 export const loadConfig = async (overrides?: {
   dir?: string;
   remoteConfig?: RemoteConfigWrapper;
@@ -39,6 +125,8 @@ export const loadConfig = async (overrides?: {
 }) => {
   const configDirs = getConfigDirs(overrides?.dir);
   logger(`Loading from configuration dir: ${configDirs}`);
+
+  const previousWorkloadCount = cachedConfig?.workloadCount || 0;
 
   try {
     const loadedConfig: ConfigHolder = {
@@ -53,11 +141,21 @@ export const loadConfig = async (overrides?: {
       // files in config dir
       remoteConfigs:
         overrides?.remoteConfig ??
-        (await readConfig(configDirs, "remote-config", { required: true, resolveSecrets: true })),
+        (await readConfig(
+          configDirs,
+          "remote-config",
+          { required: false, resolveSecrets: true },
+          createEmptyRemoteConfig(),
+        )),
 
       workloadConfigs:
         overrides?.workloadConfig ??
-        (await readConfig(configDirs, "workload-config", { required: true, resolveSecrets: true })),
+        (await readConfig(
+          configDirs,
+          "workload-config",
+          { required: false, resolveSecrets: true },
+          createEmptyWorkloadConfig(),
+        )),
 
       pipelineConfigs:
         overrides?.pipelineConfig ??
@@ -74,31 +172,55 @@ export const loadConfig = async (overrides?: {
 
       rbacConfig:
         overrides?.rbacConfig ??
-        (await readConfig<RBACConfigWrapper>(
-          configDirs,
-          "rbac",
-          { required: false },
-          { rbac: [] },
-        )),
+        (await readConfig<RBACConfigWrapper>(configDirs, "rbac", { required: false }, { rbac: [] })),
     };
-    cachedConfig = applyDefaults(polyfillLegacyConfig(loadedConfig));
+
+    const processedConfig = applyDefaults(polyfillLegacyConfig(loadedConfig));
+    const currentWorkloadCount = processedConfig.workloadConfigs?.workloads?.length || 0;
+
+    cachedConfig = {
+      config: processedConfig,
+      loadedAt: Date.now(),
+      workloadCount: currentWorkloadCount,
+    };
     configLoaded = true;
 
-    logger(`Loaded version ${cachedConfig.metadata.version}`);
-    verbose(`Remote Configuration: ${redactAndRenderAsJson(cachedConfig.remoteConfigs)}`);
-    verbose(`Workload Configuration: ${redactAndRenderAsJson(cachedConfig.workloadConfigs)}`);
-    verbose(`Pipeline Configuration: ${redactAndRenderAsJson(cachedConfig.pipelineConfigs)}`);
+    logger(`Loaded version ${cachedConfig.config.metadata.version}`);
+    if (currentWorkloadCount > 0) {
+      verbose(`Remote Configuration: ${redactAndRenderAsJson(cachedConfig.config.remoteConfigs)}`);
+      verbose(`Workload Configuration: ${redactAndRenderAsJson(cachedConfig.config.workloadConfigs)}`);
+      verbose(`Pipeline Configuration: ${redactAndRenderAsJson(cachedConfig.config.pipelineConfigs)}`);
+      verbose(`Loaded ${currentWorkloadCount} workload(s)`);
+    } else {
+      logger("No configuration files found - running in unconfigured mode");
+    }
+
+    // Notify callbacks if config has changed (especially if workloads appeared)
+    if (previousWorkloadCount !== currentWorkloadCount) {
+      logger(`Workload count changed: ${previousWorkloadCount} -> ${currentWorkloadCount}`);
+      await notifyConfigChange();
+    }
   } catch (e) {
     if (isStrictMode()) {
       throw e;
     } else {
-      warn("Failed to load config", e);
+      cachedConfig = {
+        config: createMinimalConfig(),
+        loadedAt: Date.now(),
+        workloadCount: 0,
+      };
+      configLoaded = true;
+      warn("Failed to load config, using minimal configuration", e);
     }
   }
 };
 
 export const hasConfig = () => {
   return configLoaded;
+};
+
+export const hasWorkloads = (): boolean => {
+  return (cachedConfig?.workloadCount || 0) > 0;
 };
 
 export const requiresConfig = (req, res, next) => {
@@ -112,7 +234,7 @@ export const requiresConfig = (req, res, next) => {
  * @param dir
  */
 export const getConfigDirs = (dir?: string): string[] => {
-  const d = dir ?? getConfigItem("CONFIG_DIR") ?? process.cwd();
+  const d = dir ?? getEnvConfigItem("CONFIG_DIR") ?? process.cwd();
   return d
     .split(",")
     .map((d) => d.trim())
@@ -240,9 +362,11 @@ export const readConfig = async <T>(
 
 const applyDefaults = (loadedConfig: ConfigHolder): ConfigHolder => {
   const config = loadedConfig;
-  config.workloadConfigs.workloads.forEach((workload) => {
-    applyWorkloadDefaults(config, workload);
-  });
+  if (config.workloadConfigs?.workloads) {
+    config.workloadConfigs.workloads.forEach((workload) => {
+      applyWorkloadDefaults(config, workload);
+    });
+  }
   return config;
 };
 

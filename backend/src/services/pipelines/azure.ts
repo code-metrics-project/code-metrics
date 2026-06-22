@@ -7,7 +7,7 @@ import { IBuildApi } from "azure-devops-node-api/BuildApi";
 import { provideDatastore } from "../../db/factory";
 import { getAllPipelinesConfig, getWorkloadById } from "../../config/configMapping";
 import { Datastore, DatastoreCollection, QueryFilter } from "../../db/api";
-import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines } from "./pipelinesService";
+import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines, registerPipelinesConnectionChecker } from "./pipelinesService";
 import { matchOrEquals } from "../../utils/matchers";
 import { jsonPathQuery } from "../../utils/json";
 import { listNormalisedJobGroupsForWorkload, lookupJobGroupForJobName, resolveJobGroupPatterns } from "../../utils/jobs";
@@ -18,6 +18,8 @@ import { mapJobNamesUsingStageConfig, mapJobNameUsingStageConfig } from "./commo
 import { StorableLike } from "../dateWalker";
 import { PipelinesTypes } from "../../model/config/common";
 import { PagedList } from "azure-devops-node-api/interfaces/common/VSSInterfaces";
+import { ConnectionCheckResult } from "../../model/remote-connection-status";
+import { PipelinesServer, RemoteServer } from "../../model/config/remote-config";
 
 const COLLECTION_NAME_PIPELINE_RUNS = "pipeline-executions";
 
@@ -29,8 +31,106 @@ type AzureCacheItemFilter = StorableLike & {
 
 type PopulatedItem = RunList & AzureCacheItemFilter;
 
-export const initAdoPipelines = () =>
+/**
+ * Check connectivity to Azure DevOps by calling the projects endpoint.
+ */
+const checkAzurePipelinesConnection = async (server: RemoteServer): Promise<ConnectionCheckResult> => {
+  const startTime = Date.now();
+  const pipelinesServer = server as PipelinesServer;
+  const url = pipelinesServer.url;
+
+  if (!url) {
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.AZURE,
+      status: "unconfigured",
+      statusDetail: "No URL configured for this server",
+    };
+  }
+
+  if (!pipelinesServer.apiKey) {
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.AZURE,
+      url,
+      status: "unconfigured",
+      statusDetail: "No API key configured",
+    };
+  }
+
+  try {
+    const authHandler = azdev.getPersonalAccessTokenHandler(pipelinesServer.apiKey);
+    const connection = new azdev.WebApi(url, authHandler);
+    const coreApi = await connection.getCoreApi();
+    await coreApi.getProjects(undefined, 1);
+
+    const responseTimeMs = Date.now() - startTime;
+
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.AZURE,
+      url,
+      status: "connected",
+      responseTimeMs,
+    };
+  } catch (err: any) {
+    const responseTimeMs = Date.now() - startTime;
+
+    if (err.statusCode === 429) {
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.AZURE,
+        url,
+        status: "rateLimited",
+        statusDetail: `HTTP 429: ${err.message || "Rate limited"}`,
+        responseTimeMs,
+      };
+    }
+
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.AZURE,
+        url,
+        status: "unauthorised",
+        statusDetail: `HTTP ${err.statusCode}: ${err.message}`,
+        responseTimeMs,
+      };
+    }
+
+    if (err.statusCode && err.statusCode >= 400) {
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.AZURE,
+        url,
+        status: "error",
+        statusDetail: `HTTP ${err.statusCode}: ${err.message}`,
+        responseTimeMs,
+      };
+    }
+
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.AZURE,
+      url,
+      status: "unreachable",
+      statusDetail: err.code || err.message,
+      responseTimeMs,
+    };
+  }
+};
+
+export const initAdoPipelines = () => {
   registerPipelines(PipelinesTypes.AZURE, (stage) => new AdoPipelinesService(stage));
+  registerPipelinesConnectionChecker(PipelinesTypes.AZURE, checkAzurePipelinesConnection);
+};
 
 class AdoPipelinesService extends AbstractPipelinesService {
   private connections: Map<string, azdev.WebApi>;

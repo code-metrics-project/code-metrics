@@ -63,8 +63,6 @@ code-metrics-api:
         #COGNITO_USER_POOL_ID: changeme
         #COGNITO_CLIENT_ID: changeme
         #API_RETRY_LIMIT: 5
-        #CONFIG_AUTO_RELOAD: false
-        #CONFIG_REFRESH_MS: 5000
         #AWS_REGION: eu-west-1
         #DATABASE_NAME: code-metrics
         #DATABASE_URI: mongodb://code-metrics:changeme@mycm-mongodb.default.svc.cluster.local:27017

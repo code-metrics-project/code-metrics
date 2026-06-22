@@ -17,7 +17,7 @@ import { error, logger, verbose } from "../../utils/logger/logger";
 import { AttributeValue } from "@aws-sdk/client-dynamodb/dist-types/models/models_0";
 import { sleep } from "../../utils/math";
 import { convertFromDdbMap, convertToDdbMap } from "./converter";
-import { getConfigItem } from "../../config/sources/source";
+import { getEnvConfigItem } from "../../config/sources/source";
 
 /**
  * DynamoDB datastore.
@@ -44,11 +44,11 @@ let client: DynamoDBClient;
  * Supports local testing with LocalStack by setting AWS_ENDPOINT_URL environment variable.
  */
 export const initDynamoDB = async () => {
-  const region = getConfigItem("AWS_REGION");
+  const region = getEnvConfigItem("AWS_REGION");
   if (!region) {
     throw new Error("AWS_REGION must be set");
   }
-  let tablePrefix = getConfigItem("DATABASE_NAME");
+  let tablePrefix = getEnvConfigItem("DATABASE_NAME");
   if (!tablePrefix) {
     logger(`Using default table prefix: ${DEFAULT_TABLE_PREFIX}`);
     tablePrefix = DEFAULT_TABLE_PREFIX;
@@ -57,7 +57,7 @@ export const initDynamoDB = async () => {
     tablePrefix,
   };
 
-  const endpointUrl = getConfigItem("AWS_ENDPOINT_URL");
+  const endpointUrl = getEnvConfigItem("AWS_ENDPOINT_URL");
   client = new DynamoDBClient({
     region,
     ...(endpointUrl && { endpoint: endpointUrl }),

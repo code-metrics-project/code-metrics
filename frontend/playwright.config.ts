@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const enableCoverage = process.env.COVERAGE_ENABLED === "true";
+const chromiumChannel = process.env.PLAYWRIGHT_CHROMIUM_CHANNEL;
 
 /**
  * Playwright configuration for CodeMetrics Frontend E2E tests.
@@ -26,16 +27,15 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        ...(chromiumChannel ? { channel: chromiumChannel } : {}),
+      },
     },
   ],
   outputDir: "__tests__/output/playwright-results",
   webServer: {
-    command: [
-      enableCoverage ? "COVERAGE_ENABLED=true" : "",
-      "VITE_BOOTSTRAP_RETRY_TIMEOUT=2000",
-      "bun run dev",
-    ]
+    command: [enableCoverage ? "COVERAGE_ENABLED=true" : "", "VITE_BOOTSTRAP_RETRY_TIMEOUT=2000", "bun run preview"]
       .filter(Boolean)
       .join(" "),
     url: "http://code-metrics.localhost:3001",

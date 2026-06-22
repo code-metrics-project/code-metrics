@@ -1,7 +1,7 @@
 import { getSecretsManagerResolver } from "./impl/secrets_manager";
 import { logger, warn } from "../utils/logger/logger";
 import { getFileSecretResolver } from "./impl/file";
-import { getConfigItem } from "./sources/source";
+import { getEnvConfigItem } from "./sources/source";
 
 export type SecretResolver = {
   resolve(secretName: string): Promise<string>;
@@ -13,7 +13,7 @@ let secretResolver: SecretResolver;
 
 const getSecretResolver = (): SecretResolver => {
   if (!secretResolver) {
-    const implName = getConfigItem("SECRET_RESOLVER_IMPL", DEFAULT_SECRET_RESOLVER_IMPL);
+    const implName = getEnvConfigItem("SECRET_RESOLVER_IMPL", DEFAULT_SECRET_RESOLVER_IMPL);
     switch (implName) {
       case "file":
         secretResolver = getFileSecretResolver();

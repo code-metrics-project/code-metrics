@@ -51,6 +51,41 @@ function generatePrs(date) {
   const prs = [];
   const prCount = getPrCount(date);
 
+  // Arrays of varied PR data
+  const prTypes = [
+    { prefix: "feat", action: "Add", component: "feature" },
+    { prefix: "fix", action: "Fix", component: "bug" },
+    { prefix: "refactor", action: "Refactor", component: "improvement" },
+    { prefix: "perf", action: "Optimize", component: "performance" },
+    { prefix: "docs", action: "Update", component: "documentation" },
+    { prefix: "test", action: "Add", component: "test coverage" },
+  ];
+
+  const features = [
+    "user authentication flow",
+    "payment gateway integration",
+    "email notification system",
+    "dashboard analytics",
+    "file upload functionality",
+    "search and filtering",
+    "data export feature",
+    "user profile management",
+    "admin panel controls",
+    "reporting system",
+    "API rate limiting",
+    "caching mechanism",
+    "error logging",
+    "session management",
+    "two-factor authentication",
+  ];
+
+  const authors = [
+    { name: "Ada Lovelace", email: "ada.lovelace@example.com", id: "a81d76f6-9ef1-672f-a48d-44a1d01cd794" },
+    { name: "Grace Hopper", email: "grace.hopper@example.com", id: "5a94f22f-f823-68db-bed4-14d5d637dc9e" },
+    { name: "Alan Turing", email: "alan.turing@example.com", id: "c625dfaf-5d88-69f2-9609-82dfb9dd20fe" },
+    { name: "Margaret Hamilton", email: "margaret.hamilton@example.com", id: "b912cc64-ca78-4784-aac1-491e615d019b" },
+  ];
+
   for (let i = 0; i < prCount; i++) {
     const openHours = Math.round(randomInNormalDist() * 35) + 1;
 
@@ -64,6 +99,16 @@ function generatePrs(date) {
     const pullRequestId = Math.round(Math.random() * 30000);
 
     const jiraIssueId = (++startingJiraId).toString();
+
+    // Generate varied PR content
+    const prType = prTypes[Math.floor(Math.random() * prTypes.length)];
+    const feature = features[Math.floor(Math.random() * features.length)];
+    const author = authors[Math.floor(Math.random() * authors.length)];
+
+    const prTitle = `${prType.action} ${feature}`;
+    const prDescription = `This PR ${prType.action.toLowerCase()}s ${feature}. See ${jiraProjectName}-${jiraIssueId} for more details.`;
+    const branchName = `${prType.prefix}/${jiraProjectName}-${jiraIssueId}-${feature.replace(/\s+/g, "-")}`;
+    const commitMessage = `${prType.action} ${feature} for ${jiraProjectName}-${jiraIssueId}`;
 
     prs.push({
       repository: {
@@ -82,23 +127,23 @@ function generatePrs(date) {
       codeReviewId: pullRequestId,
       status: "completed",
       createdBy: {
-        displayName: "Grace Hopper",
-        url: "${system.server.url}/A170e9fe7-998b-4db8-9600-82ec8e2efcf2/_apis/Identities/c625dfaf-5d88-69f2-9609-82dfb9dd20fe",
+        displayName: author.name,
+        url: `\${system.server.url}/A170e9fe7-998b-4db8-9600-82ec8e2efcf2/_apis/Identities/${author.id}`,
         _links: {
           avatar: {
-            href: "${system.server.url}/_apis/GraphProfile/MemberAvatars/aad.YzYyNWRmYWYtNWQ4OC03OWYyLTk2MDktODJkZmI5ZGQyMGZl",
+            href: `\${system.server.url}/_apis/GraphProfile/MemberAvatars/aad.${author.id}`,
           },
         },
-        id: "c625dfaf-5d88-69f2-9609-82dfb9dd20fe",
-        uniqueName: "grace.hopper@example.com",
-        imageUrl: "${system.server.url}/_api/_common/identityImage?id=c625dfaf-5d88-69f2-9609-82dfb9dd20fe",
-        descriptor: "aad.YzYyNWRmYWYtNWQ4OC03OWYyLTk2MDktODJkZmI5ZGQyMGZl",
+        id: author.id,
+        uniqueName: author.email,
+        imageUrl: `\${system.server.url}/_api/_common/identityImage?id=${author.id}`,
+        descriptor: `aad.${author.id}`,
       },
       creationDate: creationDate.toISOString(),
       closedDate: closedDate.toISOString(),
-      title: `${jiraProjectName}-${jiraIssueId} Example PR title`,
-      description: "Example PR description.",
-      sourceRefName: `refs/heads/defect/${jiraProjectName}-${jiraIssueId}-ap-name-screen-incorrectly-displayed`,
+      title: `${jiraProjectName}-${jiraIssueId} ${prTitle}`,
+      description: prDescription,
+      sourceRefName: `refs/heads/${branchName}`,
       targetRefName: "refs/heads/main",
       mergeStatus: "succeeded",
       isDraft: false,
@@ -286,7 +331,7 @@ function generatePrs(date) {
         "${system.server.url}/019f028e-3986-4a03-b572-b9a154cd9218/_apis/git/repositories/950a0d06-bc5d-4512-8334-498c024d161e/pullRequests/" +
         pullRequestId,
       completionOptions: {
-        mergeCommitMessage: `Merged PR ${pullRequestId}: ${jiraProjectName}-${jiraIssueId} Example commit message.`,
+        mergeCommitMessage: `Merged PR ${pullRequestId}: ${commitMessage}`,
         squashMerge: true,
         mergeStrategy: "squash",
         transitionWorkItems: true,

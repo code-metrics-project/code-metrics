@@ -2,16 +2,16 @@ import { bootstrap, startApi } from "./app";
 import serverlessExpress from "@codegenie/serverless-express";
 import { logger, error, verbose } from "./utils/logger/logger";
 import { InvocationMode } from "./model/global";
-import { getConfigItem, overrideConfigItem } from "./config/sources/source";
+import { getEnvConfigItem, overrideEnvConfigItem } from "./config/sources/source";
 import path from "path";
 
-global.invocationMode = (getConfigItem("INVOCATION_MODE") as InvocationMode) ?? InvocationMode.ServeApi;
+global.invocationMode = (getEnvConfigItem("INVOCATION_MODE") as InvocationMode) ?? InvocationMode.ServeApi;
 
 // use process.env directly as this is used to detect lambda environment, not set by config sources
 const lambdaTaskRoot = process.env.LAMBDA_TASK_ROOT;
 if (lambdaTaskRoot?.length) {
   global.isLambda = true;
-  overrideConfigItem("CONFIG_DIR", path.join(lambdaTaskRoot, "config"));
+  overrideEnvConfigItem("CONFIG_DIR", path.join(lambdaTaskRoot, "config"));
   verbose("Running in AWS Lambda environment with task root:", lambdaTaskRoot);
 } else {
   global.isLambda = false;
@@ -22,7 +22,7 @@ let serverlessExpressInstance;
 const startup = async () => {
   switch (global.invocationMode) {
     case InvocationMode.UpdateCache:
-      overrideConfigItem("PRECACHE_REPO_LIST", "true");
+      overrideEnvConfigItem("PRECACHE_REPO_LIST", "true");
       await bootstrap();
       break;
     case InvocationMode.DesktopMode:

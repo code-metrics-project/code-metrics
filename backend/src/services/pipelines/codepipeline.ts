@@ -1,4 +1,9 @@
-import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines } from "./pipelinesService";
+import {
+  AbstractPipelinesService,
+  PipelinesServiceJobNameFilter,
+  registerPipelines,
+  registerPipelinesConnectionChecker,
+} from "./pipelinesService";
 import { getAllPipelinesConfig, getWorkloadById } from "../../config/configMapping";
 import { logger, verbose, warn } from "../../utils/logger/logger";
 import { sameDay, truncateDateOnly } from "../../utils/date";
@@ -6,6 +11,7 @@ import {
   CodePipelineClient,
   GetPipelineExecutionCommand,
   GetPipelineExecutionOutput,
+  ListPipelinesCommand,
   paginateListPipelineExecutions,
   paginateListPipelines,
   PipelineExecution,
@@ -20,10 +26,134 @@ import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { StageConfig } from "../../model/config/pipeline-config";
 import { mapJobNameUsingStageConfig } from "./common";
 import { PipelinesTypes } from "../../model/config/common";
-import { getConfigItem } from "../../config/sources/source";
+import { getEnvConfigItem } from "../../config/sources/source";
+import { ConnectionCheckResult } from "../../model/remote-connection-status";
+import { PipelineServer, RemoteServer } from "../../model/config/remote-config";
 
-export const initCodePipelinePipelines = () =>
+/**
+ * Check connectivity to AWS CodePipeline by calling ListPipelines.
+ */
+const checkCodePipelineConnection = async (server: RemoteServer): Promise<ConnectionCheckResult> => {
+  const startTime = Date.now();
+  const pipelinesServer = server as PipelineServer;
+  const url = pipelinesServer.url;
+
+  const awsRegion = getEnvConfigItem("AWS_REGION");
+  if (!awsRegion) {
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.CODEPIPELINE,
+      url,
+      status: "unconfigured",
+      statusDetail: "No AWS_REGION environment variable set",
+    };
+  }
+
+  try {
+    const client = new CodePipelineClient({
+      region: awsRegion,
+      endpoint: url,
+    });
+
+    const command = new ListPipelinesCommand({ maxResults: 1 });
+    await client.send(command);
+
+    const responseTimeMs = Date.now() - startTime;
+
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.CODEPIPELINE,
+      url: url || `AWS ${awsRegion}`,
+      status: "connected",
+      responseTimeMs,
+    };
+  } catch (err: any) {
+    const responseTimeMs = Date.now() - startTime;
+
+    // Check for throttling errors
+    if (err.name === "ThrottlingException" || err.name === "TooManyRequestsException") {
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.CODEPIPELINE,
+        url: url || `AWS ${awsRegion}`,
+        status: "rateLimited",
+        statusDetail: `${err.name}: ${err.message}`,
+        responseTimeMs,
+      };
+    }
+
+    if (
+      err.name === "UnrecognizedClientException" ||
+      err.name === "InvalidSignatureException" ||
+      err.name === "AccessDeniedException"
+    ) {
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.CODEPIPELINE,
+        url: url || `AWS ${awsRegion}`,
+        status: "unauthorised",
+        statusDetail: `${err.name}: ${err.message}`,
+        responseTimeMs,
+      };
+    }
+
+    if (err.$metadata?.httpStatusCode) {
+      const statusCode = err.$metadata.httpStatusCode;
+      if (statusCode === 429) {
+        return {
+          id: server.id,
+          category: "pipelines",
+          type: PipelinesTypes.CODEPIPELINE,
+          url: url || `AWS ${awsRegion}`,
+          status: "rateLimited",
+          statusDetail: `HTTP 429: ${err.message || "Rate limited"}`,
+          responseTimeMs,
+        };
+      }
+
+      if (statusCode === 401 || statusCode === 403) {
+        return {
+          id: server.id,
+          category: "pipelines",
+          type: PipelinesTypes.CODEPIPELINE,
+          url: url || `AWS ${awsRegion}`,
+          status: "unauthorised",
+          statusDetail: `HTTP ${statusCode}: ${err.message}`,
+          responseTimeMs,
+        };
+      }
+
+      return {
+        id: server.id,
+        category: "pipelines",
+        type: PipelinesTypes.CODEPIPELINE,
+        url: url || `AWS ${awsRegion}`,
+        status: "error",
+        statusDetail: `HTTP ${statusCode}: ${err.message}`,
+        responseTimeMs,
+      };
+    }
+
+    return {
+      id: server.id,
+      category: "pipelines",
+      type: PipelinesTypes.CODEPIPELINE,
+      url: url || `AWS ${awsRegion}`,
+      status: "unreachable",
+      statusDetail: err.name || err.code || err.message,
+      responseTimeMs,
+    };
+  }
+};
+
+export const initCodePipelinePipelines = () => {
   registerPipelines(PipelinesTypes.CODEPIPELINE, (stage) => new CodePipelinePipelinesService(stage));
+  registerPipelinesConnectionChecker(PipelinesTypes.CODEPIPELINE, checkCodePipelineConnection);
+};
 
 class CodePipelinePipelinesService extends AbstractPipelinesService {
   private clients = new Map<WorkloadId, CodePipelineClient>();
@@ -41,7 +171,7 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
       if (!server) {
         throw new Error(`No CodePipeline server configuration found named: ${serverId}`);
       }
-      const awsRegion = getConfigItem("AWS_REGION");
+      const awsRegion = getEnvConfigItem("AWS_REGION");
       if (!awsRegion) {
         throw new Error(`No AWS_REGION environment variable set`);
       }

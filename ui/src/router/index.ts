@@ -176,6 +176,11 @@ const routes = [
     component: () => import(/* webpackChunkName: "admintokens" */ "@/pages/admin/Tokens.vue"), //dynamic import of component and dependency
   },
   {
+    path: Paths.AdminRemoteConnections,
+    name: "Admin Remote Connections",
+    component: () => import(/* webpackChunkName: "adminremoteconnections" */ "@/pages/admin/RemoteConnections.vue"), //dynamic import of component and dependency
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "404",
     component: () => import(/* webpackChunkName: "error404" */ "@/pages/404.vue"), //dynamic import of component and dependency },

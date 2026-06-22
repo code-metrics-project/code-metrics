@@ -34,7 +34,7 @@
 import serverlessExpress from "@codegenie/serverless-express";
 import { CreateSecretCommand, PutSecretValueCommand, SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2, Context } from "aws-lambda";
-import { overrideConfigItem } from "../config/sources/source";
+import { overrideEnvConfigItem } from "../config/sources/source";
 import { generateKeyPairSync } from "crypto";
 import path from "path";
 
@@ -162,23 +162,23 @@ describe("CodeMetrics App via serverless-express (In-Process)", () => {
     global.invocationMode = "serve-api" as any;
 
     // Configure AWS services for MiniStack
-    overrideConfigItem("AWS_REGION", region);
-    overrideConfigItem("AWS_ENDPOINT_URL", endpointUrl!);
-    overrideConfigItem("SECRET_RESOLVER_IMPL", "secretsmanager");
-    overrideConfigItem("DATASTORE_IMPL", "dynamodb");
-    overrideConfigItem("DATASTORE_AUTO_CREATE", "true");
-    overrideConfigItem("DATABASE_NAME", "LambdaTest_" + Date.now());
-    overrideConfigItem("LOOKUP_CACHE_ENABLED", "true");
+    overrideEnvConfigItem("AWS_REGION", region);
+    overrideEnvConfigItem("AWS_ENDPOINT_URL", endpointUrl!);
+    overrideEnvConfigItem("SECRET_RESOLVER_IMPL", "secretsmanager");
+    overrideEnvConfigItem("DATASTORE_IMPL", "dynamodb");
+    overrideEnvConfigItem("DATASTORE_AUTO_CREATE", "true");
+    overrideEnvConfigItem("DATABASE_NAME", "LambdaTest_" + Date.now());
+    overrideEnvConfigItem("LOOKUP_CACHE_ENABLED", "true");
 
     // Configure authentication for testing (use file-based auth)
-    overrideConfigItem("AUTHENTICATOR_IMPL", "file");
-    overrideConfigItem("ACCESS_TOKEN_SECRET", "test-secret-key");
+    overrideEnvConfigItem("AUTHENTICATOR_IMPL", "file");
+    overrideEnvConfigItem("ACCESS_TOKEN_SECRET", "test-secret-key");
 
     // Use test config directories (examples + valid license)
     const exampleConfigDir = path.join(__dirname, "../../config/examples");
     const validLicenseConfigDir = path.join(__dirname, "../license/__tests__/test-data/valid");
-    overrideConfigItem("CONFIG_DIR", `${exampleConfigDir},${validLicenseConfigDir}`);
-    overrideConfigItem("STRICT_CONFIG_LOAD", "false");
+    overrideEnvConfigItem("CONFIG_DIR", `${exampleConfigDir},${validLicenseConfigDir}`);
+    overrideEnvConfigItem("STRICT_CONFIG_LOAD", "false");
 
     // Import and bootstrap the real app
     try {

@@ -55,6 +55,14 @@ jest.mock("../services/incidentManagement/noop", () => ({
 // Mock other dependencies
 jest.mock("../config/config", () => ({
   loadConfig: jest.fn().mockResolvedValue({}),
+  hasWorkloads: jest.fn().mockReturnValue(true), // Ensure services initialize in tests
+  hasConfig: jest.fn().mockReturnValue(true),
+  getConfig: jest.fn().mockReturnValue({
+    workloadConfigs: { workloads: [{ id: "test" }] },
+    remoteConfigs: {},
+  }),
+  onConfigChange: jest.fn(),
+  ensureConfigLoaded: jest.fn().mockResolvedValue({}),
 }));
 
 jest.mock("../db/factory", () => ({
@@ -134,8 +142,15 @@ jest.mock("../license/validate", () => ({
   validateLicense: jest.fn().mockResolvedValue({}),
 }));
 
-// Import the app module after mocks are set up
-import { bootstrap } from "../app";
+jest.mock("../config/sources/source", () => ({
+  getEnvConfigItem: jest.fn((key) => {
+    if (key === "LAZY_LOAD_CONFIG_DISABLED") return "true"; // Force eager loading in tests
+    return undefined;
+  }),
+  getEnvConfigItemAsNumber: jest.fn((key, defaultValue) => defaultValue),
+  getEnvConfigItemAsBoolean: jest.fn(() => false),
+  overrideEnvConfigItem: jest.fn(),
+}));
 
 describe("Application Startup - GitHub Service Initialization", () => {
   beforeEach(() => {
@@ -150,93 +165,116 @@ describe("Application Startup - GitHub Service Initialization", () => {
   });
 
   it("should call initGithubIssues during project management providers initialization", async () => {
-    // Act
-    await bootstrap();
+    return jest.isolateModules(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { bootstrap } = require("../app");
+      await bootstrap();
 
-    // Assert
-    expect(mockInitGithubIssues).toHaveBeenCalledTimes(1);
-    expect(mockInitGithubIssues).toHaveBeenCalled();
+      expect(mockInitGithubIssues).toHaveBeenCalledTimes(1);
+      expect(mockInitGithubIssues).toHaveBeenCalled();
+    });
   });
 
   it("should call initGithubIncidents during incident management providers initialization", async () => {
-    // Act
-    await bootstrap();
+    return jest.isolateModules(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { bootstrap } = require("../app");
+      await bootstrap();
 
-    // Assert
-    expect(mockInitGithubIncidents).toHaveBeenCalledTimes(1);
-    expect(mockInitGithubIncidents).toHaveBeenCalled();
+      expect(mockInitGithubIncidents).toHaveBeenCalledTimes(1);
+      expect(mockInitGithubIncidents).toHaveBeenCalled();
+    });
   });
 
   it("should initialize GitHub services alongside other project management providers", async () => {
-    // Act
-    await bootstrap();
+    return jest.isolateModules(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { bootstrap } = require("../app");
+      await bootstrap();
 
-    // Assert - All project management providers should be initialized
-    expect(mockInitAdoIssues).toHaveBeenCalledTimes(1);
-    expect(mockInitJiraIssues).toHaveBeenCalledTimes(1);
-    expect(mockInitGithubIssues).toHaveBeenCalledTimes(1);
-    expect(mockInitNoOpIssues).toHaveBeenCalledTimes(1);
+      // Assert - All project management providers should be initialized
+      expect(mockInitAdoIssues).toHaveBeenCalledTimes(1);
+      expect(mockInitJiraIssues).toHaveBeenCalledTimes(1);
+      expect(mockInitGithubIssues).toHaveBeenCalledTimes(1);
+      expect(mockInitNoOpIssues).toHaveBeenCalledTimes(1);
+    });
   });
 
   it("should initialize GitHub services alongside other incident management providers", async () => {
-    // Act
-    await bootstrap();
+    return jest.isolateModules(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { bootstrap } = require("../app");
+      await bootstrap();
 
-    // Assert - All incident management providers should be initialized
-    expect(mockInitAdoIncidents).toHaveBeenCalledTimes(1);
-    expect(mockInitGithubIncidents).toHaveBeenCalledTimes(1);
-    expect(mockInitJiraIncidents).toHaveBeenCalledTimes(1);
-    expect(mockInitNoOpIncidents).toHaveBeenCalledTimes(1);
-    expect(mockInitServiceNowIncidents).toHaveBeenCalledTimes(1);
+      // Assert - All incident management providers should be initialized
+      expect(mockInitAdoIncidents).toHaveBeenCalledTimes(1);
+      expect(mockInitGithubIncidents).toHaveBeenCalledTimes(1);
+      expect(mockInitJiraIncidents).toHaveBeenCalledTimes(1);
+      expect(mockInitNoOpIncidents).toHaveBeenCalledTimes(1);
+      expect(mockInitServiceNowIncidents).toHaveBeenCalledTimes(1);
+    });
   });
 
   it("should initialize services in the correct order", async () => {
-    // Track call order
-    const callOrder: string[] = [];
+    return jest.isolateModules(async () => {
+      // Track call order
+      const callOrder: string[] = [];
 
-    mockInitGithubIssues.mockImplementation(() => {
-      callOrder.push("initGithubIssues");
+      mockInitGithubIssues.mockImplementation(() => {
+        callOrder.push("initGithubIssues");
+      });
+
+      mockInitGithubIncidents.mockImplementation(() => {
+        callOrder.push("initGithubIncidents");
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { bootstrap } = require("../app");
+      await bootstrap();
+
+      // Assert - GitHub services should be initialized
+      expect(callOrder).toContain("initGithubIssues");
+      expect(callOrder).toContain("initGithubIncidents");
+
+      // Both should be called exactly once
+      expect(mockInitGithubIssues).toHaveBeenCalledTimes(1);
+      expect(mockInitGithubIncidents).toHaveBeenCalledTimes(1);
     });
-
-    mockInitGithubIncidents.mockImplementation(() => {
-      callOrder.push("initGithubIncidents");
-    });
-
-    // Act
-    await bootstrap();
-
-    // Assert - GitHub services should be initialized
-    expect(callOrder).toContain("initGithubIssues");
-    expect(callOrder).toContain("initGithubIncidents");
-
-    // Both should be called exactly once
-    expect(mockInitGithubIssues).toHaveBeenCalledTimes(1);
-    expect(mockInitGithubIncidents).toHaveBeenCalledTimes(1);
   });
 
   it("should handle GitHub service initialization errors gracefully", async () => {
-    // Make GitHub issues initialization throw an error
-    mockInitGithubIssues.mockImplementation(() => {
-      throw new Error("GitHub Issues initialization failed");
+    return jest.isolateModules(async () => {
+      // Make GitHub issues initialization throw an error
+      mockInitGithubIssues.mockImplementation(() => {
+        throw new Error("GitHub Issues initialization failed");
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { bootstrap } = require("../app");
+
+      // Act & Assert - Should not throw, but handle error gracefully
+      await expect(bootstrap()).rejects.toThrow("GitHub Issues initialization failed");
+
+      // Verify that the initialization was attempted
+      expect(mockInitGithubIssues).toHaveBeenCalledTimes(1);
     });
-
-    // Act & Assert - Should not throw, but handle error gracefully
-    await expect(bootstrap()).rejects.toThrow("GitHub Issues initialization failed");
-
-    // Verify that the initialization was attempted
-    expect(mockInitGithubIssues).toHaveBeenCalledTimes(1);
   });
 
   it("should handle GitHub incidents initialization errors gracefully", async () => {
-    // Make GitHub incidents initialization throw an error
-    mockInitGithubIncidents.mockImplementation(() => {
-      throw new Error("GitHub Incidents initialization failed");
+    return jest.isolateModules(async () => {
+      // Make GitHub incidents initialization throw an error
+      mockInitGithubIncidents.mockImplementation(() => {
+        throw new Error("GitHub Incidents initialization failed");
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { bootstrap } = require("../app");
+
+      // Act & Assert - Should not throw, but handle error gracefully
+      await expect(bootstrap()).rejects.toThrow("GitHub Incidents initialization failed");
+
+      // Verify that the initialization was attempted
+      expect(mockInitGithubIncidents).toHaveBeenCalledTimes(1);
     });
-
-    // Act & Assert - Should not throw, but handle error gracefully
-    await expect(bootstrap()).rejects.toThrow("GitHub Incidents initialization failed");
-
-    // Verify that the initialization was attempted
-    expect(mockInitGithubIncidents).toHaveBeenCalledTimes(1);
   });
 });

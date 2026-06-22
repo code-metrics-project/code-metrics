@@ -57,3 +57,4 @@ export const ADMIN_DATASTORES = "/api/datastores";
 export const ADMIN_DATASTORE_EXISTS = "/api/datastores/exists";
 export const ADMIN_DATASTORE_COUNT = "/api/datastores/count";
 export const ADMIN_DATASTORE_EMPTY = "/api/datastores/empty";
+export const ADMIN_REMOTE_CONNECTIONS = "/api/admin/remote-connections";

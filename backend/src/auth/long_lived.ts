@@ -3,9 +3,9 @@ import { provideDatastore } from "../db/factory";
 import { Principal } from "./auth";
 import { generateToken, SecurityTokens, TokenPayload } from "./tokens";
 import { Datastore, DatastoreCollection } from "../db/api";
-import { getConfigItem } from "../config/sources/source";
+import { getEnvConfigItem } from "../config/sources/source";
 
-const serviceTokenTtl = getConfigItem("SERVICE_TOKEN_TTL", "1y");
+const serviceTokenTtl = getEnvConfigItem("SERVICE_TOKEN_TTL", "1y");
 
 const TOKENID_COLLECTION_NAME = "token_ids";
 
@@ -38,7 +38,7 @@ type TokenIdRecord = {
 
 let longLivedTokenStore: Datastore<TokenIdRecord, DatastoreCollection> | undefined;
 
-const usingLongLivedTokenStore = async <T> (callback: (collection: DatastoreCollection) => T) => {
+const usingLongLivedTokenStore = async <T>(callback: (collection: DatastoreCollection) => T) => {
   if (!longLivedTokenStore) {
     longLivedTokenStore = provideDatastore("servicetokens", { persistentStore: true });
   }
@@ -76,7 +76,7 @@ export const generateLongLivedAccessToken = async (
       logger(`Long-lived access token generated for user: ${user.name} with ID ${longLivedAccessToken.tokenId}`);
       return {
         accessToken: longLivedAccessToken.token,
-        refreshToken: "" // Long-lived tokens do not have a refresh token
+        refreshToken: "", // Long-lived tokens do not have a refresh token
       };
     } catch (e) {
       throw new Error(`Failed to generate long-lived access token: ${e.message}`);
@@ -107,29 +107,30 @@ export const validateLongLivedAccessToken = (
     const tokenIdFound = dbToken?.tokenId === tokenId;
     verbose(`Checking long-lived access token with ID ${tokenId} in database: ${tokenIdFound ? "found" : "not found"}`);
     return tokenIdFound;
-
-  }).then((tokenIdFound) => {
-    if (tokenIdFound) {
-      verbose(`Long-lived access token with ID ${tokenId} is valid`);
-      callback(true, jwt.sub, jwt.roles);
-    } else {
-      warn(`Invalid long-lived access token ID: ${tokenId}`);
+  })
+    .then((tokenIdFound) => {
+      if (tokenIdFound) {
+        verbose(`Long-lived access token with ID ${tokenId} is valid`);
+        callback(true, jwt.sub, jwt.roles);
+      } else {
+        warn(`Invalid long-lived access token ID: ${tokenId}`);
+        callback(false);
+      }
+    })
+    .catch((err) => {
+      warn(`Error validating long-lived access token with ID: ${tokenId}:`, err);
       callback(false);
-    }
-  }).catch((err) => {
-    warn(`Error validating long-lived access token with ID: ${tokenId}:`, err);
-    callback(false);
-  });
+    });
 };
 
 export const listLongLivedAccessTokenIds = async (): Promise<TokenIdRecord[]> => {
-    try {
-      return await usingLongLivedTokenStore(async (collection) => {
-        return await collection.listItems() as TokenIdRecord[];
-      });
-    } catch (e) {
-      throw new Error(`Failed to list long-lived access token IDs: ${e.message}`);
-    }
+  try {
+    return await usingLongLivedTokenStore(async (collection) => {
+      return (await collection.listItems()) as TokenIdRecord[];
+    });
+  } catch (e) {
+    throw new Error(`Failed to list long-lived access token IDs: ${e.message}`);
+  }
 };
 
 /**

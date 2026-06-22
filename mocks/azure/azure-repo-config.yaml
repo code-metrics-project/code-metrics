@@ -6,7 +6,14 @@ system:
       preloadFile: "historic/churn.json"
 
 resources:
-  
+  # Health check endpoint for connection checker
+  - method: GET
+    path: /_apis/projects
+    response:
+      statusCode: 200
+      content: |
+        { "count": 1, "value": [{ "id": "mock-project", "name": "Mock Project", "state": "wellFormed" }] }
+
   - method: OPTIONS
     path: /_apis/build
     response:

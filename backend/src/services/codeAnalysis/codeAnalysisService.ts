@@ -1,16 +1,67 @@
-import { verbose } from "../../utils/logger/logger";
-import { getWorkloadById } from "../../config/configMapping";
+import { verbose, logger } from "../../utils/logger/logger";
+import { getAllCodeAnalysisConfig, getWorkloadById } from "../../config/configMapping";
 import { RepoCodeAnalysisKey } from "../../utils/repos";
 import { ComponentCoverage } from "../../model/codeAnalysis";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { CodeAnalysisTypes } from "../../model/config/common";
+import { ConnectionChecker, ConnectionCheckResult } from "../../model/remote-connection-status";
 
 const builders: Record<string, () => CodeAnalysisService> = {};
 const instances: Record<string, CodeAnalysisService> = {};
+const checkers: Record<string, ConnectionChecker> = {};
 
 export const registerCodeAnalysis = (type: CodeAnalysisTypes, builder: () => CodeAnalysisService) => {
   verbose(`Registered code analysis implementation for: ${type}`);
   builders[type] = builder;
+};
+
+/**
+ * Register a connection checker for a Code Analysis provider type.
+ * This allows checking connectivity to the remote server.
+ */
+export const registerCodeAnalysisConnectionChecker = (type: CodeAnalysisTypes, checker: ConnectionChecker) => {
+  verbose(`Registered code analysis connection checker for: ${type}`);
+  checkers[type] = checker;
+};
+
+/**
+ * Check connectivity to all configured code analysis servers.
+ * Returns connection status for each server (excludes 'none' type).
+ */
+export const checkCodeAnalysisConnections = async (): Promise<ConnectionCheckResult[]> => {
+  const config = getAllCodeAnalysisConfig();
+  const results: ConnectionCheckResult[] = [];
+
+  // Collect all servers from all code analysis types
+  const checks: Promise<ConnectionCheckResult>[] = [];
+  for (const [providerType, providerConfig] of Object.entries(config)) {
+    if (!providerConfig?.servers) continue;
+    if (providerType === CodeAnalysisTypes.NONE) continue; // Skip noop implementations
+
+    const checker = checkers[providerType];
+    if (!checker) {
+      // No checker registered for this type
+      continue;
+    }
+
+    for (const server of providerConfig.servers) {
+      checks.push(checker(server));
+    }
+  }
+
+  // Run all checks in parallel
+  const settled = await Promise.allSettled(checks);
+
+  for (const result of settled) {
+    if (result.status === "fulfilled") {
+      results.push(result.value);
+    } else {
+      // If a checker itself throws, log the error
+      logger(`Code analysis connection check failed with uncaught error: ${result.reason}`);
+    }
+  }
+
+  return results;
 };
 
 export const getCodeAnalysisForWorkload = (workload: Workload): CodeAnalysisService =>

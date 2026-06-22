@@ -89,7 +89,7 @@ describe("Azure VCS integration", () => {
     expect(changes.length).toBeGreaterThanOrEqual(1);
     expect(changes[0].date).toMatch(/2011-04-14T\d\d:\d\d:\d\d.000Z/); // random times generated from mock
     expect(changes[0].repo).toBe("pet-project");
-    expect(changes[0].message).toBe("This is an example commit message.");
+    expect(changes[0].message).toMatch(/^\w+: .+/); // dynamic commit message generated from mock
     expect(changes[0].commitId).toBeTruthy();
     expect(changes[0].branch).toBe("main");
   });

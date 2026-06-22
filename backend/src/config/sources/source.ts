@@ -5,9 +5,9 @@
  */
 import { verbose } from "../../utils/logger/logger";
 
-export interface ConfigSource {
+export type ConfigSource = {
   get(key: string): string | undefined;
-}
+};
 
 /**
  * In-memory override config source for programmatic overrides.
@@ -46,7 +46,7 @@ let configSources: ConfigSource[] = [overrides, new ProcessEnvConfigSource()];
  * @param defaultValue Optional default value if key is not found
  * @returns The configuration value or undefined if not found and no default provided
  */
-export function getConfigItem(key: string, defaultValue?: string): string | undefined {
+export function getEnvConfigItem(key: string, defaultValue?: string): string | undefined {
   for (const source of configSources) {
     const value = source.get(key);
     if (value !== undefined) {
@@ -57,14 +57,14 @@ export function getConfigItem(key: string, defaultValue?: string): string | unde
 }
 
 /**
- * Get a configuration item as a number
+ * Get an environment configuration item as a number
  *
  * @param key The configuration key to retrieve
- * @param defaultValue Optional default value if key is not found or cannot be parsed
- * @returns The configuration value as a number or undefined
+ * @param defaultValue Default value if key is not found or cannot be parsed
+ * @returns The configuration value as a number
  */
-export function getConfigItemAsNumber(key: string, defaultValue?: number): number | undefined {
-  const value = getConfigItem(key);
+export function getEnvConfigItemAsNumber(key: string, defaultValue: number) {
+  const value = getEnvConfigItem(key);
   if (value === undefined) {
     return defaultValue;
   }
@@ -73,28 +73,28 @@ export function getConfigItemAsNumber(key: string, defaultValue?: number): numbe
 }
 
 /**
- * Get a configuration item as a boolean
+ * Get an environment configuration item as a boolean
  *
  * @param key The configuration key to retrieve
  * @param defaultValue Optional default value if key is not found
  * @returns The configuration value as a boolean
  */
-export function getConfigItemAsBoolean(key: string, defaultValue: boolean = false): boolean {
-  const value = getConfigItem(key);
+export function getEnvConfigItemAsBoolean(key: string, defaultValue: boolean = false): boolean {
+  const value = getEnvConfigItem(key);
   if (value === undefined) {
     return defaultValue;
   }
-  return value.toLowerCase() === 'true';
+  return value.toLowerCase() === "true";
 }
 
 /**
- * Override a configuration item value programmatically.
+ * Override an environment configuration item value programmatically.
  * This takes highest precedence over other sources.
  * @param key
  * @param value
  */
-export function overrideConfigItem(key: string, value: string): void {
-  verbose("Overriding config item", key, value);
+export function overrideEnvConfigItem(key: string, value: string): void {
+  verbose("Overriding env config item", key, value);
   overrides.set(key, value);
 }
 

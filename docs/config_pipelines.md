@@ -17,7 +17,7 @@ Within a `pipelines.azure` server object:
 
 4. Add the PAT value to the object's `apiKey` field.
 
-5. Add a list of `branches` you want to have the option to analyse for your projects (TODO: Align with Workloads)
+5. Add a list of `branches` you want to have the option to analyse for your projects
 
 ## GitHub
 
@@ -38,7 +38,7 @@ Within a `pipelines.github` server object:
 
 3. Paste the result into the server object's `apiKey` field.
 
-4. Add a list of `branches` you want to have the option to analyse for your projects (TODO: Align with Workloads)
+4. Add a list of `branches` you want to have the option to analyse for your projects
 
 ```yaml
 pipelines:

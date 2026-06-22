@@ -1,6 +1,22 @@
 plugin: rest
 
 resources:
+  # Health check endpoint for Claude connection checker
+  - path: /v1/models
+    method: get
+    response:
+      statusCode: 200
+      content: |
+        { "data": [{ "id": "claude-3-5-sonnet-20241022", "type": "model", "display_name": "Claude 3.5 Sonnet" }] }
+
+  # Health check endpoint for Gemini connection checker
+  - path: /v1beta/models
+    method: get
+    response:
+      statusCode: 200
+      content: |
+        { "models": [{ "name": "models/gemini-1.5-pro", "displayName": "Gemini 1.5 Pro", "description": "Mock Gemini model" }] }
+
   - path: /ml
     method: get
     response:

@@ -13,10 +13,10 @@ import { provideDatastore } from "../../db/factory";
 import { Workload, WorkloadId } from "../../model/config/workload-config";
 import { StageConfig, StageConfigWrapper } from "../../model/config/pipeline-config";
 import { LEGACY_FIRST_STAGE_ID } from "./common";
-import { getConfigItemAsNumber } from "../../config/sources/source";
+import { getEnvConfigItemAsNumber } from "../../config/sources/source";
 
 const COLLECTION_NAME_DEPLOY_BOUNDS = "deploy-bounds";
-const EXPIRY_SECONDS: number = getConfigItemAsNumber("EXPIRY_SECONDS", 3600)!;
+const EXPIRY_SECONDS = getEnvConfigItemAsNumber("EXPIRY_SECONDS", 3600);
 
 type DailyTotalDeploy = {
   run: string;

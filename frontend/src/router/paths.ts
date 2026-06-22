@@ -2,6 +2,7 @@ export enum Paths {
   AdminDatastoreDetail = "/admin/datastores/detail",
   AdminDatastores = "/admin/datastores",
   AdminHome = "/admin",
+  AdminRemoteConnections = "/admin/remote-connections",
   AdminTokens = "/admin/tokens",
   ConfigMissing = "/config/error",
   DORA = "/workload/dora",

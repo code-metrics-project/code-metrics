@@ -6,6 +6,8 @@ import { useAuthStore } from "@/store/auth";
 import { Paths } from "@/router/paths";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useSessionExpiryChecker } from "@/hooks/useSessionExpiryChecker";
+import { useConfigChangeDetector } from "@/hooks/useConfigChangeDetector";
+import { ConfigChangeBanner } from "@/components/ConfigChangeBanner";
 import type { BootstrapConfig, SystemConfig, WebConfig } from "@/model/config";
 
 interface AppContextValue {
@@ -64,6 +66,18 @@ export function AppProvider({ children }: AppProviderProps) {
   useSessionExpiryChecker();
   const location = useLocation();
 
+  // Check for config changes and show banner when detected
+  const { hasConfigChanged } = useConfigChangeDetector({
+    currentBootstrapConfig: contextValue.bootstrapConfig,
+    currentSystemConfig: contextValue.systemConfig,
+    authToken: tokens?.accessToken || null,
+    enabled: isInitialized,
+  });
+
+  const handleReload = () => {
+    window.location.reload();
+  };
+
   // Initialize app on mount
   // Note: fetchWebConfig and fetchSystemBootstrap are cached, so these calls
   // return the already-fetched values from main.tsx. If they had failed,
@@ -77,20 +91,7 @@ export function AppProvider({ children }: AppProviderProps) {
       // Fetch bootstrap config (returns cached value from main.tsx)
       const bootstrapConfig = await fetchSystemBootstrap();
 
-      // Check license
-      if (!bootstrapConfig.isLicensed && location.pathname !== Paths.LicenseMissing) {
-        navigate(Paths.LicenseMissing, { replace: true });
-        setIsInitialized(true);
-        return;
-      }
-
-      // Check config availability
-      if (!bootstrapConfig.hasConfig && location.pathname !== Paths.ConfigMissing) {
-        navigate(Paths.ConfigMissing, { replace: true });
-        setIsInitialized(true);
-        return;
-      }
-
+      // Always set context value so other effects can access bootstrap config
       setContextValue({
         isInitialized: true,
         isSystemConfigLoaded: false,
@@ -99,6 +100,18 @@ export function AppProvider({ children }: AppProviderProps) {
         webConfig,
       });
       setIsInitialized(true);
+
+      // Check license after setting context
+      if (!bootstrapConfig.isLicensed && location.pathname !== Paths.LicenseMissing) {
+        navigate(Paths.LicenseMissing, { replace: true });
+        return;
+      }
+
+      // Check config availability after setting context
+      if (!bootstrapConfig.hasConfig && location.pathname !== Paths.ConfigMissing) {
+        navigate(Paths.ConfigMissing, { replace: true });
+        return;
+      }
     }
 
     initializeApp();
@@ -108,10 +121,22 @@ export function AppProvider({ children }: AppProviderProps) {
   useEffect(() => {
     if (!isInitialized) return;
 
+    // Wait for bootstrap config to be loaded before checking auth
+    if (!contextValue.bootstrapConfig) return;
+
     const currentPath = location.pathname;
 
     // Skip auth check for unauthenticated routes
     if (isUnauthenticatedRoute(currentPath)) {
+      return;
+    }
+
+    // Skip auth check if we're redirecting to an error page due to license/config issues
+    // (the initialization effect above will handle the redirect)
+    if (!contextValue.bootstrapConfig.isLicensed) {
+      return;
+    }
+    if (!contextValue.bootstrapConfig.hasConfig) {
       return;
     }
 
@@ -139,11 +164,12 @@ export function AppProvider({ children }: AppProviderProps) {
     tokens?.accessToken,
     navigate,
     rememberDestination,
+    contextValue.bootstrapConfig,
     contextValue.isSystemConfigLoaded,
   ]);
 
   // Show loading state while initializing
-  if (!isInitialized) {
+  if (!isInitialized || !contextValue.isSystemConfigLoaded) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -154,5 +180,10 @@ export function AppProvider({ children }: AppProviderProps) {
     );
   }
 
-  return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
+  return (
+    <AppContext.Provider value={contextValue}>
+      {hasConfigChanged && <ConfigChangeBanner onReload={handleReload} />}
+      {children}
+    </AppContext.Provider>
+  );
 }

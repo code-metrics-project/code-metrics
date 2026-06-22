@@ -1,5 +1,5 @@
 import { logger } from "../../utils/logger/logger";
-import { getConfigItem } from "../../config/sources/source";
+import { getEnvConfigItem } from "../../config/sources/source";
 import { getFileRBACService } from "./file";
 
 export type RBACService = {
@@ -19,7 +19,7 @@ let rbacService: RBACService;
  */
 export const getRBACService = (): RBACService => {
   if (!rbacService) {
-    const implName = getConfigItem("RBAC_IMPL", DEFAULT_RBAC_IMPL);
+    const implName = getEnvConfigItem("RBAC_IMPL", DEFAULT_RBAC_IMPL);
     switch (implName) {
       case "file":
         rbacService = getFileRBACService();
