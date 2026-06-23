@@ -267,32 +267,19 @@ export function DynamicInputs({
       return prev; // No state change, just reading
     });
 
+    const baseDefaults: QueryArgs = inputConfigs.reduce((acc, ic) => {
+      return {
+        ...acc,
+        [ic.inputType]: ic.defaultValue(),
+      };
+    }, {});
+
     // Get the required input types for the current query types
     const requiredInputTypes = getInputTypesForQueries(queryTypes);
 
-    // Merge inputValues with default values for required inputs
-    // This matches the Vue app's populateDefaults behavior
-    const mergedArgs: QueryArgs = { ...currentInputValues };
-
-    // Add default values for required input types that aren't in the current inputValues
-    // First check defaultInputs prop, then fall back to config default value
-    for (const inputType of requiredInputTypes) {
-      const key = inputType as keyof QueryArgs;
-      if (mergedArgs[key] === undefined) {
-        // Check if a default was provided via props (e.g., workloadId from URL params)
-        if (defaultInputs[key] !== undefined) {
-          mergedArgs[key] = defaultInputs[key];
-        } else {
-          // Fall back to the config's default value
-          const config = inputConfigs.find((c) => c.inputType === inputType);
-          if (config) {
-            // Always include the default value for required inputs, even if empty
-            // This matches Vue behavior of including tags: [], issueFilter: {}, etc.
-            mergedArgs[key] = config.defaultValue();
-          }
-        }
-      }
-    }
+    const mergedArgs = Object.fromEntries(
+      requiredInputTypes.map((k) => [k, currentInputValues[k] ?? defaultInputs[k] ?? baseDefaults[k]])
+    );
 
     const queries: RawQuery[] = queryTypes.map((queryName) => {
       // Filter out transforms with null transform type and convert to RawQuery format

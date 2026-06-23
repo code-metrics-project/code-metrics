@@ -88,7 +88,7 @@ export async function fetchDependencyAlerts(request: DependencyAlertsRequest): P
     params.append("repoGroups", request.repoGroups.join(","));
   }
 
-  const response = await client.get(`/api/security/dependency-alerts?${params.toString()}`);
+  const response = await client.get<DependencyAlertsAnalysis[]>(`/api/security/dependency-alerts?${params.toString()}`);
   return response.data;
 }
 

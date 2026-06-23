@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DynamicInputs } from "@/components/inputs";
+import { DynamicInputs, type QueryArgs } from "@/components/inputs";
 import { MultiChart, type MultiChartData } from "@/components/charts";
 import { ChartSelector, ChartType, QueryGroup, type GroupByDimension } from "@/components/query";
 import { Transformers, type TransformState } from "@/components/transformers";
@@ -21,9 +21,10 @@ export interface DynamicQueryProps {
   subtitle?: string;
   queryTypes: string[];
   executeOnMount?: boolean;
-  defaultInputs?: Record<string, unknown>;
+  defaultInputs?: QueryArgs;
   chartType?: ChartType;
   hideChartSelector?: boolean;
+  summarise?: string[];
   onInputChange?: (inputs: DynamicQueryInputs) => void;
   children?: React.ReactNode;
 }

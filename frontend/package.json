@@ -6,7 +6,7 @@
   "description": "CodeMetrics tool - analysis on Project Issues, Codebase and Code Quality Tooling data",
   "scripts": {
     "dev": "bun run vite",
-    "build": "bun run tsc --noEmit && bun run vite build",
+    "build": "bun run tsc -b --noEmit && bun run vite build",
     "build-only": "bun run cross-env NODE_ENV=production && bun run vite build",
     "preview": "bun run build && bun run vite preview --port 3001",
     "prettier": "prettier --check .",
@@ -14,7 +14,7 @@
     "fmt:fix": "prettier --write .",
     "lint": "bun run eslint src",
     "lint:fix": "bun run eslint src --fix",
-    "type-check": "bun run tsc --noEmit",
+    "type-check": "bun run tsc -b --noEmit",
     "test": "CI=true bun run test:unit",
     "test:unit": "bun run vitest --environment jsdom --root src/",
     "test:unit:coverage": "bun run vitest --environment jsdom --root src/ --coverage",

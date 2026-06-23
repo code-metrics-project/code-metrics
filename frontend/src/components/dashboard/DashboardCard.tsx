@@ -62,15 +62,15 @@ export function DashboardCard({ dataSource, dataView, presentationOptions }: Das
 
     switch (dataView.name) {
       case "Chart":
-        return <ChartRenderer data={data} options={dataView.props} />;
+        return <ChartRenderer data={data} />;
       case "ColChart":
-        return <ColChartRenderer data={data} options={dataView.props} />;
+        return <ColChartRenderer data={data} />;
       case "BarWithCumulativeLine":
-        return <BarWithCumulativeLineRenderer data={data} options={dataView.props} />;
+        return <BarWithCumulativeLineRenderer data={data} />;
       case "Trend":
-        return <TrendRenderer data={data} options={dataView.props} />;
+        return <TrendRenderer data={data} />;
       case "BoxPlot":
-        return <BoxPlotRenderer data={data} options={dataView.props} />;
+        return <BoxPlotRenderer data={data} />;
       default:
         return <div className="text-muted-foreground">Unknown renderer: {dataView.name}</div>;
     }

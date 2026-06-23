@@ -1,20 +1,5 @@
 import type { QueryArgs } from "@/components/inputs";
-
-/**
- * Get the date N days ago from today, truncated to date only (no time component)
- */
-function getOffsetDate(offsetDays: number): Date {
-  const date = new Date();
-  date.setDate(date.getDate() + offsetDays);
-  return truncateDateOnly(date);
-}
-
-/**
- * Truncate a date to date only (no time component)
- */
-function truncateDateOnly(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
+import { getOffsetDate, truncateDateOnly } from "@/utils/date";
 
 /**
  * Get default inputs for code quality queries (coverage, repo-churn, etc.)
@@ -30,7 +15,7 @@ export function getCodeQualityDefaults(): QueryArgs {
     workloads: [],
     repoGroups: [],
     tags: [],
-    startDate: getOffsetDate(-30),
+    startDate: truncateDateOnly(getOffsetDate(-30)),
     endDate: truncateDateOnly(new Date()),
   };
 }
@@ -43,7 +28,7 @@ export function getPipelineDefaults(): QueryArgs {
     workloads: [],
     jobGroups: [],
     tags: [],
-    startDate: getOffsetDate(-30),
+    startDate: truncateDateOnly(getOffsetDate(-30)),
     endDate: truncateDateOnly(new Date()),
   };
 }
@@ -55,7 +40,7 @@ export function getIssueDefaults(): QueryArgs {
   return {
     workloads: [],
     tags: [],
-    startDate: getOffsetDate(-30),
+    startDate: truncateDateOnly(getOffsetDate(-30)),
     endDate: truncateDateOnly(new Date()),
   };
 }
@@ -67,7 +52,7 @@ export function getIncidentDefaults(): QueryArgs {
   return {
     workloads: [],
     tags: [],
-    startDate: getOffsetDate(-30),
+    startDate: truncateDateOnly(getOffsetDate(-30)),
     endDate: truncateDateOnly(new Date()),
   };
 }

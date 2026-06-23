@@ -1,3 +1,4 @@
+import type { QueryArgs } from "@/components/inputs";
 import type { StoredQuery, StoredQueryCollection } from "@/model/query";
 import { QueryComponentType } from "@/model/query";
 
@@ -41,7 +42,7 @@ export function getQueryTitle(queryType: string): string {
  */
 export const toStoredQueryCollection = (
   queryTypes: string[],
-  populatedInputs: Record<string, unknown>
+  populatedInputs: QueryArgs
 ): Pick<StoredQueryCollection, "queries"> => {
   const description = queryTypes
     .map((queryType) => getQueryTitle(queryType))

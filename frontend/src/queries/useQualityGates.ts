@@ -17,6 +17,7 @@ export interface TQualityGate {
   phase: "pre-merge";
   config: {
     file: string;
+    fileURL: string;
     path: string;
     name: string;
   };

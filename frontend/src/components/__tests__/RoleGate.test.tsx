@@ -20,7 +20,7 @@ vi.mock("@/store/auth", () => ({
 }));
 
 function setTokens(accessToken: string | undefined) {
-  mockUseAuthStore.mockImplementation((selector: (state: { tokens?: { accessToken?: string } }) => unknown) =>
+  mockUseAuthStore.mockImplementation((selector: (state: { tokens?: { accessToken?: string; refreshToken?: string } }) => unknown) =>
     selector({ tokens: accessToken ? { accessToken, refreshToken: "rt" } : undefined })
   );
 }

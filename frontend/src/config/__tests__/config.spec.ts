@@ -91,8 +91,8 @@ describe("config", () => {
     });
 
     it("respects VITE_BOOTSTRAP_RETRY_TIMEOUT env override", async () => {
-      // Set the env var before importing the module
-      import.meta.env.VITE_BOOTSTRAP_RETRY_TIMEOUT = "5000";
+      const env = import.meta.env as Record<string, string | undefined>;
+      env.VITE_BOOTSTRAP_RETRY_TIMEOUT = "5000";
 
       const bootstrap = { isLicensed: true };
       mockRetry.mockResolvedValue(bootstrap);
@@ -103,8 +103,7 @@ describe("config", () => {
       const [options] = mockRetry.mock.calls[0];
       expect(options.timeout).toBe(5000);
 
-      // Clean up
-      delete import.meta.env.VITE_BOOTSTRAP_RETRY_TIMEOUT;
+      delete env.VITE_BOOTSTRAP_RETRY_TIMEOUT;
     });
 
     it("returns the bootstrap config on success", async () => {

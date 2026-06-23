@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useI18n } from "@/hooks/useI18n";
 import { useParams } from "react-router-dom";
+import { capitalize } from "@/utils/string";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

@@ -4,7 +4,7 @@ export interface ToastItem {
   id: string;
   text: string;
   timeout: number;
-  timeoutId?: NodeJS.Timeout;
+  timeoutId?: ReturnType<typeof setTimeout>;
 }
 
 interface ToastState {

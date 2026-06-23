@@ -39,7 +39,7 @@ export function CodeHotspots({ workload: initialWorkload, executeOnMount = false
   const { data: issueTypeData } = useIssueTypes(workloadValue);
 
   // Reset selected issue types when workload changes by tracking workload
-  const [lastWorkload, setLastWorkload] = useState<string | undefined>(workloadValue);
+  const [lastWorkload, setLastWorkload] = useState<string | null>(workloadValue);
   if (lastWorkload !== workloadValue) {
     setLastWorkload(workloadValue);
     setIssueTypes([]);

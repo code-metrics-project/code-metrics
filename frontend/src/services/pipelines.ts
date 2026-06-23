@@ -3,6 +3,8 @@ import { PIPELINE_DEPLOYMENTS, PIPELINE_RUN, PIPELINE_RUNS } from "@/api/endpoin
 import { truncateDateOnly } from "@/utils/date";
 import { RunResult, type RunWithMetadata } from "@/model/runs";
 
+export type { RunWithMetadata } from "@/model/runs";
+
 export interface RunRow {
   workloadId: string;
   stageId: string;

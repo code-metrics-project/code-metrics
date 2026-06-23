@@ -45,6 +45,7 @@ interface RechartsTreemapNode {
   size: number;
   children?: RechartsTreemapNode[];
   meta?: TreemapDataItem["meta"];
+  [key: string]: unknown;
 }
 
 const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payload: RechartsTreemapNode }[] }) => {

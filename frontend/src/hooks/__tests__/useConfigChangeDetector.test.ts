@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Features, type FeatureConfig } from "@/config/features";
+import type { FeatureConfig } from "@/config/features";
 import {
   DEFAULT_POLL_INTERVAL_MS,
   useConfigChangeDetector,
@@ -8,12 +8,14 @@ import {
 import type { BootstrapConfig } from "@/model/config";
 
 const features: FeatureConfig = {
-  [Features.dora]: false,
-  [Features.languageSelector]: false,
-  [Features.mlForecasts]: false,
-  [Features.predictions]: false,
-  [Features.temporalCoupling]: false,
+  dora: false,
+  languageSelector: false,
+  mlForecasts: false,
+  predictions: false,
+  temporalCoupling: false,
 };
+
+const mockIntervalId = 1 as unknown as ReturnType<typeof window.setInterval>;
 
 const bootstrapConfig = (overrides: Partial<BootstrapConfig> = {}): BootstrapConfig => ({
   apiVersion: "2.0",
@@ -32,7 +34,7 @@ describe("useConfigChangeDetector", () => {
   });
 
   it("uses configCacheTtlMs from bootstrap config as the polling interval", () => {
-    const setIntervalSpy = vi.spyOn(window, "setInterval").mockReturnValue(1);
+    const setIntervalSpy = vi.spyOn(window, "setInterval").mockReturnValue(mockIntervalId);
     vi.spyOn(window, "clearInterval").mockImplementation(() => undefined);
 
     renderHook(() =>
@@ -48,7 +50,7 @@ describe("useConfigChangeDetector", () => {
   });
 
   it("falls back to the default polling interval when bootstrap config has no TTL", () => {
-    const setIntervalSpy = vi.spyOn(window, "setInterval").mockReturnValue(1);
+    const setIntervalSpy = vi.spyOn(window, "setInterval").mockReturnValue(mockIntervalId);
     vi.spyOn(window, "clearInterval").mockImplementation(() => undefined);
 
     renderHook(() =>
@@ -64,7 +66,7 @@ describe("useConfigChangeDetector", () => {
   });
 
   it("does not start polling when bootstrap config TTL is zero", () => {
-    const setIntervalSpy = vi.spyOn(window, "setInterval").mockReturnValue(1);
+    const setIntervalSpy = vi.spyOn(window, "setInterval").mockReturnValue(mockIntervalId);
     vi.spyOn(window, "clearInterval").mockImplementation(() => undefined);
 
     renderHook(() =>
