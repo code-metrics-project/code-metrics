@@ -4,6 +4,7 @@ set -euo pipefail
 AUTH_MODE="file"
 SKIP_INSTALL="false"
 TEST_COMMAND=""
+SHARD_SPEC=""
 
 ROOT_DIR="${ROOT_DIR:-${GITHUB_WORKSPACE:-$(git rev-parse --show-toplevel)}}"
 CONFIG_DIR="$(mktemp -d -t code-metrics-config-XXXXXX)"
@@ -24,6 +25,7 @@ Options:
   --auth-mode <file|oidc|keycloak> Authentication mode (default: file)
   --skip-install                 Skip backend/frontend dependency installation
   --test-command <command>       Override test command (default based on auth mode)
+  --shard <index/total>          Run a Playwright shard (for example: 1/5)
   --help                         Show this help
 
 Examples:
@@ -48,6 +50,10 @@ function parse_args() {
         TEST_COMMAND="$2"
         shift 2
         ;;
+      --shard)
+        SHARD_SPEC="$2"
+        shift 2
+        ;;
       --help)
         usage
         exit 0
@@ -62,6 +68,11 @@ function parse_args() {
 
   if [[ "$AUTH_MODE" != "file" && "$AUTH_MODE" != "oidc" && "$AUTH_MODE" != "keycloak" ]]; then
     echo "Invalid --auth-mode '${AUTH_MODE}'. Must be one of: file, oidc, keycloak"
+    exit 1
+  fi
+
+  if [[ -n "$SHARD_SPEC" && ! "$SHARD_SPEC" =~ ^[1-9][0-9]*/[1-9][0-9]*$ ]]; then
+    echo "Invalid --shard '${SHARD_SPEC}'. Expected format: <index>/<total> (for example: 1/5)"
     exit 1
   fi
 }
@@ -128,7 +139,11 @@ function configure_backend_env() {
   if [[ "$AUTH_MODE" == "oidc" ]]; then
     {
       echo "AUTHENTICATOR_IMPL=oidc"
-      echo "OIDC_ISSUER_BASE_URL=http://localhost:8080/oidc"
+      # The Imposter OIDC plugin advertises issuer=http://localhost:8080 even
+      # when the discovery document is exposed under /oidc. Pointing directly
+      # at the discovery document keeps openid-client issuer validation from
+      # rejecting the mock metadata in CI.
+      echo "OIDC_ISSUER_BASE_URL=http://localhost:8080/oidc/.well-known/openid-configuration"
       echo "OIDC_CLIENT_ID=codemetrics"
       echo "OIDC_CLIENT_SECRET=changeme"
     } >> .env
@@ -211,8 +226,17 @@ function start_backend() {
   fi
 }
 
+function append_shard_to_test_command() {
+  if [[ -z "$SHARD_SPEC" ]]; then
+    return
+  fi
+
+  TEST_COMMAND="${TEST_COMMAND} -- --shard=${SHARD_SPEC}"
+}
+
 function resolve_test_command() {
   if [[ -n "$TEST_COMMAND" ]]; then
+    append_shard_to_test_command
     return
   fi
 
@@ -227,6 +251,8 @@ function resolve_test_command() {
       TEST_COMMAND="bun run test:e2e:keycloak:coverage"
       ;;
   esac
+
+  append_shard_to_test_command
 }
 
 function configure_coverage_profile() {

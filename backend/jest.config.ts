@@ -14,6 +14,7 @@ const config: JestConfigWithTsJest = {
     "^(\\.{1,2}/.*)\\.js$": "$1",
     "^@octokit/auth-app$": "<rootDir>/src/tests/mocks/octokit-auth-app.ts",
   },
+  transformIgnorePatterns: ["/node_modules/(?!(?:@octokit|before-after-hook|universal-user-agent)/)"],
   extensionsToTreatAsEsm: [".ts", ".tsx"],
   transform: {
     "^.+\\.(t|j)sx?$": [

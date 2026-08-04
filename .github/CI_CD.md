@@ -55,10 +55,14 @@ Keys like `.github` can be mapped to _all_ components to ensure that infrastruct
 
 ### Core Pipeline
 
-- **`ci.yaml`**: The main orchestrator. Triggered on Pull Request and Push. It starts with a `setup` job that calculates changed components, generates matrices, and validates config before calling reusable workflows.
-- **`validate.yaml`**: runs Unit Tests, Linting, E2E tests, and MiniStack-backed backend integration validation. The shared Playwright E2E workflow runs the non-Docker auth/browser paths inside the official Playwright container image, while the Keycloak path stays on the host runner so it can orchestrate Docker Compose locally and uses the runner's system Chrome instead of downloading Playwright browsers. Deployed Node.js Lambda validation is restored in CI on MiniStack using the existing Lambda packaging flow. This is the "Gatekeeper" workflow that must pass before builds occur.
+- **`ci.yaml`**: The main orchestrator. Triggered on Push. It starts with a `setup` job that calculates changed components, generates matrices, and validates config before calling reusable workflows. It ends with an always-on **`CI Success`** job that aggregates `setup`, `validate`, and `cd` so branch rulesets / auto-merge can require a single stable check name even when change detection skips sub-project jobs.
+- **`validate.yaml`**: runs Unit Tests, Linting, E2E tests, and MiniStack-backed backend integration validation. The shared Playwright E2E workflow runs the non-Docker auth/browser paths inside the official Playwright container image, while the Keycloak path stays on the host runner so it can orchestrate Docker Compose locally and uses the runner's system Chrome instead of downloading Playwright browsers. Frontend regression E2E tests are split across 5 parallel shards with blob reports merged in a follow-up job. Deployed Node.js Lambda validation is restored in CI on MiniStack using the existing Lambda packaging flow. This is the "Gatekeeper" workflow that must pass before builds occur.
 - **`docker.yaml`**: Builds and pushes Docker images. This runs _after_ validation in the release flow, or independently for Dockerfile-only changes.
 - **`cd.yaml`**: Handles deployment artefacts after successful builds.
+
+### Required status check for auto-merge
+
+Because change detection skips jobs that are irrelevant to a PR, do **not** require individual matrix / sub-project jobs in branch rulesets. Require the **`CI Success`** check from the `CI` workflow instead. That job always runs (`if: always()`), fails if `setup`, `validate`, or `cd` did not succeed, and therefore stays green only when the path-aware pipeline that actually ran has passed.
 
 ### Frontend/UI Build Behavior
 

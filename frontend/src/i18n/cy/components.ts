@@ -257,6 +257,8 @@ export default {
       productionIncidents: "Digwyddiadau cynhyrchu",
       prOpenTime: "Amser agor PR",
       prSize: "Maint PR",
+      prsPerIssue: "PRs fesul issue",
+      issuesPerPr: "Issues fesul PR",
       repoChurn: "Trosiant storfa",
       timeToRestoreService: "Amser i adfer gwasanaeth",
       vulnerabilities: "Bregusrwyddau",

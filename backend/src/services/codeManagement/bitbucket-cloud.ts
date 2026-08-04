@@ -1,6 +1,5 @@
 import { type APIClient, Bitbucket } from "bitbucket";
 import { AsyncResponse } from "bitbucket/lib/bitbucket";
-import fetch from "node-fetch";
 import { DatedMetricEntry } from "../../model/metrics";
 import { logger, warn } from "../../utils/logger/logger";
 import {
@@ -344,6 +343,7 @@ class BitbucketCloudVcsService implements VcsService {
               workloadId,
               vcsProjectName,
               repositoryName,
+              createdDate: pr.updated_on,
             },
             issueId: "",
             filesChanged,

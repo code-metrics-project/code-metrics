@@ -290,7 +290,7 @@ class GithubVcsService implements VcsService {
 
   async #fetchChangesForDate(
     connection: Octokit,
-    workloadId: string,
+    workloadId: WorkloadId,
     vcsProjectName: string,
     repositoryName: string,
     branch: string,
@@ -606,6 +606,7 @@ class GithubVcsService implements VcsService {
               workloadId,
               vcsProjectName,
               repositoryName,
+              createdDate: pr.created_at,
             },
             issueId: "",
             filesChanged,

@@ -94,23 +94,15 @@ export type PullRequest = {
   workloadId: WorkloadId;
   vcsProjectName: string;
   repositoryName: string;
-  sourceBranch: string;
+  sourceBranch?: string;
   title: string;
-  message: string;
-  url?: string;
-};
-
-// TODO: consider merging with PullRequest model
-export type LightweightPR = {
-  id: number;
-  workloadId: string;
-  vcsProjectName: string;
-  repositoryName: string;
-  title: string;
+  message?: string;
+  createdDate?: string;
   completionOptions?: {
     bypassPolicy: boolean;
     bypassReason: string;
   };
+  url?: string;
 };
 
 export type PrFileChangeItem = {
@@ -118,7 +110,7 @@ export type PrFileChangeItem = {
 };
 
 export type CompletePrInfo = {
-  pr: LightweightPR;
+  pr: PullRequest;
   issueId: string;
   filesChanged: PrFileChangeItem[];
 };
@@ -139,3 +131,27 @@ export type RepoData = {
 };
 
 export type ChangeCategory = "ticketed" | "pr" | "commit";
+
+export type IssueWithPRCount = {
+  workloadId: WorkloadId;
+  projectName: string;
+  repositoryName: string;
+  changes: {
+    date: string;
+    issueId: string;
+    prCount: number;
+    prIds: number[];
+  }[];
+};
+
+export type PRWithIssueCount = {
+  workloadId: WorkloadId;
+  projectName: string;
+  repositoryName: string;
+  changes: {
+    date: string;
+    prId: string;
+    issueCount: number;
+    issueIds: string[];
+  }[];
+};

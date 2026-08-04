@@ -27,7 +27,7 @@ jobs:
       # the changelog script can walk commits between the previous and current tag.
       # Do not change this to a shallow clone (fetch-depth: 1) or omit fetch-depth.
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Generate CHANGELOG
@@ -109,7 +109,7 @@ jobs:
           pushd dist
           ls -l
       - name: Create release
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           CHANGES: "${{ steps.changelog.outputs.changes }}"
         with:

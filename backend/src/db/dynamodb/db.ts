@@ -18,6 +18,7 @@ import { AttributeValue } from "@aws-sdk/client-dynamodb/dist-types/models/model
 import { sleep } from "../../utils/math";
 import { convertFromDdbMap, convertToDdbMap } from "./converter";
 import { getEnvConfigItem } from "../../config/sources/source";
+import { getStaticAwsCredentialConfig } from "../../utils/awsCredentials";
 
 /**
  * DynamoDB datastore.
@@ -58,8 +59,15 @@ export const initDynamoDB = async () => {
   };
 
   const endpointUrl = getEnvConfigItem("AWS_ENDPOINT_URL");
+  const awsCredentialConfig = getStaticAwsCredentialConfig(
+    getEnvConfigItem("AWS_ACCESS_KEY_ID"),
+    getEnvConfigItem("AWS_SECRET_ACCESS_KEY"),
+    getEnvConfigItem("AWS_SESSION_TOKEN"),
+    { preferNodeHttpHandler: Boolean(endpointUrl) },
+  );
   client = new DynamoDBClient({
     region,
+    ...awsCredentialConfig,
     ...(endpointUrl && { endpoint: endpointUrl }),
   });
 
@@ -234,7 +242,7 @@ export class DynamoDatastore extends AbstractDatastore<QueryFilter, DynamoTable>
         } catch (e) {
           // check if the table already exists, to avoid a race
           if (!(await this.doesTableExist(client, tableName))) {
-            throw new Error(`Failed to create table ${tableName}: ${e}`);
+            throw new Error(`Failed to create table ${tableName}: ${e}`, { cause: e });
           }
         }
         justCreated = true;
@@ -286,7 +294,7 @@ export class DynamoDatastore extends AbstractDatastore<QueryFilter, DynamoTable>
     try {
       await client.send(command);
     } catch (e) {
-      throw new Error(`Failed to create table ${tableName}: ${e}`);
+      throw new Error(`Failed to create table ${tableName}: ${e}`, { cause: e });
     }
   };
 

@@ -55,6 +55,9 @@ export default defineConfig({
   build: {
     sourcemap: true,
   },
+  optimizeDeps: {
+    exclude: ["vue-i18n"],
+  },
   plugins,
   server: {
     host: viteHost,

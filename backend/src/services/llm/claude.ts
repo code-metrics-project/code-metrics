@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { logger, error as logError, verbose } from "../../utils/logger/logger";
 import { LlmService, registerLlm, registerLlmConnectionChecker } from "./llmService";
 import { LlmProviderTypes } from "../../model/config/common";

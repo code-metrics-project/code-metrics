@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { JiraTicketOptions, TicketManagementTypes } from "../../model/config/common";
 import { AbstractIssueMgmtConfigManager, registerIssueMgmt } from "./issueMgmtService";
 import { JiraTicketService } from "../tickets/jira/service";

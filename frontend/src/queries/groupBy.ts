@@ -21,6 +21,8 @@ const queryGroupByMap: Record<string, GroupByDimension[]> = {
   "production-incidents": ["workloadId", "tag"],
   "pr-open-time": ["workloadId", "repoGroup", "tag"],
   "pr-size": ["workloadId", "repoGroup", "tag"],
+  "prs-per-issue": ["workloadId", "repoGroup", "tag"],
+  "issues-per-pr": ["workloadId", "repoGroup", "tag"],
   "repo-churn": ["workloadId", "repoGroup", "tag"],
   "time-to-restore-service": ["workloadId", "tag"],
   vulnerabilities: ["workloadId", "repoGroup", "tag"],

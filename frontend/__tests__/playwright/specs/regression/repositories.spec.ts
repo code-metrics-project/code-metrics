@@ -78,7 +78,9 @@ test.describe("Repositories page", () => {
   test("Shows breadcrumbs for program view", async ({ page, helpers }) => {
     await helpers.login();
     await page.goto(Paths.Repositories);
-    await expect(page.locator("a").filter({ hasText: "Programme" })).toHaveAttribute("href", "/program");
+    await expect(
+      page.getByRole("navigation", { name: "breadcrumb" }).getByRole("link", { name: "Programme", exact: true })
+    ).toHaveAttribute("href", "/program");
     await helpers.checkFooter();
   });
 

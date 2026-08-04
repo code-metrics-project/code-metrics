@@ -59,6 +59,8 @@ export const queryInputsMap: Record<string, InputType[]> = {
   "production-incidents": [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.START_DATE, InputType.INCIDENT_FILTER],
   "pr-open-time": [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.REPO_GROUPS, InputType.START_DATE],
   "pr-size": [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.REPO_GROUPS, InputType.START_DATE],
+  "prs-per-issue": [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.REPO_GROUPS, InputType.START_DATE],
+  "issues-per-pr": [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.REPO_GROUPS, InputType.START_DATE],
   "repo-churn": [InputType.TAGS, InputType.WORKLOAD_NAMES, InputType.REPO_GROUPS, InputType.START_DATE],
   "time-to-restore-service": [
     InputType.TAGS,

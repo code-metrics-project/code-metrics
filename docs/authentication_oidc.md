@@ -44,6 +44,9 @@ The following environment variables are used to configure the OIDC authenticator
 | OIDC_REDIRECT_URI    | Optional - override the redirect URI.                                                                                                           | Derived from the UI base URL. | `https://example.com/login/callback`                                        |
 | OIDC_USE_PKCE        | Optional - whether to use PKCE. Note: this requires third party cookies to be permitted.                                                        | `false`                       | `true`                                                                      |
 
+> **Security note**
+> CodeMetrics expects OIDC issuers to use HTTPS. Plain HTTP is only allowed for localhost or loopback addresses to support local development and CI test environments.
+
 ---
 
 ## OIDC provider examples
@@ -103,6 +106,8 @@ OIDC_ISSUER_BASE_URL=http://localhost:8086/realms/codemetrics
 OIDC_CLIENT_ID=codemetrics
 OIDC_CLIENT_SECRET=changeme
 ```
+
+For production or shared environments, configure Keycloak with HTTPS and use an `https://` issuer URL. The `http://localhost:8086` example is intended only for local development and automated test environments.
 
 #### Additional OIDC configuration
 

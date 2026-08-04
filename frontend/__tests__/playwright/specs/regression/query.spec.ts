@@ -1,7 +1,15 @@
 import { test, expect } from "../../fixtures";
 import { Paths } from "../../../../src/router/paths";
 
-test.describe("New query page", () => {
+/**
+ * Test suite for the new query page regression tests
+ *
+ * .serial ensures that the tests are run in serial, so as not
+ * to overload the mock data server.
+ */
+test.describe.serial("New query page", () => {
+  test.describe.configure({ timeout: 60_000 });
+
   test.beforeEach(async ({ page, helpers }) => {
     await helpers.login();
     await page.goto(Paths.NewQuery);
@@ -87,6 +95,26 @@ test.describe("New query page", () => {
     await helpers.chartVisible(true);
   });
 
+  test("Executes PRs per issue query", async ({ page, helpers }) => {
+    await helpers.chartVisible(false);
+    await helpers.selectQuery("PRs per issue");
+    await helpers.selectWorkloads("athena");
+    await helpers.setStartDateDaysAgo(2);
+
+    await page.locator('button[name="runQuery"]').click();
+    await helpers.chartVisible(true);
+  });
+
+  test("Executes issues per PR query", async ({ page, helpers }) => {
+    await helpers.chartVisible(false);
+    await helpers.selectQuery("Issues per PR");
+    await helpers.selectWorkloads("athena");
+    await helpers.setStartDateDaysAgo(2);
+
+    await page.locator('button[name="runQuery"]').click();
+    await helpers.chartVisible(true);
+  });
+
   test("Executes production incidents query", async ({ page, helpers }) => {
     await helpers.chartVisible(false);
     await helpers.selectQuery("Production incidents");
@@ -102,7 +130,10 @@ test.describe("New query page", () => {
     await helpers.selectWorkloads("athena");
     await helpers.setStartDatePreset(7);
 
-    await page.locator('button[name="runQuery"]').click();
+    const runButton = page.locator('button[name="runQuery"]');
+    await runButton.click();
+    await expect(runButton).toHaveText("Running query...", { timeout: 5000 });
+    await expect(runButton).toHaveText("Run query", { timeout: 60000 });
     await helpers.chartVisible(true);
   });
 
@@ -112,7 +143,10 @@ test.describe("New query page", () => {
     await helpers.selectWorkloads("athena");
     await helpers.setStartDatePreset(7);
 
-    await page.locator('button[name="runQuery"]').click();
+    const runButton = page.locator('button[name="runQuery"]');
+    await runButton.click();
+    await expect(runButton).toHaveText("Running query...", { timeout: 5000 });
+    await expect(runButton).toHaveText("Run query", { timeout: 60000 });
     await helpers.chartVisible(true);
   });
 });

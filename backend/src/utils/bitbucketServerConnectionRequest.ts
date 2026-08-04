@@ -1,4 +1,4 @@
-import fetch, { type RequestInit } from "node-fetch";
+type RequestInit = globalThis.RequestInit;
 import Bottleneck from "bottleneck";
 
 const bottleneckBitbucketServer = new Bottleneck({

@@ -7,7 +7,6 @@
     { "path": "./tsconfig.playwright.json" }
   ],
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }

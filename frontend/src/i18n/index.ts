@@ -93,7 +93,6 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    showSupportNotice: false,
     fallbackLng: "en",
     supportedLngs: ["en", "ja", "es", "de", "fr", "cy"],
     detection: {

@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { ServiceNowTicketOptions, TicketManagementTypes } from "../../model/config/common";
 import { ServiceNowTicketService } from "../tickets/servicenow";
 import { AbstractIncidentMgmtConfigManager, registerIncidentMgmt } from "./incidentMgmtService";

@@ -45,6 +45,8 @@ export enum QueryName {
   ProductionIncidents = "production-incidents",
   PROpenTime = "pr-open-time",
   PRSize = "pr-size",
+  PRsPerIssue = "prs-per-issue",
+  IssuesPerPR = "issues-per-pr",
   RepoChurn = "repo-churn",
   TimeToRestoreService = "time-to-restore-service",
 }
@@ -88,6 +90,8 @@ export const getTransformerMap = (): TransformerMap => {
     [QueryName.ProductionIncidents, [...mlForecast, rollingAveragesTransformer]],
     [QueryName.PROpenTime, [...mlForecast, rollingAveragesTransformer]],
     [QueryName.PRSize, [...mlForecast, rollingAveragesTransformer]],
+    [QueryName.PRsPerIssue, [...mlForecast, rollingAveragesTransformer]],
+    [QueryName.IssuesPerPR, [...mlForecast, rollingAveragesTransformer]],
     [QueryName.RepoChurn, [...mlForecast, rollingAveragesTransformer]],
     [QueryName.TimeToRestoreService, [...mlForecast, rollingAveragesTransformer]],
   ]);

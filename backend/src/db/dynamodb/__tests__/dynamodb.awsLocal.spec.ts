@@ -15,6 +15,7 @@ import { DynamoDBClient, ListTablesCommand, DeleteTableCommand, DescribeTableCom
 import { overrideEnvConfigItem } from "../../../config/sources/source";
 import { initDynamoDB, DynamoDatastore } from "../db";
 import { QueryFilter } from "../../api";
+import { getStaticAwsCredentialConfig } from "../../../utils/awsCredentials";
 
 const isMiniStackAvailable = () => !!(process.env.AWS_ENDPOINT_URL || process.env.MINISTACK_ENDPOINT);
 
@@ -28,10 +29,17 @@ describeIfMiniStack("DynamoDB Datastore with MiniStack", () => {
   beforeAll(async () => {
     const endpointUrl = process.env.AWS_ENDPOINT_URL || process.env.MINISTACK_ENDPOINT;
     const region = process.env.AWS_REGION || "us-east-1";
+    const awsCredentialConfig = getStaticAwsCredentialConfig(
+      process.env.AWS_ACCESS_KEY_ID || "test",
+      process.env.AWS_SECRET_ACCESS_KEY || "test",
+      process.env.AWS_SESSION_TOKEN,
+      { preferNodeHttpHandler: true },
+    );
 
     // Configure client for MiniStack
     client = new DynamoDBClient({
       region,
+      ...awsCredentialConfig,
       ...(endpointUrl && { endpoint: endpointUrl }),
     });
 

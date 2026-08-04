@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { limitConcurrency } from "../../utils/retry";
 import { logResponseBody } from "../../utils/responses";
 import { getAllIssueManagementUrls, getWorkloadById } from "../../config/configMapping";

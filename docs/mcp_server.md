@@ -322,6 +322,8 @@ The MCP server supports all CodeMetrics query types:
 - `repo-churn` - Repository change activity
 - `pr-open-time` - Pull request open durations
 - `pr-size` - Pull request size metrics
+- `prs-per-issue` - Average number of pull requests linked to each issue
+- `issues-per-pr` - Average number of issues linked to each pull request
 - `change-categories` - Types of changes (commit/PR/ticketed)
 - `non-working-pattern` - Changes outside normal hours
 

@@ -15,14 +15,14 @@ jobs:
     if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version-file: "/backend/.nvmrc"
       - name: Cache backend node_modules
         id: cache-backend-nm
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: backend/node_modules
           key: ${{ runner.os }}-backend-nm-${{ hashFiles('backend/package-lock.json') }}
@@ -61,14 +61,14 @@ jobs:
     if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version-file: "/backend/.nvmrc"
       - name: Cache backend node_modules
         id: cache-backend-nm
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: backend/node_modules
           key: ${{ runner.os }}-backend-nm-${{ hashFiles('backend/package-lock.json') }}
@@ -106,14 +106,14 @@ jobs:
     if: ${{ fromJSON(inputs.vars).backendComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version-file: "/backend/.nvmrc"
       - name: Restore backend node_modules cache
         id: cache-backend-nm-slow
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: backend/node_modules
           key: ${{ runner.os }}-backend-nm-${{ hashFiles('backend/package-lock.json') }}
@@ -161,14 +161,14 @@ jobs:
           MINISTACK_HOST: localhost
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version-file: "/backend/.nvmrc"
       - name: Restore backend node_modules cache
         id: cache-backend-nm-int
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: backend/node_modules
           key: ${{ runner.os }}-backend-nm-${{ hashFiles('backend/package-lock.json') }}
@@ -233,14 +233,14 @@ jobs:
           LAMBDA_EXECUTOR: local
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version-file: "/backend/.nvmrc"
       - name: Restore backend node_modules cache
         id: cache-backend-nm-lambda-deploy
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: backend/node_modules
           key: ${{ runner.os }}-backend-nm-${{ hashFiles('backend/package-lock.json') }}

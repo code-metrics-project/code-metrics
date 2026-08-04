@@ -33,6 +33,7 @@
 
 import serverlessExpress from "@codegenie/serverless-express";
 import { CreateSecretCommand, PutSecretValueCommand, SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
+import { getStaticAwsCredentialConfig } from "../utils/awsCredentials";
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2, Context } from "aws-lambda";
 import { overrideEnvConfigItem } from "../config/sources/source";
 import { generateKeyPairSync } from "crypto";
@@ -135,15 +136,18 @@ describe("CodeMetrics App via serverless-express (In-Process)", () => {
     process.env.AWS_ENDPOINT_URL = endpointUrl;
     process.env.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || "test";
     process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || "test";
+    const awsCredentialConfig = getStaticAwsCredentialConfig(
+      process.env.AWS_ACCESS_KEY_ID,
+      process.env.AWS_SECRET_ACCESS_KEY,
+      process.env.AWS_SESSION_TOKEN,
+      { preferNodeHttpHandler: true },
+    );
 
     // Seed required remote-config secrets in MiniStack Secrets Manager
     const secretsClient = new SecretsManagerClient({
       region,
       endpoint: endpointUrl,
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      },
+      ...awsCredentialConfig,
     });
     const { privateKey } = generateKeyPairSync("rsa", {
       modulusLength: 2048,

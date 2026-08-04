@@ -207,7 +207,8 @@ describe("buildDataLabels", () => {
   it("uses provided formatter for the correct series index", () => {
     const formatters: ChartFormat[] = [{ seriesName: "series1", format: (value) => `formatted ${value}` }];
     const result = buildDataLabels(true, undefined, formatters);
-    const formattedValue = result.formatter?.(123, { seriesIndex: 0 });
+    const formatterOpts = { seriesIndex: 0, dataPointIndex: 0, w: {} as never };
+    const formattedValue = result.formatter?.(123, formatterOpts);
     expect(formattedValue).toBe("formatted 123");
   });
 

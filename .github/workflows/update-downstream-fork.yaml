@@ -14,12 +14,12 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout upstream repo (code-metrics)
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: code-metrics
 
       - name: Checkout downstream repo (code-metrics-project/code-metrics)
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: code-metrics-project/code-metrics
           ssh-key: ${{ secrets.EXT_COLLAB_REPO_SSH_KEY }}

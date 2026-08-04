@@ -35,6 +35,13 @@ This setting applies to **DynamoDB** and **MongoDB** datastores only. The in-mem
 
 > **Note:** For MongoDB, if auto-creation is disabled and the TTL expiry index does not exist on an existing collection, a warning will be logged but the application will continue to operate. TTL-based expiration will not function until the index is created.
 
+## Manual setup of tables and collections
+
+If you disable auto-creation, you need to create tables and collections yourself with the correct schema and TTL configuration. See:
+
+- [Manual DynamoDB table setup](datastores_dynamodb_manual.md)
+- [Manual MongoDB collection setup](datastores_mongodb_manual.md)
+
 ## Datastore implementations
 
 ### In-memory implementation

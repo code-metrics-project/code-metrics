@@ -256,6 +256,8 @@ export default {
       productionIncidents: "本番インシデント",
       prOpenTime: "PRオープン時間",
       prSize: "PRサイズ",
+      prsPerIssue: "IssueあたりPR数",
+      issuesPerPr: "PRあたりIssue数",
       repoChurn: "リポジトリチャーン",
       timeToRestoreService: "サービス復旧時間",
       vulnerabilities: "脆弱性",

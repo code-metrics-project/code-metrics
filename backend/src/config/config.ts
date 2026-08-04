@@ -2,7 +2,7 @@ import path from "path";
 import fs, { readFile } from "fs/promises";
 import { logger, verbose, warn } from "../utils/logger/logger";
 import { ConfigHolder } from "../model/config/common";
-import yaml from "js-yaml";
+import { load } from "js-yaml";
 import _merge from "lodash/merge";
 import { resolveAllSecrets } from "./secrets";
 import { polyfillLegacyConfig } from "./polyfills";
@@ -342,7 +342,7 @@ export const readConfig = async <T>(
         logger(`Loading config file: ${configFile}`);
         const raw = await readFile(configFile);
         const resolved = options.resolveSecrets ? await resolveAllSecrets(raw.toString()) : raw.toString();
-        const config = yaml.load(resolved);
+        const config = load(resolved);
         configs.push(config);
       } catch (e) {
         throw new Error(`Error reading config file: ${configFile}: ${e}`);

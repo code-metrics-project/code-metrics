@@ -56,7 +56,7 @@ export function DatePicker({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="center">
           <div className="flex flex-col items-center p-3">
-            <Calendar mode="single" selected={value} onSelect={onChange} initialFocus captionLayout="dropdown" />
+            <Calendar mode="single" selected={value} onSelect={onChange} autoFocus captionLayout="dropdown" />
             {showPresets && (
               <div className="border-border mt-3 flex w-full justify-center gap-2 border-t pt-3">
                 <Button variant="secondary" size="sm" onClick={() => setRelativeDate(-7)}>

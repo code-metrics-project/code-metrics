@@ -6,7 +6,7 @@ jobs:
     outputs:
       vars: ${{ steps.playwright.outputs.vars }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Set vars (Python)
@@ -90,3 +90,31 @@ jobs:
     with:
       vars: ${{ needs.setup.outputs.vars }}
     secrets: inherit
+
+  # Always-on merge gate for branch rulesets / auto-merge. Do not skip this job when
+  # dependencies fail — skipped required checks count as success. Fail in the step instead.
+  ci-success:
+    name: CI Success
+    needs: [setup, validate, cd]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify CI jobs succeeded
+        run: |
+          echo "setup=${{ needs.setup.result }}"
+          echo "validate=${{ needs.validate.result }}"
+          echo "cd=${{ needs.cd.result }}"
+
+          if [[ "${{ needs.setup.result }}" != "success" ]]; then
+            echo "::error::setup did not succeed (${{ needs.setup.result }})"
+            exit 1
+          fi
+          if [[ "${{ needs.validate.result }}" != "success" ]]; then
+            echo "::error::validate did not succeed (${{ needs.validate.result }})"
+            exit 1
+          fi
+          # cd is skipped when setup/validate failed (handled above). Otherwise it must pass.
+          if [[ "${{ needs.cd.result }}" != "success" ]]; then
+            echo "::error::cd did not succeed (${{ needs.cd.result }})"
+            exit 1
+          fi

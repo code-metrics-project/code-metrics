@@ -30,16 +30,18 @@ const iconMap: Record<string, typeof Bug> = {
 
 // Map data source names to query names
 const dataSourceToQueryName: Record<string, string> = {
-  newBugs: "bugs-new",
-  openBugs: "bugs-open",
   changeFailureRate: "change-failure-rate",
   codeCoverage: "code-coverage",
   deploymentFrequency: "deployment-frequency",
   incidents: "production-incidents",
+  issuesPerPR: "issues-per-pr",
   leadTimeForChanges: "lead-time-for-changes",
+  newBugs: "bugs-new",
+  openBugs: "bugs-open",
   pipelineRuns: "pipeline-runs",
   pipelineSuccess: "pipeline-success",
   prOpenTime: "pr-open-time",
+  prsPerIssue: "prs-per-issue",
   repoChurn: "repo-churn",
   timeToRestoreService: "time-to-restore-service",
 };

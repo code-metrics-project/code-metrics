@@ -5,6 +5,10 @@ import { roundTo } from "@/utils/math";
 import { getChartConfig } from "@/queries/config";
 import type { MetricEntry } from "@/model/metrics";
 
+type ApexFormatterContext = {
+  seriesIndex?: number;
+};
+
 export type DatedValue = {
   date: Date;
   value: number;
@@ -240,14 +244,17 @@ export function buildDataLabels(
 
     // use the same formatter for the data labels as the axis labels
     if (formatters?.length) {
-      dataLabels.formatter = (value: number, opts: { seriesIndex: number | undefined }): string => {
-        if (opts.seriesIndex !== undefined && opts.seriesIndex < formatters.length) {
+      dataLabels.formatter = (value: string | number | number[], opts?: ApexFormatterContext): string => {
+        const numericValue = typeof value === "number" ? value : Array.isArray(value) ? Number(value[0] ?? 0) : Number(value);
+        const fallbackValue = Number.isFinite(numericValue) ? numericValue : 0;
+
+        if (opts?.seriesIndex !== undefined && opts.seriesIndex < formatters.length) {
           const f = formatters[opts.seriesIndex];
           if (f) {
-            return f.format(value);
+            return f.format(fallbackValue);
           }
         }
-        return defaultChartValueFormatter(value);
+        return defaultChartValueFormatter(fallbackValue);
       };
     }
   } else {

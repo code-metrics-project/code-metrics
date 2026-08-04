@@ -1,8 +1,5 @@
 import { groupIssues } from "../issues";
 
-// stub out the unneeded fetch dependency
-jest.mock("node-fetch", () => ({}));
-
 describe("groupIssues", () => {
   it("aggregates data by day", () => {
     const issues = [

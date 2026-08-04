@@ -261,6 +261,8 @@ export default {
       productionIncidents: "Production incidents",
       prOpenTime: "PR open time",
       prSize: "PR size",
+      prsPerIssue: "PRs per issue",
+      issuesPerPr: "Issues per PR",
       repoChurn: "Repository churn",
       timeToRestoreService: "Time to restore service",
       vulnerabilities: "Vulnerabilities",

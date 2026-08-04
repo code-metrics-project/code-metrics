@@ -16,7 +16,6 @@ import {
   CompletePrInfo,
   FileChanges,
   PrFileChangeItem,
-  LightweightPR,
   PREvent,
   PullRequest,
   RepoChange,
@@ -247,7 +246,7 @@ class AdoVcsService implements VcsService {
       }
       verbose(`${errorCount} errors retrieving changes for ${commits.length} commits`);
     }
-    const outputPr: LightweightPR = {
+    const outputPr: PullRequest = {
       id: relevant.pr.pullRequestId,
       title: relevant.pr.title,
       workloadId,
@@ -381,12 +380,14 @@ class AdoVcsService implements VcsService {
       logger(`Found ${prsInRange.length} PRs in date range for ${vcsProjectName}/${repositoryName}`);
 
       return await Promise.all(
-        prsInRange.map((pr) =>
-          this.#getCompletePRInformation(gitApi, workloadId, vcsProjectName, repositoryName, {
+        prsInRange.map(async (pr) => {
+          const complete = await this.#getCompletePRInformation(gitApi, workloadId, vcsProjectName, repositoryName, {
             issueId: "",
             pr,
-          }),
-        ),
+          });
+          complete.pr.createdDate = pr.creationDate ? pr.creationDate.toISOString() : undefined;
+          return complete;
+        }),
       );
     } catch (err) {
       throw new Error(`ADO.getPRsInDateRange error ${err}`);
@@ -461,7 +462,7 @@ class AdoVcsService implements VcsService {
 
   #fetchChangesForDate = async (
     gitApi: IGitApi,
-    workloadId: string,
+    workloadId: WorkloadId,
     vcsProjectName: string,
     repositoryName: string,
     date: Date,

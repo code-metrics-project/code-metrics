@@ -1,5 +1,4 @@
 import parseGitDiff, { AnyFileChange } from "parse-git-diff";
-import fetch from "node-fetch";
 import { type BitbucketServerConnection, createBitbuckerServerConnection } from "../../utils/bitbucketServerConnection";
 import { DatedMetricEntry } from "../../model/metrics";
 import { logger, verbose, warn } from "../../utils/logger/logger";
@@ -350,6 +349,7 @@ class BitbucketServerVcsService implements VcsService {
               workloadId,
               vcsProjectName,
               repositoryName,
+              createdDate: pr.createdDate ? new Date(pr.createdDate).toISOString() : undefined,
             },
             issueId: "",
             filesChanged,
@@ -630,7 +630,7 @@ class BitbucketServerVcsService implements VcsService {
 
   async #fetchChangesForDate(
     connection: BitbucketServerConnection,
-    workloadId: string,
+    workloadId: WorkloadId,
     vcsProjectName: string,
     repositoryName: string,
     branch: string,

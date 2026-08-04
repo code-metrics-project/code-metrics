@@ -1,5 +1,4 @@
 import Jenkins from "jenkins";
-import fetch from "node-fetch";
 import { Run, RunResult, RunWithMetadata } from "../../model/runs";
 import { getAllPipelinesConfig, getAllRemoteConfig, getWorkloadById } from "../../config/configMapping";
 import { AbstractPipelinesService, PipelinesServiceJobNameFilter, registerPipelines, registerPipelinesConnectionChecker } from "./pipelinesService";

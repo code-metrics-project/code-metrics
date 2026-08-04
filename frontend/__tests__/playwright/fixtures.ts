@@ -266,8 +266,48 @@ export class TestHelpers {
     const labelParent = this.page.locator("label").filter({ hasText: "Start date" }).locator("..");
     await labelParent.locator("button").first().click();
     // Wait for popover and click the preset button
-    await expect(this.page.locator("[data-radix-popper-content-wrapper]").last()).toBeVisible();
-    await this.page.getByRole("button", { name: `${daysAgo} days ago` }).click();
+    const popover = this.page.locator("[data-radix-popper-content-wrapper]").last();
+    await expect(popover).toBeVisible();
+    await popover.getByRole("button", { name: `${daysAgo} days ago` }).click();
+    await expect(popover).not.toBeVisible();
+  }
+
+  /**
+   * Set the start date to an exact number of days ago using the date picker calendar.
+   */
+  async setStartDateDaysAgo(daysAgo: number): Promise<void> {
+    await this.ensureFilterVisible("startDate", "Start Date");
+
+    const labelParent = this.page.locator("label").filter({ hasText: "Start date" }).locator("..");
+    await labelParent.locator("button").first().click();
+
+    const popover = this.page.locator("[data-radix-popper-content-wrapper]").last();
+    await expect(popover).toBeVisible();
+
+    const targetDate = new Date();
+    targetDate.setHours(0, 0, 0, 0);
+    targetDate.setDate(targetDate.getDate() - daysAgo);
+
+    const targetDay = targetDate.toLocaleDateString();
+    const targetDayButton = popover.locator(`button[data-day="${targetDay}"]`).first();
+
+    if (await targetDayButton.count()) {
+      await targetDayButton.click();
+    } else {
+      const monthSelect = popover.getByRole("combobox").first();
+      const yearSelect = popover.getByRole("combobox").nth(1);
+
+      const monthShort = targetDate.toLocaleString("default", { month: "short" });
+      await monthSelect.selectOption({ label: monthShort });
+      await yearSelect.selectOption({ label: String(targetDate.getFullYear()) });
+
+      const fallbackTargetDayButton = popover.locator(`button[data-day="${targetDay}"]`).first();
+      await expect(fallbackTargetDayButton).toBeVisible({ timeout: 5000 });
+      await fallbackTargetDayButton.click();
+    }
+
+    await this.page.keyboard.press("Escape");
+    await expect(popover).not.toBeVisible();
   }
 }
 

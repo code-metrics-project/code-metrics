@@ -29,6 +29,7 @@ import { PipelinesTypes } from "../../model/config/common";
 import { getEnvConfigItem } from "../../config/sources/source";
 import { ConnectionCheckResult } from "../../model/remote-connection-status";
 import { PipelineServer, RemoteServer } from "../../model/config/remote-config";
+import { getStaticAwsCredentialConfig } from "../../utils/awsCredentials";
 
 /**
  * Check connectivity to AWS CodePipeline by calling ListPipelines.
@@ -175,8 +176,14 @@ class CodePipelinePipelinesService extends AbstractPipelinesService {
       if (!awsRegion) {
         throw new Error(`No AWS_REGION environment variable set`);
       }
+      const awsCredentialConfig = getStaticAwsCredentialConfig(
+        getEnvConfigItem("AWS_ACCESS_KEY_ID"),
+        getEnvConfigItem("AWS_SECRET_ACCESS_KEY"),
+        getEnvConfigItem("AWS_SESSION_TOKEN"),
+      );
       client = new CodePipelineClient({
         region: awsRegion,
+        ...awsCredentialConfig,
 
         /**
          * undefined/null uses the default endpoint.

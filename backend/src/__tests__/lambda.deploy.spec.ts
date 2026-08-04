@@ -23,6 +23,7 @@
 import { LambdaClient, InvokeCommand, GetFunctionCommand, LogType } from "@aws-sdk/client-lambda";
 import { CloudWatchLogsClient, DescribeLogStreamsCommand } from "@aws-sdk/client-cloudwatch-logs";
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from "aws-lambda";
+import { getStaticAwsCredentialConfig } from "../utils/awsCredentials";
 
 // Configuration
 const FUNCTION_NAME = process.env.LAMBDA_FUNCTION_NAME || "codemetrics-api";
@@ -32,24 +33,24 @@ const AWS_ENDPOINT_URL = process.env.AWS_ENDPOINT_URL || "http://localhost:4566"
 // Only run if explicitly enabled (requires Lambda to be deployed)
 const isLambdaDeployed = process.env.LAMBDA_DEPLOYED === "true";
 const describeIfDeployed = isLambdaDeployed ? describe : describe.skip;
+const awsCredentialConfig = getStaticAwsCredentialConfig(
+  process.env.AWS_ACCESS_KEY_ID || "test",
+  process.env.AWS_SECRET_ACCESS_KEY || "test",
+  process.env.AWS_SESSION_TOKEN,
+  { preferNodeHttpHandler: true },
+);
 
 // AWS SDK clients configured for the local AWS emulator
 const lambdaClient = new LambdaClient({
   region: AWS_REGION,
   endpoint: AWS_ENDPOINT_URL,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "test",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "test",
-  },
+  ...awsCredentialConfig,
 });
 
 const logsClient = new CloudWatchLogsClient({
   region: AWS_REGION,
   endpoint: AWS_ENDPOINT_URL,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "test",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "test",
-  },
+  ...awsCredentialConfig,
 });
 
 // Helper: Create Lambda API Gateway event

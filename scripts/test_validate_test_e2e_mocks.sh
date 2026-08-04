@@ -78,7 +78,62 @@ function test_external_keycloak_skips_docker_management() {
   rm -rf "${fixture_dir}"
 }
 
+function test_oidc_configuration_uses_mock_discovery_document() {
+  local fixture_dir
+  fixture_dir="$(create_fixture)"
+
+  (
+    export ROOT_DIR="${fixture_dir}"
+    export VALIDATE_E2E_MOCKS_SOURCE_ONLY=true
+    source "${SCRIPT_PATH}"
+
+    AUTH_MODE="oidc"
+    setup_config_dir
+    configure_backend_env
+
+    grep -q '^OIDC_ISSUER_BASE_URL=http://localhost:8080/oidc/.well-known/openid-configuration$' "${BACKEND_DIR}/.env"
+  )
+
+  rm -rf "${fixture_dir}"
+}
+
+function test_file_auth_appends_shard_to_test_command() {
+  (
+    export VALIDATE_E2E_MOCKS_SOURCE_ONLY=true
+    source "${SCRIPT_PATH}"
+
+    AUTH_MODE="file"
+    SHARD_SPEC="2/5"
+    resolve_test_command
+
+    if [[ "$TEST_COMMAND" != "bun run test:e2e:coverage -- --shard=2/5" ]]; then
+      echo "Expected file auth test command to include --shard=2/5, got: ${TEST_COMMAND}" >&2
+      exit 1
+    fi
+  )
+}
+
+function test_custom_test_command_appends_shard() {
+  (
+    export VALIDATE_E2E_MOCKS_SOURCE_ONLY=true
+    source "${SCRIPT_PATH}"
+
+    AUTH_MODE="file"
+    TEST_COMMAND="bun run playwright test"
+    SHARD_SPEC="3/5"
+    resolve_test_command
+
+    if [[ "$TEST_COMMAND" != "bun run playwright test -- --shard=3/5" ]]; then
+      echo "Expected custom test command to include shard argument, got: ${TEST_COMMAND}" >&2
+      exit 1
+    fi
+  )
+}
+
 test_external_keycloak_configuration
 test_external_keycloak_skips_docker_management
+test_oidc_configuration_uses_mock_discovery_document
+test_file_auth_appends_shard_to_test_command
+test_custom_test_command_appends_shard
 
 echo "validate-test_e2e_mocks.sh checks passed"

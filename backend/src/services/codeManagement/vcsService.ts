@@ -561,7 +561,7 @@ const vcsQueries = new Map<string, Promise<any>>();
  * @param populator
  */
 const readThroughCacheSingleton = async <T>(
-  workloadId: string,
+  workloadId: WorkloadId,
   key: string,
   populator: () => Promise<T>,
 ): Promise<T> => {
@@ -592,7 +592,7 @@ const readThroughCacheSingleton = async <T>(
  * @param populator
  */
 const findOrInsert = async <T>(
-  workloadId: string,
+  workloadId: WorkloadId,
   key: string,
   collectionName: string,
   expireAfterSeconds: number | null,

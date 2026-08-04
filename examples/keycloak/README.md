@@ -21,6 +21,8 @@ OIDC_CLIENT_ID=codemetrics
 OIDC_CLIENT_SECRET=changeme
 ```
 
+This example uses `http://localhost:8086` for local development only. Production deployments should expose Keycloak over HTTPS and use an `https://` issuer URL.
+
 ## Test the OIDC flow
 
 ### Prerequisites

@@ -166,7 +166,7 @@ const options = computed(() => {
         fontSize: "12px",
       },
       formatter: function (text: string, op: { value: number; seriesIndex: number; dataPointIndex: number; w: any }) {
-        const data = op.w.config.series[op.seriesIndex].data[op.dataPointIndex];
+        const data = props.series[op.seriesIndex]?.data[op.dataPointIndex];
         const coverage = data?.meta?.coverage;
         const lines = [text, `Changes: ${op.value}`];
         if (coverage) {
@@ -177,7 +177,10 @@ const options = computed(() => {
     },
     tooltip: {
       custom: function ({ seriesIndex, dataPointIndex, w }) {
-        const data = w.config.series[seriesIndex].data[dataPointIndex];
+        const data = props.series[seriesIndex]?.data[dataPointIndex];
+        if (!data) {
+          return "";
+        }
         const meta = data.meta || {};
         const issueCount = meta.issueLinks?.length || 0;
 

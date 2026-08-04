@@ -29,6 +29,8 @@ import {
 } from "./impl/dora";
 import { fetchNonWorkingPatternChanges } from "./impl/working-pattern";
 import { fetchChangeCategories } from "./impl/change-type";
+import { fetchPRsPerIssue } from "./impl/prs-per-issue";
+import { fetchIssuesPerPR } from "./impl/issues-per-pr";
 
 export enum QueryName {
   CodeCoverage = "code-coverage",
@@ -48,6 +50,8 @@ export enum QueryName {
   RepoChurn = "repo-churn",
   PROpenTime = "pr-open-time",
   PRSize = "pr-size",
+  PRsPerIssue = "prs-per-issue",
+  IssuesPerPR = "issues-per-pr",
   TimeToRestoreService = "time-to-restore-service",
   Vulnerabilities = "vulnerabilities",
 }
@@ -96,6 +100,10 @@ export type PipelineDurationArgs = Workloads &
 type ProductionIncidentsArgs = Workloads & StartDate & IncidentFilter;
 
 export type PROpenTimeArgs = Workloads & StartDate & RollingAverages & RepoGroups;
+
+export type PRsPerIssueArgs = Workloads & StartDate & RollingAverages & RepoGroups;
+
+export type IssuesPerPRArgs = Workloads & StartDate & RollingAverages & RepoGroups;
 
 type RepoChurnArgs = Workloads & RepoGroups & StartDate & RollingAverages & ChangeMeasureArgs;
 
@@ -222,6 +230,20 @@ export const registerQueries = () => {
     axisNames: ["pr-size"],
     reduce: ReduceStrategy.SUM,
     execute: async (args: PROpenTimeArgs) => await fetchPRSize(args.workloads, args.startDate, args.repoGroups),
+  });
+
+  registerQuery({
+    name: QueryName.PRsPerIssue,
+    axisNames: ["prs-per-issue"],
+    reduce: ReduceStrategy.AVERAGE,
+    execute: async (args: PRsPerIssueArgs) => await fetchPRsPerIssue(args.workloads, args.startDate, args.repoGroups),
+  });
+
+  registerQuery({
+    name: QueryName.IssuesPerPR,
+    axisNames: ["issues-per-pr"],
+    reduce: ReduceStrategy.AVERAGE,
+    execute: async (args: IssuesPerPRArgs) => await fetchIssuesPerPR(args.workloads, args.startDate, args.repoGroups),
   });
 
   registerQuery({

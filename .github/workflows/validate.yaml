@@ -31,7 +31,7 @@ jobs:
     if: ${{ fromJSON(inputs.vars).helmComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Lint Helm Chart
         working-directory: deployment/helm/code-metrics
         run: |
@@ -92,7 +92,7 @@ jobs:
       contents: read
     if: ${{ fromJSON(inputs.vars).threatmodelComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install Markdown to PDF Deps
         run: |
           sudo apt update
@@ -126,13 +126,13 @@ jobs:
     env:
       COVERAGE_ENABLED: "false"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
           node-version-file: "/backend/.nvmrc"
       - name: Restore backend node_modules cache
         id: cache-backend-nm-e2e-ui
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: backend/node_modules
           key: ${{ runner.os }}-backend-nm-${{ hashFiles('backend/package-lock.json') }}
@@ -142,7 +142,7 @@ jobs:
         run: npm ci
       - name: Restore UI node_modules cache
         id: cache-ui-nm-e2e
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ui/node_modules
@@ -185,7 +185,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
           node-version-file: "/tools/mergecoverage/.nvmrc"

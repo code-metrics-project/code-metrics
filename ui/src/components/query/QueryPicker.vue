@@ -12,7 +12,7 @@
     hide-details
   >
     <template v-slot:item="{ item, props }">
-      <v-list-item v-bind="props" :subtitle="item.raw.description" :title="item.raw.title" />
+      <v-list-item v-bind="props" :subtitle="item.raw?.description" :title="item.raw?.title" />
     </template>
   </v-combobox>
 </template>

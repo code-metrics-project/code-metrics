@@ -42,8 +42,10 @@ test.describe("Dependency Alerts page", () => {
   test("Shows correct breadcrumb navigation for programme level", async ({ page }) => {
     await page.goto(Paths.ProgramDependencyAlerts);
 
-    // Check breadcrumbs
-    const programmeLink = page.locator("a").filter({ hasText: "Programme" });
+    // Check breadcrumbs (scope to breadcrumb nav to avoid matching top nav link)
+    const programmeLink = page
+      .getByRole("navigation", { name: "breadcrumb" })
+      .getByRole("link", { name: "Programme", exact: true });
     await expect(programmeLink).toHaveAttribute("href", "/program");
   });
 

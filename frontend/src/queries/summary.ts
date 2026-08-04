@@ -1,38 +1,43 @@
 import type { QueryArgs } from "@/components/inputs";
 import type { StoredQuery, StoredQueryCollection } from "@/model/query";
 import { QueryComponentType } from "@/model/query";
+import i18n from "@/i18n";
 
-/**
- * Map of query types to their human-readable titles.
- */
-const queryTitles: Record<string, string> = {
-  "bugs-new": "New bugs",
-  "bugs-open": "Open bugs",
-  "change-failure-rate": "Change failure rate",
-  "change-categories": "Change categories",
-  "code-coverage": "Code coverage",
-  coverage: "Coverage",
-  "cyclomatic-complexity": "Cyclomatic complexity",
-  "deployment-frequency": "Deployment frequency",
-  "lead-time-for-changes": "Lead time for changes",
-  "lines-of-code": "Lines of code",
-  "non-working-pattern": "Working pattern",
-  "pipeline-runs": "Pipeline runs",
-  "pipeline-success": "Pipeline success rate",
-  "pipeline-durations": "Pipeline durations",
-  "production-incidents": "Production incidents",
-  "pr-open-time": "PR open time",
-  "pr-size": "PR size",
-  "repo-churn": "Repository churn",
-  "time-to-restore-service": "Time to restore service",
-  vulnerabilities: "Vulnerabilities",
+const queryTitleI18nKeys: Record<string, string> = {
+  "bugs-new": "components:query.queryTypes.bugsNew",
+  "bugs-open": "components:query.queryTypes.bugsOpen",
+  "change-failure-rate": "components:query.queryTypes.changeFailureRate",
+  "change-categories": "components:query.queryTypes.changeCategories",
+  "code-coverage": "components:query.queryTypes.codeCoverage",
+  coverage: "components:query.queryTypes.codeCoverage",
+  "cyclomatic-complexity": "components:query.queryTypes.cyclomaticComplexity",
+  "deployment-frequency": "components:query.queryTypes.deploymentFrequency",
+  "lead-time-for-changes": "components:query.queryTypes.leadTimeForChanges",
+  "lines-of-code": "components:query.queryTypes.linesOfCode",
+  "non-working-pattern": "components:query.queryTypes.nonWorkingPattern",
+  "pipeline-runs": "components:query.queryTypes.pipelineRuns",
+  "pipeline-success": "components:query.queryTypes.pipelineSuccess",
+  "pipeline-durations": "components:query.queryTypes.pipelineDurations",
+  "production-incidents": "components:query.queryTypes.productionIncidents",
+  "pr-open-time": "components:query.queryTypes.prOpenTime",
+  "pr-size": "components:query.queryTypes.prSize",
+  "prs-per-issue": "components:query.queryTypes.prsPerIssue",
+  "issues-per-pr": "components:query.queryTypes.issuesPerPr",
+  "repo-churn": "components:query.queryTypes.repoChurn",
+  "time-to-restore-service": "components:query.queryTypes.timeToRestoreService",
+  vulnerabilities: "components:query.queryTypes.vulnerabilities",
 };
 
 /**
  * Get the human-readable title for a query type.
  */
 export function getQueryTitle(queryType: string): string {
-  return queryTitles[queryType] ?? queryType;
+  const i18nKey = queryTitleI18nKeys[queryType];
+  if (!i18nKey) {
+    return queryType;
+  }
+
+  return i18n.t(i18nKey);
 }
 
 /**

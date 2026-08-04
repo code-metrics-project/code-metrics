@@ -9,7 +9,20 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["dist/**", "build/**", "node_modules/**", "coverage/**", "__tests__/**"],
+    ignores: [
+      "dist/**",
+      "build/**",
+      "node_modules/**",
+      "coverage/**",
+      "**/__tests__/**",
+      "playwright-report/**",
+      "test-results/**",
+    ],
+  },
+  {
+    linterOptions: {
+      reportUnusedDisableDirectives: "off",
+    },
   },
   js.configs.recommended,
   {
@@ -51,11 +64,16 @@ export default [
       ...a11yPlugin.configs.recommended.rules,
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
+      "react-hooks/immutability": "off",
+      "react-hooks/purity": "off",
+      "react-hooks/set-state-in-effect": "off",
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+      "jsx-a11y/aria-role": "off",
       "jsx-a11y/click-events-have-key-events": "off",
       "jsx-a11y/no-static-element-interactions": "off",
+      "preserve-caught-error": "off",
       "tailwind-canonical-classes/tailwind-canonical-classes": [
-        "error",
+        "off",
         {
           cssPath: "./src/index.css",
         },

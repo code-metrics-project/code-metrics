@@ -19,11 +19,7 @@
           </v-row>
           <v-row>
             <v-col cols="6">
-              <tag-input
-                :defaults="tags"
-                @input="(t) => (tags = t)"
-                :operationState="operationState"
-              />
+              <tag-input :defaults="tags" @input="(t) => (tags = t)" :operationState="operationState" />
             </v-col>
           </v-row>
           <v-row>
@@ -119,9 +115,7 @@
             <v-col cols="12" md="4">
               <div class="text-subtitle-2">SLA Compliance</div>
               <div v-if="analysis.warningMessage">
-                <v-icon color="grey" class="mr-1">
-                  mdi-help-circle
-                </v-icon>
+                <v-icon color="grey" class="mr-1"> mdi-help-circle </v-icon>
                 Unknown
               </div>
               <div v-else>
@@ -185,7 +179,11 @@ import RepoGroups from "@/components/inputs/RepoGroups.vue";
 import PackageAlertsTable from "@/components/dependencyAlerts/PackageAlertsTable.vue";
 import { OperationState } from "@/utils/ui";
 import { logger } from "@/utils/logger";
-import { fetchDependencyAlerts, aggregatePackageAlerts, type DependencyAlertsAnalysis } from "@/services/dependencyAlerts";
+import {
+  fetchDependencyAlerts,
+  aggregatePackageAlerts,
+  type DependencyAlertsAnalysis,
+} from "@/services/dependencyAlerts";
 import { getReposForWorkloadId, listWorkloadIds } from "@/utils/config";
 import type { Tags } from "@/model/tags";
 import { ta } from "date-fns/locale";
@@ -276,7 +274,12 @@ const fetchAlerts = async () => {
   try {
     logger(`Fetching dependency alerts for workloads: ${workloads.value.join(", ")}`);
 
-    const results = await fetchDependencyAlerts(workloads.value, tags.value, repoNameInput.value, repoGroupsInput.value);
+    const results = await fetchDependencyAlerts(
+      workloads.value,
+      tags.value,
+      repoNameInput.value,
+      repoGroupsInput.value,
+    );
     analyses.value = results;
 
     progress.value = 100;
@@ -299,9 +302,7 @@ const updateRepoNames = () => {
 
   const allRepos = new Set<string>();
   const workloadIdsToProcess =
-    workloads.value.includes("all") || workloads.value[0] === "all"
-      ? listWorkloadIds()
-      : workloads.value;
+    workloads.value.includes("all") || workloads.value[0] === "all" ? listWorkloadIds() : workloads.value;
 
   workloadIdsToProcess.forEach((workloadId) => {
     const repos = getReposForWorkloadId(workloadId);

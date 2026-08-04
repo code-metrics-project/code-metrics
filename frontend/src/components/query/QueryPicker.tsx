@@ -30,6 +30,8 @@ export function QueryPicker({ value, onChange, multiple = false, disabled = fals
     { value: "production-incidents", label: t("components:query.queryTypes.productionIncidents") },
     { value: "pr-open-time", label: t("components:query.queryTypes.prOpenTime") },
     { value: "pr-size", label: t("components:query.queryTypes.prSize") },
+    { value: "prs-per-issue", label: t("components:query.queryTypes.prsPerIssue") },
+    { value: "issues-per-pr", label: t("components:query.queryTypes.issuesPerPr") },
     { value: "repo-churn", label: t("components:query.queryTypes.repoChurn") },
     { value: "time-to-restore-service", label: t("components:query.queryTypes.timeToRestoreService") },
     { value: "vulnerabilities", label: t("components:query.queryTypes.vulnerabilities") },

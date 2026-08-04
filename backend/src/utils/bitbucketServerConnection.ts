@@ -3,13 +3,14 @@
  * @atlassian/bitbucket-server hasn't been updated since 2019 and is missing helpers for some of the key endpoints we use.
  * bitbucket-server-nodejs hasn't been updated since 2019 and is missing helpers for some of the key endpoints we use.
  */
-import { type RequestInit } from "node-fetch";
 import http from "http";
 import https from "https";
 import { logger } from "./logger/logger";
 import { limitedBitbucketFetch } from "./bitbucketServerConnectionRequest";
 
 import { AuthMethod } from "../model/config/remote-config";
+
+type RequestInit = globalThis.RequestInit;
 
 type ClientOptions = {
   auth: {

@@ -1,5 +1,4 @@
 import { add } from "date-fns";
-import fetch from "node-fetch";
 import Bottleneck from "bottleneck";
 import { roundTo } from "../../utils/math";
 import reject from "lodash/reject";

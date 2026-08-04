@@ -2,7 +2,6 @@ import { WorkloadId } from "../../../model/config/workload-config";
 import { TicketManagementTypes } from "../../../model/config/common";
 import { logger, verbose } from "../../../utils/logger/logger";
 import { limitConcurrency } from "../../../utils/retry";
-import fetch from "node-fetch";
 import { logResponseBody } from "../../../utils/responses";
 import { AuthMethod, TicketManagementServer } from "../../../model/config/remote-config";
 import Bottleneck from "bottleneck";

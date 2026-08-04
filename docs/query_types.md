@@ -58,6 +58,8 @@ Metrics about pull requests, such as:
 
 - PR duration
 - PR size
+- PRs per issue (average number of pull requests linked to an issue)
+- Issues per PR (average number of issues linked to a pull request)
 
 ### [Change types](./query_change_types.md)
 

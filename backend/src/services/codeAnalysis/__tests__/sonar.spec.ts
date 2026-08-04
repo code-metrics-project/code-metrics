@@ -4,9 +4,6 @@ import { loadConfig } from "../../../config/config";
 import { Workload } from "../../../model/config/workload-config";
 import { ConfigVersion } from "../../../model/config/base";
 
-// stub out unneeded fetch import
-jest.mock("node-fetch", () => ({}));
-
 const workload: Workload = {
   id: "athena",
   codeAnalysis: {

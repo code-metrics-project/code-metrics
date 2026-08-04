@@ -1,12 +1,12 @@
 actions:
   - name: actions/cache
-    version: v5
-  - name: actions/checkout
     version: v6
+  - name: actions/checkout
+    version: v7
   - name: actions/download-artifact
     version: v8
   - name: actions/github-script
-    version: v8
+    version: v9
   - name: actions/setup-go
     version: v6
   - name: actions/setup-node
@@ -16,7 +16,7 @@ actions:
   - name: actions/upload-artifact
     version: v7
   - name: astral-sh/setup-uv
-    version: v8.0.0
+    version: v8.3.2
   - name: docker/build-push-action
     version: v7
   - name: docker/login-action

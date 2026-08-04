@@ -14,6 +14,7 @@
 import { SecretsManagerClient, CreateSecretCommand, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
 import { getSecretsManagerResolver } from "../impl/secrets_manager";
 import { resolveAllSecretsWithResolver } from "../secrets";
+import { getStaticAwsCredentialConfig } from "../../utils/awsCredentials";
 
 const isMiniStackAvailable = () => !!(process.env.AWS_ENDPOINT_URL || process.env.MINISTACK_ENDPOINT);
 
@@ -26,8 +27,15 @@ describeIfMiniStack("Secrets Manager with MiniStack", () => {
   beforeAll(() => {
     // Configure client for MiniStack if AWS_ENDPOINT_URL is set
     const endpointUrl = process.env.AWS_ENDPOINT_URL || process.env.MINISTACK_ENDPOINT;
+    const awsCredentialConfig = getStaticAwsCredentialConfig(
+      process.env.AWS_ACCESS_KEY_ID || "test",
+      process.env.AWS_SECRET_ACCESS_KEY || "test",
+      process.env.AWS_SESSION_TOKEN,
+      { preferNodeHttpHandler: true },
+    );
     client = new SecretsManagerClient({
       region: process.env.AWS_REGION || "us-east-1",
+      ...awsCredentialConfig,
       ...(endpointUrl && { endpoint: endpointUrl }),
     });
   });

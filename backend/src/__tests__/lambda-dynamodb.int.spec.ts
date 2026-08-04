@@ -17,6 +17,7 @@ import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2, Context
 import express, { Express, Request, Response } from "express";
 import { DynamoDBClient, ListTablesCommand, DeleteTableCommand } from "@aws-sdk/client-dynamodb";
 import { overrideEnvConfigItem } from "../config/sources/source";
+import { getStaticAwsCredentialConfig } from "../utils/awsCredentials";
 import { initDynamoDB, DynamoDatastore } from "../db/dynamodb/db";
 
 const AWS_LOCAL_ENDPOINT = "http://localhost:4566";
@@ -166,11 +167,18 @@ describe("Lambda + DynamoDB E2E Tests with Local AWS", () => {
     process.env.AWS_ENDPOINT_URL = endpointUrl;
     process.env.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || "test";
     process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || "test";
+    const awsCredentialConfig = getStaticAwsCredentialConfig(
+      process.env.AWS_ACCESS_KEY_ID,
+      process.env.AWS_SECRET_ACCESS_KEY,
+      process.env.AWS_SESSION_TOKEN,
+      { preferNodeHttpHandler: true },
+    );
 
     // Configure DynamoDB client for Local AWS
     dynamoClient = new DynamoDBClient({
       region,
       endpoint: endpointUrl,
+      ...awsCredentialConfig,
     });
 
     // Override config for DynamoDB

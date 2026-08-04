@@ -17,7 +17,10 @@ export default defineConfig({
   /* Use 2 workers on CI (ubuntu-latest has 2 cores), auto-detect locally */
   workers: process.env.CI ? 2 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [["html", { outputFolder: "__tests__/output/playwright-report" }], ["list"]],
+  reporter:
+    process.env.PLAYWRIGHT_BLOB_REPORT === "true"
+      ? [["blob", { outputDir: "blob-report" }], ["list"]]
+      : [["html", { outputFolder: "__tests__/output/playwright-report" }], ["list"]],
   use: {
     baseURL: "http://code-metrics.localhost:3001",
     trace: "on-first-retry",

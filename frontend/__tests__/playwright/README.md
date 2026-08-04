@@ -90,6 +90,8 @@ Coverage reports are generated in a profile-specific folder:
 - `coverage-frontend--oidc/` for OIDC runs
 - `coverage-frontend--keycloak/` for Keycloak runs
 
+In CI, regression e2e tests run across 5 Playwright shards. Each shard uploads its own coverage artifact (`coverage-frontend--e2e-shard-<n>`), and the validate workflow merges them with the other coverage reports.
+
 ### OIDC/Keycloak Tests
 
 For OIDC tests, you need the respective authentication server running:

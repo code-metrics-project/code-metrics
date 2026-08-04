@@ -15,10 +15,13 @@ AUTHENTICATOR_IMPL=keycloak
 This authenticator queries the specified Keycloak instance to authenticate the user.
 
 Set the following environment variables:
+
 ```
 KEYCLOAK_URI='http://127.0.0.1:8086';
 KEYCLOAK_REALM='codemetrics';
 KEYCLOAK_CLIENT_ID='codemetrics';
 ```
+
+Use `http://127.0.0.1:8086` only for local development. Production or shared environments should expose Keycloak over HTTPS and configure `KEYCLOAK_URI` with an `https://` URL.
 
 Keycloak Realm/Client should be configured to have `Direct access grants` enabled for this to work.

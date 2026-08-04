@@ -47,7 +47,7 @@ export type DeploymentService = {
    * @param stageId
    * @param run
    */
-  findCommitIdForRun: (workloadId: string, stageId: string, run: Run) => Promise<string>;
+  findCommitIdForRun: (workloadId: WorkloadId, stageId: string, run: Run) => Promise<string>;
 
   /**
    * Find the PR associated with a run.
@@ -145,7 +145,7 @@ class DeploymentServiceImpl implements DeploymentService {
     return deployConfig;
   };
 
-  findCommitIdForRun = async (workloadId: string, stageId: string, run: Run): Promise<string> => {
+  findCommitIdForRun = async (workloadId: WorkloadId, stageId: string, run: Run): Promise<string> => {
     logger(`Finding commit ID for workload ${workloadId} job ${run.job} stage ${stageId} run ${run.id}`);
     const workload = getWorkloadById(workloadId);
     const stage = this.getStageConfigForWorkload(workload, stageId);

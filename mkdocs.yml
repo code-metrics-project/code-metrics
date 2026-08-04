@@ -55,6 +55,8 @@ nav:
       - Datastores:
         - Datastore overview: "datastores.md"
         - Datastore collections: "datastore_collections.md"
+        - Manual DynamoDB table setup: "datastores_dynamodb_manual.md"
+        - Manual MongoDB collection setup: "datastores_mongodb_manual.md"
         - Caching: "caching.md"
       - Secrets management: "secret_management.md"
 

@@ -25,7 +25,6 @@ import { initGithubVcs } from "../../services/codeManagement/github";
 import * as pipelinesService from "../../services/pipelines/pipelinesService";
 
 // stub out unneeded imports
-jest.mock("node-fetch", () => ({}));
 // import { Octokit } from "@octokit/rest";
 
 beforeEach(() => {

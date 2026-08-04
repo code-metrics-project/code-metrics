@@ -32,13 +32,13 @@
                       value: id,
                     }))
                   "
-                  :label="`Choose transformer ${index + 1}`"
+                  :label="transformerLabel(index)"
                   :return-object="false"
                   dense
                   outlined
                 />
 
-                <v-btn icon @click.prevent="() => deleteTransformer(key, index)" elevation="2">
+                <v-btn icon @click.prevent="removeTransformer(key, index)" elevation="2">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
               </div>
@@ -54,7 +54,7 @@
             </div>
 
             <v-card-actions>
-              <v-btn @click.prevent="() => addTransformer(key)" text="true">+ Add transformer</v-btn>
+              <v-btn @click.prevent="appendTransformer(key)" text="true">+ Add transformer</v-btn>
             </v-card-actions>
           </v-window-item>
         </v-window>
@@ -110,6 +110,18 @@ function addTransformer(queryName: QueryName) {
 
 function deleteTransformer(queryName: QueryName, transformerIndex: number) {
   transformState.value[queryName].splice(transformerIndex, 1);
+}
+
+function appendTransformer(queryName: string) {
+  addTransformer(queryName as QueryName);
+}
+
+function removeTransformer(queryName: string, transformerIndex: string | number) {
+  deleteTransformer(queryName as QueryName, Number(transformerIndex));
+}
+
+function transformerLabel(transformerIndex: string | number) {
+  return `Choose transformer ${Number(transformerIndex) + 1}`;
 }
 
 function onInputChange() {

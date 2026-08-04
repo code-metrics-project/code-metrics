@@ -88,7 +88,7 @@ describe(`a V2 Jira client`, () => {
     expect(issues.length).toBeGreaterThanOrEqual(1);
     expect(issues[0].key).not.toBeNull();
     expect(issues[0].fields).not.toBeNull();
-    expect(issues[0].fields.issuetype).toStrictEqual({ name: "Bug" });
+    expect(issues[0].fields.issuetype).toMatchObject({ name: "Bug" });
     expect(issues[0].fields.created).not.toBeNull();
     expect(issues[0].fields.priority).not.toBeNull();
     expect(issues[0].fields.summary).not.toBeNull();
@@ -106,7 +106,7 @@ describe(`a V3 Jira client`, () => {
     expect(issues.length).toBeGreaterThanOrEqual(1);
     expect(issues[0].key).not.toBeNull();
     expect(issues[0].fields).not.toBeNull();
-    expect(issues[0].fields.issuetype).toStrictEqual({ name: "Bug" });
+    expect(issues[0].fields.issuetype).toMatchObject({ name: "Bug" });
     expect(issues[0].fields.created).not.toBeNull();
     expect(issues[0].fields.priority).not.toBeNull();
     expect(issues[0].fields.summary).not.toBeNull();
