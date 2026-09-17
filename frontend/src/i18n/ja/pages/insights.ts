@@ -104,6 +104,10 @@ const insights = {
     title: "パイプライン健全性",
     description: "CI/CDパイプラインの結果と期間。",
   },
+  pipelineQueryBuilder: {
+    title: "パイプラインクエリビルダー",
+    description: "単一のワークロードのパイプラインクエリを構築します。",
+  },
   pipelineRun: {
     title: "パイプライン実行",
     notFound: "パイプライン実行が見つかりません。",

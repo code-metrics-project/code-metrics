@@ -5,7 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { DynamicInputs, type QueryArgs } from "@/components/inputs";
 import { DoughnutChart } from "@/components/charts";
-import { executeQuery } from "@/services/query";
+import { executeQueryAsync } from "@/services/asyncQuery";
 import type { RawQuery } from "@/model/query";
 import type { DatedMetrics } from "@/model/metrics";
 import { listRepoGroups, listWorkloadIds } from "@/config";
@@ -90,7 +90,7 @@ export function SecurityVulnerabilities({
   const runQuery = useCallback(
     async (query: RawQuery, repoGroup: string, workloadId: string): Promise<WorkloadOutcome | null> => {
       try {
-        const result = await executeQuery(query);
+        const result = await executeQueryAsync(query);
 
         if (result && result.size > 0) {
           const percentages = calculatePercentageByTag(result);

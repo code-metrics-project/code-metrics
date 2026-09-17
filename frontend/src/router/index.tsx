@@ -19,6 +19,7 @@ const Workload = lazy(() => import("@/pages/Workload"));
 const PipelineRuns = lazy(() => import("@/pages/PipelineRuns"));
 const PipelineRun = lazy(() => import("@/pages/PipelineRun"));
 const PipelineHealth = lazy(() => import("@/pages/PipelineHealth"));
+const PipelineQueryBuilder = lazy(() => import("@/pages/PipelineQueryBuilder"));
 const Analysis = lazy(() => import("@/pages/Analysis"));
 const CodeQuality = lazy(() => import("@/pages/CodeQuality"));
 const QualityGates = lazy(() => import("@/pages/QualityGates"));
@@ -173,6 +174,14 @@ const routes: RouteObject[] = [
         ),
       },
       {
+        path: Paths.ProgramPipelineQueryBuilder,
+        element: (
+          <PageLoader>
+            <PipelineQueryBuilder />
+          </PageLoader>
+        ),
+      },
+      {
         path: Paths.ProgramSecurity,
         element: (
           <PageLoader>
@@ -265,6 +274,14 @@ const routes: RouteObject[] = [
         element: (
           <PageLoader>
             <PipelineHealth />
+          </PageLoader>
+        ),
+      },
+      {
+        path: Paths.WorkloadPipelineQueryBuilder,
+        element: (
+          <PageLoader>
+            <PipelineQueryBuilder />
           </PageLoader>
         ),
       },

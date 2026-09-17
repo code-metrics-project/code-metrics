@@ -1,5 +1,5 @@
 import { useQueries } from "@tanstack/react-query";
-import { executeQuery } from "@/services/query";
+import { executeQueryAsync } from "@/services/asyncQuery";
 import { Paths } from "@/router/paths";
 import type { RawQuery } from "@/model/query";
 import { QUERY_KEYS } from "./keys";
@@ -133,7 +133,7 @@ export function usePipelineOutcomesPerJobGroup(args: Record<string, unknown>, en
 
       return {
         queryKey: [QUERY_KEYS.PIPELINE_RUNS, "outcomes", workloadKey || "all", group, groupArgs],
-        queryFn: () => executeQuery(query),
+        queryFn: () => executeQueryAsync(query),
         enabled,
       };
     }),

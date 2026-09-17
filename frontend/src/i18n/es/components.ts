@@ -359,6 +359,10 @@ export default {
     selectWorkloads: "Seleccionar cargas de trabajo para analizar:",
     selectWorkloadsPrompt: "Seleccione cargas de trabajo para ver los resultados de salud de sus pipelines.",
   },
+  pipelineQueryBuilder: {
+    title: "Constructor de consultas de pipeline",
+    description: "Cree una consulta de pipeline para una sola carga de trabajo.",
+  },
   navbar: {
     brandName: "CodeMetrics",
     openMainNavigation: "Abrir navegación principal",

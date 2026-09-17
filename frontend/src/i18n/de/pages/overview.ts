@@ -14,6 +14,7 @@ const overview = {
     codeQuality: "Codequalität",
     cicdPipeline: "CI/CD-Pipeline",
     pipelineHealth: "Pipeline-Gesundheit",
+    pipelineQueryBuilder: "Pipeline-Abfragebaustein",
     bugsAndIncidents: "Fehler und Vorfälle",
     doraMetrics: "DORA-Metriken",
     analyse: "Analysieren",
@@ -44,6 +45,7 @@ const overview = {
       title: "Pipelines",
       description: "Programm-Pipeline-Gesundheit.",
       action: "Pipelines anzeigen",
+      queryBuilderAction: "Abfragebaustein",
     },
     qualityGates: {
       title: "Qualitätstore",

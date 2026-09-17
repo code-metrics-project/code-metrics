@@ -3,6 +3,7 @@
     ".github": [".github"],
     "auth": ["backend/src/auth"],
     "backend": ["backend", ":!backend/.dockerignore"],
+    "deployment": ["deployment"],
     "desktop": ["desktop"],
     "docker": [
       "docker",
@@ -26,7 +27,7 @@
     "docs": ["docs"],
     "examples": ["examples"],
     "frontend": ["frontend", ":!frontend/.dockerignore"],
-    "helm": ["helm"],
+    "helm": ["deployment/helm"],
     "machinelearning": ["machinelearning", ":!machinelearning/.dockerignore"],
     "mcp": ["mcp"],
     "mocks": ["mocks", ":!mocks/.dockerignore"],
@@ -41,6 +42,7 @@
     ".github": [
       "auth",
       "backend",
+      "deployment",
       "desktop",
       "docs",
       "examples",

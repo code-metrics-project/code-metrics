@@ -2,6 +2,8 @@
 .env
 
 .AGENTS_LOCAL.md
+.opencode/
+opencode.json
 
 # Editor directories and files
 .idea
@@ -57,3 +59,7 @@ compose/localstack-data/
 
 # TS temp files
 *.tsbuildinfo
+
+# Deployment
+mocks_output.json
+native_output.json

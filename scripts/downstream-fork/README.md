@@ -44,7 +44,9 @@ A comprehensive script that performs a complete sync of the downstream repositor
 
 - The downstream repository should have its main branch updated
 - All file additions, modifications, and deletions will be synchronized
-- Excludes some directories from synchronization
+- Excludes some directories and workflows from synchronization (see `scripts/downstream-fork/rsync-excludes.txt`), including:
+  - private/demo-only paths such as `.github/workflows/deploy-demo.yaml` and `.github/demo-config/`
+  - `machinelearning/`, `promosite/`, `desktop/`, `mcp/`, and selected GitHub workflows
 - License files (COPYING, COPYING.LESSER, LICENSE) are copied from the scripts directory to downstream root (these are specific to the downstream fork)
 - The commit message will include the full SHA of the upstream commit
 - The scripts preserve the `.git` directory in the downstream repository

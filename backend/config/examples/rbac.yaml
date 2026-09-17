@@ -1,5 +1,11 @@
 rbac:
   - user: admin
     roles: [ "admin" ]
-  - user: anothertestperson
+  - user: devuser
+    roles: []
+  # Optional Cognito demo users — only needed when auth.cognito.createDemoUsers is enabled
+  # in deployment/aws/cdk/native/config.yaml (or a deploy-time CDK overlay).
+  - user: admin@codemetrics.com
+    roles: [ "admin" ]
+  - user: dev@codemetrics.com
     roles: []

@@ -11,4 +11,4 @@ run:
 	imposter up -r .
 
 stop:
-	imposter down
+	imposter down --all

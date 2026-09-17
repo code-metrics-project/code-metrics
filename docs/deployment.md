@@ -4,6 +4,7 @@ You can run CodeMetrics in a number of ways:
 
 - Docker or Docker Compose
 - AWS Lambda
+- AWS CDK (Lambda + CloudFront + optional Cognito/DynamoDB/mocks)
 - Kubernetes
 - Using Node.js directly
 
@@ -20,6 +21,10 @@ See the [Docker deployment instructions](./deployment_docker.md).
 ## AWS Lambda
 
 CodeMetrics can be deployed to AWS Lambda. See the [AWS Lambda deployment instructions](./deployment_lambda.md).
+
+## AWS CDK
+
+CodeMetrics can be deployed to AWS with CDK stacks for the backend, frontend, optional Cognito/DynamoDB, and an optional mocks stack. See the [AWS CDK deployment instructions](./deployment_cdk.md).
 
 ## Kubernetes
 

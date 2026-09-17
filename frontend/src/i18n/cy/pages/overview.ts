@@ -14,6 +14,7 @@ const overview = {
     codeQuality: "Ansawdd Cod",
     cicdPipeline: "Piblinell CI/CD",
     pipelineHealth: "Iechyd piblinell",
+    pipelineQueryBuilder: "Adeiladydd ymholiadau piblinell",
     bugsAndIncidents: "Bygiau a digwyddiadau",
     doraMetrics: "Metrigau DORA",
     analyse: "Dadansoddi",
@@ -44,6 +45,7 @@ const overview = {
       title: "Piblinellau",
       description: "Iechyd piblinellau'r rhaglen.",
       action: "Gweld Piblinellau",
+      queryBuilderAction: "Adeiladydd ymholiadau",
     },
     qualityGates: {
       title: "Gatiau Ansawdd",

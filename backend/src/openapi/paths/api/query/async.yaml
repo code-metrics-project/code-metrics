@@ -1,0 +1,49 @@
+post:
+  summary: Submit an async query
+  description: Submits a query for asynchronous execution. Returns a job ID and poll URL immediately.
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - queryName
+            - args
+          properties:
+            queryName:
+              type: string
+            args:
+              type: object
+            groupBy:
+              type: string
+            transforms:
+              type: array
+              items:
+                type: object
+                properties:
+                  transform:
+                    type: string
+                  args:
+                    type: object
+
+  responses:
+    "202":
+      description: Query accepted
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              jobId:
+                type: string
+              pollUrl:
+                type: string
+
+    "400":
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "../../../components/schemas/Error.yaml"

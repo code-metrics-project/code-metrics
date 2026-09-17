@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Dashboard } from "@/components/dashboard";
 import { getRelativeDate } from "@/utils/date";
+import { buildPath } from "@/utils/path";
 import { useI18n } from "@/hooks/useI18n";
 import type { Dashboard as TDashboard } from "@/queries/useDashboards";
 
@@ -183,9 +184,7 @@ export default function Workload() {
               </Link>
             </Button>
             <Button variant="secondary" asChild className="bg-card hover:bg-accent border-border/50 border shadow-sm">
-              <Link to={Paths.WorkloadQualityGates.replace(":workloadId", workloadId!)}>
-                {t("pages:workload.qualityGates")}
-              </Link>
+              <Link to={buildPath(Paths.WorkloadQualityGates, { workloadId })}>{t("pages:workload.qualityGates")}</Link>
             </Button>
             <Button variant="secondary" asChild className="bg-card hover:bg-accent border-border/50 border shadow-sm">
               <Link to={`${Paths.WorkloadCodeQuality}?workloadId=${workloadId}&executeImmediately=true`}>
@@ -204,6 +203,13 @@ export default function Workload() {
                 to={`${Paths.WorkloadPipelineHealth}?workloadId=${workloadId}&executeImmediately=true&branchName=main`}
               >
                 {t("pages:workload.pipelineHealth")}
+              </Link>
+            </Button>
+            <Button variant="secondary" asChild className="bg-card hover:bg-accent border-border/50 border shadow-sm">
+              <Link
+                to={`${Paths.WorkloadPipelineQueryBuilder}?workloadId=${workloadId}&executeImmediately=true&branchName=main`}
+              >
+                {t("pages:workload.pipelineQueryBuilder")}
               </Link>
             </Button>
             <Button variant="secondary" asChild className="bg-card hover:bg-accent border-border/50 border shadow-sm">
@@ -227,9 +233,7 @@ export default function Workload() {
               </Link>
             </Button>
             <Button variant="secondary" asChild className="bg-card hover:bg-accent border-border/50 border shadow-sm">
-              <Link to={Paths.WorkloadRepositories.replace(":workloadId", workloadId!)}>
-                {t("pages:workload.repositories")}
-              </Link>
+              <Link to={buildPath(Paths.WorkloadRepositories, { workloadId })}>{t("pages:workload.repositories")}</Link>
             </Button>
           </div>
         </div>

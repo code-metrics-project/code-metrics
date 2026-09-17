@@ -357,6 +357,10 @@ export default {
     selectWorkloads: "分析するワークロードを選択:",
     selectWorkloadsPrompt: "パイプライン健全性の結果を表示するワークロードを選択してください。",
   },
+  pipelineQueryBuilder: {
+    title: "パイプラインクエリビルダー",
+    description: "単一のワークロードのパイプラインクエリを構築します。",
+  },
   navbar: {
     brandName: "CodeMetrics",
     openMainNavigation: "メインナビゲーションを開く",

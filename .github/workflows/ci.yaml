@@ -113,8 +113,8 @@ jobs:
             echo "::error::validate did not succeed (${{ needs.validate.result }})"
             exit 1
           fi
-          # cd is skipped when setup/validate failed (handled above). Otherwise it must pass.
-          if [[ "${{ needs.cd.result }}" != "success" ]]; then
-            echo "::error::cd did not succeed (${{ needs.cd.result }})"
+          # A reusable CD workflow is skipped when none of its jobs apply.
+          if [[ "${{ needs.cd.result }}" != "success" && "${{ needs.cd.result }}" != "skipped" ]]; then
+            echo "::error::cd did not succeed or skip cleanly (${{ needs.cd.result }})"
             exit 1
           fi

@@ -1,0 +1,14 @@
+{
+  "name": "cdk-demo-prepopulate-cognito",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/package.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.981.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.5",
+    "typescript": "~5.5.3"
+  }
+}

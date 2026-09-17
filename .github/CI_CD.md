@@ -57,12 +57,13 @@ Keys like `.github` can be mapped to _all_ components to ensure that infrastruct
 
 - **`ci.yaml`**: The main orchestrator. Triggered on Push. It starts with a `setup` job that calculates changed components, generates matrices, and validates config before calling reusable workflows. It ends with an always-on **`CI Success`** job that aggregates `setup`, `validate`, and `cd` so branch rulesets / auto-merge can require a single stable check name even when change detection skips sub-project jobs.
 - **`validate.yaml`**: runs Unit Tests, Linting, E2E tests, and MiniStack-backed backend integration validation. The shared Playwright E2E workflow runs the non-Docker auth/browser paths inside the official Playwright container image, while the Keycloak path stays on the host runner so it can orchestrate Docker Compose locally and uses the runner's system Chrome instead of downloading Playwright browsers. Frontend regression E2E tests are split across 5 parallel shards with blob reports merged in a follow-up job. Deployed Node.js Lambda validation is restored in CI on MiniStack using the existing Lambda packaging flow. This is the "Gatekeeper" workflow that must pass before builds occur.
+- **Deployment validation**: changes under `deployment/` set `deploymentComponents`, run the mocks and native CDK Jest suites, and test the GitHub OIDC trust-role helper. The native entry builds the Cognito helper Lambda assets before its tests. Helm changes also run the Helm-specific validation.
 - **`docker.yaml`**: Builds and pushes Docker images. This runs _after_ validation in the release flow, or independently for Dockerfile-only changes.
 - **`cd.yaml`**: Handles deployment artefacts after successful builds.
 
 ### Required status check for auto-merge
 
-Because change detection skips jobs that are irrelevant to a PR, do **not** require individual matrix / sub-project jobs in branch rulesets. Require the **`CI Success`** check from the `CI` workflow instead. That job always runs (`if: always()`), fails if `setup`, `validate`, or `cd` did not succeed, and therefore stays green only when the path-aware pipeline that actually ran has passed.
+Because change detection skips jobs that are irrelevant to a PR, do **not** require individual matrix / sub-project jobs in branch rulesets. Require the **`CI Success`** check from the `CI` workflow instead. That job always runs (`if: always()`), requires `setup` and `validate` to succeed, and accepts `cd` when it succeeds or skips because no deployment jobs apply. Failed or cancelled CD jobs still fail the gate.
 
 ### Frontend/UI Build Behavior
 
@@ -83,6 +84,9 @@ Because change detection skips jobs that are irrelevant to a PR, do **not** requ
 - **`backend.yaml`**: Reusable workflow for backend-specific build/test steps.
 - **`update-github-container-reg.yaml`**: Automated housekeeping for GHCR - pulls required docker images from Docker Hub and pushes them to GHCR.
 - **`upload-image.yaml`**: Manual tool to pull images from Docker Hub and push to GHCR to prevent catch 22 of builds failing as a new required image has not been uploaded to GHCR.
+- **`deploy-demo.yaml`**: Deploys the demo CDK stacks (mocks + native). Pushes to `main` target `prod`; manual runs take a non-production environment slug, defaulting to `dev`. A per-environment concurrency group serialises overlapping runs of the same environment.
+- **`destroy-demo.yaml`**: Manually tears down one named non-production demo environment. It shares the deploy concurrency group, rejects `dev`/`prod` before AWS authentication, and keeps config and secret deletion behind explicit inputs.
+- **`lambda-power-tuning.yaml`**: Manually tunes the API, async query processor, and mocks Lambdas in one named non-production environment. It uses CI-derived light and heavy query payloads and reports real async queue latency separately from direct Lambda duration.
 
 ## How to Configure
 

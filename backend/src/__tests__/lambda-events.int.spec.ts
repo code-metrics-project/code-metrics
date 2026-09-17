@@ -187,9 +187,11 @@ describe("CodeMetrics App via serverless-express (In-Process)", () => {
     // Import and bootstrap the real app
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { bootstrap, startApi } = require("../app");
+      const { bootstrap } = require("../entrypoint/bootstrap");
+      const { startApi } = require("../entrypoint/api");
+      const { InvocationMode } = require("../entrypoint/model");
       await bootstrap();
-      const app = await startApi();
+      const app = await startApi(InvocationMode.ServeApi, true);
       lambdaHandler = serverlessExpress({ app }) as unknown as LambdaApiHandler;
       bootstrapComplete = true;
     } catch (error) {

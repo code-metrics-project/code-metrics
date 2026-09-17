@@ -11,6 +11,10 @@ You can also group workloads using [tags](./tags.md).
 > **Note**
 > See the [workload concept](./workloads.md) section.
 
+## UI display
+
+You can customise how a workload appears in the user interface by setting the `icon` and `color` properties on a workload. See the [UI display configuration](./config_workloads_ui.md) for details, including the list of supported icons.
+
 ## Examples
 
 ### Grouping by layer
@@ -22,6 +26,8 @@ Here is how you might model a team with frontend and backend repositories:
 
 workloads:
   - id: team-athena
+    icon: rocket
+    color: "#0369a1"
     codeManagement:
       type: github
       serverId: example-github
@@ -50,6 +56,8 @@ A monorepo example with multiple components, each with its own Sonar mapping.
 workloads:
   - id: CodeMetricsMonoRepo
     name: "CodeMetrics"
+    icon: code
+    color: "#0f766e"
     codeManagement:
       type: github
       serverId: CodeMetrics
@@ -206,13 +214,13 @@ Both `repo` and `componentName` support `exclude: true`.
 
 #### Behaviour by pipeline provider
 
-| Provider | Effect of `repo` / `componentName` |
-|----------|-------------------------------------|
-| **GitHub** | Scopes which repositories are scanned for workflows. An optional `name` field filters which workflow names to include within those repos. |
-| **Azure DevOps** | Used as a job name pattern (since ADO job names are repository names). |
-| **Jenkins** | Used as a job name pattern matched against pipeline display names. |
-| **Dynatrace** | Used as a job name pattern matched against metric dimension values. |
-| **CodePipeline** | Used as a job name pattern matched against pipeline names. |
+| Provider         | Effect of `repo` / `componentName`                                                                                                        |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **GitHub**       | Scopes which repositories are scanned for workflows. An optional `name` field filters which workflow names to include within those repos. |
+| **Azure DevOps** | Used as a job name pattern (since ADO job names are repository names).                                                                    |
+| **Jenkins**      | Used as a job name pattern matched against pipeline display names.                                                                        |
+| **Dynatrace**    | Used as a job name pattern matched against metric dimension values.                                                                       |
+| **CodePipeline** | Used as a job name pattern matched against pipeline names.                                                                                |
 
 For GitHub, combining `repo` with a `name` filter allows targeting a specific workflow within a repository:
 
@@ -232,6 +240,8 @@ Here is how you might recreate the previous configuration, by using regular expr
 
 workloads:
   - id: team-athena
+    icon: terminal
+    color: "#7c3aed"
     codeManagement:
       type: github
       serverId: example-github
@@ -261,6 +271,8 @@ Here is how you might recreate the previous configuration, by using Sonar tags t
 
 workloads:
   - id: team-athena
+    icon: cloud
+    color: "#0369a1"
     codeManagement:
       type: github
       serverId: example-github
@@ -292,6 +304,8 @@ Here is how you might model a team with multiple applications:
 
 workloads:
   - id: team-hera
+    icon: briefcase
+    color: "#b45309"
     codeManagement:
       type: github
       serverId: example-github

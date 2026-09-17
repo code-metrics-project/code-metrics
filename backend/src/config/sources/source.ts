@@ -115,3 +115,9 @@ export function setConfigSources(sources: ConfigSource[]): void {
 export function addConfigSource(source: ConfigSource): void {
   configSources.unshift(source);
 }
+
+// Backward-compatible aliases
+export const getConfigItem = getEnvConfigItem;
+export const getConfigItemAsNumber = getEnvConfigItemAsNumber;
+export const getConfigItemAsBoolean = getEnvConfigItemAsBoolean;
+export const overrideConfigItem = overrideEnvConfigItem;

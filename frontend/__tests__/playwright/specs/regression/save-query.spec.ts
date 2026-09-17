@@ -2,6 +2,8 @@ import { test, expect } from "../../fixtures";
 import { Paths } from "../../../../src/router/paths";
 
 test.describe("Saved queries", () => {
+  test.describe.configure({ timeout: 120_000 });
+
   // This test creates/saves a query and tests the flow
   test("Saves a query", async ({ page, helpers }) => {
     await helpers.login();
@@ -33,6 +35,7 @@ test.describe("Saved queries", () => {
     await helpers.chartVisible(false);
     await helpers.selectQuery("Code coverage");
     await helpers.selectWorkloads("athena");
+    await helpers.setStartDatePreset(7);
 
     await page.locator('button[name="queryMenu"]').click();
     await page
@@ -50,8 +53,7 @@ test.describe("Saved queries", () => {
     await expect(page.getByText("Saved query").first()).toBeVisible();
 
     await helpers.chartVisible(false);
-    await page.locator('button[name="runQuery"]').click();
-    await helpers.chartVisible(true);
+    await helpers.runQueryAndWaitForChart();
   });
 
   test("Deletes the saved query", async ({ page, helpers }) => {

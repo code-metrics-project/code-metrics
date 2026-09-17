@@ -4,6 +4,8 @@ This guide covers Lambda-specific workflows that are useful for contributors dev
 
 For end-user and production deployment guidance, see [Deployment on AWS Lambda](../deployment_lambda.md).
 
+For finding optimal Lambda memory settings in a deployed AWS environment, see [Lambda Power Tuning](./lambda-power-tuning.md).
+
 ## Local Lambda Testing with MiniStack
 
 Before deploying to AWS, you can test the Lambda packaging and deployment flow locally with [MiniStack](https://github.com/Nahuel990/ministack). Use this path when you specifically need the deployed Node.js Lambda execution workflow; for non-deployed local AWS integration work, use the same base compose file backed by MiniStack.

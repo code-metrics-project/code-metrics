@@ -32,6 +32,14 @@ export const REPO_CHANGES_SUMMARY = "/api/vcs/changes/summary";
 
 // Queries
 export const QUERY = "/api/query";
+/**
+ * Endpoint for submitting async queries.
+ */
+export const QUERY_ASYNC = "/api/query/async";
+/**
+ * Endpoint for polling an async query job by id.
+ */
+export const QUERY_ASYNC_JOB = (jobId: string) => `/api/query/async/${jobId}`;
 export const SAVED_QUERY_COLLECTIONS = "/api/queries";
 export const STORED_QUERY = (collection: string) => `/api/queries/${collection}`;
 

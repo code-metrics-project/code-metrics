@@ -253,20 +253,13 @@ copy_files_from_upstream() {
 
   # Create a temporary exclusion file for rsync
   local temp_exclude_file
+  local excludes_source="${SCRIPT_DIR}/rsync-excludes.txt"
   temp_exclude_file=$(mktemp)
-  cat > "${temp_exclude_file}" <<EOF
-.git/
-.git
-node_modules/
-machinelearning/
-promosite/
-desktop/
-mcp/
-.github/workflows/docs-site.yaml
-.github/workflows/labeler.yml
-.github/workflows/public-release.yaml
-.github/workflows/update-github-container-reg.yaml
-EOF
+  if [[ ! -f "${excludes_source}" ]]; then
+    echo -e "${RED}❌ Error: rsync excludes file not found at ${excludes_source}${NC}" >&2
+    exit 1
+  fi
+  cp "${excludes_source}" "${temp_exclude_file}"
 
   # Use rsync to copy everything except excluded files
   rsync -av --exclude-from="${temp_exclude_file}" . \

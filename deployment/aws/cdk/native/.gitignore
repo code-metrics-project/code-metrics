@@ -1,0 +1,13 @@
+*.js
+!jest.config.js
+!authWiring/scripts/package.js
+!prepopulateCognito/scripts/package.js
+*.d.ts
+node_modules
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+# Local Cognito demo users (see demo-users.yaml.example)
+demo-users.yaml

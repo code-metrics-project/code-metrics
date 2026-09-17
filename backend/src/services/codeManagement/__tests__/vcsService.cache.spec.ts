@@ -50,6 +50,8 @@ jest.mock("../../../db/factory", () => ({
 jest.mock("../../../config/sources/source", () => ({
   getEnvConfigItem: jest.fn(() => "true"),
   getEnvConfigItemAsNumber: jest.fn((_key: string, defaultValue: number) => defaultValue),
+  getConfigItem: jest.fn(() => "true"),
+  getConfigItemAsNumber: jest.fn((_key: string, defaultValue: number) => defaultValue),
 }));
 
 const mockedProvideDatastore = jest.mocked(provideDatastore);

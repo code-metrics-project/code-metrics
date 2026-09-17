@@ -114,7 +114,14 @@ The test suite includes a `TestHelpers` class that provides custom helper method
 - `selectWorkloads(workloads)` - Select one or more workloads
 - `selectJobGroup(jobGroup)` - Select a job group filter
 - `selectRepoGroup(repoGroup)` - Select a repo group filter
-- `chartVisible(visible)` - Assert chart visibility
+- `chartVisible(visible, timeoutMs?)` - Assert chart visibility (defaults to 60s when waiting for a chart)
+- `runQueryAndWaitForChart()` - Click Run query and wait for the chart (does not require observing the transient "Running query..." label)
+- `setStartDatePreset(daysAgo)` - Set start date via the 7/30/90-day preset buttons
+- `setStartDateDaysAgo(daysAgo)` - Set start date to an exact day via the calendar picker
+
+## Query regression notes
+
+The `query.spec.ts` suite runs serially and uses a **7-day** start-date preset (UI default is 30 days). That keeps mock generation/caching lighter in CI while still leaving enough recent PR/commit fixtures for non-empty charts. Chart waits default to 60s because cold mock caches can exceed Playwright's global expect timeout.
 
 ## Configuration
 

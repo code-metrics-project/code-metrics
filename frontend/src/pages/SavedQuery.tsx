@@ -24,7 +24,7 @@ import { QueryPicker, ChartSelector, ChartType, QueryGroup, type GroupByDimensio
 import { DynamicInputs, type QueryArgs } from "@/components/inputs";
 import { Transformers, type TransformState } from "@/components/transformers";
 import { MultiChart, ColumnChart, DoughnutChart, DataTable } from "@/components/charts";
-import { executeQuery } from "@/services/query";
+import { executeQueryAsync } from "@/services/asyncQuery";
 import { Paths } from "@/router/paths";
 import { getGroupByDimensions } from "@/queries/groupBy";
 import { getQueryCollection, saveQueryCollection, deleteQueryCollection } from "@/queries/stored";
@@ -131,14 +131,14 @@ export default function SavedQuery() {
         // First, execute the original query without transforms
         const baseQuery = { ...query };
         delete baseQuery.transforms;
-        const result = await executeQuery(baseQuery);
+        const result = await executeQueryAsync(baseQuery);
         if (result && result.size > 0) {
           allResults.push(result);
         }
 
         // Then, if transforms are configured, execute with transforms and add as separate series
         if (query.transforms && query.transforms.length > 0) {
-          const transformedResult = await executeQuery(query);
+          const transformedResult = await executeQueryAsync(query);
           if (transformedResult && transformedResult.size > 0) {
             allResults.push(transformedResult);
           }

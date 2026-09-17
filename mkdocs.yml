@@ -19,6 +19,7 @@ nav:
   - Getting started: "getting_started.md"
   - Configuration guide: "configuration.md"
   - Workloads:
+      - Programme: "programme.md"
       - Workload summary: "workloads.md"
       - CI/CD pipelines: "pipelines.md"
       - Tags: "tags.md"
@@ -53,11 +54,11 @@ nav:
   - Configuration:
       - Overview: "configuration.md"
       - Datastores:
-        - Datastore overview: "datastores.md"
-        - Datastore collections: "datastore_collections.md"
-        - Manual DynamoDB table setup: "datastores_dynamodb_manual.md"
-        - Manual MongoDB collection setup: "datastores_mongodb_manual.md"
-        - Caching: "caching.md"
+          - Datastore overview: "datastores.md"
+          - Datastore collections: "datastore_collections.md"
+          - Manual DynamoDB table setup: "datastores_dynamodb_manual.md"
+          - Manual MongoDB collection setup: "datastores_mongodb_manual.md"
+          - Caching: "caching.md"
       - Secrets management: "secret_management.md"
 
       - Authentication:
@@ -78,7 +79,9 @@ nav:
           - Pipelines: "config_pipelines.md"
           - Project management (bugs): "config_project_management.md"
           - Production incidents: "config_incidents.md"
-          - Workloads: "config_workloads.md"
+          - Workloads:
+              - Overview: "config_workloads.md"
+              - UI display: "config_workloads_ui.md"
           - Quality gates: "config_quality_gates.md"
 
       - Custom queries: "custom_queries.md"
@@ -90,6 +93,8 @@ nav:
       - Deployment overview: "deployment.md"
       - Docker: "deployment_docker.md"
       - AWS Lambda: "deployment_lambda.md"
+      - AWS CDK: "deployment_cdk.md"
+      - Demo instance (CDK): "dev/demo-deployment.md"
       - Kubernetes: "helm.md"
       - "Local Node.js": "run_local_node.md"
 

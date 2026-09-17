@@ -70,8 +70,8 @@ for (let i = 0; i < prCount; i++) {
   const prBody = `This PR ${prType.action.toLowerCase()}s ${feature}.\n\nCloses #${issueNumber}`;
   const branchName = `${prType.prefix}/${feature.replace(/\s+/g, "-")}`;
 
-  // Random dates for created/merged
-  const daysAgo = Math.floor(Math.random() * 60);
+  // Bias into the last 14 days so 7-day e2e query windows stay non-empty.
+  const daysAgo = i < 5 ? Math.floor(Math.random() * 7) : Math.floor(Math.random() * 14);
   const createdDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
   const mergedDate = new Date(createdDate.getTime() + (Math.random() * 48 + 2) * 60 * 60 * 1000);
 

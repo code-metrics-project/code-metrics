@@ -4,6 +4,7 @@ import { PageBreadcrumbs } from "@/components/layout";
 import { PipelineOutcomes } from "@/components/pipeline";
 import { Paths } from "@/router/paths";
 import { InputType } from "@/components/inputs";
+import { listPipelineStages } from "@/config";
 import { getWorkloadName } from "@/services/workload";
 
 export default function PipelineHealth() {
@@ -11,7 +12,8 @@ export default function PipelineHealth() {
   const [searchParams] = useSearchParams();
   const workloadId = searchParams.get("workloadId") ?? undefined;
   const executeImmediately = searchParams.get("executeImmediately") === "true";
-  const stageId = searchParams.get("stageId") ?? undefined;
+  // Fall back to the first configured pipeline stage, as the legacy app does.
+  const stageId = searchParams.get("stageId") || listPipelineStages()[0];
   const branchName = searchParams.get("branchName") ?? undefined;
   const workloadName = workloadId ? getWorkloadName(workloadId) : undefined;
   const breadcrumbs = workloadId

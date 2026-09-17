@@ -1,0 +1,114 @@
+aws:
+  region:
+  account:
+
+global:
+  name: CodeMetrics
+  # Environment slug used to scope stack ids and resource names
+  # (e.g. CodeMetrics-prod-AppStack, codemetrics-dev-frontend).
+  # Must match ^[a-z0-9]+(-[a-z0-9]+)*$ — see docs/deployment_cdk.md.
+  environment: dev
+
+frontend:
+  sourcePath: "../../../dist/codemetrics-frontend"
+  indexDocument: "index.html"
+  # Optional: frontend.auth.provided.{user,pass} publishes a login hint into config.json.
+  # Leave unset unless you intentionally want credentials in the generated frontend config.
+  s3:
+    # Optional override for the frontend S3 bucket. Leave unset to derive
+    # '<resourcePrefix>-frontend' (e.g. codemetrics-dev-frontend). Overrides
+    # must be globally unique across AWS and unique per environment.
+    # bucketName: codemetrics-staging
+    autoDeleteObjects: true
+    removalPolicy: "DESTROY"
+  cloudfront:
+    useAPIGW: true
+    logging:
+      enabled: false
+      autoDeleteObjects: false
+      cnames: []
+      removalPolicy: "DESTROY"
+      logFilePrefix: "cloudfront-logs/"
+      realtime:
+        enabled: false
+        samplingrate: 100
+        retentionPeriod: 24
+
+backend:
+  handler: "index.handler"
+  sourcePath: "../../../dist/codemetrics-api"
+  runtime: "NODEJS_20_X"
+  memorySize: 1024
+  timeout: 180
+  features:
+    dora: true
+    languageSelector: true
+    mlForecasts: true
+    predictions: true
+    temporalCoupling: true
+  environment:
+    # Required: set before deploy (do not commit real secrets).
+    AccessTokenSecret: "demo"
+    CORSAllowedOrigin: "*"
+    invocationMode: "serve-api"
+    datastoreImpl: "dynamodb"
+    authenticatorImpl: ""
+    CognitoClientId: ""
+    CognitoUserPoolId: ""
+    # TTL (seconds) for async query result records in the DynamoDB result cache.
+    asyncQueryResultTtl: 3600
+
+# Additional Services
+datastore:
+  dynamodb:
+    create: true
+    # Optional override for the DynamoDB table prefix. Leave unset to derive
+    # '<resourcePrefix>' (e.g. codemetrics-dev -> tables like codemetrics-dev_alerts).
+    # tableName: "CodeMetrics"
+    tables:
+      - alerts
+      - ado-issues-by-date
+      - asyncQueryResults
+      - commit-file-changes-by-day
+      - commit-prs
+      - deploy-bounds
+      - dynatrace-events
+      - earliest-commits
+      - fetch-file
+      - fetch-merge-rules
+      - github-issues
+      - issues
+      - pipeline-executions
+      - pipelines-job-names
+      - prs-by-day
+      - queries
+      - repo-changes
+      - repo-commits
+      - token_ids
+      - vcs-cache
+      - vulns
+    tableARN: []
+    partitionKey:
+      name: "CacheKey"
+      type: "S"
+    arn: ""
+    removalPolicy: "DESTROY"
+
+auth:
+  cognito:
+    create: true
+    # Optional: path to a YAML file (see demo-users.yaml.example, git-ignored)
+    # whose demoUsers are seeded into Cognito on every deploy. Empty = no seeding.
+    createDemoUsers: demo-users.yaml
+    removalPolicy: "DESTROY"
+    # When true (default), the -AuthWiring stack points the Cognito client OAuth
+    # redirect URLs at the deployed CloudFront domain automatically, on every
+    # deploy. Set to false instead when the frontend lives on a custom domain or
+    # you manage the redirect URLs yourself, in which case the callbackUrls and
+    # logoutUrls below are used on the Cognito client.
+    autoWireRedirectUrls: true
+    # Used only when autoWireRedirectUrls is false:
+    # callbackUrls:
+    #   - "https://myapp.com/home"
+    # logoutUrls:
+    #   - "https://myapp.com/logout"

@@ -224,4 +224,91 @@ describe("config", () => {
       expect(config.webConfig).toBeUndefined();
     });
   });
+
+  describe("list helpers", () => {
+    async function loadWithWorkloads(workloads: unknown) {
+      mockClientGet.mockResolvedValue({ data: { workloads } });
+      const config = await loadConfigModule();
+      await config.fetchSystemConfig("token");
+      return config;
+    }
+
+    describe("listWorkloadIds", () => {
+      it("returns the sorted workload ids", async () => {
+        const config = await loadWithWorkloads([{ id: "zeta" }, { id: "alpha" }]);
+        expect(config.listWorkloadIds()).toEqual(["alpha", "zeta"]);
+      });
+
+      it("returns an empty array when no workloads are configured", async () => {
+        const config = await loadWithWorkloads(undefined);
+        expect(config.listWorkloadIds()).toEqual([]);
+      });
+    });
+
+    describe("listJobGroups", () => {
+      it("returns the unique sorted job groups across workloads", async () => {
+        const config = await loadWithWorkloads([
+          { id: "a", jobs: { frontend: ["fe"], backend: ["be"] } },
+          { id: "b", jobs: { backend: ["be2"] } },
+        ]);
+        expect(config.listJobGroups()).toEqual(["backend", "frontend"]);
+      });
+
+      it("ignores workloads without a jobs block", async () => {
+        const config = await loadWithWorkloads([{ id: "a" }, { id: "b", jobs: { ci: ["x"] } }]);
+        expect(config.listJobGroups()).toEqual(["ci"]);
+      });
+
+      it("returns an empty array when no workloads are configured", async () => {
+        const config = await loadWithWorkloads(undefined);
+        expect(config.listJobGroups()).toEqual([]);
+      });
+    });
+
+    describe("listPipelineStages", () => {
+      it("returns the unique pipeline stages across workloads", async () => {
+        const config = await loadWithWorkloads([
+          { id: "a", pipelineStages: ["azure-deployment-pipeline", "github-deployment-pipeline"] },
+          { id: "b", pipelineStages: ["github-deployment-pipeline"] },
+        ]);
+        expect(config.listPipelineStages()).toEqual(["azure-deployment-pipeline", "github-deployment-pipeline"]);
+      });
+
+      it("returns an empty array when no workloads are configured", async () => {
+        const config = await loadWithWorkloads(undefined);
+        expect(config.listPipelineStages()).toEqual([]);
+      });
+
+      it("ignores workloads without a pipelineStages block", async () => {
+        const config = await loadWithWorkloads([{ id: "a" }, { id: "b", pipelineStages: ["build"] }]);
+        expect(config.listPipelineStages()).toEqual(["build"]);
+      });
+    });
+  });
+
+  describe("listWorkloads", () => {
+    it("passes workload icon and color through", async () => {
+      mockClientGet.mockResolvedValue({
+        data: {
+          workloads: [
+            { id: "athena", name: "Athena", icon: "rocket", color: "#0369a1" },
+            { id: "zeus", name: "Zeus" },
+          ],
+        },
+      });
+
+      const { fetchSystemConfig, listWorkloads } = await loadConfigModule();
+      await fetchSystemConfig("token");
+
+      expect(listWorkloads()).toEqual([
+        { id: "athena", name: "Athena", icon: "rocket", color: "#0369a1" },
+        { id: "zeus", name: "Zeus", icon: undefined, color: undefined },
+      ]);
+    });
+
+    it("returns an empty list when no system config is loaded", async () => {
+      const { listWorkloads } = await loadConfigModule();
+      expect(listWorkloads()).toEqual([]);
+    });
+  });
 });

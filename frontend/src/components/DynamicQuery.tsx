@@ -5,7 +5,7 @@ import { DynamicInputs, type QueryArgs } from "@/components/inputs";
 import { MultiChart, type MultiChartData } from "@/components/charts";
 import { ChartSelector, ChartType, QueryGroup, type GroupByDimension } from "@/components/query";
 import { Transformers, type TransformState } from "@/components/transformers";
-import { executeQuery } from "@/services/query";
+import { executeQueryAsync } from "@/services/asyncQuery";
 import type { DatedMetrics } from "@/model/metrics";
 import type { RawQuery } from "@/model/query";
 import { getGroupByDimensions } from "@/queries/groupBy";
@@ -105,7 +105,7 @@ export function DynamicQuery({
           const queryWithGroupBy = groupBy ? { ...query, groupBy } : query;
 
           // First, always execute the original query without transforms
-          const originalResult = await executeQuery(queryWithGroupBy);
+          const originalResult = await executeQueryAsync(queryWithGroupBy);
           if (originalResult && originalResult.size > 0) {
             allResults.push(originalResult);
           }
@@ -122,7 +122,7 @@ export function DynamicQuery({
               }));
             if (validTransforms.length === 0) continue;
             const transformedQuery = { ...queryWithGroupBy, transforms: validTransforms };
-            const transformedResult = await executeQuery(transformedQuery);
+            const transformedResult = await executeQueryAsync(transformedQuery);
             if (transformedResult && transformedResult.size > 0) {
               allResults.push(transformedResult);
             }

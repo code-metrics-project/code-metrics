@@ -359,6 +359,10 @@ export default {
     selectWorkloads: "Arbeitslasten zur Analyse auswählen:",
     selectWorkloadsPrompt: "Wählen Sie Arbeitslasten, um deren Pipeline-Gesundheitsergebnisse anzuzeigen.",
   },
+  pipelineQueryBuilder: {
+    title: "Pipeline-Abfragebaustein",
+    description: "Erstellen Sie eine Pipeline-Abfrage für eine einzelne Arbeitslast.",
+  },
   navbar: {
     brandName: "CodeMetrics",
     openMainNavigation: "Hauptnavigation öffnen",

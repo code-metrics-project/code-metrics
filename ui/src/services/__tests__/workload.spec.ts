@@ -1,14 +1,47 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, it, beforeEach, vi } from "vitest";
-import { getRepositoryDetails } from "../workload";
+import { getRepositoryDetails, getWorkloadDetails } from "../workload";
 import * as config from "@/utils/config";
 import type { WorkloadMeta } from "@/model/config";
+import { chooseColour } from "@/utils/colours";
 
 // Mock the config module
 vi.mock("@/utils/config", () => ({
   getConfig: vi.fn(),
   listWorkloads: vi.fn(),
 }));
+
+describe("getWorkloadDetails", () => {
+  beforeEach(() => {
+    vi.mocked(config.getConfig).mockReturnValue({
+      systemConfig: {
+        workloads: [],
+        branches: [],
+        issuePriorities: [],
+        tags: {},
+      },
+    } as any);
+  });
+
+  it("uses the workload's configured colour when set", () => {
+    vi.mocked(config.listWorkloads).mockReturnValue([{ id: "auth", name: "Auth", icon: "rocket", color: "#0369a1" }]);
+
+    const result = getWorkloadDetails();
+
+    expect(result).toHaveLength(1);
+    expect(result[0].icon).toBe("rocket");
+    expect(result[0].color).toBe("#0369a1");
+  });
+
+  it("falls back to a palette colour when none is configured", () => {
+    vi.mocked(config.listWorkloads).mockReturnValue([{ id: "auth", name: "Auth" }]);
+
+    const result = getWorkloadDetails();
+
+    expect(result[0].icon).toBeUndefined();
+    expect(result[0].color).toBe(chooseColour(0));
+  });
+});
 
 describe("getRepositoryDetails", () => {
   beforeEach(() => {

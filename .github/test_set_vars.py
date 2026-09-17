@@ -31,6 +31,7 @@ class TestSetVars(unittest.TestCase):
             "service_dirs": {
                 "auth": ["backend/src/auth"],
                 "backend": ["backend", ":!backend/.dockerignore"],
+                "deployment": ["deployment"],
                 "desktop": ["desktop"],
                 "frontend": ["frontend", ":!frontend/.dockerignore"],
                 "ui": ["ui", ":!ui/.dockerignore"],
@@ -38,7 +39,7 @@ class TestSetVars(unittest.TestCase):
                 ".github": [".github"]
             },
             "fold_rules": {
-                ".github": ["auth", "backend", "desktop", "docker_backend", "frontend", "ui"],
+                ".github": ["auth", "backend", "deployment", "desktop", "docker_backend", "frontend", "ui"],
                 "backend": ["frontend"],
                 "desktop": ["backend", "frontend"]
             }
@@ -60,6 +61,14 @@ class TestSetVars(unittest.TestCase):
         """Verify that 'auth' is present in configuration."""
         self.assertIn("auth", set_vars.SERVICE_DIRS)
         self.assertIn("auth", set_vars.FOLD_RULES[".github"])
+
+    def test_deployment_paths_in_config_file(self):
+        with open(set_vars.CONFIG_FILE, encoding="utf-8") as config_file:
+            config = json.load(config_file)
+
+        self.assertEqual(config["service_dirs"]["deployment"], ["deployment"])
+        self.assertEqual(config["service_dirs"]["helm"], ["deployment/helm"])
+        self.assertIn("deployment", config["fold_rules"][".github"])
 
     def test_auth_only_changed(self):
         """
@@ -106,6 +115,21 @@ class TestSetVars(unittest.TestCase):
             
             self.assertEqual(data.get("backendComponents"), 1)
             self.assertEqual(data.get("authComponents"), 0)
+
+    def test_deployment_changed(self):
+        def side_effect(base, paths):
+            return int("deployment" in paths)
+
+        self.mock_changed.side_effect = side_effect
+
+        with patch("builtins.open", new_callable=MagicMock) as mock_file:
+            set_vars.main([])
+
+            write_call = mock_file.return_value.__enter__.return_value.write.call_args[0][0]
+            data = json.loads(write_call.replace("vars=", "").strip())
+
+            self.assertEqual(data.get("deploymentComponents"), 1)
+            self.assertEqual(data.get("backendComponents"), 0)
 
     def test_desktop_changed_triggers_backend_and_frontend(self):
         """
@@ -243,6 +267,7 @@ class TestSetVars(unittest.TestCase):
             
             self.assertEqual(data.get("authComponents"), 1)
             self.assertEqual(data.get("backendComponents"), 1)
+            self.assertEqual(data.get("deploymentComponents"), 1)
             self.assertEqual(data.get("docker_backendComponents"), 1)
             self.assertEqual(data.get("frontendComponents"), 1)
             self.assertEqual(data.get("uiComponents"), 1)

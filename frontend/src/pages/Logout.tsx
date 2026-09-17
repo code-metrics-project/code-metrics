@@ -46,7 +46,7 @@ export default function Logout() {
 
   return (
     <div className="bg-background flex min-h-screen items-center justify-center">
-      <div className="text-center">
+      <div className="flex flex-col items-center">
         <LoadingSpinner size="lg" />
         <p className="text-muted-foreground mt-4">{t("pages:logout.signingOut")}</p>
       </div>

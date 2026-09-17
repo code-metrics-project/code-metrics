@@ -8,6 +8,7 @@ export {
   listWorkloads,
   listRepoGroups,
   listJobGroups,
+  listPipelineStages,
   getReposForWorkloadId,
   getJobsForWorkloadId,
   getUrlForRepo,

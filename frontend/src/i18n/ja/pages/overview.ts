@@ -14,6 +14,7 @@ const overview = {
     codeQuality: "コード品質",
     cicdPipeline: "CI/CDパイプライン",
     pipelineHealth: "パイプライン健全性",
+    pipelineQueryBuilder: "パイプラインクエリビルダー",
     bugsAndIncidents: "バグとインシデント",
     doraMetrics: "DORAメトリクス",
     analyse: "分析",
@@ -44,6 +45,7 @@ const overview = {
       title: "パイプライン",
       description: "プログラムパイプライン健全性。",
       action: "パイプラインを表示",
+      queryBuilderAction: "クエリビルダー",
     },
     qualityGates: {
       title: "品質ゲート",

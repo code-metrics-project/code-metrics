@@ -71,8 +71,10 @@ for (let i = 0; i < prCount; i++) {
   const prBody = `This PR ${prType.action.toLowerCase()}s ${feature}.\n\nCloses #${issueNumber}`;
   const branchName = `${prType.prefix}/${feature.replace(/\s+/g, "-")}`;
 
-  // Random dates for created/merged
-  const daysAgo = Math.floor(Math.random() * 60); // 0-60 days ago
+  // Bias dates into the last 14 days so e2e queries that use a 7-day window
+  // still see non-empty charts (previously 0-60 days left short windows sparse).
+  // Guarantee the first few PRs fall within 7 days; the rest within 14.
+  const daysAgo = i < 5 ? Math.floor(Math.random() * 7) : Math.floor(Math.random() * 14);
   const createdDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
   const mergedDate = new Date(createdDate.getTime() + (Math.random() * 48 + 2) * 60 * 60 * 1000); // 2-50 hours after created
 

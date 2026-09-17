@@ -187,8 +187,8 @@ Or view in AWS Console by navigating to CloudWatch > Log Groups > `/aws/lambda/<
 ```bash
 # Invalidate CloudFront cache
 aws cloudfront create-invalidation \
-  --distribution-id <distribution-id> \
-  --paths "/*"
+	--distribution-id <distribution-id> \
+	--paths "/*"
 ```
 
 - Ensure role has necessary permissions (DynamoDB read/write, CloudWatch Logs etc.)

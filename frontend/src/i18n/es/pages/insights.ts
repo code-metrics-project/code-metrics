@@ -106,6 +106,10 @@ const insights = {
     title: "Salud del pipeline",
     description: "Resultados y duraciones de los pipelines CI/CD.",
   },
+  pipelineQueryBuilder: {
+    title: "Constructor de consultas de pipeline",
+    description: "Cree una consulta de pipeline para una sola carga de trabajo.",
+  },
   pipelineRun: {
     title: "Ejecución del pipeline",
     notFound: "No se puede encontrar la ejecución del pipeline.",

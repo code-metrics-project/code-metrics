@@ -142,6 +142,20 @@ export type Workload = {
    */
   name?: string;
 
+  /**
+   * Name of a built-in icon to represent the workload in the UI,
+   * e.g. `rocket`. Falls back to a circle when unset
+   * or not a recognised icon name.
+   */
+  icon?: string;
+
+  /**
+   * Colour used to represent the workload in the UI,
+   * e.g. `#0369a1`. Falls back to an auto-generated
+   * colour when unset.
+   */
+  color?: string;
+
   team?: WorkloadTeamConfig;
 
   /**

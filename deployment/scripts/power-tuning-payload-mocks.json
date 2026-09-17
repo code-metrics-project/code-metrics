@@ -1,0 +1,24 @@
+{
+  "version": "2.0",
+  "rawPath": "/api/measures/search_history",
+  "rawQueryString": "metrics=coverage&component=petclinic",
+  "headers": {
+    "content-type": "application/json"
+  },
+  "queryStringParameters": {
+    "metrics": "coverage",
+    "component": "petclinic"
+  },
+  "requestContext": {
+    "http": {
+      "method": "GET",
+      "path": "/api/measures/search_history",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "power-tuning"
+    },
+    "requestId": "power-tuning-test",
+    "time": "01/Jan/2025:00:00:00 +0000"
+  },
+  "isBase64Encoded": false
+}

@@ -134,6 +134,10 @@ function configure_backend_env() {
   {
     echo "DATASTORE_IMPL=inmem"
     echo "LOG_ACCESS_LOGS=false"
+    # The e2e suite runs 2 Playwright workers against this single backend. The
+    # async query worker is serial by default, which starves concurrent queries
+    # and bootstrap requests under that load; allow queries to overlap.
+    echo "ASYNC_QUERY_WORKER_CONCURRENCY=4"
   } >> .env
 
   if [[ "$AUTH_MODE" == "oidc" ]]; then
@@ -208,9 +212,11 @@ function start_keycloak_if_required() {
 
 function start_mocks() {
   cd "${MOCKS_DIR}"
-  imposter up -r --log-level warn &
 
-  wait_for_http_url "http://localhost:8080/system/status" "Mocks" 60
+  # command blocks until the healthcheck passes, or a fatal condition occurs
+  imposter up -r --log-level=warn --auto-restart=false --detach=healthy
+
+  echo "Mocks are up and running!"
 }
 
 function start_backend() {
@@ -292,7 +298,7 @@ function stop_backend() {
 
 function stop_mocks() {
   echo "Stopping mocks"
-  imposter down || true
+  imposter down --all || true
 }
 
 function stop_keycloak_if_required() {

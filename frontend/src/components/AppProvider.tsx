@@ -172,7 +172,7 @@ export function AppProvider({ children }: AppProviderProps) {
   if (!isInitialized || !contextValue.isSystemConfigLoaded) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center">
-        <div className="text-center">
+        <div className="flex flex-col items-center">
           <LoadingSpinner size="lg" />
           <p className="text-muted-foreground mt-4">Loading CodeMetrics...</p>
         </div>

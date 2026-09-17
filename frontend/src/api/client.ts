@@ -153,10 +153,14 @@ async function request<T>(
   updateTimestamp(url);
 
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     ...getAuthHeaders(url),
     ...config?.headers,
   };
+
+  const hasContentTypeHeader = Object.keys(headers).some((headerName) => headerName.toLowerCase() === "content-type");
+  if (body !== undefined && !hasContentTypeHeader) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const response = await fetch(fullUrl, {
     method,

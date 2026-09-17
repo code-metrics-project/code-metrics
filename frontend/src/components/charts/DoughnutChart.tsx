@@ -17,6 +17,9 @@ export interface DoughnutChartProps {
   className?: string;
   showLegend?: boolean;
   showDataLabels?: boolean;
+  showToolbar?: boolean;
+  innerRadius?: number | string;
+  outerRadius?: number | string;
 }
 
 // Custom label component to show percentages on pie slices
@@ -63,6 +66,9 @@ export function DoughnutChart({
   className,
   showLegend = true,
   showDataLabels = true,
+  showToolbar = true,
+  innerRadius = "50%",
+  outerRadius = "90%",
 }: DoughnutChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const [visibleSegments, setVisibleSegments] = useState<Set<string>>(new Set(chartData.labels));
@@ -122,29 +128,31 @@ export function DoughnutChart({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          onClick={() => exportChartAsPNG(chartRef.current, "chart")}
-          title="Export as PNG"
-        >
-          <Download className="h-3.5 w-3.5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          onClick={() => copyChartToClipboard(chartRef.current)}
-          title="Copy to clipboard"
-        >
-          <Clipboard className="h-3.5 w-3.5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={resetChart} title="Reset">
-          <RotateCcw className="h-3.5 w-3.5" />
-        </Button>
-      </div>
+      {showToolbar && (
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => exportChartAsPNG(chartRef.current, "chart")}
+            title="Export as PNG"
+          >
+            <Download className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => copyChartToClipboard(chartRef.current)}
+            title="Copy to clipboard"
+          >
+            <Clipboard className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={resetChart} title="Reset">
+            <RotateCcw className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      )}
       <div ref={chartRef}>
         <ChartContainer config={chartConfig} className={className}>
           <PieChart height={height}>
@@ -152,8 +160,8 @@ export function DoughnutChart({
               data={visiblePieData}
               cx="50%"
               cy="50%"
-              innerRadius="50%"
-              outerRadius="90%"
+              innerRadius={innerRadius}
+              outerRadius={outerRadius}
               paddingAngle={2}
               dataKey="value"
               nameKey="name"

@@ -34,6 +34,12 @@ brew install imposter-project/imposter/imposter
 npm run test:integration
 ```
 
+### Writing Mock Responses
+
+
+Imposter Go 5.21.3 or newer treats response values declared alongside a `scriptFile`
+as fallbacks, so values set explicitly by the script take precedence.
+
 ---
 
 ## Local AWS Integration Tests

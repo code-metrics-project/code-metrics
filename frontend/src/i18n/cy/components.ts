@@ -359,6 +359,10 @@ export default {
     selectWorkloads: "Dewis llwythi gwaith i'w dadansoddi:",
     selectWorkloadsPrompt: "Dewiswch lwythi gwaith i weld canlyniadau iechyd eu piblinell.",
   },
+  pipelineQueryBuilder: {
+    title: "Adeiladydd ymholiadau piblinell",
+    description: "Adeiladwch ymholiad piblinell ar gyfer llwyth gwaith unigol.",
+  },
   navbar: {
     brandName: "CodeMetrics",
     openMainNavigation: "Agor y brif fordwyo",

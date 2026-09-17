@@ -106,6 +106,10 @@ const insights = {
     title: "Pipeline-Gesundheit",
     description: "Ergebnisse und Dauern von CI/CD-Pipelines.",
   },
+  pipelineQueryBuilder: {
+    title: "Pipeline-Abfragebaustein",
+    description: "Erstellen Sie eine Pipeline-Abfrage für eine einzelne Arbeitslast.",
+  },
   pipelineRun: {
     title: "Pipeline-Lauf",
     notFound: "Pipeline-Lauf konnte nicht gefunden werden.",

@@ -38,6 +38,7 @@ At its core, CodeMetrics provides a collection of whole project lifecycle code q
 
 This documentation is intended for users of CodeMetrics, such as engineers, QA or leadership. If you are setting up CodeMetrics for the first time, see the [Getting started guide](./getting_started.md).
 
+- [Programme](./programme.md)
 - [Workload summary](./workloads.md)
 - [CI/CD pipelines](./pipelines.md)
 - [Tags](./tags.md)
@@ -87,6 +88,7 @@ This documentation is intended for people deploying and configuring CodeMetrics.
 - [Configure code management](./config_code_management.md)
   - [GitHub](./config_code_management_github.md)
 - [Configure workloads](./config_workloads.md)
+  - [Workload UI display](./config_workloads_ui.md)
 - [Configure deployments](./config_deployments.md)
 - [Configure project management (bugs)](./config_project_management.md)
 - [Configure incidents](./config_incidents.md)
@@ -100,6 +102,7 @@ This documentation is intended for people deploying and configuring CodeMetrics.
 - [Deployment overview](./deployment.md)
 - [Docker](./deployment_docker.md)
 - [AWS Lambda](./deployment_lambda.md)
+- [AWS CDK](./deployment_cdk.md)
 - [Kubernetes](./helm.md)
 - [Local Node.js](./run_local_node.md)
 
@@ -133,6 +136,7 @@ This documentation is intended for consumption by CodeMetrics project maintainer
 
 - [Developer documentation](./dev/README.md)
 - [Standards and patterns](./dev/standards_patterns.md)
+- [Demo instance deployment (CDK)](./dev/demo-deployment.md)
 - [Mocks](../mocks/README.md)
 - [Release process](./dev/release.md)
 - [Promotional website](./promosite.md)

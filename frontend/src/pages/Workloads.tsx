@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
-import { Circle, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { WorkloadIcon } from "@/components/WorkloadIcon";
 import { getWorkloadDetails } from "@/services/workload";
 import { Paths } from "@/router/paths";
+import { buildPath } from "@/utils/path";
 import { useI18n } from "@/hooks/useI18n";
 
 export default function Workloads() {
@@ -41,7 +43,7 @@ export default function Workloads() {
                       background: `linear-gradient(135deg, ${workload.color}30 0%, ${workload.color}10 100%)`,
                     }}
                   >
-                    <Circle className="h-5 w-5" style={{ color: workload.color }} fill={workload.color} />
+                    <WorkloadIcon icon={workload.icon} color={workload.color} className="h-5 w-5" />
                   </div>
                   <CardTitle>{workload.name}</CardTitle>
                 </div>
@@ -59,7 +61,7 @@ export default function Workloads() {
                   ))}
                 </ul>
                 <Link
-                  to={`${Paths.WorkloadRepositories}?workloadId=${workload.id}`}
+                  to={buildPath(Paths.WorkloadRepositories, { workloadId: workload.id })}
                   className="text-muted-foreground hover:text-primary mt-3 block text-xs transition-colors"
                 >
                   {t("components:viewRepositories")}

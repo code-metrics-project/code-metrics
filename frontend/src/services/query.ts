@@ -6,6 +6,10 @@ import type { DatedMetrics, MetricEntry } from "@/model/metrics";
 import type { RawQuery } from "@/model/query";
 
 export async function executeQuery(query: RawQuery): Promise<Map<string, DatedMetrics>> {
+  console.warn(
+    "DEPRECATION: executeQuery (sync) is deprecated. " +
+      "Use executeQueryAsync from @/services/asyncQuery instead."
+  );
   try {
     logger(`Running "${query.queryName}" query`);
     const response = await client.post<Record<string, Record<string, MetricEntry>>>(QUERY, query);

@@ -290,6 +290,8 @@
       "properties": {
         "id": { "$ref": "#/definitions/WorkloadId" },
         "name": { "type": "string" },
+        "icon": { "type": "string" },
+        "color": { "type": "string" },
         "team": { "$ref": "#/definitions/WorkloadTeamConfig" },
         "tags": {
           "type": "object",

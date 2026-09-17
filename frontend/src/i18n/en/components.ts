@@ -362,6 +362,10 @@ export default {
     selectWorkloads: "Select workloads to analyze:",
     selectWorkloadsPrompt: "Select workloads to view their pipeline health outcomes.",
   },
+  pipelineQueryBuilder: {
+    title: "Pipeline query builder",
+    description: "Query pipeline runs by workload.",
+  },
   navbar: {
     brandName: "CodeMetrics",
     openMainNavigation: "Open main navigation",

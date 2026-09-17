@@ -48,13 +48,10 @@ function setup_db() {
 
 function start_mocks() {
   cd "${MOCKS_DIR}"
-  imposter up -r &
-  local MOCKS_HEALTHCHECK_URL="http://localhost:8080/system/status"
 
-  echo "Waiting for mocks to come up on ${MOCKS_HEALTHCHECK_URL}..."
-  while ! curl "${MOCKS_HEALTHCHECK_URL}" --fail &>/dev/null; do
-      sleep 1
-  done
+  # command blocks until the healthcheck passes, or a fatal condition occurs
+  imposter up -r --log-level=warn --auto-restart=false --detach=healthy
+
   echo "Mocks are up and running!"
 }
 
@@ -101,7 +98,7 @@ function stop_backend() {
 
 function stop_mocks() {
   echo "Stopping mocks"
-  imposter down || true
+  imposter down --all || true
 }
 
 # Ensure stop_backend and stop_mocks are called on script exit even during failures

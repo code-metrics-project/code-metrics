@@ -17,6 +17,62 @@ jobs:
       vars: ${{ inputs.vars }}
     secrets: inherit
 
+  validate-cdk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    if: ${{ fromJSON(inputs.vars).deploymentComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        path:
+          - deployment/aws/cdk/mocks
+          - deployment/aws/cdk/native
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ matrix.path }}/package-lock.json
+      - name: Install dependencies
+        working-directory: ${{ matrix.path }}
+        run: npm ci
+      - name: Build Cognito helper Lambdas
+        if: ${{ matrix.path == 'deployment/aws/cdk/native' }}
+        run: |
+          cd deployment/aws/cdk/native/prepopulateCognito && npm ci && npm run build
+          cd ../authWiring && npm ci && npm run build
+      - name: Run tests
+        working-directory: ${{ matrix.path }}
+        run: npm test -- --runInBand
+
+  validate-oidc-trust-role:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    if: ${{ fromJSON(inputs.vars).deploymentComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Test GitHub OIDC trust role setup
+        run: deployment/aws/oidc-trust-role/test-setup-oidc-trust-role.sh
+
+  validate-demo-teardown:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    if: ${{ fromJSON(inputs.vars).githubComponents != 0 || fromJSON(inputs.vars).deploymentComponents != 0 || startsWith(github.ref, 'refs/tags/') }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+      - name: Test demo environment teardown helper
+        run: node --test .github/demo-config/scripts/__tests__/teardown-demo-environment.test.js
+
   build-frontend:
     uses: ./.github/workflows/frontend.yaml
     with:
@@ -213,6 +269,9 @@ jobs:
     needs:
       [
         validate-machine-learning,
+        validate-cdk,
+        validate-oidc-trust-role,
+        validate-demo-teardown,
         build-backend,
         build-frontend,
         build-desktop,

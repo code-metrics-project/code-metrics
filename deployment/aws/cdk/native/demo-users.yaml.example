@@ -1,0 +1,20 @@
+# Example Cognito demo user definitions.
+#
+# Copy this file to `demo-users.yaml` (git-ignored) and point the CDK config
+# at it:
+#
+#   auth:
+#     cognito:
+#       createDemoUsers: demo-users.yaml
+#
+# Every user listed below is created in the Cognito user pool on deploy
+# (email verified, password set permanently). Re-deploys are idempotent:
+# existing users keep their account and their password is reset from this
+# file, so the file is the source of truth for demo credentials.
+demoUsers:
+  - username: admin@example.com
+    password: "Admin123!"
+    email: admin@example.com
+  - username: dev@example.com
+    password: "Devel123!"
+    email: dev@example.com

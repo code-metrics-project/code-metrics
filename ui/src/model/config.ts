@@ -10,6 +10,16 @@ export type WorkloadMeta = {
   name?: string;
 
   /**
+   * Name of a built-in icon representing the workload, if configured.
+   */
+  icon?: string;
+
+  /**
+   * Colour representing the workload, if configured.
+   */
+  color?: string;
+
+  /**
    * Repos grouped by repo group name.
    */
   repos: Record<string, RepoInfo[]>;
@@ -60,6 +70,8 @@ export type WebConfig = {
 export type WorkloadInfo = {
   id: string;
   name: string;
+  icon?: string;
+  color?: string;
 };
 
 export type WorkloadDetail = WorkloadInfo & {

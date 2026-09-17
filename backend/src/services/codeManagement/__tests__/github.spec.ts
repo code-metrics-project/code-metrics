@@ -182,6 +182,13 @@ describe(`GitHub VCS integration`, () => {
     expect(repos).toContain("repo-101");
   });
 
+  it(`lists repos for the gaia owner through the installation repositories endpoint`, async () => {
+    const github = getVcsForWorkload(workload);
+
+    const repos = await github.getReposForProject(workload.id, "gaia");
+    expect(repos).toEqual(["hello-world"]);
+  });
+
   it(`gets all prs matching issueId for a given repo in an org`, async () => {
     const github = getVcsForWorkload(workload);
 

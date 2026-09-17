@@ -1,0 +1,250 @@
+name: Lambda Power Tuning
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which Lambda(s) to tune"
+        type: choice
+        required: true
+        options:
+          - backend
+          - mocks
+          - both
+      environment:
+        description: "Target non-production environment slug"
+        type: string
+        required: true
+        default: "dev"
+      power_values:
+        description: "Comma-separated memory sizes (MB) to test"
+        type: string
+        default: "256,512,1024,2048,3008"
+      num_invocations:
+        description: "Number of invocations per power configuration"
+        type: number
+        default: 10
+      strategy:
+        description: "Optimisation strategy"
+        type: choice
+        options:
+          - balanced
+          - cost
+          - speed
+        default: balanced
+      balanced_weight:
+        description: "Cost weighting for balanced strategy (0=speed, 1=cost)"
+        type: string
+        default: "0.5"
+      load_test_iterations:
+        description: "End-to-end async query runs per workload"
+        type: number
+        default: 3
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: lambda-power-tuning-${{ inputs.environment }}
+  cancel-in-progress: false
+
+env:
+  CM_ENVIRONMENT: ${{ inputs.environment }}
+  AWS_REGION: ${{ vars.AWS_REGION || 'eu-west-2' }}
+  SAR_APP_ARN: "arn:aws:serverlessrepo:us-east-1:451282441545:applications/aws-lambda-power-tuning"
+  POWER_TUNING_STACK_NAME: "lambda-power-tuning"
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      state_machine_arn: ${{ steps.get-arn.outputs.state_machine_arn }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Validate target environment
+        run: deployment/scripts/resolve-power-tuning-target.sh --environment "$CM_ENVIRONMENT" --target backend >/dev/null
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: ${{ env.CM_ENVIRONMENT }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy power tuning SAR app (if not already deployed)
+        run: |
+          if aws cloudformation describe-stacks --stack-name "serverlessrepo-${POWER_TUNING_STACK_NAME}" > /dev/null 2>&1; then
+            echo "Power tuning stack already deployed"
+          else
+            echo "Deploying power tuning SAR app..."
+            CHANGE_SET_ID=$(aws serverlessrepo create-cloud-formation-change-set \
+              --application-id "$SAR_APP_ARN" \
+              --stack-name "$POWER_TUNING_STACK_NAME" \
+              --capabilities CAPABILITY_IAM \
+              --query 'ChangeSetId' --output text)
+
+            echo "Waiting for change set to be ready..."
+            aws cloudformation wait change-set-create-complete \
+              --change-set-name "$CHANGE_SET_ID"
+
+            echo "Executing change set..."
+            aws cloudformation execute-change-set --change-set-name "$CHANGE_SET_ID"
+
+            echo "Waiting for stack creation..."
+            aws cloudformation wait stack-create-complete \
+              --stack-name "serverlessrepo-${POWER_TUNING_STACK_NAME}"
+          fi
+
+      - name: Get State Machine ARN
+        id: get-arn
+        run: |
+          STACK_NAME="serverlessrepo-${POWER_TUNING_STACK_NAME}"
+          if ! aws cloudformation describe-stacks --stack-name "$STACK_NAME" > /dev/null 2>&1; then
+            STACK_NAME="$POWER_TUNING_STACK_NAME"
+          fi
+          STATE_MACHINE_ARN=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='StateMachineARN'].OutputValue" \
+            --output text)
+          echo "state_machine_arn=${STATE_MACHINE_ARN}" >> "$GITHUB_OUTPUT"
+          echo "State Machine ARN: ${STATE_MACHINE_ARN}"
+
+  tune:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(
+          inputs.target == 'both' && '[{"name":"backend-api","target_kind":"backend-api","payload_mode":"api","payload_file":""},{"name":"backend-query-consumer","target_kind":"backend-query","payload_mode":"query-consumer","payload_file":""},{"name":"mocks","target_kind":"mocks","payload_mode":"","payload_file":"deployment/scripts/power-tuning-payload-mocks.json"}]' ||
+          inputs.target == 'backend' && '[{"name":"backend-api","target_kind":"backend-api","payload_mode":"api","payload_file":""},{"name":"backend-query-consumer","target_kind":"backend-query","payload_mode":"query-consumer","payload_file":""}]' ||
+          '[{"name":"mocks","target_kind":"mocks","payload_mode":"","payload_file":"deployment/scripts/power-tuning-payload-mocks.json"}]'
+          ) }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: ${{ env.CM_ENVIRONMENT }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get Lambda ARN from CloudFormation
+        id: lambda
+        run: |
+          TARGET_CONFIG=$(deployment/scripts/resolve-power-tuning-target.sh \
+            --environment "$CM_ENVIRONMENT" \
+            --target "${{ matrix.target_kind }}")
+          STACK_NAME=$(jq -r '.stack_name' <<<"$TARGET_CONFIG")
+          OUTPUT_KEY=$(jq -r '.output_key' <<<"$TARGET_CONFIG")
+
+          FUNCTION_NAME=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='${OUTPUT_KEY}'].OutputValue" \
+            --output text)
+
+          if [ -z "$FUNCTION_NAME" ] || [ "$FUNCTION_NAME" = "None" ]; then
+            echo "::error::Could not find $OUTPUT_KEY in stack $STACK_NAME"
+            exit 1
+          fi
+
+          LAMBDA_ARN=$(aws lambda get-function \
+            --function-name "$FUNCTION_NAME" \
+            --query 'Configuration.FunctionArn' --output text)
+          echo "arn=${LAMBDA_ARN}" >> "$GITHUB_OUTPUT"
+          echo "Lambda: $FUNCTION_NAME ($LAMBDA_ARN)"
+
+      - name: Run power tuning
+        id: tuning
+        env:
+          POWER_TUNING_ACCESS_TOKEN: ${{ secrets.POWER_TUNING_ACCESS_TOKEN }}
+        run: |
+          if [ -n "${{ matrix.payload_mode }}" ]; then
+            PAYLOAD=$(deployment/scripts/build-power-tuning-payload.sh --mode "${{ matrix.payload_mode }}")
+          else
+            PAYLOAD=$(cat "${{ matrix.payload_file }}")
+          fi
+          chmod +x deployment/scripts/run-power-tuning.sh
+          deployment/scripts/run-power-tuning.sh \
+            --state-machine-arn "${{ needs.setup.outputs.state_machine_arn }}" \
+            --lambda-arn "${{ steps.lambda.outputs.arn }}" \
+            --power-values "${{ inputs.power_values }}" \
+            --num "${{ inputs.num_invocations }}" \
+            --strategy "${{ inputs.strategy }}" \
+            --balanced-weight "${{ inputs.balanced_weight }}" \
+            --payload "$PAYLOAD"
+
+      - name: Post results
+        run: |
+          echo "### Power Tuning Results: ${{ matrix.name }}" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f /tmp/power-tuning-result.json ]; then
+            RESULT=$(cat /tmp/power-tuning-result.json)
+            POWER=$(echo "$RESULT" | jq -r '.power')
+            COST=$(echo "$RESULT" | jq -r '.cost')
+            DURATION=$(echo "$RESULT" | jq -r '.duration')
+            VIZ_URL=$(echo "$RESULT" | jq -r '.stateMachine.visualization // empty')
+
+            echo "| Metric | Value |" >> "$GITHUB_STEP_SUMMARY"
+            echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
+            echo "| Optimal Memory | ${POWER} MB |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| Avg Cost | \$${COST} |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| Avg Duration | ${DURATION} ms |" >> "$GITHUB_STEP_SUMMARY"
+
+            if [ -n "$VIZ_URL" ]; then
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+              echo "[View visualization](${VIZ_URL})" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          else
+            echo "No results file found" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  queue-latency:
+    needs: [setup, tune]
+    if: ${{ inputs.target == 'backend' || inputs.target == 'both' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: ${{ env.CM_ENVIRONMENT }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve backend API URL
+        id: api
+        run: |
+          TARGET_CONFIG=$(deployment/scripts/resolve-power-tuning-target.sh \
+            --environment "$CM_ENVIRONMENT" \
+            --target backend-url)
+          STACK_NAME=$(jq -r '.stack_name' <<<"$TARGET_CONFIG")
+          OUTPUT_KEY=$(jq -r '.output_key' <<<"$TARGET_CONFIG")
+          API_BASE_URL=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='${OUTPUT_KEY}'].OutputValue" \
+            --output text)
+          if [ -z "$API_BASE_URL" ] || [ "$API_BASE_URL" = "None" ]; then
+            echo "::error::Could not find $OUTPUT_KEY in stack $STACK_NAME"
+            exit 1
+          fi
+          echo "base_url=${API_BASE_URL}" >> "$GITHUB_OUTPUT"
+
+      - name: Measure async query latency
+        env:
+          POWER_TUNING_ACCESS_TOKEN: ${{ secrets.POWER_TUNING_ACCESS_TOKEN }}
+        run: |
+          deployment/scripts/run-async-query-load-test.sh \
+            --base-url "${{ steps.api.outputs.base_url }}" \
+            --iterations "${{ inputs.load_test_iterations }}"
+
+      - name: Post async query latency
+        run: |
+          echo "### End-to-end async query latency" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Query | Samples | Average | Maximum |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|---------|---------|---------|" >> "$GITHUB_STEP_SUMMARY"
+          jq -s -r '
+            group_by(.queryName)[] |
+            "| \(.[0].queryName) | \(length) | \((map(.durationMs) | add / length | floor)) ms | \((map(.durationMs) | max)) ms |"
+          ' /tmp/async-query-load-test.jsonl >> "$GITHUB_STEP_SUMMARY"

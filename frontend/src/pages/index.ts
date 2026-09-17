@@ -9,6 +9,7 @@ export { default as Workload } from "./Workload";
 export { default as PipelineRuns } from "./PipelineRuns";
 export { default as PipelineRun } from "./PipelineRun";
 export { default as PipelineHealth } from "./PipelineHealth";
+export { default as PipelineQueryBuilder } from "./PipelineQueryBuilder";
 export { default as Analysis } from "./Analysis";
 export { default as CodeQuality } from "./CodeQuality";
 export { default as QualityGates } from "./QualityGates";

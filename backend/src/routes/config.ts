@@ -77,6 +77,8 @@ const getWorkloadMeta = async (): Promise<WorkloadMeta[]> => {
     workloads.push({
       id: workload.id,
       name: workload.name,
+      icon: workload.icon,
+      color: workload.color,
       jobs,
       repos,
       pipelineStages,

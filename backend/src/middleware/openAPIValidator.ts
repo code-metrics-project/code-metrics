@@ -22,7 +22,7 @@ export const buildOpenAPIValidator = (appPath: string) => OpenApiValidator.middl
  * @param _next
  */
 export const openAPIErrorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
-  const errors = err.errors.map((e) => ({
+  const errors = (err.errors || []).map((e) => ({
     title: TITLE_MAP[e.errorCode] || e.errorCode,
     detail: `${e.path} ${e.message}`,
     status: err.status,

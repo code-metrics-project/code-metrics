@@ -13,7 +13,7 @@ export type RepositoryDetail = {
 export function getWorkloadDetails(): WorkloadDetail[] {
   return listWorkloads().map((w, idx) => ({
     ...w,
-    color: chooseColour(idx),
+    color: w.color ?? chooseColour(idx),
     repos: countReposForWorkload(w.id),
   }));
 }

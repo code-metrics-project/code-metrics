@@ -47,6 +47,23 @@ allRepos.push({
   fork: false
 });
 
+// Add hello-world repo from gaia org (for demo workload)
+allRepos.push({
+  id: 300,
+  node_id: "MDEwOlJlcG9zaXRvcnkzMDA=",
+  name: "hello-world",
+  full_name: "gaia/hello-world",
+  owner: {
+    login: "gaia",
+    id: 3,
+    type: "Organization"
+  },
+  private: false,
+  html_url: "https://github.com/gaia/hello-world",
+  description: "Repository hello-world",
+  fork: false
+});
+
 // Calculate pagination
 var startIndex = (page - 1) * perPage;
 var endIndex = startIndex + perPage;

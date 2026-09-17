@@ -4,6 +4,8 @@ version: "2.0"
 workloads:
   - id: athena
     name: "Athena"
+    icon: rocket
+    color: "#0369a1"
     tags:
       department: sales
     codeManagement:
@@ -70,7 +72,9 @@ workloads:
       type: azure
       serverId: mock-azure
       projectName: ADOMockProject
-      team: ADOMock name[Dropdown]" in ("Athena")'
+      team: ADOMock
+      ticketTypes:
+        - Incident
 
   - id: gaia
     name: "Gaia"

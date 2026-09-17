@@ -9,6 +9,10 @@ paths:
     $ref: "./paths/api/analysis/code-hotspots.yaml"
   /api/workloads/{workloadId}/issue-types:
     $ref: "./paths/api/workloads/issue-types.yaml"
+  /api/query/async:
+    $ref: "./paths/api/query/async.yaml"
+  /api/query/async/{jobId}:
+    $ref: "./paths/api/query/async-jobId.yaml"
 
 components:
   schemas:

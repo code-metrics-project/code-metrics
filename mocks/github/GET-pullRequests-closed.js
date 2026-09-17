@@ -27,8 +27,8 @@ function makeClosedPr(pullNumber, daysAgoClosed, daysAgoCreated) {
   };
 }
 
-// These are generated relative to "today" so they remain within the default
-// UI query window (e.g., last 30 days) regardless of when the tests run.
-const prs = [makeClosedPr(2001, 2, 10), makeClosedPr(2002, 5, 12), makeClosedPr(2003, 9, 20)];
+// Relative to "today" and clustered inside a 7-day window so shortened e2e
+// query ranges (7 days vs the UI default of 30) still return non-empty charts.
+const prs = [makeClosedPr(2001, 1, 3), makeClosedPr(2002, 3, 5), makeClosedPr(2003, 6, 7)];
 
 respond().withHeader("Content-Type", "application/json").withData(JSON.stringify(prs));

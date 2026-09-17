@@ -1,0 +1,14 @@
+.git/
+.git
+node_modules/
+machinelearning/
+promosite/
+desktop/
+mcp/
+.github/workflows/docs-site.yaml
+.github/workflows/labeler.yml
+.github/workflows/public-release.yaml
+.github/workflows/update-github-container-reg.yaml
+.github/workflows/deploy-demo.yaml
+.github/workflows/destroy-demo.yaml
+.github/demo-config/

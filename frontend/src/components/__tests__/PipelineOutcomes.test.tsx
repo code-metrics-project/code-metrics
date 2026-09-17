@@ -1,39 +1,41 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, waitFor, screen } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen } from "@testing-library/react";
 import { I18nextProvider } from "react-i18next";
 import { MemoryRouter } from "react-router-dom";
 import i18n from "@/i18n";
 import { PipelineOutcomes } from "@/components/pipeline/PipelineOutcomes";
+import type { PipelineHealthOutcome } from "@/queries/pipelineOutcomes";
 
-type MockUseConfigResult = {
-  config: {
-    systemConfig?: {
-      workloads: Array<{ id: string; jobs: Record<string, string[]> }>;
-    };
-  } | null;
-  isLoading: boolean;
+type MockHookResult = {
+  outcomes: PipelineHealthOutcome[];
+  isBusy: boolean;
+  error: Error | null;
+  hasExecuted: boolean;
+  execute: (...args: unknown[]) => Promise<void>;
 };
 
-const { mockUseConfig, mockUsePipelineOutcomesPerJobGroup } = vi.hoisted(() => ({
-  mockUseConfig: vi.fn<() => MockUseConfigResult>(),
-  mockUsePipelineOutcomesPerJobGroup: vi.fn(),
+const { mockUsePipelineHealthOutcomes, mockListWorkloadIds, capturedDynamicInputs } = vi.hoisted(() => ({
+  mockUsePipelineHealthOutcomes: vi.fn(),
+  mockListWorkloadIds: vi.fn<() => string[]>(),
+  capturedDynamicInputs: { props: null as Record<string, unknown> | null },
 }));
 
-vi.mock("@/hooks/useConfig", () => ({
-  useConfig: () => mockUseConfig(),
+vi.mock("@/config", () => ({
+  listWorkloadIds: () => mockListWorkloadIds(),
 }));
 
-vi.mock("@/queries/usePipelineOutcomesPerJobGroup", () => ({
-  usePipelineOutcomesPerJobGroup: (...args: unknown[]) => mockUsePipelineOutcomesPerJobGroup(...args),
+vi.mock("@/queries/usePipelineHealthOutcomes", () => ({
+  usePipelineHealthOutcomes: () => mockUsePipelineHealthOutcomes(),
 }));
 
-vi.mock("@/components/inputs/DynamicInputs", () => ({
+vi.mock("@/components/inputs", () => ({
   InputType: {
-    WORKLOAD_NAMES: "workloads",
     TAGS: "tags",
   },
-  DynamicInputs: () => <div data-testid="dynamic-inputs" />,
+  DynamicInputs: (props: Record<string, unknown>) => {
+    capturedDynamicInputs.props = props;
+    return <div data-testid="dynamic-inputs" />;
+  },
 }));
 
 vi.mock("@/components/charts", () => ({
@@ -41,207 +43,134 @@ vi.mock("@/components/charts", () => ({
 }));
 
 function renderComponent(ui: React.ReactNode) {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-      },
-    },
-  });
-
   return render(
-    <QueryClientProvider client={queryClient}>
-      <I18nextProvider i18n={i18n}>
-        <MemoryRouter>{ui}</MemoryRouter>
-      </I18nextProvider>
-    </QueryClientProvider>
+    <I18nextProvider i18n={i18n}>
+      <MemoryRouter>{ui}</MemoryRouter>
+    </I18nextProvider>
   );
 }
 
-describe("PipelineOutcomes job group defaults", () => {
+const outcome: PipelineHealthOutcome = {
+  key: "workload-a-build",
+  success: 70,
+  chartData: {
+    labels: ["runs-successful/workload-a", "runs-failed/workload-a"],
+    data: [70, 30],
+    colors: ["#10b981", "#ef4444"],
+  },
+  runsUrl: "/workload/pipeline-runs?executeImmediately=true&workloadId=workload-a&jobGroup=build",
+};
+
+function hookResult(overrides: Partial<MockHookResult> = {}): MockHookResult {
+  return {
+    outcomes: [],
+    isBusy: false,
+    error: null,
+    hasExecuted: false,
+    execute: vi.fn().mockResolvedValue(undefined),
+    ...overrides,
+  };
+}
+
+describe("PipelineOutcomes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUsePipelineOutcomesPerJobGroup.mockReturnValue({
-      data: [],
-      isLoading: false,
-      isError: false,
-      error: null,
-    });
+    capturedDynamicInputs.props = null;
+    mockListWorkloadIds.mockReturnValue(["workload-a", "workload-b"]);
+    mockUsePipelineHealthOutcomes.mockReturnValue(hookResult());
   });
 
-  it("applies all workload job groups by default when auto-executing", async () => {
-    mockUseConfig.mockReturnValue({
-      config: {
-        systemConfig: {
-          workloads: [
-            { id: "workload-a", jobs: { build: ["build-main"], deploy: ["deploy-main"] } },
-            { id: "workload-b", jobs: { test: ["test-main"] } },
-          ],
-        },
-      },
-      isLoading: false,
-    });
+  it("renders the title and description", () => {
+    renderComponent(<PipelineOutcomes />);
 
-    renderComponent(<PipelineOutcomes workload="workload-a" executeOnMount={true} branchName="main" />);
-
-    await waitFor(() => {
-      expect(mockUsePipelineOutcomesPerJobGroup).toHaveBeenCalled();
-      const matchingCall = mockUsePipelineOutcomesPerJobGroup.mock.calls.find(
-        (call) =>
-          Array.isArray((call[0] as { jobGroups?: string[] }).jobGroups) &&
-          JSON.stringify((call[0] as { jobGroups?: string[] }).jobGroups) === JSON.stringify(["build", "deploy"]) &&
-          call[1] === true
-      );
-      expect(matchingCall).toBeTruthy();
-    });
+    expect(screen.getByText("Pipeline health")).toBeTruthy();
+    expect(screen.getByText("Outcome of pipeline runs.")).toBeTruthy();
   });
 
-  it("waits for config to load before auto-executing and setting workload job groups", async () => {
-    let configState: MockUseConfigResult = {
-      config: {
-        systemConfig: {
-          workloads: [],
-        },
-      },
-      isLoading: true,
-    };
+  it("defaults to all workloads when no workload is provided", () => {
+    renderComponent(<PipelineOutcomes />);
 
-    mockUseConfig.mockImplementation(() => configState);
-
-    const view = renderComponent(<PipelineOutcomes workload="workload-a" executeOnMount={true} branchName="main" />);
-
-    await waitFor(() => {
-      expect(mockUsePipelineOutcomesPerJobGroup).toHaveBeenCalled();
-      const latestCall = mockUsePipelineOutcomesPerJobGroup.mock.calls.at(-1);
-      expect(latestCall?.[1]).toBe(false);
-    });
-
-    configState = {
-      config: {
-        systemConfig: {
-          workloads: [{ id: "workload-a", jobs: { build: ["build-main"], deploy: ["deploy-main"] } }],
-        },
-      },
-      isLoading: false,
-    };
-
-    view.rerender(
-      <QueryClientProvider
-        client={
-          new QueryClient({
-            defaultOptions: { queries: { retry: false } },
-          })
-        }
-      >
-        <I18nextProvider i18n={i18n}>
-          <MemoryRouter>
-            <PipelineOutcomes workload="workload-a" executeOnMount={true} branchName="main" />
-          </MemoryRouter>
-        </I18nextProvider>
-      </QueryClientProvider>
-    );
-
-    await waitFor(() => {
-      const matchingCall = mockUsePipelineOutcomesPerJobGroup.mock.calls.find(
-        (call) =>
-          Array.isArray((call[0] as { jobGroups?: string[] }).jobGroups) &&
-          JSON.stringify((call[0] as { jobGroups?: string[] }).jobGroups) === JSON.stringify(["build", "deploy"]) &&
-          call[1] === true
-      );
-      expect(matchingCall).toBeTruthy();
-    });
+    const defaultInputs = capturedDynamicInputs.props?.defaultInputs as Record<string, unknown>;
+    expect(defaultInputs.workloads).toEqual(["workload-a", "workload-b"]);
+    expect(capturedDynamicInputs.props?.hideInputs).toContain("tags");
   });
 
-  it("renders multiple outcome tiles when several job group graphs are returned", async () => {
-    mockUseConfig.mockReturnValue({
-      config: {
-        systemConfig: {
-          workloads: [{ id: "workload-a", jobs: { build: ["build-main"], deploy: ["deploy-main"] } }],
-        },
-      },
-      isLoading: false,
-    });
+  it("restricts default workloads to the provided workload", () => {
+    renderComponent(<PipelineOutcomes workload="workload-a" />);
 
-    mockUsePipelineOutcomesPerJobGroup.mockReturnValue({
-      data: [
-        {
-          key: "build",
-          success: 90,
-          failure: 10,
-          total: 100,
-          chartData: {
-            labels: ["success", "failed"],
-            datasets: [{ data: [90, 10], backgroundColor: ["#22c55e", "#ef4444"] }],
-          },
-          runsUrl: "/workload/pipeline-runs?jobGroup=build",
-        },
-        {
-          key: "deploy",
-          success: 80,
-          failure: 20,
-          total: 100,
-          chartData: {
-            labels: ["success", "failed"],
-            datasets: [{ data: [80, 20], backgroundColor: ["#22c55e", "#ef4444"] }],
-          },
-          runsUrl: "/workload/pipeline-runs?jobGroup=deploy",
-        },
-      ],
-      isLoading: false,
-      isError: false,
-      error: null,
-    });
+    const defaultInputs = capturedDynamicInputs.props?.defaultInputs as Record<string, unknown>;
+    expect(defaultInputs.workloads).toEqual(["workload-a"]);
+  });
 
-    renderComponent(<PipelineOutcomes workload="workload-a" executeOnMount={true} />);
+  it("includes stageId and branchNames in the default inputs when provided", () => {
+    renderComponent(<PipelineOutcomes workload="workload-a" stageId="stage-1" branchName="main" />);
 
-    await waitFor(() => {
-      expect(screen.getByText("build")).toBeTruthy();
-      expect(screen.getByText("deploy")).toBeTruthy();
-    });
+    const defaultInputs = capturedDynamicInputs.props?.defaultInputs as Record<string, unknown>;
+    expect(defaultInputs.stageId).toBe("stage-1");
+    expect(defaultInputs.branchNames).toEqual(["main"]);
+  });
 
-    expect(screen.getAllByText("100 runs")).toHaveLength(2);
+  it("omits stageId and branchNames from the default inputs when not provided", () => {
+    renderComponent(<PipelineOutcomes workload="workload-a" />);
+
+    const defaultInputs = capturedDynamicInputs.props?.defaultInputs as Record<string, unknown>;
+    expect(defaultInputs.stageId).toBeUndefined();
+    expect(defaultInputs.branchNames).toBeUndefined();
+  });
+
+  it("renders an outcome card per outcome with success percentage, chart and runs link", () => {
+    mockUsePipelineHealthOutcomes.mockReturnValue(hookResult({ outcomes: [outcome], hasExecuted: true }));
+
+    renderComponent(<PipelineOutcomes />);
+
+    expect(screen.getByText("workload-a-build")).toBeTruthy();
+    expect(screen.getByText("70%")).toBeTruthy();
+    expect(screen.getByTestId("doughnut-chart")).toBeTruthy();
+    const link = screen.getByRole("link", { name: "Show runs" });
+    expect(link.getAttribute("href")).toBe(outcome.runsUrl);
+  });
+
+  it("renders multiple outcome cards", () => {
+    const second: PipelineHealthOutcome = { ...outcome, key: "workload-b-deploy" };
+    mockUsePipelineHealthOutcomes.mockReturnValue(hookResult({ outcomes: [outcome, second], hasExecuted: true }));
+
+    renderComponent(<PipelineOutcomes />);
+
+    expect(screen.getByText("workload-a-build")).toBeTruthy();
+    expect(screen.getByText("workload-b-deploy")).toBeTruthy();
     expect(screen.getAllByTestId("doughnut-chart")).toHaveLength(2);
   });
 
-  it("does not include stageId by default when not provided", async () => {
-    mockUseConfig.mockReturnValue({
-      config: {
-        systemConfig: {
-          workloads: [{ id: "workload-a", jobs: { build: ["build-main"] } }],
-        },
-      },
-      isLoading: false,
-    });
+  it("does not render a runs link when the outcome has no runs url", () => {
+    const noUrl: PipelineHealthOutcome = { ...outcome, runsUrl: null };
+    mockUsePipelineHealthOutcomes.mockReturnValue(hookResult({ outcomes: [noUrl], hasExecuted: true }));
 
-    renderComponent(<PipelineOutcomes workload="workload-a" executeOnMount={true} branchName="main" />);
+    renderComponent(<PipelineOutcomes />);
 
-    await waitFor(() => {
-      expect(mockUsePipelineOutcomesPerJobGroup).toHaveBeenCalled();
-      const enabledCall = mockUsePipelineOutcomesPerJobGroup.mock.calls.find((call) => call[1] === true);
-      expect(enabledCall).toBeTruthy();
-      expect((enabledCall?.[0] as { stageId?: string }).stageId).toBeUndefined();
-    });
+    expect(screen.queryByRole("link", { name: "Show runs" })).toBeNull();
   });
 
-  it("includes stageId when explicitly provided", async () => {
-    mockUseConfig.mockReturnValue({
-      config: {
-        systemConfig: {
-          workloads: [{ id: "workload-a", jobs: { build: ["build-main"] } }],
-        },
-      },
-      isLoading: false,
-    });
+  it("renders an error alert when the query fails", () => {
+    mockUsePipelineHealthOutcomes.mockReturnValue(hookResult({ error: new Error("boom"), hasExecuted: true }));
 
-    renderComponent(
-      <PipelineOutcomes workload="workload-a" executeOnMount={true} branchName="main" stageId="deploy-stage" />
-    );
+    renderComponent(<PipelineOutcomes />);
 
-    await waitFor(() => {
-      const matchingCall = mockUsePipelineOutcomesPerJobGroup.mock.calls.find(
-        (call) => (call[0] as { stageId?: string }).stageId === "deploy-stage" && call[1] === true
-      );
-      expect(matchingCall).toBeTruthy();
-    });
+    expect(screen.getByText("Error")).toBeTruthy();
+    expect(screen.getByText("boom")).toBeTruthy();
+  });
+
+  it("renders a no-data message when executed but no outcomes were returned", () => {
+    mockUsePipelineHealthOutcomes.mockReturnValue(hookResult({ hasExecuted: true }));
+
+    renderComponent(<PipelineOutcomes />);
+
+    expect(screen.getByText("No data available")).toBeTruthy();
+  });
+
+  it("renders no results content before the first execution", () => {
+    renderComponent(<PipelineOutcomes />);
+
+    expect(screen.queryByText("No data available")).toBeNull();
+    expect(screen.queryByTestId("doughnut-chart")).toBeNull();
   });
 });

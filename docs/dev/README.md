@@ -14,6 +14,8 @@ Here are the key resources for contributors:
 - [Testing Guide](./testing.md) - Running unit tests, integration tests, and MiniStack AWS testing
 - [Datastores for Development](./datastores.md) - Local datastore workflows, DynamoDB with MiniStack, and debugging datastore state during development
 - [Lambda for Development](./lambda.md) - MiniStack-based Lambda packaging, deployment, and invocation workflows for contributors
+- [Demo instance deployment](./demo-deployment.md) - CDK demo deploy with Imposter Go mocks, CI workflow, and config.yaml settings
+- [Lambda Power Tuning](./lambda-power-tuning.md) - AWS Lambda Power Tuning workflow and scripts for backend/mocks memory optimisation
 - [Secrets for Development](./secrets.md) - MiniStack-based Secrets Manager setup and test secret workflows for contributors
 - [Architecture](../architecture.md) - The system architecture and integration points
 - [Mocks](../../mocks/README.md) - Information about the mock services for testing and development

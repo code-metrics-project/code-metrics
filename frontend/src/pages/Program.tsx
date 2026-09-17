@@ -25,8 +25,8 @@ export default function Program() {
           <Card className="card-elevated card-action group flex flex-col">
             <CardHeader className="border-border/50 border-b pb-4">
               <div className="flex items-center gap-3">
-                <div className="from-primary/20 to-primary/5 group-hover:from-primary/30 group-hover:to-primary/10 flex h-10 w-10 items-center justify-center rounded-lg bg-linear-to-br transition-all duration-300">
-                  <BarChart3 className="text-primary h-5 w-5" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-linear-to-br from-blue-500/20 to-blue-500/5 transition-all duration-300 group-hover:from-blue-500/30 group-hover:to-blue-500/10">
+                  <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <CardTitle>{t("pages:program.metrics.title")}</CardTitle>
               </div>
@@ -38,7 +38,7 @@ export default function Program() {
               <Button
                 variant="outline"
                 asChild
-                className="group-hover:bg-primary group-hover:text-primary-foreground w-full transition-colors"
+                className="w-full transition-colors"
               >
                 <Link to={Paths.ProgramMetrics}>{t("pages:program.metrics.action")}</Link>
               </Button>
@@ -48,8 +48,8 @@ export default function Program() {
           <Card className="card-elevated card-action group flex flex-col">
             <CardHeader className="border-border/50 border-b pb-4">
               <div className="flex items-center gap-3">
-                <div className="from-primary/20 to-primary/5 group-hover:from-primary/30 group-hover:to-primary/10 flex h-10 w-10 items-center justify-center rounded-lg bg-linear-to-br transition-all duration-300">
-                  <List className="text-primary h-5 w-5" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-linear-to-br from-violet-500/20 to-violet-500/5 transition-all duration-300 group-hover:from-violet-500/30 group-hover:to-violet-500/10">
+                  <List className="h-5 w-5 text-violet-600 dark:text-violet-400" />
                 </div>
                 <CardTitle>{t("pages:program.changes.title")}</CardTitle>
               </div>
@@ -61,7 +61,7 @@ export default function Program() {
               <Button
                 variant="outline"
                 asChild
-                className="group-hover:bg-primary group-hover:text-primary-foreground w-full transition-colors"
+                className="w-full transition-colors"
               >
                 <Link to={Paths.ProgramNarratives}>{t("pages:program.changes.action")}</Link>
               </Button>
@@ -71,8 +71,8 @@ export default function Program() {
           <Card className="card-elevated card-action group flex flex-col">
             <CardHeader className="border-border/50 border-b pb-4">
               <div className="flex items-center gap-3">
-                <div className="from-primary/20 to-primary/5 group-hover:from-primary/30 group-hover:to-primary/10 flex h-10 w-10 items-center justify-center rounded-lg bg-linear-to-br transition-all duration-300">
-                  <GitBranch className="text-primary h-5 w-5" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-linear-to-br from-teal-500/20 to-teal-500/5 transition-all duration-300 group-hover:from-teal-500/30 group-hover:to-teal-500/10">
+                  <GitBranch className="h-5 w-5 text-teal-600 dark:text-teal-400" />
                 </div>
                 <CardTitle>{t("pages:program.pipelines.title")}</CardTitle>
               </div>
@@ -80,14 +80,23 @@ export default function Program() {
             <CardContent className="flex-1 pt-4">
               <p className="text-muted-foreground text-sm">{t("pages:program.pipelines.description")}</p>
             </CardContent>
-            <CardFooter className="border-border/30 border-t pt-4">
+            <CardFooter className="flex flex-col gap-2 border-border/30 border-t pt-4">
               <Button
                 variant="outline"
                 asChild
-                className="group-hover:bg-primary group-hover:text-primary-foreground w-full transition-colors"
+                className="w-full transition-colors"
               >
                 <Link to={`${Paths.ProgramPipelineHealth}?executeImmediately=true&branchName=main`}>
                   {t("pages:program.pipelines.action")}
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                asChild
+                className="w-full transition-colors"
+              >
+                <Link to={`${Paths.ProgramPipelineQueryBuilder}?executeImmediately=true&branchName=main`}>
+                  {t("pages:program.pipelines.queryBuilderAction")}
                 </Link>
               </Button>
             </CardFooter>
@@ -109,7 +118,7 @@ export default function Program() {
               <Button
                 variant="outline"
                 asChild
-                className="group-hover:bg-primary group-hover:text-primary-foreground w-full transition-colors"
+                className="w-full transition-colors"
               >
                 <Link to={Paths.ProgramQualityGates}>{t("pages:program.qualityGates.action")}</Link>
               </Button>
@@ -132,7 +141,7 @@ export default function Program() {
               <Button
                 variant="outline"
                 asChild
-                className="group-hover:bg-primary group-hover:text-primary-foreground w-full transition-colors"
+                className="w-full transition-colors"
               >
                 <Link to={Paths.ProgramSecurity}>{t("pages:program.security.action")}</Link>
               </Button>
@@ -155,7 +164,7 @@ export default function Program() {
               <Button
                 variant="outline"
                 asChild
-                className="group-hover:bg-primary group-hover:text-primary-foreground w-full transition-colors"
+                className="w-full transition-colors"
               >
                 <Link to={Paths.ProgramDependencyAlerts}>{t("pages:program.dependencyAlerts.action")}</Link>
               </Button>
@@ -165,8 +174,8 @@ export default function Program() {
           <Card className="card-elevated card-action group flex flex-col">
             <CardHeader className="border-border/50 border-b pb-4">
               <div className="flex items-center gap-3">
-                <div className="from-primary/20 to-primary/5 group-hover:from-primary/30 group-hover:to-primary/10 flex h-10 w-10 items-center justify-center rounded-lg bg-linear-to-br transition-all duration-300">
-                  <FolderGit2 className="text-primary h-5 w-5" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-linear-to-br from-orange-500/20 to-orange-500/5 transition-all duration-300 group-hover:from-orange-500/30 group-hover:to-orange-500/10">
+                  <FolderGit2 className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                 </div>
                 <CardTitle>{t("pages:program.repositories.title")}</CardTitle>
               </div>
@@ -178,7 +187,7 @@ export default function Program() {
               <Button
                 variant="outline"
                 asChild
-                className="group-hover:bg-primary group-hover:text-primary-foreground w-full transition-colors"
+                className="w-full transition-colors"
               >
                 <Link to={Paths.Repositories}>{t("pages:program.repositories.action")}</Link>
               </Button>

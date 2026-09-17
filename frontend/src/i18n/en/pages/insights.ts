@@ -104,6 +104,10 @@ const insights = {
     title: "Pipeline health",
     description: "Outcomes and durations of CI/CD pipelines.",
   },
+  pipelineQueryBuilder: {
+    title: "Pipeline query builder",
+    description: "Query pipeline runs by workload.",
+  },
   pipelineRun: {
     title: "Pipeline run",
     notFound: "Unable to find pipeline run.",

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Dashboard } from "@/components/dashboard";
 import { getRelativeDate } from "@/utils/date";
+import { buildPath } from "@/utils/path";
 import { useI18n } from "@/hooks/useI18n";
 import type { Dashboard as TDashboard } from "@/queries/useDashboards";
 
@@ -163,7 +164,7 @@ export default function Repository() {
     );
   }
 
-  const repositoriesPath = Paths.WorkloadRepositories.replace(":workloadId", workloadId);
+  const repositoriesPath = buildPath(Paths.WorkloadRepositories, { workloadId });
 
   return (
     <div>

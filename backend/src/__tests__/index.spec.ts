@@ -1,23 +1,23 @@
 /**
  * Unit tests for the backend entrypoint in index.ts.
  *
- * These tests cover the startup side effects that are specific to the entrypoint,
- * such as Lambda environment detection, CONFIG_DIR override behavior, and lazy
- * handler initialization. They are intentionally ungrouped so they run with the
- * normal unit suite rather than the later LocalStack integration or deploy stages.
+ * These tests cover the entrypoint dispatch in index.ts. detectIfLambda is
+ * mocked, so the Lambda vs API branch selection is driven by the mocked
+ * detection result rather than by LAMBDA_TASK_ROOT (the real environment
+ * detection is covered by entrypoint/__tests__/lambda.spec.ts). They are
+ * intentionally ungrouped so they run with the normal unit suite rather than
+ * the later LocalStack integration or deploy stages.
  */
-import { jest } from "@jest/globals";
+import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals";
 import type { APIGatewayProxyEventV2, Context } from "aws-lambda";
 
 type IndexMocks = {
-  bootstrap: jest.Mock<() => Promise<void>>;
-  startApi: jest.Mock<() => Promise<unknown>>;
-  serverlessExpress: jest.Mock;
+  startup: jest.Mock<() => Promise<void>>;
+  buildLambdaHandler: jest.Mock;
+  detectIfLambda: jest.Mock;
   logger: jest.Mock;
   error: jest.Mock;
-  verbose: jest.Mock;
-  getEnvConfigItem: jest.Mock;
-  overrideEnvConfigItem: jest.Mock;
+  getConfigItem: jest.Mock<(key: string) => string | undefined>;
 };
 
 const originalEnv = { ...process.env };
@@ -73,52 +73,43 @@ const createEvent = (): APIGatewayProxyEventV2 => ({
   body: undefined,
 });
 
-const loadIndex = async (options?: { lambdaTaskRoot?: string; invocationMode?: string }) => {
+const loadIndex = async (options?: { isLambda?: boolean; invocationMode?: string }) => {
   jest.resetModules();
 
   process.env = { ...originalEnv };
-  if (options?.lambdaTaskRoot === undefined) {
-    delete process.env.LAMBDA_TASK_ROOT;
-  } else {
-    process.env.LAMBDA_TASK_ROOT = options.lambdaTaskRoot;
-  }
 
-  const bootstrap = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
-  const app = { use: jest.fn() };
-  const startApi = jest.fn<() => Promise<unknown>>().mockResolvedValue(app);
-  const lambdaResponse = { statusCode: 200, body: "ok" };
-  const serverlessExpressInstance = jest
-    .fn<(event: APIGatewayProxyEventV2, context: Context) => Promise<typeof lambdaResponse>>()
-    .mockResolvedValue(lambdaResponse);
-  const serverlessExpress = jest.fn().mockReturnValue(serverlessExpressInstance);
+  const startup = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
+  const lambdaHandler = jest
+    .fn<() => Promise<{ statusCode: number; body: string }>>()
+    .mockResolvedValue({ statusCode: 200, body: "ok" });
+  const buildLambdaHandler = jest.fn().mockReturnValue(lambdaHandler);
+  const detectIfLambda = jest.fn().mockReturnValue(options?.isLambda ?? false);
   const logger = jest.fn();
   const error = jest.fn();
-  const verbose = jest.fn();
-  const getEnvConfigItem = jest.fn().mockImplementation((key: string) => {
+  const getConfigItem = jest.fn<(key: string) => string | undefined>().mockImplementation((key: string) => {
     if (key === "INVOCATION_MODE") {
       return options?.invocationMode ?? "serve-api";
     }
     return undefined;
   });
-  const overrideEnvConfigItem = jest.fn();
 
-  jest.doMock("../app", () => ({
-    bootstrap,
-    startApi,
+  jest.doMock("../entrypoint/startup", () => ({
+    startup,
   }));
-  jest.doMock("@codegenie/serverless-express", () => ({
-    __esModule: true,
-    default: serverlessExpress,
+  jest.doMock("../entrypoint/lambda", () => ({
+    buildLambdaHandler,
+    detectIfLambda,
   }));
   jest.doMock("../utils/logger/logger", () => ({
     logger,
     error,
-    verbose,
   }));
   jest.doMock("../config/sources/source", () => ({
-    getEnvConfigItem,
-    overrideEnvConfigItem,
+    getConfigItem,
   }));
+
+  // Suppress process.exit calls in tests
+  jest.doMock("log-timestamp", () => ({}));
 
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const indexModule = require("../index") as {
@@ -127,18 +118,14 @@ const loadIndex = async (options?: { lambdaTaskRoot?: string; invocationMode?: s
 
   return {
     indexModule,
-    app,
-    serverlessExpressInstance,
-    lambdaResponse,
+    lambdaHandler,
     mocks: {
-      bootstrap,
-      startApi,
-      serverlessExpress,
+      startup,
+      buildLambdaHandler,
+      detectIfLambda,
       logger,
       error,
-      verbose,
-      getEnvConfigItem,
-      overrideEnvConfigItem,
+      getConfigItem,
     } satisfies IndexMocks,
   };
 };
@@ -158,38 +145,26 @@ describe("index entrypoint", () => {
     global.invocationMode = originalInvocationMode;
   });
 
-  it("treats LAMBDA_TASK_ROOT as Lambda mode and configures CONFIG_DIR from it", async () => {
-    const { indexModule, mocks, app, serverlessExpressInstance, lambdaResponse } = await loadIndex({
-      lambdaTaskRoot: "/var/task",
+  it("builds the Lambda handler and skips startup when detection reports Lambda", async () => {
+    const { indexModule, mocks } = await loadIndex({
+      isLambda: true,
     });
 
     expect(global.isLambda).toBe(true);
-    expect(global.invocationMode).toBe("serve-api");
-    expect(mocks.overrideEnvConfigItem).toHaveBeenCalledWith("CONFIG_DIR", "/var/task/config");
-    expect(mocks.verbose).toHaveBeenCalledWith("Running in AWS Lambda environment with task root:", "/var/task");
-    expect(mocks.bootstrap).not.toHaveBeenCalled();
-    expect(mocks.startApi).not.toHaveBeenCalled();
-
-    const handler = indexModule.handler;
-    expect(handler).toBeDefined();
-
-    const response = await handler!(createEvent(), createContext());
-
-    expect(mocks.bootstrap).toHaveBeenCalledTimes(1);
-    expect(mocks.startApi).toHaveBeenCalledTimes(1);
-    expect(mocks.serverlessExpress).toHaveBeenCalledWith({ app });
-    expect(serverlessExpressInstance).toHaveBeenCalledTimes(1);
-    expect(response).toBe(lambdaResponse);
+    expect(mocks.detectIfLambda).toHaveBeenCalledTimes(1);
+    expect(mocks.buildLambdaHandler).toHaveBeenCalledTimes(1);
+    expect(indexModule.handler).toBeDefined();
+    expect(mocks.startup).not.toHaveBeenCalled();
   });
 
-  it("treats missing LAMBDA_TASK_ROOT as non-Lambda mode and does not override CONFIG_DIR", async () => {
+  it("calls startup and skips the Lambda handler when detection reports non-Lambda", async () => {
     const { mocks } = await loadIndex({
-      lambdaTaskRoot: undefined,
+      isLambda: false,
     });
 
     expect(global.isLambda).toBe(false);
-    expect(mocks.overrideEnvConfigItem).not.toHaveBeenCalledWith("CONFIG_DIR", expect.anything());
-    expect(mocks.bootstrap).toHaveBeenCalledTimes(1);
-    expect(mocks.startApi).toHaveBeenCalledTimes(1);
+    expect(mocks.detectIfLambda).toHaveBeenCalledTimes(1);
+    expect(mocks.startup).toHaveBeenCalledTimes(1);
+    expect(mocks.buildLambdaHandler).not.toHaveBeenCalled();
   });
 });

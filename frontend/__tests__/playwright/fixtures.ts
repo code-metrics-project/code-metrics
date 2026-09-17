@@ -246,15 +246,32 @@ export class TestHelpers {
   }
 
   /**
-   * Check if chart is visible or not
+   * Check if chart is visible or not.
+   * Query execution against mocks can take well over the default expect timeout
+   * while data is generated/cached, so waiting for a chart uses a longer timeout.
    */
-  async chartVisible(visible: boolean): Promise<void> {
+  async chartVisible(visible: boolean, timeoutMs = visible ? 60_000 : 10_000): Promise<void> {
     const chart = this.page.locator("div.recharts-wrapper");
     if (visible) {
-      await expect(chart).toBeVisible({ timeout: 10000 });
+      await expect(chart).toBeVisible({ timeout: timeoutMs });
     } else {
-      await expect(chart).not.toBeVisible();
+      await expect(chart).not.toBeVisible({ timeout: timeoutMs });
     }
+  }
+
+  /**
+   * Click Run query and wait until a chart is shown.
+   *
+   * Do not assert the transient "Running query..." label — warm/cached queries
+   * often finish before Playwright can observe it, which made this helper fail
+   * more often than the previous click + chartVisible pattern.
+   */
+  async runQueryAndWaitForChart(): Promise<void> {
+    const runButton = this.page.locator('button[name="runQuery"]');
+    await expect(runButton).toBeEnabled({ timeout: 10_000 });
+    await runButton.click();
+    await this.chartVisible(true);
+    await expect(runButton).toHaveText("Run query", { timeout: 90_000 });
   }
 
   /**

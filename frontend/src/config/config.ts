@@ -111,6 +111,8 @@ export function listWorkloads(): WorkloadInfo[] {
     return {
       id: w.id,
       name: w.name ?? capitalize(w.id),
+      icon: w.icon,
+      color: w.color,
     };
   });
   workloads.sort((a, b) => a.name.localeCompare(b.name));
@@ -135,6 +137,14 @@ export function listJobGroups(): string[] {
   const jobGroups = config.systemConfig.workloads.flatMap((w) => Object.keys(w.jobs ?? {}));
   jobGroups.sort();
   return uniq(jobGroups);
+}
+
+export function listPipelineStages(): string[] {
+  const config = getConfig();
+  if (!config.systemConfig?.workloads) {
+    return [];
+  }
+  return uniq(config.systemConfig.workloads.flatMap((w) => w.pipelineStages ?? []));
 }
 
 function getRepoInfosForWorkloadId(workloadId: string): RepoInfo[] {

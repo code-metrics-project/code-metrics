@@ -1,0 +1,20 @@
+engine: native
+version: 5.21.3
+
+# allow a longer time for the mock to start
+startTimeout: 30
+
+env:
+  # we use 'scriptFile' (rather than steps) and 'logger.x' (rather than console.x) in our mocks
+  IMPOSTER_SUPPORT_LEGACY_CONFIG: true
+
+  # quieten mock logging (change to info/debug/trace you need to debug mocks)
+  IMPOSTER_LOG_LEVEL: warn
+
+cli:
+  version: 1.11.1
+
+# List of plugins to install
+# See https://github.com/imposter-project/imposter-go-plugins/releases
+plugins:
+  - oidc-server

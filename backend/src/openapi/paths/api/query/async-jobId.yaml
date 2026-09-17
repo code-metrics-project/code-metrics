@@ -1,0 +1,41 @@
+get:
+  summary: Get async query result
+  description: Poll for the result of an async query. Returns 202 while processing, 200 when complete, 500 on failure, or 204 if not found.
+
+  parameters:
+    - name: jobId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  responses:
+    "200":
+      description: Query result
+      content:
+        application/json:
+          schema:
+            type: object
+
+    "202":
+      description: Query still processing
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+
+    "204":
+      description: Query not found or expired
+
+    "500":
+      description: Query failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string

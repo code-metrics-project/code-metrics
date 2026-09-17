@@ -4,6 +4,10 @@ system:
   stores:
     churn:
       preloadFile: "historic/churn.json"
+    resourceAreas:
+      preloadFile: "_apis/GET-ResourceAreas.json"
+    repositories:
+      preloadFile: "workload/_apis/git/GET-repositories.json"
 
 resources:
   # Health check endpoint for connection checker
@@ -68,8 +72,7 @@ resources:
     response:
       headers:
         Content-Type: application/json; charset=utf-8; api-version=6.1-preview.1
-      file: workload/_apis/git/GET-repositories.json
-      template: true
+      scriptFile: workload/_apis/git/GET-repositories.js
       statusCode: 200
 
   - method: POST
@@ -134,9 +137,9 @@ resources:
 
   - method: GET
     path: /{projectName}/_apis/build/Builds
-#    queryParams:
-#      maxTime: Thu, 15 Sep 2022 00:00:00 GMT
-#      minTime: Wed, 14 Sep 2022 00:00:00 GMT
+    #    queryParams:
+    #      maxTime: Thu, 15 Sep 2022 00:00:00 GMT
+    #      minTime: Wed, 14 Sep 2022 00:00:00 GMT
     steps:
       - type: script
         code: |

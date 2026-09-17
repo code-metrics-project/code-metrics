@@ -1,0 +1,16 @@
+aws:
+  region:
+  account:
+
+global:
+  name: CodeMetricsMock
+  # Environment slug used to scope the CloudFormation stack id
+  # (e.g. CodeMetricsMock-dev). CI output lookups by MockBaseUrl are
+  # stack-name-agnostic, so the id may change per environment.
+  environment: dev
+
+mocks:
+  lambdaAssetPath: "../../../dist/imposter-go-lambda"
+  useAPIGW: true
+  memorySize: 512
+  timeout: 30

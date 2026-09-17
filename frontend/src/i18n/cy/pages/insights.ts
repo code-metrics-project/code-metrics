@@ -106,6 +106,10 @@ const insights = {
     title: "Iechyd piblinell",
     description: "Canlyniadau a pharhadrwydd piblinellau CI/CD.",
   },
+  pipelineQueryBuilder: {
+    title: "Adeiladydd ymholiadau piblinell",
+    description: "Adeiladwch ymholiad piblinell ar gyfer llwyth gwaith unigol.",
+  },
   pipelineRun: {
     title: "Rhediad piblinell",
     notFound: "Methu dod o hyd i rediad piblinell.",

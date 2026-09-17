@@ -3,6 +3,7 @@ import * as configMapping from "../../config/configMapping";
 import * as config from "../../config/config";
 import { fetchBootstrap, fetchConfig } from "../config";
 import { BootstrapConfig, SystemConfig } from "../../model/config/system-config";
+import { Workload } from "../../model/config/workload-config";
 import { Features, listActiveFeatures, type FeatureConfig } from "../../utils/features";
 import { getAuthenticator } from "../../auth/auth";
 import { isLicensed } from "../../license/validate";
@@ -25,6 +26,9 @@ jest.mock("../../config/sources/source");
 
 const mockGetAllLlmConfig = configMapping.getAllLlmConfig as jest.MockedFunction<typeof configMapping.getAllLlmConfig>;
 const mockListWorkloads = configMapping.listWorkloads as jest.MockedFunction<typeof configMapping.listWorkloads>;
+const mockDetermineJobGroups = configMapping.determineJobGroups as jest.MockedFunction<
+  typeof configMapping.determineJobGroups
+>;
 const mockGetVcsBranches = configMapping.getVcsBranches as jest.MockedFunction<typeof configMapping.getVcsBranches>;
 const mockGetAllTicketPriorities = configMapping.getAllTicketPriorities as jest.MockedFunction<
   typeof configMapping.getAllTicketPriorities
@@ -198,6 +202,61 @@ describe("config routes", () => {
         workloads: [],
         llmEnabled: false,
       });
+    });
+
+    it("should pass workload icon and color through to the system config", async () => {
+      mockDetermineJobGroups.mockReturnValue([]);
+      mockListWorkloads.mockReturnValue([
+        {
+          id: "athena",
+          name: "Athena",
+          icon: "rocket",
+          color: "#0369a1",
+          codeManagement: { repoGroups: {} },
+          codeAnalysis: {},
+          incidents: {},
+          pipelines: { stages: [] },
+          projectManagement: {},
+        } as unknown as Workload,
+      ]);
+
+      await fetchConfig(mockRequest as Request, mockResponse as Response<SystemConfig>);
+
+      expect(jsonSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          workloads: [
+            expect.objectContaining({
+              id: "athena",
+              name: "Athena",
+              icon: "rocket",
+              color: "#0369a1",
+            }),
+          ],
+        }),
+      );
+    });
+
+    it("should leave workload icon and color undefined when not configured", async () => {
+      mockDetermineJobGroups.mockReturnValue([]);
+      mockListWorkloads.mockReturnValue([
+        {
+          id: "athena",
+          name: "Athena",
+          codeManagement: { repoGroups: {} },
+          codeAnalysis: {},
+          incidents: {},
+          pipelines: { stages: [] },
+          projectManagement: {},
+        } as unknown as Workload,
+      ]);
+
+      await fetchConfig(mockRequest as Request, mockResponse as Response<SystemConfig>);
+
+      const payload = jsonSpy.mock.calls[0][0] as SystemConfig;
+      expect(payload.workloads).toHaveLength(1);
+      expect(payload.workloads[0].id).toBe("athena");
+      expect(payload.workloads[0].icon).toBeUndefined();
+      expect(payload.workloads[0].color).toBeUndefined();
     });
   });
 

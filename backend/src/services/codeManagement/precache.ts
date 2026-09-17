@@ -1,10 +1,10 @@
 import { error, logger } from "../../utils/logger/logger";
 import { listWorkloads } from "../../config/configMapping";
 import { CACHE_REPO_LIST, getVcsForWorkload } from "./vcsService";
-import { InvocationMode } from "../../model/global";
-import { getEnvConfigItem } from "../../config/sources/source";
+import { InvocationMode } from "../../entrypoint/model";
+import { getConfigItem } from "../../config/sources/source";
 
-export const PRECACHE_REPO_LIST = getEnvConfigItem("PRECACHE_REPO_LIST") !== "false";
+export const PRECACHE_REPO_LIST = getConfigItem("PRECACHE_REPO_LIST") !== "false";
 
 export const precacheRepoList = async () => {
   if (!CACHE_REPO_LIST) {
