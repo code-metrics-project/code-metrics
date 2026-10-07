@@ -65,6 +65,19 @@ Keys like `.github` can be mapped to _all_ components to ensure that infrastruct
 
 Because change detection skips jobs that are irrelevant to a PR, do **not** require individual matrix / sub-project jobs in branch rulesets. Require the **`CI Success`** check from the `CI` workflow instead. That job always runs (`if: always()`), requires `setup` and `validate` to succeed, and accepts `cd` when it succeeds or skips because no deployment jobs apply. Failed or cancelled CD jobs still fail the gate.
 
+### Downstream public mirror
+
+`update-downstream-fork.yaml` copies this repo to [`code-metrics-project/code-metrics`](https://github.com/code-metrics-project/code-metrics) and leaves out the paths in [`scripts/downstream-fork/rsync-excludes.txt`](../scripts/downstream-fork/rsync-excludes.txt). The same `ci.yaml` then runs there, so any job that reads an excluded path has to be switched off in the mirror.
+
+`ci.yaml` does this in the `setup` job. When `GITHUB_REPOSITORY` is not `DeloitteDigitalUK/code-metrics`, it passes `--set <component>=false` to `set_vars.py` for each component that is excluded or needs upstream-only secrets. The overrides are applied after `--all`, so they also hold on `main`.
+
+The `demo` component covers `.github/demo-config/`, `deploy-demo.yaml` and `destroy-demo.yaml`. Changes to `.github` or `deployment` also set it. It controls two checks:
+
+- `validate-demo-teardown` runs only when `demoComponents` is set. It has no tag fallback, so the downstream override always wins.
+- `validate-cdk` passes `DEMO_WORKFLOWS_AVAILABLE` to the CDK Jest suites. When it is `false`, the mocks suite skips its `deploy-demo.yaml` checks and still runs the `deployment/Makefile` checks. When it is unset, as in local runs, every check runs.
+
+If you exclude another path from the mirror, also give the jobs that read it a component flag and add `--set <component>=false` to the downstream branch of `ci.yaml`. `scripts/downstream-fork/__tests__/rsync-excludes.spec.sh` fails if a `demo` path is synced, or if `ci.yaml` stops setting `demo=false`.
+
 ### Frontend/UI Build Behavior
 
 - **`frontend.yaml`** now runs separate jobs for:

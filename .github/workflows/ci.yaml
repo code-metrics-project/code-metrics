@@ -22,6 +22,7 @@ jobs:
           else
             python3 ./.github/set_vars.py --verbose "${ALL_FLAG}" \
               --set auth=false \
+              --set demo=false \
               --set desktop=false \
               --set helm=false \
               --set machinelearning=false \

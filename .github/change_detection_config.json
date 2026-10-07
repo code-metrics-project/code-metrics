@@ -3,6 +3,7 @@
     ".github": [".github"],
     "auth": ["backend/src/auth"],
     "backend": ["backend", ":!backend/.dockerignore"],
+    "demo": [".github/demo-config", ".github/workflows/deploy-demo.yaml", ".github/workflows/destroy-demo.yaml"],
     "deployment": ["deployment"],
     "desktop": ["desktop"],
     "docker": [
@@ -37,11 +38,13 @@
   },
   "fold_rules": {
     "backend": ["mocks"],
+    "deployment": ["demo"],
     "desktop": ["backend", "frontend"],
     "mocks": ["backend"],
     ".github": [
       "auth",
       "backend",
+      "demo",
       "deployment",
       "desktop",
       "docs",

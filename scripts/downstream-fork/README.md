@@ -47,6 +47,7 @@ A comprehensive script that performs a complete sync of the downstream repositor
 - Excludes some directories and workflows from synchronization (see `scripts/downstream-fork/rsync-excludes.txt`), including:
   - private/demo-only paths such as `.github/workflows/deploy-demo.yaml` and `.github/demo-config/`
   - `machinelearning/`, `promosite/`, `desktop/`, `mcp/`, and selected GitHub workflows
+- The downstream repo runs the same `ci.yaml`, which turns off the jobs that read excluded paths. If you add an exclude that a CI job reads, add a matching `--set <component>=false` override as well. See [Downstream public mirror](../../.github/CI_CD.md#downstream-public-mirror). Run `scripts/downstream-fork/__tests__/rsync-excludes.spec.sh` after changing the excludes.
 - License files (COPYING, COPYING.LESSER, LICENSE) are copied from the scripts directory to downstream root (these are specific to the downstream fork)
 - The commit message will include the full SHA of the upstream commit
 - The scripts preserve the `.git` directory in the downstream repository

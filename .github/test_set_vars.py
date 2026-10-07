@@ -70,6 +70,54 @@ class TestSetVars(unittest.TestCase):
         self.assertEqual(config["service_dirs"]["helm"], ["deployment/helm"])
         self.assertIn("deployment", config["fold_rules"][".github"])
 
+    def test_demo_paths_in_config_file(self):
+        with open(set_vars.CONFIG_FILE, encoding="utf-8") as config_file:
+            config = json.load(config_file)
+
+        self.assertEqual(
+            config["service_dirs"]["demo"],
+            [".github/demo-config", ".github/workflows/deploy-demo.yaml", ".github/workflows/destroy-demo.yaml"],
+        )
+        self.assertIn("demo", config["fold_rules"][".github"])
+        self.assertIn("demo", config["fold_rules"]["deployment"])
+
+    def _run_with_real_config(self, argv, changed_path=None):
+        with open(set_vars.CONFIG_FILE, encoding="utf-8") as config_file:
+            config = json.load(config_file)
+
+        self.mock_changed.side_effect = lambda base, paths: int(changed_path in paths)
+
+        with patch.object(set_vars, "SERVICE_DIRS", config["service_dirs"]), \
+             patch.object(set_vars, "FOLD_RULES", config["fold_rules"]), \
+             patch("builtins.open", new_callable=MagicMock) as mock_file:
+            set_vars.main(argv)
+            write_call = mock_file.return_value.__enter__.return_value.write.call_args[0][0]
+            return json.loads(write_call.replace("vars=", "").strip())
+
+    def test_deployment_change_triggers_demo(self):
+        data = self._run_with_real_config([], changed_path="deployment")
+
+        self.assertEqual(data.get("deploymentComponents"), 1)
+        self.assertEqual(data.get("demoComponents"), 1)
+
+    def test_demo_change_does_not_trigger_deployment(self):
+        data = self._run_with_real_config([], changed_path=".github/demo-config")
+
+        self.assertEqual(data.get("demoComponents"), 1)
+        self.assertEqual(data.get("deploymentComponents"), 0)
+
+    def test_unrelated_change_skips_demo(self):
+        data = self._run_with_real_config([], changed_path="frontend")
+
+        self.assertEqual(data.get("frontendComponents"), 1)
+        self.assertEqual(data.get("demoComponents"), 0)
+
+    def test_downstream_override_disables_demo_even_with_all(self):
+        data = self._run_with_real_config(["--all", "--set", "demo=false"])
+
+        self.assertEqual(data.get("demoComponents"), 0)
+        self.assertEqual(data.get("deploymentComponents"), 1)
+
     def test_auth_only_changed(self):
         """
         Test case: Only backend/src/auth changes.
