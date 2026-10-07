@@ -245,7 +245,8 @@ export function buildDataLabels(
     // use the same formatter for the data labels as the axis labels
     if (formatters?.length) {
       dataLabels.formatter = (value: string | number | number[], opts?: ApexFormatterContext): string => {
-        const numericValue = typeof value === "number" ? value : Array.isArray(value) ? Number(value[0] ?? 0) : Number(value);
+        const numericValue =
+          typeof value === "number" ? value : Array.isArray(value) ? Number(value[0] ?? 0) : Number(value);
         const fallbackValue = Number.isFinite(numericValue) ? numericValue : 0;
 
         if (opts?.seriesIndex !== undefined && opts.seriesIndex < formatters.length) {

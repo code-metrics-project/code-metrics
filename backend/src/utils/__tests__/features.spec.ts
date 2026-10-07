@@ -26,4 +26,27 @@ describe("features", () => {
     doIfFeatureActive(featureName as Features, block);
     expect(block).not.toHaveBeenCalled();
   });
+
+  describe("asyncQuery feature", () => {
+    afterEach(() => {
+      delete process.env.FEATURE_ASYNC_QUERY;
+    });
+
+    it("should be disabled by default", () => {
+      const activeFeatures = listActiveFeatures();
+      expect(activeFeatures.asyncQuery).toBe(false);
+    });
+
+    it("should be enabled when FEATURE_ASYNC_QUERY is set to true", () => {
+      process.env.FEATURE_ASYNC_QUERY = "true";
+      const activeFeatures = listActiveFeatures();
+      expect(activeFeatures.asyncQuery).toBe(true);
+    });
+
+    it("should be disabled when FEATURE_ASYNC_QUERY is set to false", () => {
+      process.env.FEATURE_ASYNC_QUERY = "false";
+      const activeFeatures = listActiveFeatures();
+      expect(activeFeatures.asyncQuery).toBe(false);
+    });
+  });
 });

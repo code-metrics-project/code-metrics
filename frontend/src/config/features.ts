@@ -5,6 +5,7 @@ import { getBootstrap } from "@/config/config";
  * Maps features to environment variable names.
  */
 export enum Features {
+  asyncQuery = "FEATURE_ASYNC_QUERY",
   dora = "FEATURE_DORA_METRICS",
   languageSelector = "FEATURE_LANGUAGE_SELECTOR",
   mlForecasts = "FEATURE_ML_FORECASTS",

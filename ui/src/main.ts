@@ -1,4 +1,4 @@
-import { createApp } from "vue";
+import { createApp, type Plugin } from "vue";
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import { createPinia } from "pinia";
 import VueApexCharts from "vue3-apexcharts";
@@ -34,7 +34,15 @@ async function main() {
     return;
   }
 
-  createApp(App).use(VueQueryPlugin).use(pinia).use(router).use(i18n).use(VueApexCharts).use(vuetify).mount("#app");
+  createApp(App)
+    .use(VueQueryPlugin)
+    .use(pinia)
+    .use(router)
+    .use(i18n)
+    // vue3-apexcharts types its export as Component & Plugin, which Vue >= 3.5.42 resolves to the functional component overload.
+    .use(VueApexCharts as Plugin)
+    .use(vuetify)
+    .mount("#app");
 }
 
 main();

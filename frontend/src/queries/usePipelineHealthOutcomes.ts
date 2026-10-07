@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import type { DatedMetrics } from "@/model/metrics";
 import type { RawQuery } from "@/model/query";
-import { executeQuery } from "@/services/query";
+import { executeQuerySync } from "@/services/query";
 import { outcomeFromResult, splitPipelineRunQueries, type PipelineHealthOutcome } from "./pipelineOutcomes";
 
 export function usePipelineHealthOutcomes() {
@@ -19,7 +19,7 @@ export function usePipelineHealthOutcomes() {
     setOutcomes([]);
     try {
       const queries = splitPipelineRunQueries(rawQueries[0].args);
-      const results = await Promise.all(queries.map((query) => executeQuery(query)));
+      const results = await Promise.all(queries.map((query) => executeQuerySync(query)));
       const nextOutcomes: PipelineHealthOutcome[] = [];
       for (let i = 0; i < queries.length; i++) {
         const { workloads, jobGroups, branchNames, stageId, startDate, endDate } = queries[i].args;

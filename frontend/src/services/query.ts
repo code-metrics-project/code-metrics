@@ -5,11 +5,14 @@ import { QUERY } from "@/api/endpoints";
 import type { DatedMetrics, MetricEntry } from "@/model/metrics";
 import type { RawQuery } from "@/model/query";
 
-export async function executeQuery(query: RawQuery): Promise<Map<string, DatedMetrics>> {
-  console.warn(
-    "DEPRECATION: executeQuery (sync) is deprecated. " +
-      "Use executeQueryAsync from @/services/asyncQuery instead."
-  );
+/**
+ * Executes a query against the synchronous query endpoint.
+ *
+ * Used as a fallback when the async query feature is disabled on the backend.
+ * Prefer {@link executeQuery} from {@link @/services/queryDispatcher} for
+ * feature-aware query execution.
+ */
+export async function executeQuerySync(query: RawQuery): Promise<Map<string, DatedMetrics>> {
   try {
     logger(`Running "${query.queryName}" query`);
     const response = await client.post<Record<string, Record<string, MetricEntry>>>(QUERY, query);

@@ -8,6 +8,7 @@ import {
 import type { BootstrapConfig } from "@/model/config";
 
 const features: FeatureConfig = {
+  asyncQuery: false,
   dora: false,
   languageSelector: false,
   mlForecasts: false,

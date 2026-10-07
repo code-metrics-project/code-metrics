@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { executeQueryAsync } from "@/services/asyncQuery";
+import { executeQuery } from "@/services/queryDispatcher";
 import { Paths } from "@/router/paths";
 import type { RawQuery } from "@/model/query";
 import { QUERY_KEYS } from "./keys";
@@ -27,7 +27,7 @@ export function usePipelineOutcomes(args: Record<string, unknown>, enabled = tru
 
   return useQuery({
     queryKey: [QUERY_KEYS.PIPELINE_RUNS, "outcomes", workloadKey || "all", args],
-    queryFn: () => executeQueryAsync(query),
+    queryFn: () => executeQuery(query),
     enabled,
     select: (data) => {
       // Transform raw pipeline data (Map<date, DatedMetrics>) into a single consolidated outcome

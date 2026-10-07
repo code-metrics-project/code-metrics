@@ -50,7 +50,7 @@ For the end-to-end mock-backed demo (CI, GitHub Actions, Imposter Go version pin
 
 - AWS CLI configured for the target account
 - Node.js 20+
-- AWS CDK CLI (`npm install -g aws-cdk`)
+- AWS CDK CLI (`npm install -g aws-cdk`). The deploy workflow uses each CDK app's own `aws-cdk` devDependency through `npx cdk`. That CLI must support the cloud assembly schema written by the app's `aws-cdk-lib`, so upgrade the two packages together with `make -C deployment update-cdk`. The `cdk-cli-compat` Jest test in each app fails if the CLI is too old.
 - Target account/region CDK-bootstrapped:
   ```bash
   npx cdk bootstrap aws://ACCOUNT_ID/REGION

@@ -6,7 +6,7 @@ import { usePipelineHealthOutcomes } from "@/queries/usePipelineHealthOutcomes";
 const { mockExecuteQuery } = vi.hoisted(() => ({ mockExecuteQuery: vi.fn() }));
 
 vi.mock("@/services/query", () => ({
-  executeQuery: (...args: unknown[]) => mockExecuteQuery(...args),
+  executeQuerySync: (...args: unknown[]) => mockExecuteQuery(...args),
 }));
 
 vi.mock("@/config", () => ({

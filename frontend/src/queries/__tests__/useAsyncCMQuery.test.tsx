@@ -2,11 +2,22 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAsyncCMQuery } from "@/queries/useAsyncCMQuery";
-import * as asyncQueryService from "@/services/asyncQuery";
+import * as queryDispatcher from "@/services/queryDispatcher";
 
-vi.mock("@/services/asyncQuery", () => ({
-  submitAsyncQuery: vi.fn(),
-  pollForResult: vi.fn(),
+vi.mock("@/services/queryDispatcher", () => ({
+  executeQuery: vi.fn(),
+}));
+
+vi.mock("@/config/features", () => ({
+  Features: {
+    asyncQuery: "FEATURE_ASYNC_QUERY",
+    dora: "FEATURE_DORA_METRICS",
+    languageSelector: "FEATURE_LANGUAGE_SELECTOR",
+    mlForecasts: "FEATURE_ML_FORECASTS",
+    predictions: "FEATURE_PREDICTIONS",
+    temporalCoupling: "FEATURE_TEMPORAL_COUPLING",
+  },
+  isFeatureActive: vi.fn(),
 }));
 
 describe("useAsyncCMQuery", () => {
@@ -28,11 +39,7 @@ describe("useAsyncCMQuery", () => {
   );
 
   it("submits query and polls for result", async () => {
-    vi.mocked(asyncQueryService.submitAsyncQuery).mockResolvedValue({
-      jobId: "job-123",
-      pollUrl: "/api/query/async/job-123",
-    });
-    vi.mocked(asyncQueryService.pollForResult).mockResolvedValue(new Map([["workload1", { entries: new Map() }]]));
+    vi.mocked(queryDispatcher.executeQuery).mockResolvedValue(new Map([["workload1", { entries: new Map() }]]));
 
     const { result } = renderHook(
       () => useAsyncCMQuery({ queryName: "test", args: {} }),
@@ -43,8 +50,7 @@ describe("useAsyncCMQuery", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(asyncQueryService.submitAsyncQuery).toHaveBeenCalledWith({ queryName: "test", args: {} });
-    expect(asyncQueryService.pollForResult).toHaveBeenCalledWith("job-123");
+    expect(queryDispatcher.executeQuery).toHaveBeenCalledWith({ queryName: "test", args: {} });
   });
 
   it("does not execute when disabled", async () => {
@@ -56,6 +62,6 @@ describe("useAsyncCMQuery", () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(result.current.isLoading).toBe(false);
-    expect(asyncQueryService.submitAsyncQuery).not.toHaveBeenCalled();
+    expect(queryDispatcher.executeQuery).not.toHaveBeenCalled();
   });
 });
